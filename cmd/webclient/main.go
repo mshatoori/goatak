@@ -51,6 +51,7 @@ type App struct {
 	tlsCert         *tls.Certificate
 	cas             *x509.CertPool
 	cl              *client.ConnClientHandler
+	mesh            *client.MeshHandler
 	changeCb        *callbacks.Callback[*model.Item]
 	deleteCb        *callbacks.Callback[string]
 	eventProcessors []*EventProcessor
@@ -137,7 +138,21 @@ func (app *App) Run(ctx context.Context) {
 
 	go app.cleaner()
 
+	if addr := viper.GetString("gpsd"); addr != "" {
+		c := gpsd.New(addr, app.logger.With("logger", "gpsd"))
+		go c.Listen(ctx, func(lat, lon, alt, speed, track float64) {
+			app.pos.Store(model.NewPosFull(lat, lon, alt, speed, track))
+		})
+	}
+
 	for ctx.Err() == nil {
+		app.mesh = client.NewMeshHandler(&client.MeshHandlerConfig{
+			MessageCb: app.ProcessEvent,
+		})
+		app.mesh.Start()
+
+		go app.myPosSender(ctx)
+
 		conn, err := app.connect()
 		if err != nil {
 			app.logger.Error("connect error", "error", err)
@@ -168,14 +183,7 @@ func (app *App) Run(ctx context.Context) {
 
 		go app.cl.Start()
 		go app.periodicGetter(ctx1)
-		go app.myPosSender(ctx1, wg)
 
-		if addr := viper.GetString("gpsd"); addr != "" {
-			c := gpsd.New(addr, app.logger.With("logger", "gpsd"))
-			go c.Listen(ctx1, func(lat, lon, alt, speed, track float64) {
-				app.pos.Store(model.NewPosFull(lat, lon, alt, speed, track))
-			})
-		}
 		wg.Wait()
 	}
 }
@@ -198,9 +206,7 @@ func makeUID(callsign string) string {
 	return "ANDROID-" + s[:16]
 }
 
-func (app *App) myPosSender(ctx context.Context, wg *sync.WaitGroup) {
-	wg.Add(1)
-	defer wg.Done()
+func (app *App) myPosSender(ctx context.Context) {
 	app.SendMsg(app.MakeMe())
 
 	ticker := time.NewTicker(selfPosSendPeriod)
@@ -219,9 +225,15 @@ func (app *App) myPosSender(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (app *App) SendMsg(msg *cotproto.TakMessage) {
+	app.logger.Debug("sending...")
+	if app.mesh != nil {
+		if err := app.mesh.SendCot(msg); err != nil {
+			app.logger.Error("mesh send error", "error", err)
+		}
+	}
 	if app.cl != nil {
 		if err := app.cl.SendCot(msg); err != nil {
-			app.logger.Error("error", "error", err)
+			app.logger.Error("client send error", "error", err)
 		}
 	}
 }
@@ -372,7 +384,7 @@ func main() {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %w \n", err))
+		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 
 	var h slog.Handler

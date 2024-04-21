@@ -2,23 +2,23 @@
 # server address to connect to
 server_address: 127.0.0.1:8087:tcp
 # local port for web server
-web_port: 8080
+web_port: 8081
 # gpsd address, usually localhost:2947
 gpsd: ""
 
 me:
   # your callsign
-  callsign: TestUser1
+  callsign: TestUser2
   # your uid. If 'auto' uid is generated
-  uid: auto
+  uid: TEST2
   # your unit type
   type: a-f-G-U-C
   # your team: one of (White, Yellow, Orange, Magenta, Red, Maroon, Purple, Dark Blue, Blue, Cyan, Teal, Green, Dark Green, Brown)
   team: White
   # your role: one of (HQ, Team Lead, Team Member, K9, Forward Observer, Sniper, Medic, RTO)
   role: Team Member
-  lat: 0
-  lon: 0
+  lat: 10
+  lon: 10
 
 ssl:
   cert: ""
