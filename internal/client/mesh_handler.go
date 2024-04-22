@@ -125,6 +125,9 @@ func (h *MeshHandler) handleRead(ctx context.Context) {
 	}
 
 	readConn, err := net.ListenMulticastUDP("udp", nil, addr)
+	if err != nil {
+		return
+	}
 
 	er := cot.NewTagReader(readConn)
 	pr := cot.NewProtoReader(readConn)
