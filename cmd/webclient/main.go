@@ -368,19 +368,43 @@ func main() {
 	viper.SetConfigFile(*conf)
 
 	viper.SetDefault("server_address", "204.48.30.216:8087:tcp")
+	viper.BindEnv("server_address")
+
 	viper.SetDefault("web_port", 8080)
+	viper.BindEnv("web_port")
+
 	viper.SetDefault("me.callsign", RandString(10))
+	viper.BindEnv("me.callsign", "CALLSIGN")
+
 	viper.SetDefault("me.lat", 0.0)
+	viper.BindEnv("me.lat", "LAT")
 	viper.SetDefault("me.lon", 0.0)
+	viper.BindEnv("me.lon", "LON")
 	viper.SetDefault("me.zoom", 5)
+	viper.BindEnv("me.zoom", "ZOOM")
 	viper.SetDefault("me.type", "a-f-G-U-C")
+	viper.BindEnv("me.type", "TYPE")
 	viper.SetDefault("me.team", "Blue")
+	viper.BindEnv("me.team", "TEAM")
 	viper.SetDefault("me.role", "HQ")
+	viper.BindEnv("me.role", "ROLE")
 	viper.SetDefault("me.platform", "GoATAK_client")
+	viper.BindEnv("platform", "PLATFORM")
 	viper.SetDefault("me.version", getVersion())
+	viper.BindEnv("me.version", "VERSION")
 	viper.SetDefault("ssl.password", "atakatak")
+	viper.BindEnv("ssl.password", "SSL_PASSWORD")
 	viper.SetDefault("ssl.save_cert", true)
+	viper.BindEnv("ssl.save_cert", "SSL_SAVE_CERT")
 	viper.SetDefault("ssl.strict", false)
+	viper.BindEnv("ssl.strict", "SSL_STRICT")
+
+	viper.BindEnv("gpsd", "GPSD")
+	viper.BindEnv("me.uid", "UID")
+	viper.BindEnv("me.OS", "OS")
+	viper.BindEnv("ssl.enroll_user", "SSL_ENROLL_USER")
+	viper.BindEnv("ssl.enroll_password", "SSL_ENROLL_PASSWORD")
+	viper.BindEnv("ssl.cert", "SSL_CERT")
 
 	err := viper.ReadInConfig()
 	if err != nil {
