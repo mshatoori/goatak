@@ -106,6 +106,17 @@ let app = new Vue({
                             opts["subdomains"] = i.parts;
                         }
 
+                        var lz = null
+
+                        if (first) {
+                            opts["bounds"] = L.latLngBounds(L.latLng(25, 43), L.latLng(40, 63));
+                            lz = L.tileLayer(i.url, opts);
+                            opts = JSON.parse(JSON.stringify(opts));
+                            opts["bounds"] = undefined;
+                            opts["minZoom"] = i.minZoom ?? 1;
+                            opts["maxNativeZoom"] = 5;
+                        }
+
                         l = L.tileLayer(i.url, opts);
 
                         layers.addBaseLayer(l, i.name);
@@ -113,6 +124,7 @@ let app = new Vue({
                         if (first) {
                             first = false;
                             l.addTo(vm.map);
+                            lz.addTo(vm.map);
                         }
                     });
                 });
