@@ -2,7 +2,7 @@ FROM docker.arvancloud.ir/golang:alpine AS builder
 
 ARG branch
 ARG commit
-ARG http_proxy
+ARG https_proxy
 
 WORKDIR /build
 COPY . .
@@ -15,6 +15,7 @@ EXPOSE 8088/tcp
 EXPOSE 8446/tcp
 EXPOSE 8999/tcp
 EXPOSE 8999/udp
+EXPOSE 6969/udp
 
 WORKDIR /app
 COPY --from=builder /build/dist/webclient /app/webclient
