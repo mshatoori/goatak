@@ -33,7 +33,7 @@ import (
 )
 
 const (
-	selfPosSendPeriod      = time.Minute
+	selfPosSendPeriod      = time.Second * 5
 	lastSeenOfflineTimeout = time.Minute * 15
 	alfaNum                = "abcdefghijklmnopqrstuvwxyz012346789"
 )
@@ -145,14 +145,14 @@ func (app *App) Run(ctx context.Context) {
 		})
 	}
 
+	app.mesh = client.NewMeshHandler(&client.MeshHandlerConfig{
+		MessageCb: app.ProcessEvent,
+	})
+	app.mesh.Start()
+
+	go app.myPosSender(ctx)
+
 	for ctx.Err() == nil {
-		app.mesh = client.NewMeshHandler(&client.MeshHandlerConfig{
-			MessageCb: app.ProcessEvent,
-		})
-		app.mesh.Start()
-
-		go app.myPosSender(ctx)
-
 		conn, err := app.connect()
 		if err != nil {
 			app.logger.Error("connect error", "error", err)
