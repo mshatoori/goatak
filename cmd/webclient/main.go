@@ -400,7 +400,7 @@ func main() {
 	viper.BindEnv("ssl.strict", "SSL_STRICT")
 
 	viper.BindEnv("gpsd", "GPSD")
-	viper.BindEnv("me.uid", "UID")
+	viper.BindEnv("me.uid", "ME_UID")
 	viper.BindEnv("me.OS", "OS")
 	viper.BindEnv("ssl.enroll_user", "SSL_ENROLL_USER")
 	viper.BindEnv("ssl.enroll_password", "SSL_ENROLL_PASSWORD")
