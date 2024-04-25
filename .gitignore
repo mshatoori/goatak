@@ -10,3 +10,4 @@ test-*.yml
 *.key
 *.p12
 report.xml
+maps/*/
