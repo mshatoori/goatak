@@ -1,0 +1,19 @@
+services:
+  webclient:
+    build:
+      dockerfile: Dockerfile.webclient
+      context: .
+      args:
+        https_proxy: http://127.0.0.1:8889
+      network: host
+    image: goatak-client:latest
+    ports:
+      - "8080:8080"
+      - "6969"
+  map:
+    build:
+      dockerfile: ./Dockerfile
+      context: ./maps
+    image: goatak-maps:latest
+    ports:
+      - "8000:8000"
