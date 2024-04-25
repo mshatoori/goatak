@@ -5,8 +5,11 @@ ARG commit
 ARG https_proxy
 
 WORKDIR /build
+COPY ./go.mod .
+COPY ./go.sum .
+RUN go mod download
 COPY . .
-RUN go mod tidy && go build -o dist/ -ldflags "-s -X main.gitRevision=$commit -X main.gitBranch=$branch" ./cmd/...
+RUN go build -o dist/ -ldflags "-s -X main.gitRevision=$commit -X main.gitBranch=$branch" ./cmd/...
 
 FROM docker.arvancloud.ir/alpine
 
@@ -22,4 +25,4 @@ COPY --from=builder /build/dist/webclient /app/webclient
 COPY ./data /app/data
 COPY ./goatak_client.yml /app/
 # COPY ./users.yml /app/
-CMD ["./webclient"]
+CMD ["./webclient", "-debug"]
