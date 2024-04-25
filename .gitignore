@@ -11,3 +11,4 @@ test-*.yml
 *.p12
 report.xml
 maps/*/
+.env
