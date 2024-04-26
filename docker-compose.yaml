@@ -7,9 +7,9 @@ services:
         https_proxy: http://127.0.0.1:8889
       network: host
     image: goatak-client:latest
-    ports:
-      - "8080:8080"
-      - "6969"
+#    ports:
+#      - "8080:8080"
+#      - "6969"
     environment:
       - ME_UID=${ME_UID}
       - CALLSIGN=${CALLSIGN}
