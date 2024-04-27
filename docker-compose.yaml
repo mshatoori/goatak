@@ -13,6 +13,7 @@ services:
     environment:
       - ME_UID=${ME_UID}
       - CALLSIGN=${CALLSIGN}
+    network_mode: host
   map:
     build:
       dockerfile: ./Dockerfile
