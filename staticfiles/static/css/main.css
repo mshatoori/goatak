@@ -9,3 +9,7 @@ div.info {
     font-family: 'Roboto', sans-serif;
     font-size: 11pt;
 }
+
+#app {
+    direction: rtl;
+}

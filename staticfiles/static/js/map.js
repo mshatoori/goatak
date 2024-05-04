@@ -390,7 +390,7 @@ let app = new Vue({
         },
 
         modeIs: function (s) {
-            return document.getElementById(s).checked === true;
+            return document.getElementById(s) && document.getElementById(s).checked === true;
         },
 
         mouseMove: function (e) {

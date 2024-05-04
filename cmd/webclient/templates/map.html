@@ -1,7 +1,7 @@
 <div id="app">
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">GoATAK client <span v-if="config">{{ config.version }}</span></a>
+            <a class="navbar-brand" href="#">سامانه آگاهی وضعیتی تاکتیکی<span v-if="config">{{ config.version }}</span></a>
             <span class="badge rounded-pill bg-primary"
                   v-bind:class="{ 'bg-success': connected(), 'bg-secondary': !connected() }">.</span>
             <div class="collapse navbar-collapse" id="navbarCollapse">
@@ -9,7 +9,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Contacts <span class="badge rounded-pill bg-success">{{ contactsNum() }}</span>
+                            مخاطبین <span class="badge rounded-pill bg-success">{{ contactsNum() }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
                             <li v-for="u in byCategory('contact')">
@@ -24,7 +24,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink2" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Units <span class="badge rounded-pill bg-success">{{ countByCategory('unit') }}</span>
+                            نیروها <span class="badge rounded-pill bg-success">{{ countByCategory('unit') }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink2">
                             <li v-for="u in byCategory('unit')">
@@ -37,7 +37,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink3" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Points <span class="badge rounded-pill bg-success">{{ countByCategory('point') }}</span>
+                            نقاط <span class="badge rounded-pill bg-success">{{ countByCategory('point') }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink3">
                             <li v-for="u in byCategory('point')">
@@ -50,7 +50,7 @@
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink4" role="button"
                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Messages <span class="badge rounded-pill bg-success">{{ msgNum() }}</span>
+                            پیام‌ها <span class="badge rounded-pill bg-success">{{ msgNum() }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink4">
                             <li v-for="m in Object.values(messages)">
@@ -72,61 +72,68 @@
             </div>
             <div class="col-3">
                 <div class="card mb-1" v-if="config && config.callsign">
-                    <div class="card-header">Me ({{ config.callsign }})</div>
+                    <div class="card-header">من ({{ config.callsign }})</div>
                     <div class="card-body">
-                        <b>UID:</b> {{ config.uid }}<br/>
-                        <div v-if="config.team">
-                            <b>Team:</b> {{ config.team }}, <b>Role:</b>{{ config.role }}
-                        </div>
-                        <div>
-                            <b>coords:</b> {{ printCoords(config.lat, config.lon) }}
-                            <span class="badge rounded-pill bg-success" style="cursor:default;"
-                                  v-on:click="map.setView([config.lat, config.lon])"><i
-                                    class="bi bi-geo"></i></span>
-                            <span v-if="coords">({{ distBea(latlng(config.lat, config.lon), coords) }} to cursor)</span>
-                        </div>
+                        <dl>
+                            <dt>UID</dt>
+                            <dd>{{ config.uid }}</dd>
+                            <template v-if="config.team">
+                                <dt>تیم</dt>
+                                <dd>{{ config.team }}</dd>`
+                                <dt>نقش</dt>
+                                <dd>{{ config.role }}</dd>
+                            </template>
+                            <dt>مختصات</dt>
+                            <dd>{{ printCoords(config.lat, config.lon) }}
+                                <span class="badge rounded-pill bg-success"
+                                      style="cursor:default;"
+                                      v-on:click="map.setView([config.lat, config.lon])"><i
+                                        class="bi bi-geo"></i></span>
+                                <span v-if="coords">({{ distBea(latlng(config.lat, config.lon), coords) }} تا نشانگر)</span>
+                            </dd>
+                        </dl>
                     </div>
                 </div>
                 <div class="card mb-1">
-                    <div class="card-header">Tools</div>
+                    <div class="card-header">ابزارها</div>
                     <div class="card-body">
                         <div class="btn-group" role="group" aria-label="Tools">
                             <input type="radio" class="btn-check" name="btnradio" id="select" autocomplete="off"
                                    checked>
-                            <label class="btn btn-outline-primary btn-sm" for="select">Select</label>
+                            <label class="btn btn-outline-primary btn-sm" for="select">انتخاب</label>
 
                             <input type="radio" class="btn-check" name="btnradio" id="redx" autocomplete="off">
-                            <label class="btn btn-outline-primary btn-sm" for="redx">Red-x</label>
+                            <label class="btn btn-outline-primary btn-sm" for="redx">نشان</label>
 
-                            <input type="radio" class="btn-check" name="btnradio" id="dp1" autocomplete="off">
-                            <label class="btn btn-outline-primary btn-sm" for="dp1">DP</label>
+                            <!--                            <input type="radio" class="btn-check" name="btnradio" id="dp1" autocomplete="off">-->
+                            <!--                            <label class="btn btn-outline-primary btn-sm" for="dp1">DP</label>-->
 
                             <input type="radio" class="btn-check" name="btnradio" id="point" autocomplete="off">
-                            <label class="btn btn-outline-primary btn-sm" for="point">Point drop</label>
+                            <label class="btn btn-outline-primary btn-sm" for="point">ایجاد نقطه</label>
 
                             <input v-if="config && config.callsign" type="radio" class="btn-check"
                                    name="btnradio" id="me"
                                    autocomplete="off">
                             <label v-if="config && config.callsign" class="btn btn-outline-primary btn-sm"
-                                   for="me">Me</label>
+                                   for="me">من</label>
                         </div>
                         <div v-if="getTool('redx')" class="mt-1">
-                            <span class="badge bg-danger">RedX</span>: {{ printCoordsll(getTool('redx').getLatLng()) }}
+                            <span class="badge bg-danger">نشان</span>: {{ printCoordsll(getTool('redx').getLatLng()) }}
                             <span class="badge rounded-pill bg-success" style="cursor:default;"
                                   v-on:click="map.setView(getTool('redx').getLatLng())"><i class="bi bi-geo"></i></span>
                             <span class="badge rounded-pill bg-danger" style="cursor:default;"
                                   v-on:click="removeTool('redx')">X</span>
                         </div>
-                        <div v-if="getTool('dp1')" class="mt-1">
-                            <span class="badge bg-success">DP1</span>: {{ printCoordsll(getTool('dp1').getLatLng()) }}
-                            <span class="badge rounded-pill bg-success" style="cursor:default;"
-                                  v-on:click="map.setView(getTool('dp1').getLatLng())"><i class="bi bi-geo"></i></span>
-                            <span class="badge rounded-pill bg-danger" style="cursor:default;"
-                                  v-on:click="removeTool('dp1')">X</span>
-                        </div>
+                        <!--                        <div v-if="getTool('dp1')" class="mt-1">-->
+                        <!--                            <span class="badge bg-success">DP1</span>: {{ printCoordsll(getTool('dp1').getLatLng()) }}-->
+                        <!--                            <span class="badge rounded-pill bg-success" style="cursor:default;"-->
+                        <!--                                  v-on:click="map.setView(getTool('dp1').getLatLng())"><i class="bi bi-geo"></i></span>-->
+                        <!--                            <span class="badge rounded-pill bg-danger" style="cursor:default;"-->
+                        <!--                                  v-on:click="removeTool('dp1')">X</span>-->
+                        <!--                        </div>-->
                         <div v-if="coords" class="mt-1">
-                            <span class="badge bg-secondary">cursor</span>: {{ printCoordsll(coords) }} <span
-                                v-if="getTool('redx')">({{ distBea(getTool('redx').getLatLng(), coords) }} from RedX)</span>
+                            <span class="badge bg-secondary">نشانگر</span>: {{ printCoordsll(coords) }} <span
+                                v-if="getTool('redx')">({{ distBea(getTool('redx').getLatLng(), coords) }} از نشانگر)</span>
                         </div>
                     </div>
                 </div>
@@ -159,34 +166,45 @@
                             </span>
                     </div>
                     <div class="card-body">
-                        <b>UID:</b> {{ current_unit.uid }}<br/>
-                        <div v-if="current_unit.team">
-                            <b>Team:</b> {{ current_unit.team }},
-                            <b>Role:</b> {{ current_unit.role }}
-                        </div>
-                        <div>
-                            <b>Type:</b> {{ current_unit.type }} <b>SIDC:</b> {{ current_unit.sidc }}
-                        </div>
-                        <div>
-                            <b>coords:</b> {{ printCoords(current_unit.lat, current_unit.lon) }}
-                            <span class="badge rounded-pill bg-success" style="cursor:default;"
-                                  v-on:click="map.setView([current_unit.lat, current_unit.lon])"><i
-                                    class="bi bi-geo"></i></span>
-                            <span v-if="coords">({{ distBea(latlng(current_unit.lat, current_unit.lon), coords) }} to cursor)</span>
-                        </div>
-                        <b>speed:</b> {{ sp(current_unit.speed) }} km/h,
-                        <b>hae:</b> {{ current_unit.hae.toFixed(1) }}<br/>
-                        <div v-if="current_unit.tak_version">
-                            <b>ver:</b> {{ current_unit.tak_version }}<br/>{{ current_unit.device }}</div>
-                        <div v-if="current_unit.parent_uid"><b>parent:</b> {{ current_unit.parent_uid }}
-                            <span v-if="current_unit.parent_callsign">({{ current_unit.parent_callsign }})</span>
-                        </div>
-                        <div>
-                            <b>time:</b> {{ dt(current_unit.start_time) }} <b>send:</b> {{ dt(current_unit.send_time) }}
-                            <b>stale:</b>
-                            {{ dt(current_unit.stale_time) }}<br/>
-                            <b>last seen</b>: {{ dt(current_unit.last_seen) }}
-                        </div>
+                        <dl>
+                            <dt>UID</dt>
+                            <dd>{{ current_unit.uid }}</dd>
+                            <template v-if="current_unit.team">
+                                <dt>تیم</dt>
+                                <dd>{{ current_unit.team }}</dd>
+                                <dt>نقش</dt>
+                                <dd>{{ current_unit.role }}</dd>
+                            </template>
+                            <dt>نوع</dt>
+                            <dd>{{ current_unit.type }}</dd>
+                            <dt>SIDC</dt>
+                            <dd>{{ current_unit.sidc }}</dd>
+
+                            <dt>مختصات</dt>
+                            <dd>{{ printCoords(current_unit.lat, current_unit.lon) }}
+                                <span class="badge rounded-pill bg-success" style="cursor:default;"
+                                      v-on:click="map.setView([current_unit.lat, current_unit.lon])"><i
+                                        class="bi bi-geo"></i></span>
+                                <span v-if="coords">({{ distBea(latlng(current_unit.lat, current_unit.lon), coords) }} تا نشانگر)</span>
+                            </dd>
+                            <dt>سرعت</dt>
+                            <dd>{{ sp(current_unit.speed) }} km/h</dd>
+                            <dt>ارتفاع</dt>
+                            <dd>{{ current_unit.hae.toFixed(1) }}</dd>
+<!--                            <div v-if="current_unit.tak_version">-->
+<!--                                <b>ver:</b> {{ current_unit.tak_version }}<br/>{{ current_unit.device }}-->
+<!--                            </div>-->
+                            <div v-if="current_unit.parent_uid"><dt>سازنده</dt>
+                                <dd>{{ current_unit.parent_uid }}<span v-if="current_unit.parent_callsign">({{ current_unit.parent_callsign }})</span></dd>
+                            </div>
+                            <dt>زمان</dt>
+                            <dd>{{ dt(current_unit.start_time) }}</dd> <dt>ارسال</dt>
+                            <dd>{{ dt(current_unit.send_time) }}</dd>
+                            <dt>انقضا</dt>
+                            <dd>{{ dt(current_unit.stale_time) }}</dd>
+                            <dt>آخرین زمان دیده شدن</dt>
+                            <dd>{{ dt(current_unit.last_seen) }}</dd>
+                        </dl>
                         {{ current_unit.text }}
                     </div>
                 </div>
@@ -200,7 +218,7 @@
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">Chat messages {{ chatroom }}</h5>
+                    <h5 class="modal-title" id="staticBackdropLabel">پیام‌های چت {{ chatroom }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -215,8 +233,8 @@
                     <form>
                         <input type="text" class="form-control" id="message-text" v-model="chat_msg"/>
                     </form>
-                    <button type="button" class="btn btn-primary" v-on:click="sendMessage">Send message</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" v-on:click="sendMessage">ارسال پیام</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">خروج</button>
                 </div>
             </div>
         </div>
@@ -227,35 +245,35 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel1">Edit point</h5>
+                    <h5 class="modal-title" id="staticBackdropLabel1">ویرایش نقظه</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form>
                         <div class="form-group row my-2 mx-2">
                             <div class="col-6">
-                                <label for="ed-callsign">Callsign</label>
+                                <label for="ed-callsign">شناسه تماس</label>
                                 <input v-model="form_unit.callsign" id="ed-callsign" placeholder="callsign">
                             </div>
 
                             <div class="btn-group col-4" role="group" aria-label="Type">
                                 <input type="radio" class="btn-check" name="btnradio" value="point"
                                        v-model="form_unit.category" id="ed-point">
-                                <label class="btn btn-outline-primary btn-sm" for="ed-point">Point</label>
+                                <label class="btn btn-outline-primary btn-sm" for="ed-point">نقطه</label>
 
                                 <input type="radio" class="btn-check" name="btnradio" value="unit"
                                        v-model="form_unit.category" id="ed-unit">
-                                <label class="btn btn-outline-primary btn-sm" for="ed-unit">Unit</label>
+                                <label class="btn btn-outline-primary btn-sm" for="ed-unit">نیرو</label>
                             </div>
 
                             <div class="form-check col-2">
                                 <input type="checkbox" id="ed-send" v-model="form_unit.send"/>
-                                <label for="ed-send">Send</label>
+                                <label for="ed-send">ارسال</label>
                             </div>
                         </div>
                         <div class="form-group row my-2 mx-2" v-if="form_unit.category == 'point'">
                             <div class="col-12">
-                                <label class="my-1 mr-2 col-6" for="ed-type">Type</label>
+                                <label class="my-1 mr-2 col-6" for="ed-type">نوع</label>
                                 <select class="form-select my-1 mr-sm-2" id="ed-type" v-model="form_unit.type">
                                     <option value="b-m-p-s-m">Spot</option>
                                     <option value="b-m-p-w-GOTO">WayPt</option>
@@ -266,17 +284,17 @@
                         </div>
                         <div class="form-group row my-2 mx-2" v-if="form_unit.category == 'unit'">
                             <div class="col-12">
-                                <label class="my-1 mr-2 col-6" for="ed-aff">Affilation</label>
+                                <label class="my-1 mr-2 col-6" for="ed-aff">طرف</label>
                                 <select class="form-select my-1 mr-sm-2" id="ed-aff" v-model="form_unit.aff">
-                                    <option value="h">Hostile</option>
-                                    <option value="f">Friend</option>
-                                    <option value="n">Neutral</option>
-                                    <option value="u">Unknown</option>
-                                    <option value="s">Suspect</option>
+                                    <option value="h">دشمن</option>
+                                    <option value="f">خودی</option>
+                                    <option value="n">خنثی</option>
+                                    <option value="u">نامعلوم</option>
+                                    <option value="s">مشکوک</option>
                                 </select>
                             </div>
                             <div class="col-12 row my-1 mr-sm-2" v-if="form_unit.root_sidc">
-                                <label class="my-1 mr-2" for="ed-subtype">Type</label>
+                                <label class="my-1 mr-2" for="ed-subtype">نوع</label>
                                 <div class="col-1">
                                     <button type="button" class="btn btn-secondary"
                                             v-if="form_unit.root_sidc.code !== ''"
@@ -301,7 +319,7 @@
                         </div>
                         <div class="form-group row my-2 mx-2">
                             <div class="col-12">
-                                <label for="ed-remarks">Remarks</label>
+                                <label for="ed-remarks">توضیحات</label>
                                 <textarea id="ed-remarks" class="form-control" id="exampleFormControlTextarea1" rows="3"
                                           v-model="form_unit.text"></textarea>
                             </div>
@@ -310,10 +328,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" v-on:click="cancelEditForm">
-                        Cancel
+                        لغو
                     </button>
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal" v-on:click="saveEditForm">
-                        Save
+                        ذخیره
                     </button>
                 </div>
             </div>
