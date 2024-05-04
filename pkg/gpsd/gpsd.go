@@ -148,6 +148,8 @@ func (c *GpsdClient) Listen(ctx context.Context, cb func(lat, lon, alt, speed, t
 				c.logger.Error("JSON decode error", "error", err1)
 			}
 			c.logger.Info(fmt.Sprintf("got version %s, rev. %s", r.Release, r.Rev))
+		default:
+			c.logger.Info(fmt.Sprintf("got msg %s", msg))
 		}
 	}
 }
