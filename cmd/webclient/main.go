@@ -138,6 +138,8 @@ func (app *App) Run(ctx context.Context) {
 
 	go app.cleaner()
 
+	app.logger.Debug("GPSD", "addr", viper.GetString("gpsd"))
+
 	if addr := viper.GetString("gpsd"); addr != "" {
 		c := gpsd.New(addr, app.logger.With("logger", "gpsd"))
 		go c.Listen(ctx, func(lat, lon, alt, speed, track float64) {
