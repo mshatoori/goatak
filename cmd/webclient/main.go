@@ -58,6 +58,7 @@ type App struct {
 	remoteAPI       *RemoteAPI
 	saveFile        string
 	connected       uint32
+	mapServer       string
 
 	callsign string
 	uid      string
@@ -72,7 +73,7 @@ type App struct {
 	zoom     int8
 }
 
-func NewApp(uid string, callsign string, connectStr string, webPort int) *App {
+func NewApp(uid string, callsign string, connectStr string, webPort int, mapServer string) *App {
 	logger := slog.Default()
 	parts := strings.Split(connectStr, ":")
 
@@ -110,6 +111,7 @@ func NewApp(uid string, callsign string, connectStr string, webPort int) *App {
 		messages:        model.NewMessages(uid),
 		eventProcessors: make([]*EventProcessor, 0),
 		pos:             atomic.Pointer[model.Pos]{},
+		mapServer:       mapServer,
 	}
 }
 
@@ -400,6 +402,8 @@ func main() {
 	viper.BindEnv("ssl.save_cert", "SSL_SAVE_CERT")
 	viper.SetDefault("ssl.strict", false)
 	viper.BindEnv("ssl.strict", "SSL_STRICT")
+	viper.SetDefault("map_server", "127.0.0.1:8000")
+	viper.BindEnv("map_server", "MAP_SERVER")
 
 	viper.BindEnv("gpsd", "GPSD")
 	viper.BindEnv("me.uid", "ME_UID")
@@ -432,6 +436,7 @@ func main() {
 		viper.GetString("me.callsign"),
 		viper.GetString("server_address"),
 		viper.GetInt("web_port"),
+		viper.GetString("map_server"),
 	)
 
 	app.saveFile = *saveFile

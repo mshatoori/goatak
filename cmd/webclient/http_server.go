@@ -91,7 +91,7 @@ func getConfigHandler(app *App) air.Handler {
 		m["team"] = app.team
 		m["role"] = app.role
 
-		m["layers"] = getLayers()
+		m["layers"] = getLayers(app.mapServer)
 
 		return res.WriteJSON(m)
 	}
@@ -258,13 +258,8 @@ func getTypes(_ *air.Request, res *air.Response) error {
 	return res.WriteJSON(cot.Root)
 }
 
-func getLayers() []map[string]any {
-	return []map[string]any{
-		{
-			"name":    "Local",
-			"url":     "http://127.0.0.1:8000/{z}/{x}/{y}.png",
-			"maxZoom": 11,
-		},
+func getLayers(mapServer string) []map[string]any {
+	layers := []map[string]any{
 		{
 			"name":    "Google Hybrid",
 			"url":     "http://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&s=Galileo",
@@ -289,4 +284,16 @@ func getLayers() []map[string]any {
 			"maxZoom": 20,
 		},
 	}
+
+	if len(mapServer) > 0 {
+		layers = append([]map[string]any{
+			{
+				"name":    "Local Server",
+				"url":     fmt.Sprintf("http://%s/{z}/{x}/{y}.png", mapServer),
+				"maxZoom": 11,
+			},
+		}, layers...)
+	}
+
+	return layers
 }
