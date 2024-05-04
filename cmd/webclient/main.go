@@ -53,6 +53,7 @@ type App struct {
 	cl              *client.ConnClientHandler
 	mesh            *client.MeshHandler
 	changeCb        *callbacks.Callback[*model.Item]
+	moveCb          *callbacks.Callback[*model.Pos]
 	deleteCb        *callbacks.Callback[string]
 	eventProcessors []*EventProcessor
 	remoteAPI       *RemoteAPI
@@ -107,6 +108,7 @@ func NewApp(uid string, callsign string, connectStr string, webPort int, mapServ
 		items:           repository.NewItemsMemoryRepo(),
 		dialTimeout:     time.Second * 5,
 		changeCb:        callbacks.New[*model.Item](),
+		moveCb:          callbacks.New[*model.Pos](),
 		deleteCb:        callbacks.New[string](),
 		messages:        model.NewMessages(uid),
 		eventProcessors: make([]*EventProcessor, 0),
@@ -146,6 +148,8 @@ func (app *App) Run(ctx context.Context) {
 		c := gpsd.New(addr, app.logger.With("logger", "gpsd"))
 		go c.Listen(ctx, func(lat, lon, alt, speed, track float64) {
 			app.pos.Store(model.NewPosFull(lat, lon, alt, speed, track))
+			app.logger.Info("position from gpsd", "lat", lat, "lon", lon, "alt", alt, "speed", speed, "track", track)
+			app.changeCb.AddMessage(model.FromMsg(cot.LocalCotMessage(app.MakeMe())))
 		})
 	}
 

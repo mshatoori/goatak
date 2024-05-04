@@ -4,7 +4,7 @@ server_address: 127.0.0.1:8087:tcp
 # local port for web server
 web_port: 8080
 # gpsd address, usually localhost:2947
-gpsd: "127.0.0.1:2947"
+gpsd: "127.0.0.1:2948"
 
 me:
   # your callsign

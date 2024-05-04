@@ -1,4 +1,3 @@
-
 function needIconUpdate(oldUnit, newUnit) {
     if (oldUnit.sidc !== newUnit.sidc || oldUnit.status !== newUnit.status) return true;
     if (oldUnit.speed !== newUnit.speed || oldUnit.direction !== newUnit.direction) return true;
@@ -7,6 +6,38 @@ function needIconUpdate(oldUnit, newUnit) {
     if (newUnit.sidc.charAt(2) === 'A' && oldUnit.hae !== newUnit.hae) return true;
     return false;
 }
+
+L.Marker.RotatedMarker = L.Marker.extend({
+    _reset: function() {
+        var pos = this._map.latLngToLayerPoint(this._latlng).round();
+
+        L.DomUtil.setPosition(this._icon, pos);
+        if (this._shadow) {
+            L.DomUtil.setPosition(this._shadow, pos);
+        }
+
+        if (this.options.iconAngle) {
+            this._icon.style.WebkitTransform = this._icon.style.WebkitTransform + ' rotate(' + this.options.iconAngle + 'deg)';
+        }
+
+        this._icon.style.zIndex = pos.y;
+    },
+
+    setIconAngle: function (iconAngle) {
+
+        if (this._map) {
+            this._removeIcon();
+        }
+
+        this.options.iconAngle = iconAngle;
+
+        if (this._map) {
+            this._initIcon();
+            this._reset();
+        }
+    }
+
+});
 
 let app = new Vue({
     el: '#app',
@@ -76,7 +107,7 @@ let app = new Vue({
                     vm.map.setView([data.lat, data.lon], data.zoom);
 
                     if (vm.config.callsign) {
-                        vm.me = L.marker([data.lat, data.lon]);
+                        vm.me = new L.Marker.RotatedMarker([data.lat, data.lon]);
                         vm.me.setIcon(L.icon({
                             iconUrl: "/static/icons/self.png",
                             iconAnchor: new L.Point(16, 16),
@@ -139,7 +170,11 @@ let app = new Vue({
             this.conn = new WebSocket(url);
 
             this.conn.onmessage = function (e) {
-                vm.processUnit(JSON.parse(e.data));
+                let parsed = JSON.parse(e.data);
+                if (parsed.uid === vm.config.uid)
+                    vm.processMe(parsed);
+                else
+                    vm.processUnit(parsed);
             };
 
             this.conn.onopen = function (e) {
@@ -240,6 +275,15 @@ let app = new Vue({
             }
 
             return unit;
+        },
+
+        processMe: function (u) {
+            if (!u || !this.me) return;
+            this.config.lat = u.lat;
+            this.config.lon = u.lon;
+            this.me.setLatLng([u.lat, u.lon]);
+            if (u.course)
+                this.me.setIconAngle(u.course)
         },
 
         updateMarker: function (unit, draggable, updateIcon) {
