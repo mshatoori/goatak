@@ -33,7 +33,7 @@ import (
 )
 
 const (
-	selfPosSendPeriod      = time.Minute
+	selfPosSendPeriod      = time.Second * 5
 	lastSeenOfflineTimeout = time.Minute * 15
 	alfaNum                = "abcdefghijklmnopqrstuvwxyz012346789"
 )
@@ -51,12 +51,15 @@ type App struct {
 	tlsCert         *tls.Certificate
 	cas             *x509.CertPool
 	cl              *client.ConnClientHandler
+	mesh            *client.MeshHandler
 	changeCb        *callbacks.Callback[*model.Item]
+	moveCb          *callbacks.Callback[*model.Pos]
 	deleteCb        *callbacks.Callback[string]
 	eventProcessors []*EventProcessor
 	remoteAPI       *RemoteAPI
 	saveFile        string
 	connected       uint32
+	mapServer       string
 
 	callsign string
 	uid      string
@@ -71,7 +74,7 @@ type App struct {
 	zoom     int8
 }
 
-func NewApp(uid string, callsign string, connectStr string, webPort int) *App {
+func NewApp(uid string, callsign string, connectStr string, webPort int, mapServer string) *App {
 	logger := slog.Default()
 	parts := strings.Split(connectStr, ":")
 
@@ -105,10 +108,12 @@ func NewApp(uid string, callsign string, connectStr string, webPort int) *App {
 		items:           repository.NewItemsMemoryRepo(),
 		dialTimeout:     time.Second * 5,
 		changeCb:        callbacks.New[*model.Item](),
+		moveCb:          callbacks.New[*model.Pos](),
 		deleteCb:        callbacks.New[string](),
 		messages:        model.NewMessages(uid),
 		eventProcessors: make([]*EventProcessor, 0),
 		pos:             atomic.Pointer[model.Pos]{},
+		mapServer:       mapServer,
 	}
 }
 
@@ -136,6 +141,24 @@ func (app *App) Run(ctx context.Context) {
 	}
 
 	go app.cleaner()
+
+	app.logger.Debug("GPSD", "addr", viper.GetString("gpsd"))
+
+	if addr := viper.GetString("gpsd"); addr != "" {
+		c := gpsd.New(addr, app.logger.With("logger", "gpsd"))
+		go c.Listen(ctx, func(lat, lon, alt, speed, track float64) {
+			app.pos.Store(model.NewPosFull(lat, lon, alt, speed, track))
+			app.logger.Info("position from gpsd", "lat", lat, "lon", lon, "alt", alt, "speed", speed, "track", track)
+			app.changeCb.AddMessage(model.FromMsg(cot.LocalCotMessage(app.MakeMe())))
+		})
+	}
+
+	app.mesh = client.NewMeshHandler(&client.MeshHandlerConfig{
+		MessageCb: app.ProcessEvent,
+	})
+	app.mesh.Start()
+
+	go app.myPosSender(ctx)
 
 	for ctx.Err() == nil {
 		conn, err := app.connect()
@@ -168,14 +191,7 @@ func (app *App) Run(ctx context.Context) {
 
 		go app.cl.Start()
 		go app.periodicGetter(ctx1)
-		go app.myPosSender(ctx1, wg)
 
-		if addr := viper.GetString("gpsd"); addr != "" {
-			c := gpsd.New(addr, app.logger.With("logger", "gpsd"))
-			go c.Listen(ctx1, func(lat, lon, alt, speed, track float64) {
-				app.pos.Store(model.NewPosFull(lat, lon, alt, speed, track))
-			})
-		}
 		wg.Wait()
 	}
 }
@@ -198,9 +214,7 @@ func makeUID(callsign string) string {
 	return "ANDROID-" + s[:16]
 }
 
-func (app *App) myPosSender(ctx context.Context, wg *sync.WaitGroup) {
-	wg.Add(1)
-	defer wg.Done()
+func (app *App) myPosSender(ctx context.Context) {
 	app.SendMsg(app.MakeMe())
 
 	ticker := time.NewTicker(selfPosSendPeriod)
@@ -219,9 +233,15 @@ func (app *App) myPosSender(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (app *App) SendMsg(msg *cotproto.TakMessage) {
+	app.logger.Debug("sending...")
+	if app.mesh != nil {
+		if err := app.mesh.SendCot(msg); err != nil {
+			app.logger.Error("mesh send error", "error", err)
+		}
+	}
 	if app.cl != nil {
 		if err := app.cl.SendCot(msg); err != nil {
-			app.logger.Error("error", "error", err)
+			app.logger.Error("client send error", "error", err)
 		}
 	}
 }
@@ -356,23 +376,49 @@ func main() {
 	viper.SetConfigFile(*conf)
 
 	viper.SetDefault("server_address", "204.48.30.216:8087:tcp")
+	viper.BindEnv("server_address")
+
 	viper.SetDefault("web_port", 8080)
+	viper.BindEnv("web_port")
+
 	viper.SetDefault("me.callsign", RandString(10))
+	viper.BindEnv("me.callsign", "CALLSIGN")
+
 	viper.SetDefault("me.lat", 0.0)
+	viper.BindEnv("me.lat", "LAT")
 	viper.SetDefault("me.lon", 0.0)
+	viper.BindEnv("me.lon", "LON")
 	viper.SetDefault("me.zoom", 5)
+	viper.BindEnv("me.zoom", "ZOOM")
 	viper.SetDefault("me.type", "a-f-G-U-C")
+	viper.BindEnv("me.type", "TYPE")
 	viper.SetDefault("me.team", "Blue")
+	viper.BindEnv("me.team", "TEAM")
 	viper.SetDefault("me.role", "HQ")
+	viper.BindEnv("me.role", "ROLE")
 	viper.SetDefault("me.platform", "GoATAK_client")
+	viper.BindEnv("platform", "PLATFORM")
 	viper.SetDefault("me.version", getVersion())
+	viper.BindEnv("me.version", "VERSION")
 	viper.SetDefault("ssl.password", "atakatak")
+	viper.BindEnv("ssl.password", "SSL_PASSWORD")
 	viper.SetDefault("ssl.save_cert", true)
+	viper.BindEnv("ssl.save_cert", "SSL_SAVE_CERT")
 	viper.SetDefault("ssl.strict", false)
+	viper.BindEnv("ssl.strict", "SSL_STRICT")
+	viper.SetDefault("map_server", "127.0.0.1:8000")
+	viper.BindEnv("map_server", "MAP_SERVER")
+
+	viper.BindEnv("gpsd", "GPSD")
+	viper.BindEnv("me.uid", "ME_UID")
+	viper.BindEnv("me.OS", "OS")
+	viper.BindEnv("ssl.enroll_user", "SSL_ENROLL_USER")
+	viper.BindEnv("ssl.enroll_password", "SSL_ENROLL_PASSWORD")
+	viper.BindEnv("ssl.cert", "SSL_CERT")
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		panic(fmt.Errorf("Fatal error config file: %w \n", err))
+		panic(fmt.Errorf("fatal error config file: %w", err))
 	}
 
 	var h slog.Handler
@@ -394,6 +440,7 @@ func main() {
 		viper.GetString("me.callsign"),
 		viper.GetString("server_address"),
 		viper.GetInt("web_port"),
+		viper.GetString("map_server"),
 	)
 
 	app.saveFile = *saveFile

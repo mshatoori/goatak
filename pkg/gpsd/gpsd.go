@@ -132,6 +132,8 @@ func (c *GpsdClient) Listen(ctx context.Context, cb func(lat, lon, alt, speed, t
 			continue
 		}
 
+		c.logger.Info(fmt.Sprintf("got gpsd msg %s %s", msg, data))
+
 		switch msg.Class {
 		case "TPV":
 			var r *TPVMsg

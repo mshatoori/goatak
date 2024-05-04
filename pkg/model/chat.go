@@ -40,9 +40,9 @@ func NewMessages(myUID string) *Messages {
 	msg := new(Messages)
 	msg.uid = myUID
 	msg.Chats = map[string]*Chat{
-		"All Chat Rooms": {
-			From:     "All Chat Rooms",
-			UID:      "All Chat Rooms",
+		"همه": {
+			From:     "همه",
+			UID:      "همه",
 			Messages: nil,
 		},
 	}
