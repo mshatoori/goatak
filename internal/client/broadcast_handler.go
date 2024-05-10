@@ -15,7 +15,7 @@ import (
 	"github.com/kdudkov/goatak/pkg/cotproto"
 )
 
-type MeshHandlerConfig struct {
+type BroadcastHandlerConfig struct {
 	// User         *model.User
 	// Serial       string
 	// UID          string
@@ -27,7 +27,7 @@ type MeshHandlerConfig struct {
 	// Logger       *slog.Logger
 }
 
-type MeshHandler struct {
+type BroadcastHandler struct {
 	cancel   context.CancelFunc
 	conn     *net.UDPConn
 	addr     string
@@ -47,12 +47,12 @@ type MeshHandler struct {
 	logger *slog.Logger
 }
 
-func NewMeshHandler(config *MeshHandlerConfig) *MeshHandler {
-	addr, err := net.ResolveUDPAddr("udp", "239.2.3.1:6969")
+func NewBroadcastHandler(config *BroadcastHandlerConfig) *BroadcastHandler {
+	addr, err := net.ResolveUDPAddr("udp", "192.168.1.255:6970")
 	if err != nil {
 		return nil
 	}
-	m := &MeshHandler{
+	m := &BroadcastHandler{
 		active:   1,
 		logger:   slog.Default(),
 		sendChan: make(chan []byte, 10),
@@ -69,11 +69,11 @@ func NewMeshHandler(config *MeshHandlerConfig) *MeshHandler {
 	return m
 }
 
-func (h *MeshHandler) IsActive() bool {
+func (h *BroadcastHandler) IsActive() bool {
 	return atomic.LoadInt32(&h.active) == 1
 }
 
-func (h *MeshHandler) Start() {
+func (h *BroadcastHandler) Start() {
 	h.logger.Info("starting")
 
 	var ctx context.Context
@@ -95,7 +95,7 @@ func (h *MeshHandler) Start() {
 	// }
 }
 
-func (h *MeshHandler) pinger(ctx context.Context) {
+func (h *BroadcastHandler) pinger(ctx context.Context) {
 	ticker := time.NewTicker(pingTimeout)
 	defer ticker.Stop()
 
@@ -113,16 +113,16 @@ func (h *MeshHandler) pinger(ctx context.Context) {
 	}
 }
 
-func (h *MeshHandler) handleRead(ctx context.Context) {
+func (h *BroadcastHandler) handleRead(ctx context.Context) {
 	h.logger.Debug("Handling read")
 	defer h.stopHandle()
 
-	addr, err := net.ResolveUDPAddr("udp", "239.2.3.1:6969")
+	addr, err := net.ResolveUDPAddr("udp", ":6970")
 	if err != nil {
 		return
 	}
 
-	readConn, err := net.ListenMulticastUDP("udp", nil, addr)
+	readConn, err := net.ListenUDP("udp", addr)
 	if err != nil {
 		return
 	}
@@ -205,11 +205,11 @@ func (h *MeshHandler) handleRead(ctx context.Context) {
 	}
 }
 
-func (h *MeshHandler) processXMLRead(r *cot.TagReader) (*cot.CotMessage, error) {
+func (h *BroadcastHandler) processXMLRead(r *cot.TagReader) (*cot.CotMessage, error) {
 	return nil, nil
 }
 
-func (h *MeshHandler) processProtoRead(r *cot.ProtoReader) (*cot.CotMessage, error) {
+func (h *BroadcastHandler) processProtoRead(r *cot.ProtoReader) (*cot.CotMessage, error) {
 	msg, err := r.ReadProtoBuf()
 	if err != nil {
 		return nil, err
@@ -223,15 +223,15 @@ func (h *MeshHandler) processProtoRead(r *cot.ProtoReader) (*cot.CotMessage, err
 	return &cot.CotMessage{TakMessage: msg, Detail: d}, err
 }
 
-func (h *MeshHandler) SetVersion(n int32) {
+func (h *BroadcastHandler) SetVersion(n int32) {
 	atomic.StoreInt32(&h.ver, n)
 }
 
-func (h *MeshHandler) GetVersion() int32 {
+func (h *BroadcastHandler) GetVersion() int32 {
 	return atomic.LoadInt32(&h.ver)
 }
 
-func (h *MeshHandler) handleWrite() {
+func (h *BroadcastHandler) handleWrite() {
 	for msg := range h.sendChan {
 		h.logger.Debug("handleWrite")
 		if _, err := h.conn.Write(msg); err != nil {
@@ -243,7 +243,7 @@ func (h *MeshHandler) handleWrite() {
 	}
 }
 
-func (h *MeshHandler) stopHandle() {
+func (h *BroadcastHandler) stopHandle() {
 	if atomic.CompareAndSwapInt32(&h.active, 1, 0) {
 		h.logger.Info("stopping")
 		h.cancel()
@@ -262,7 +262,7 @@ func (h *MeshHandler) stopHandle() {
 	}
 }
 
-// func (h *MeshHandler) sendEvent(evt *cot.Event) error {
+// func (h *BroadcastHandler) sendEvent(evt *cot.Event) error {
 // 	if h.GetVersion() != 0 {
 // 		return fmt.Errorf("bad client version")
 // 	}
@@ -281,7 +281,7 @@ func (h *MeshHandler) stopHandle() {
 // 	return fmt.Errorf("client is off")
 // }
 
-func (h *MeshHandler) SendMsg(msg *cot.CotMessage) error {
+func (h *BroadcastHandler) SendMsg(msg *cot.CotMessage) error {
 	// if msg.IsLocal() || h.CanSeeScope(msg.Scope) {
 	// 	return h.SendCot(msg.GetTakMessage())
 	// }
@@ -293,7 +293,7 @@ func (h *MeshHandler) SendMsg(msg *cot.CotMessage) error {
 	return nil
 }
 
-func (h *MeshHandler) SendCot(msg *cotproto.TakMessage) error {
+func (h *BroadcastHandler) SendCot(msg *cotproto.TakMessage) error {
 	h.logger.Debug("SendCot")
 	switch h.GetVersion() {
 	case 0:
@@ -321,8 +321,8 @@ func (h *MeshHandler) SendCot(msg *cotproto.TakMessage) error {
 	return fmt.Errorf("client is off")
 }
 
-func (h *MeshHandler) tryAddPacket(msg []byte) bool {
-	h.logger.Debug("MeshHandler tryAddPacket", "active", h.IsActive())
+func (h *BroadcastHandler) tryAddPacket(msg []byte) bool {
+	h.logger.Debug("BroadcastHandler tryAddPacket", "active", h.IsActive())
 	if !h.IsActive() {
 		return false
 	}

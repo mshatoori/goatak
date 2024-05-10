@@ -52,6 +52,7 @@ type App struct {
 	cas             *x509.CertPool
 	cl              *client.ConnClientHandler
 	mesh            *client.MeshHandler
+	broadcast       *client.BroadcastHandler
 	changeCb        *callbacks.Callback[*model.Item]
 	moveCb          *callbacks.Callback[*model.Pos]
 	deleteCb        *callbacks.Callback[string]
@@ -158,6 +159,11 @@ func (app *App) Run(ctx context.Context) {
 	})
 	app.mesh.Start()
 
+	app.broadcast = client.NewBroadcastHandler(&client.BroadcastHandlerConfig{
+		MessageCb: app.ProcessEvent,
+	})
+	app.broadcast.Start()
+
 	go app.myPosSender(ctx)
 
 	for ctx.Err() == nil {
@@ -237,6 +243,11 @@ func (app *App) SendMsg(msg *cotproto.TakMessage) {
 	if app.mesh != nil {
 		if err := app.mesh.SendCot(msg); err != nil {
 			app.logger.Error("mesh send error", "error", err)
+		}
+	}
+	if app.broadcast != nil {
+		if err := app.broadcast.SendCot(msg); err != nil {
+			app.logger.Error("broadcast send error", "error", err)
 		}
 	}
 	if app.cl != nil {
