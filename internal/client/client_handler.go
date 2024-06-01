@@ -13,11 +13,10 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/spf13/viper"
-
 	"github.com/kdudkov/goatak/internal/model"
 	"github.com/kdudkov/goatak/pkg/cot"
 	"github.com/kdudkov/goatak/pkg/cotproto"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 const (
@@ -33,8 +32,8 @@ type HandlerConfig struct {
 	MessageCb    func(msg *cot.CotMessage)
 	RemoveCb     func(ch ClientHandler)
 	NewContactCb func(uid, callsign string)
-	RoutePings   bool
 	Logger       *slog.Logger
+	DropMetric   *prometheus.CounterVec
 }
 
 type ClientHandler interface {
@@ -42,10 +41,12 @@ type ClientHandler interface {
 	HasUID(uid string) bool
 	GetUids() map[string]string
 	GetUser() *model.User
+	GetSerial() string
 	GetVersion() int32
 	SendMsg(msg *cot.CotMessage) error
 	GetLastSeen() *time.Time
 	CanSeeScope(scope string) bool
+	Stop()
 }
 
 type ConnClientHandler struct {
@@ -55,7 +56,6 @@ type ConnClientHandler struct {
 	localUID     string
 	ver          int32
 	isClient     bool
-	routePings   bool
 	uids         sync.Map
 	lastActivity atomic.Pointer[time.Time]
 	closeTimer   *time.Timer
@@ -67,6 +67,7 @@ type ConnClientHandler struct {
 	removeCb     func(ch ClientHandler)
 	newContactCb func(uid, callsign string)
 	logger       *slog.Logger
+	dropMetric   *prometheus.CounterVec
 }
 
 func NewConnClientHandler(name string, conn net.Conn, config *HandlerConfig) *ConnClientHandler {
@@ -74,7 +75,7 @@ func NewConnClientHandler(name string, conn net.Conn, config *HandlerConfig) *Co
 		addr:         name,
 		conn:         conn,
 		ver:          0,
-		sendChan:     make(chan []byte, 10),
+		sendChan:     make(chan []byte, 50),
 		active:       1,
 		uids:         sync.Map{},
 		lastActivity: atomic.Pointer[time.Time]{},
@@ -85,10 +86,10 @@ func NewConnClientHandler(name string, conn net.Conn, config *HandlerConfig) *Co
 		c.serial = config.Serial
 		c.localUID = config.UID
 		c.isClient = config.IsClient
-		c.routePings = config.RoutePings
 		c.messageCb = config.MessageCb
 		c.removeCb = config.RemoveCb
 		c.newContactCb = config.NewContactCb
+		c.dropMetric = config.DropMetric
 
 		params := []any{"client", name}
 
@@ -122,6 +123,10 @@ func (h *ConnClientHandler) CanSeeScope(scope string) bool {
 
 func (h *ConnClientHandler) GetUser() *model.User {
 	return h.user
+}
+
+func (h *ConnClientHandler) GetSerial() string {
+	return h.serial
 }
 
 func (h *ConnClientHandler) GetUids() map[string]string {
@@ -191,7 +196,7 @@ func (h *ConnClientHandler) pinger(ctx context.Context) {
 }
 
 func (h *ConnClientHandler) handleRead(ctx context.Context) {
-	defer h.stopHandle()
+	defer h.Stop()
 
 	er := cot.NewTagReader(h.conn)
 	pr := cot.NewProtoReader(h.conn)
@@ -254,9 +259,7 @@ func (h *ConnClientHandler) handleRead(ctx context.Context) {
 				h.logger.Error("SendMsg error", "error", err)
 			}
 
-			if !h.routePings {
-				continue
-			}
+			continue
 		}
 
 		// pong
@@ -395,14 +398,14 @@ func (h *ConnClientHandler) handleWrite() {
 	for msg := range h.sendChan {
 		if _, err := h.conn.Write(msg); err != nil {
 			h.logger.Debug(fmt.Sprintf("client %s write error %v", h.addr, err))
-			h.stopHandle()
+			h.Stop()
 
 			break
 		}
 	}
 }
 
-func (h *ConnClientHandler) stopHandle() {
+func (h *ConnClientHandler) Stop() {
 	if atomic.CompareAndSwapInt32(&h.active, 1, 0) {
 		h.logger.Info("stopping")
 		h.cancel()
@@ -473,10 +476,6 @@ func (h *ConnClientHandler) SendMsg(msg *cot.CotMessage) error {
 		return h.SendCot(msg.GetTakMessage())
 	}
 
-	if viper.GetBool("interscope_chat") && (msg.IsChat() || msg.IsChatReceipt()) {
-		return h.SendCot(cot.CloneMessageNoCoords(msg.GetTakMessage()))
-	}
-
 	return nil
 }
 
@@ -512,6 +511,9 @@ func (h *ConnClientHandler) tryAddPacket(msg []byte) bool {
 	select {
 	case h.sendChan <- msg:
 	default:
+		if h.dropMetric != nil {
+			h.dropMetric.WithLabelValues("reason", "client_handler").Inc()
+		}
 	}
 
 	return true

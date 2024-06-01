@@ -21,10 +21,13 @@ import (
 	"software.sslmate.com/src/go-pkcs12"
 
 	"github.com/kdudkov/goatak/pkg/tlsutil"
+	"github.com/kdudkov/goutils/request"
 )
 
-const minCertAge = time.Hour * 24
-const keySize = 4096
+const (
+	minCertAge = time.Hour * 24
+	keySize    = 4096
+)
 
 type Enroller struct {
 	logger *slog.Logger
@@ -65,8 +68,8 @@ func (e *Enroller) getURL(path string) string {
 	return fmt.Sprintf("https://%s:%d%s", e.host, e.port, path)
 }
 
-func (e *Enroller) request(url string) *Request {
-	return NewRequest(e.client, e.logger).URL(e.getURL(url)).Auth(e.user, e.passwd)
+func (e *Enroller) request(url string) *request.Request {
+	return request.New(e.client, e.logger).URL(e.getURL(url)).Auth(e.user, e.passwd)
 }
 
 func (e *Enroller) getConfig(ctx context.Context) (*CertificateConfig, error) {

@@ -12,7 +12,7 @@ import (
 
 	"github.com/aofei/air"
 
-	imodel "github.com/kdudkov/goatak/internal/model"
+	"github.com/kdudkov/goatak/internal/model"
 	"github.com/kdudkov/goatak/pkg/cot"
 	"github.com/kdudkov/goatak/pkg/cotproto"
 )
@@ -21,7 +21,7 @@ type MessageCb func(msg *cot.CotMessage)
 
 type WsClientHandler struct {
 	name      string
-	user      *imodel.User
+	user      *model.User
 	ws        *air.WebSocket
 	ch        chan []byte
 	uids      sync.Map
@@ -34,8 +34,12 @@ func (w *WsClientHandler) GetName() string {
 	return w.name
 }
 
-func (w *WsClientHandler) GetUser() *imodel.User {
+func (w *WsClientHandler) GetUser() *model.User {
 	return w.user
+}
+
+func (w *WsClientHandler) GetSerial() string {
+	return ""
 }
 
 func (w *WsClientHandler) CanSeeScope(scope string) bool {
@@ -68,7 +72,7 @@ func (w *WsClientHandler) GetLastSeen() *time.Time {
 	return nil
 }
 
-func New(name string, user *imodel.User, ws *air.WebSocket, mc MessageCb) *WsClientHandler {
+func New(name string, user *model.User, ws *air.WebSocket, mc MessageCb) *WsClientHandler {
 	return &WsClientHandler{
 		name:      name,
 		user:      user,
@@ -118,14 +122,14 @@ func (w *WsClientHandler) writer() {
 	for b := range w.ch {
 		if err := w.ws.WriteBinary(b); err != nil {
 			w.logger.Error("send error", "error", err.Error())
-			w.stop()
+			w.Stop()
 
 			break
 		}
 	}
 }
 
-func (w *WsClientHandler) stop() {
+func (w *WsClientHandler) Stop() {
 	if atomic.CompareAndSwapInt32(&w.active, 1, 0) {
 		close(w.ch)
 		_ = w.ws.Close()
@@ -137,7 +141,7 @@ func (w *WsClientHandler) Listen() {
 	go w.writer()
 	w.ws.Listen()
 	w.logger.Info("stop listening")
-	w.stop()
+	w.Stop()
 }
 
 func (w *WsClientHandler) binaryReader(b []byte) error {

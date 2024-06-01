@@ -13,10 +13,9 @@ import (
 
 	"github.com/aofei/air"
 	"github.com/google/uuid"
-	"github.com/spf13/viper"
-
 	"github.com/kdudkov/goatak/cmd/goatak_server/mp"
 	"github.com/kdudkov/goatak/internal/pm"
+	"github.com/kdudkov/goatak/pkg/cot"
 
 	"github.com/kdudkov/goatak/pkg/cotproto"
 	"github.com/kdudkov/goatak/pkg/model"
@@ -110,7 +109,7 @@ func getEndpointsHandler(app *App) air.Handler {
 		data := make([]map[string]any, 0)
 
 		app.items.ForEach(func(item *model.Item) bool {
-			if !viper.GetBool("interscope_chat") && !user.CanSeeScope(item.GetScope()) {
+			if !user.CanSeeScope(item.GetScope()) {
 				return true
 			}
 
@@ -143,7 +142,7 @@ func getContactsHandler(app *App) air.Handler {
 		result := make([]*model.Contact, 0)
 
 		app.items.ForEach(func(item *model.Item) bool {
-			if !viper.GetBool("interscope_chat") && !user.CanSeeScope(item.GetScope()) {
+			if !user.CanSeeScope(item.GetScope()) {
 				return true
 			}
 
@@ -592,12 +591,18 @@ func getVideoPostHandler(app *App) air.Handler {
 
 func getXmlHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
-		var evt *cotproto.CotEvent
+		uid := getStringParam(req, "uid")
 
-		if item := app.items.Get(getStringParam(req, "uid")); item != nil {
+		if uid == "" {
+			res.Status = http.StatusBadRequest
+			return res.WriteString("error")
+		}
+
+		var evt *cotproto.CotEvent
+		if item := app.items.Get(uid); item != nil {
 			evt = item.GetMsg().GetTakMessage().GetCotEvent()
 		} else {
-			di := app.missions.GetPoint(getStringParam(req, "uid"))
+			di := app.missions.GetPoint(uid)
 			if di != nil {
 				evt = di.GetEvent()
 			}
@@ -609,7 +614,7 @@ func getXmlHandler(app *App) air.Handler {
 			return nil
 		}
 
-		return res.WriteXML(evt)
+		return res.WriteXML(cot.CotToEvent(evt))
 	}
 }
 

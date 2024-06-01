@@ -3,7 +3,7 @@
         <div class="container-fluid">
             <a class="navbar-brand" href="#">سامانه آگاهی وضعیتی تاکتیکی<span v-if="config">{{ config.version }}</span></a>
             <span class="badge rounded-pill bg-primary"
-                  v-bind:class="{ 'bg-success': connected(), 'bg-secondary': !connected() }">.</span>
+                  :class="{ 'bg-success': connected(), 'bg-secondary': !connected() }">.</span>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav me-auto mb-2 mb-md-0">
                     <li class="nav-item dropdown">
@@ -14,7 +14,7 @@
                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
                             <li v-for="u in byCategory('contact')">
                                 <a class="dropdown-item" href="#" v-on:click="setCurrentUnitUid(u.uid, true)">
-                                    <img v-bind:src="getImg(u)"/>
+                                    <img :src="getImg(u)"/>
                                     <span v-if="u.lat === 0 && u.lon === 0">* </span>{{ u.callsign }}<span
                                         v-if="u.status"> ({{ u.status }})</span>
                                 </a>
@@ -54,8 +54,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink4">
                             <li v-for="m in Object.values(messages)">
-                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#messages"
-                                   v-on:click="setChat(m.uid, m.from)">
+                                <a class="dropdown-item" href="#" v-on:click="openChat(m.uid, m.from)">
                                     {{ m.from }} <span class="badge rounded-pill bg-success">{{ msgNum1(m.uid) }}</span>
                                 </a>
                             </li>
@@ -140,7 +139,7 @@
                 <div class="card" v-if="current_unit">
                     <div class="card-header">
                             <span class="pull-left fw-bold" v-on:click="mapToUnit(current_unit)">
-                                <img v-bind:src="milImg(current_unit)"/> {{ getUnitName(current_unit) }} <span
+                                <img :src="milImg(current_unit)"/> {{ getUnitName(current_unit) }} <span
                                     v-if="current_unit.status"> ({{ current_unit.status }})</span>
                                 <img height="24" src="/static/icons/coord_unlock.png"
                                      v-if="current_unit.category !== 'point' && locked_unit_uid != current_unit.uid"
@@ -218,19 +217,23 @@
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">پیام‌های چت {{ chatroom }}</h5>
+                    <h5 class="modal-title" id="staticBackdropLabel">پیام‌های چت {{ chatroom }}
+                        <span v-if="getStatus(chat_uid)" class="badge"
+                              :class="getStatus(chat_uid) == 'Online' ?'text-bg-success':'text-bg-secondary'">
+                            {{ getStatus(chat_uid) }}</span>
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div v-for="m in getMessages()" class="alert alert-secondary">
                         <span class="badge text-bg-secondary">{{ dt(m.time) }}</span>
                         <span class="badge"
-                              :class="{'text-bg-info': m.from_uid != config.uid, 'text-bg-success': m.from_uid == config.uid}">{{ m.from || m.from_uid }}</span>
+                              :class="m.from_uid == config.uid ? 'text-bg-success':'text-bg-info'">{{ m.from || m.from_uid }}</span>
                         {{ m.text }}
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <form>
+                    <form @submit.prevent="sendMessage">
                         <input type="text" class="form-control" id="message-text" v-model="chat_msg"/>
                     </form>
                     <button type="button" class="btn btn-primary" v-on:click="sendMessage">ارسال پیام</button>

@@ -9,6 +9,9 @@ import (
 	"runtime/pprof"
 	"sort"
 
+	"github.com/google/uuid"
+	"github.com/kdudkov/goatak/internal/wshandler"
+
 	"github.com/aofei/air"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
@@ -26,6 +29,7 @@ func getAdminAPI(app *App, addr string, renderer *staticfiles.Renderer, webtakRo
 
 	staticfiles.EmbedFiles(adminAPI, "/static")
 	adminAPI.GET("/", getIndexHandler(app, renderer))
+	adminAPI.GET("/points", getPointsHandler(app, renderer))
 	adminAPI.GET("/map", getMapHandler(app, renderer))
 	adminAPI.GET("/missions", getMissionsPageHandler(app, renderer))
 	adminAPI.GET("/packages", getMPPageHandler(app, renderer))
@@ -72,6 +76,26 @@ func getIndexHandler(app *App, r *staticfiles.Renderer) air.Handler {
 		}
 
 		s, err := r.Render(data, "index.html", "menu.html", "header.html")
+		if err != nil {
+			app.logger.Error("error", "error", err)
+			_ = res.WriteString(err.Error())
+
+			return err
+		}
+
+		return res.WriteHTML(s)
+	}
+}
+
+func getPointsHandler(app *App, r *staticfiles.Renderer) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		data := map[string]any{
+			"theme": "auto",
+			"page":  " points",
+			"js":    []string{"util.js", "points.js"},
+		}
+
+		s, err := r.Render(data, "points.html", "menu.html", "header.html")
 		if err != nil {
 			app.logger.Error("error", "error", err)
 			_ = res.WriteString(err.Error())
@@ -317,6 +341,27 @@ func getAllMissionPackagesHandler(app *App) air.Handler {
 	}
 }
 
+func getWsHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		ws, err := res.WebSocket()
+		if err != nil {
+			return err
+		}
+
+		name := uuid.NewString()
+
+		h := wshandler.NewHandler(name, ws)
+
+		app.logger.Debug("ws listener connected")
+		app.changeCb.SubscribeNamed(name, h.SendItem)
+		app.deleteCb.SubscribeNamed(name, h.DeleteItem)
+		h.Listen()
+		app.logger.Debug("ws listener disconnected")
+
+		return nil
+	}
+}
+
 // handler for WebTAK client - sends/receives protobuf COTs
 func getTakWsHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
@@ -333,7 +378,6 @@ func getTakWsHandler(app *App) air.Handler {
 
 		app.AddClientHandler(w)
 		w.Listen()
-		app.RemoveHandlerCb(w)
 		app.logger.Info("ws disconnected")
 
 		return nil
