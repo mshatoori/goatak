@@ -54,7 +54,6 @@ type App struct {
 	mesh            *client.MeshHandler
 	broadcast       *client.BroadcastHandler
 	changeCb        *callbacks.Callback[*model.Item]
-	moveCb          *callbacks.Callback[*model.Pos]
 	deleteCb        *callbacks.Callback[string]
 	eventProcessors []*EventProcessor
 	remoteAPI       *RemoteAPI
@@ -109,7 +108,6 @@ func NewApp(uid string, callsign string, connectStr string, webPort int, mapServ
 		items:           repository.NewItemsMemoryRepo(),
 		dialTimeout:     time.Second * 5,
 		changeCb:        callbacks.New[*model.Item](),
-		moveCb:          callbacks.New[*model.Pos](),
 		deleteCb:        callbacks.New[string](),
 		messages:        model.NewMessages(uid),
 		eventProcessors: make([]*EventProcessor, 0),
