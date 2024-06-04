@@ -314,7 +314,7 @@ func getLayers(mapServer string) []map[string]any {
 			{
 				"name":    "Local Server",
 				"url":     fmt.Sprintf("http://%s/{z}/{x}/{y}.png", mapServer),
-				"maxZoom": 11,
+				"maxZoom": 13,
 			},
 		}, layers...)
 	}
