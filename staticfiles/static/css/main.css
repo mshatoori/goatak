@@ -13,3 +13,11 @@ div.info {
 #app {
     direction: rtl;
 }
+
+.leaflet-marker-icon.my-marker-info.leaflet-zoom-animated.leaflet-interactive {
+    color: red;
+    direction: ltr;
+    font-size: 10px;
+    margin-left: 16px;
+    margin-top: 10px;
+}

@@ -257,7 +257,7 @@ let app = new Vue({
             this.ts += 1;
         },
 
-        processUnit: function (u) {
+        processUnit: function (u, forceUpdate) {
             if (!u) return;
             let unit = this.units.get(u.uid);
             let updateIcon = false;
@@ -267,12 +267,12 @@ let app = new Vue({
                 unit = u;
                 updateIcon = true;
             } else {
-                updateIcon = needIconUpdate(unit, u);
+                updateIcon = forceUpdate || needIconUpdate(unit, u);
                 for (const k of Object.keys(u)) {
                     unit[k] = u[k];
                 }
             }
-            this.updateMarker(unit, false, updateIcon);
+            this.updateUnitMarker(unit, false, updateIcon);
 
             if (this.locked_unit_uid === unit.uid) {
                 this.map.setView([unit.lat, unit.lon]);
@@ -305,7 +305,7 @@ let app = new Vue({
             }
         },
 
-        updateMarker: function (unit, draggable, updateIcon) {
+        updateUnitMarker: function (unit, draggable, updateIcon) {
             if (unit.lon === 0 && unit.lat === 0) {
                 if (unit.marker) {
                     this.map.removeLayer(unit.marker);
@@ -332,6 +332,20 @@ let app = new Vue({
                 unit.marker.setIcon(getIcon(unit, true));
                 unit.marker.addTo(this.map);
             }
+
+            var markerInfo = L.divIcon(
+                {className: 'my-marker-info',
+                 html:'<div>'+ latLongToIso6709(unit.lat, unit.lon) +'</div>',
+                 iconSize: null
+                });
+
+            if (!unit.infoMarker) {
+                unit.infoMarker = L.marker([unit.lat, unit.lon], {icon: markerInfo});
+                unit.infoMarker.addTo(this.map);
+            }
+
+            unit.infoMarker.setLatLng([unit.lat, unit.lon]);
+            unit.infoMarker.setIcon(markerInfo);
 
             unit.marker.setLatLng([unit.lat, unit.lon]);
             unit.marker.bindTooltip(popup(unit));
@@ -481,7 +495,7 @@ let app = new Vue({
                     return response.json()
                 })
                 .then(function (data) {
-                    vm.processUnit(data);
+                    vm.processUnit(data, true);
                 });
         },
 
@@ -786,7 +800,7 @@ let app = new Vue({
             let res = {};
 
             for (const k in u) {
-                if (k !== 'marker') {
+                if (k !== 'marker' && k !== 'infoMarker') {
                     res[k] = u[k];
                 }
             }
@@ -851,11 +865,11 @@ function latLongToIso6709(lat, lon) {
 
     const degreesLat = Math.floor(lat);
     const minutesLat = Math.floor((lat - degreesLat) * 60);
-    const decimalMinutesLat = (((lat - degreesLat) * 60 - minutesLat) * 60).toFixed(4);
+    const decimalMinutesLat = (((lat - degreesLat) * 60 - minutesLat) * 60).toFixed(2);
 
     const degreesLon = Math.floor(lon);
     const minutesLon = Math.floor((lon - degreesLon) * 60);
-    const decimalMinutesLon = (((lon - degreesLon) * 60 - minutesLon) * 60).toFixed(4);
+    const decimalMinutesLon = (((lon - degreesLon) * 60 - minutesLon) * 60).toFixed(2);
 
     const latHemisphere = isLatNegative ? "S" : "N";
     const lonHemisphere = isLonNegative ? "W" : "E";
