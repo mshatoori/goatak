@@ -838,6 +838,32 @@ function popup(item) {
     if (item.sidc.charAt(2) === 'A') {
         v += "hae: " + item.hae.toFixed(0) + " m<br/>";
     }
+    v += '<span dir="ltr">' + latLongToIso6709(item.lat, item.lon) + '</span><br/>';
     v += item.text.replaceAll('\n', '<br/>').replaceAll('; ', '<br/>');
     return v;
 }
+
+function latLongToIso6709(lat, lon) {
+    const isLatNegative = lat < 0;
+    const isLonNegative = lon < 0;
+    lat = Math.abs(lat);
+    lon = Math.abs(lon);
+
+    const degreesLat = Math.floor(lat);
+    const minutesLat = Math.floor((lat - degreesLat) * 60);
+    const decimalMinutesLat = (((lat - degreesLat) * 60 - minutesLat) * 60).toFixed(4);
+
+    const degreesLon = Math.floor(lon);
+    const minutesLon = Math.floor((lon - degreesLon) * 60);
+    const decimalMinutesLon = (((lon - degreesLon) * 60 - minutesLon) * 60).toFixed(4);
+
+    const latHemisphere = isLatNegative ? "S" : "N";
+    const lonHemisphere = isLonNegative ? "W" : "E";
+
+    const isoLat = degreesLat + '°' + minutesLat + '\'' + decimalMinutesLat + '\"' + latHemisphere;
+    const isoLon = degreesLon + '°' + minutesLon + '\'' + decimalMinutesLon + '\"' + lonHemisphere;
+
+
+
+    return isoLat + ' ' + isoLon;
+  }
