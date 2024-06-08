@@ -184,7 +184,7 @@ G-E-X-M-C;زمین/تجهیز/Claymore;CLAYMORE
 G-E-X-M-L;زمین/تجهیز/Less Than Lethal;LESS THAN LETHAL
 G-E-X-N;زمین/تجهیز/Nbc Equipment;NBC EQUIPMENT
 G-I;زمین/سازه;Building
-G-I-B;زمین/سازه/Base/نظامیitary;MILITARY BASE/FACILITY
+G-I-B;زمین/سازه/Base/Militart;MILITARY BASE/FACILITY
 G-I-B-A;زمین/سازه/Base/Airbase;AIRPORT/AIRBASE
 G-I-B-N;زمین/سازه/Base/Naval Base;SEAPORT/NAVAL BASE
 G-I-c;زمین/سازه/غیرنظامی;Civilian
@@ -277,7 +277,7 @@ G-I-i-o-tmp-f;زمین/سازه/IM Facilities/Other/Temp/Fire;Fire
 G-I-i-o-tmp-h;زمین/سازه/IM Facilities/Other/Temp/Medical;Medical
 G-I-i-o-tmp-l;زمین/سازه/IM Facilities/Other/Temp/Law Enforcement;Law Enforcement
 G-I-i-p;زمین/سازه/IM Facilities/Public Works;Public Works
-G-I-M;زمین/سازه/نظامی/نظامیitary Materiel Facility;MILITARY MATERIEL FACILITY
+G-I-M;زمین/سازه/نظامی/Militart Materiel Facility;MILITARY MATERIEL FACILITY
 G-I-M-A;زمین/سازه/نظامی/Aircraft Production;AIRCRAFT PRODUCTION/ASSEMBLY
 G-I-M-C;زمین/سازه/نظامی/NBC Warfare Production;CHEMICAL/BIOLOGICAL WARFARE PRODUCTION
 G-I-M-E;زمین/سازه/نظامی/Ammunition Production;AMMUNITION AND EXPLOSIVES PRODUCTION
@@ -295,7 +295,7 @@ G-I-M-N-B-m;زمین/سازه/نظامی/Bridge/Med;Bridge (Med)
 G-I-M-N-B-s;زمین/سازه/نظامی/Bridge/Small;Bridge (Small)
 G-I-M-N-c;زمین/سازه/نظامی/Canal;Canal
 G-I-M-S;زمین/سازه/نظامی/Ship Construction;SHIP CONSTRUCTION
-G-I-M-V;زمین/سازه/نظامی/نظامیitary Vehicle Production;MILITARY VEHICLE PRODUCTION
+G-I-M-V;زمین/سازه/نظامی/Militart Vehicle Production;MILITARY VEHICLE PRODUCTION
 G-I-P;زمین/سازه/Processing Facility;PROCESSING FACILITY
 G-I-P-D;زمین/سازه/Decon;DECON
 G-I-R;زمین/سازه/Raw Material Production/Storage;RAW MATERIAL PRODUCTION/STORAGE
@@ -682,9 +682,9 @@ G-U-U-L;زمین/LAW ENFORCEMENT UNIT;LAW ENFORCEMENT UNIT
 G-U-U-L-C;زمین/غیرنظامی LAW ENFORCEMENT;CIVILIAN LAW ENFORCEMENT
 G-U-U-L-D;زمین/CENTRAL INTELLIGENCE DIVISION (CID);CENTRAL INTELLIGENCE DIVISION (CID)
 G-U-U-L-F;زمین/SECURITY POLICE (AIR);SECURITY POLICE (AIR)
-G-U-U-L-M;زمین/نظامیITARY POLICE;MILITARY POLICE
+G-U-U-L-M;زمین/Militart POLICE;MILITARY POLICE
 G-U-U-L-S;زمین/SHORE PATROL;SHORE PATROL
-G-U-U-M;زمین/نظامیITARY INTELLIGENCE;MILITARY INTELLIGENCE
+G-U-U-M;زمین/Militart INTELLIGENCE;MILITARY INTELLIGENCE
 G-U-U-M-A;زمین/AERIAL EXPLOITATION;AERIAL EXPLOITATION
 G-U-U-M-C;زمین/COUNTER INTELLIGENCE;COUNTER INTELLIGENCE
 G-U-U-M-J;زمین/JOINT INTELLIGENCE CENTER;JOINT INTELLIGENCE CENTER
