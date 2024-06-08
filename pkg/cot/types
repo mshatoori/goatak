@@ -184,7 +184,7 @@ G-E-X-M-C;زمین/تجهیز/Claymore;CLAYMORE
 G-E-X-M-L;زمین/تجهیز/Less Than Lethal;LESS THAN LETHAL
 G-E-X-N;زمین/تجهیز/Nbc Equipment;NBC EQUIPMENT
 G-I;زمین/سازه;Building
-G-I-B;زمین/سازه/Base/Militart;MILITARY BASE/FACILITY
+G-I-B;زمین/سازه/Base/Military;MILITARY BASE/FACILITY
 G-I-B-A;زمین/سازه/Base/Airbase;AIRPORT/AIRBASE
 G-I-B-N;زمین/سازه/Base/Naval Base;SEAPORT/NAVAL BASE
 G-I-c;زمین/سازه/غیرنظامی;Civilian
@@ -277,7 +277,7 @@ G-I-i-o-tmp-f;زمین/سازه/IM Facilities/Other/Temp/Fire;Fire
 G-I-i-o-tmp-h;زمین/سازه/IM Facilities/Other/Temp/Medical;Medical
 G-I-i-o-tmp-l;زمین/سازه/IM Facilities/Other/Temp/Law Enforcement;Law Enforcement
 G-I-i-p;زمین/سازه/IM Facilities/Public Works;Public Works
-G-I-M;زمین/سازه/نظامی/Militart Materiel Facility;MILITARY MATERIEL FACILITY
+G-I-M;زمین/سازه/نظامی/Military Materiel Facility;MILITARY MATERIEL FACILITY
 G-I-M-A;زمین/سازه/نظامی/Aircraft Production;AIRCRAFT PRODUCTION/ASSEMBLY
 G-I-M-C;زمین/سازه/نظامی/NBC Warfare Production;CHEMICAL/BIOLOGICAL WARFARE PRODUCTION
 G-I-M-E;زمین/سازه/نظامی/Ammunition Production;AMMUNITION AND EXPLOSIVES PRODUCTION
@@ -295,7 +295,7 @@ G-I-M-N-B-m;زمین/سازه/نظامی/Bridge/Med;Bridge (Med)
 G-I-M-N-B-s;زمین/سازه/نظامی/Bridge/Small;Bridge (Small)
 G-I-M-N-c;زمین/سازه/نظامی/Canal;Canal
 G-I-M-S;زمین/سازه/نظامی/Ship Construction;SHIP CONSTRUCTION
-G-I-M-V;زمین/سازه/نظامی/Militart Vehicle Production;MILITARY VEHICLE PRODUCTION
+G-I-M-V;زمین/سازه/نظامی/Military Vehicle Production;MILITARY VEHICLE PRODUCTION
 G-I-P;زمین/سازه/Processing Facility;PROCESSING FACILITY
 G-I-P-D;زمین/سازه/Decon;DECON
 G-I-R;زمین/سازه/Raw Material Production/Storage;RAW MATERIAL PRODUCTION/STORAGE
@@ -682,9 +682,9 @@ G-U-U-L;زمین/LAW ENFORCEMENT UNIT;LAW ENFORCEMENT UNIT
 G-U-U-L-C;زمین/غیرنظامی LAW ENFORCEMENT;CIVILIAN LAW ENFORCEMENT
 G-U-U-L-D;زمین/CENTRAL INTELLIGENCE DIVISION (CID);CENTRAL INTELLIGENCE DIVISION (CID)
 G-U-U-L-F;زمین/SECURITY POLICE (AIR);SECURITY POLICE (AIR)
-G-U-U-L-M;زمین/Militart POLICE;MILITARY POLICE
+G-U-U-L-M;زمین/Military POLICE;MILITARY POLICE
 G-U-U-L-S;زمین/SHORE PATROL;SHORE PATROL
-G-U-U-M;زمین/Militart INTELLIGENCE;MILITARY INTELLIGENCE
+G-U-U-M;زمین/Military INTELLIGENCE;MILITARY INTELLIGENCE
 G-U-U-M-A;زمین/AERIAL EXPLOITATION;AERIAL EXPLOITATION
 G-U-U-M-C;زمین/COUNTER INTELLIGENCE;COUNTER INTELLIGENCE
 G-U-U-M-J;زمین/JOINT INTELLIGENCE CENTER;JOINT INTELLIGENCE CENTER
@@ -853,28 +853,28 @@ G-U-i-s-uis;زمین/USAR Incident Support Team;USAR Incident Support Team
 G-U-i-s-utf;زمین/USAR Task Force;USAR Task Force
 G-U-i-s-wi;زمین/Wilderness SAR Team;Wilderness SAR Team
 G-U-i-o;زمین/IM Resources/Other;Other
-S;سطح/سطج دریا;SEA SURFACE TRACK
-S-C;سطح/رزم‌ناو;COMBATANT
-S-C-A;سطح/کشتی تهاجم آبی‌خاکی;AMPHIBIOUS WARFARE SHIP
-S-C-A-L-A;سطح/کشتی تهاجمی;ASSAULT VESSEL
-S-C-A-L-C;سطح/ناوچه آبی‌خاکی;LANDING CRAFT
-S-C-A-L-S;سطح/کشتی آبی‌خاکی;LANDING SHIP
-S-C-H;سطح/هواناو;HOVERCRAFT
-S-C-L;سطح/خط;LINE
-S-C-L-B-B;سطح/نبردناو;BATTLESHIP
-S-C-L-C-C;سطح/رزم‌ناو;CRUISER
-S-C-L-C-V;سطح/ناو هواپیمابر;CARRIER
-S-C-L-D-D;سطح/ناوشکن;DESTROYER
-S-C-L-F-F;سطح/ناوچه;FRIGATE/CORVETTE
-S-C-M;سطح/شناور مین‌یاب;MINE WARFARE VESSEL
-S-C-M-M-A;سطح/پشتیبانی جنگ مین;MCM SUPPORT
-S-C-M-M-D;سطح/پهپاد جنگ مین;MCM DRONE
-S-C-M-M-H;سطح/مین‌یاب;MINEHUNTER
-S-C-M-M-L;سطح/مین‌گذار;MINELAYER
-S-C-M-M-S;سطح/مین‌روب;MINESWEEPER
-S-C-P;سطح/گشت;PATROL
-S-C-P-S-B;سطح/جنگ ضد زیردریایی;ANTISUBMARINE WARFARE
-S-C-P-S-U;سطح/جنگ ضد سطحی;ANTISURFACE WARFARE
+S;سطج دریا;SEA SURFACE TRACK
+S-C;سطح/رزمی;COMBATANT
+S-C-A;سطح/رزمی/تهاجم آبی‌خاکی;AMPHIBIOUS WARFARE SHIP
+S-C-A-L-A;سطح/رزمی/کشتی تهاجمی;ASSAULT VESSEL
+S-C-A-L-C;سطح/رزمی/ناوچه آبی‌خاکی;LANDING CRAFT
+S-C-A-L-S;سطح/رزمی/کشتی آبی‌خاکی;LANDING SHIP
+S-C-H;سطح/رزمی/هواناو;HOVERCRAFT
+S-C-L;سطح/رزمی/کشتی جنگی;LINE
+S-C-L-B-B;سطح/رزمی/کشتی جنگی/نبردناو;BATTLESHIP
+S-C-L-C-C;سطح/رزمی/کشتی جنگی/ناو;CRUISER
+S-C-L-C-V;سطح/رزمی/کشتی جنگی/ناو هواپیمابر;CARRIER
+S-C-L-D-D;سطح/رزمی/کشتی جنگی/ناوشکن;DESTROYER
+S-C-L-F-F;سطح/رزمی/کشتی جنگی/ناوچه;FRIGATE/CORVETTE
+S-C-M;سطح/رزمی/جنگ مین;MINE WARFARE VESSEL
+S-C-M-M-A;سطح/رزمی/جنگ مین/پشتیبانی جنگ مین;MCM SUPPORT
+S-C-M-M-D;سطح/رزمی/جنگ مین/پهپاد جنگ مین;MCM DRONE
+S-C-M-M-H;سطح/رزمی/جنگ مین/مین‌یاب;MINEHUNTER
+S-C-M-M-L;سطح/رزمی/جنگ مین/مین‌گذار;MINELAYER
+S-C-M-M-S;سطح/رزمی/جنگ مین/مین‌روب;MINESWEEPER
+S-C-P;سطح/رزمی/گشت;PATROL
+S-C-P-S-B;سطح/رزمی/گشت/جنگ ضد زیردریایی;ANTISUBMARINE WARFARE
+S-C-P-S-U;سطح/رزمی/گشت/جنگ ضد سطحی;ANTISURFACE WARFARE
 S-G;سطح/گروه نیروی دریایی;NAVY GROUP
 S-G-C;سطح/کاروان;CONVOY
 S-G-G;سطح/NAVY TASK GROUP;NAVY TASK GROUP
