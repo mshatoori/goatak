@@ -114,6 +114,7 @@ let app = new Vue({
                             iconAnchor: new L.Point(16, 16),
                         }));
                         vm.me.addTo(vm.map);
+                        // vm.me.bindTooltip(popup(vm.me));
 
                         fetch('/types')
                             .then(function (response) {
