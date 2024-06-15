@@ -115,6 +115,21 @@ let app = new Vue({
                         }));
                         vm.me.addTo(vm.map);
 
+                        const markerInfo = L.divIcon(
+                            {
+                                className: 'my-marker-info',
+                                html: '<div>' + vm.config.callsign + '</div>',
+                                iconSize: null
+                            });
+
+                        if (!vm.myInfoMarker) {
+                            vm.myInfoMarker = L.marker([data.lat, data.lon], {icon: markerInfo});
+                            vm.myInfoMarker.addTo(vm.map);
+                        }
+
+                        vm.myInfoMarker.setLatLng([data.lat, data.lon]);
+                        vm.myInfoMarker.setIcon(markerInfo);
+
                         fetch('/types')
                             .then(function (response) {
                                 return response.json()
@@ -286,6 +301,8 @@ let app = new Vue({
             this.config.lat = u.lat;
             this.config.lon = u.lon;
             this.me.setLatLng([u.lat, u.lon]);
+            if (this.myInfoMarker)
+                this.myInfoMarker.setLatLng([u.lat, u.lon]);
             if (u.course)
                 this.me.setIconAngle(u.course)
         },
@@ -314,6 +331,8 @@ let app = new Vue({
                 return
             }
 
+            console.log(unit);
+
             if (unit.marker) {
                 if (updateIcon) {
                     unit.marker.setIcon(getIcon(unit, true));
@@ -333,10 +352,11 @@ let app = new Vue({
                 unit.marker.addTo(this.map);
             }
 
-            var markerInfo = L.divIcon(
-                {className: 'my-marker-info',
-                 html:'<div>'+ latLongToIso6709(unit.lat, unit.lon) +'</div>',
-                 iconSize: null
+            const markerInfo = L.divIcon(
+                {
+                    className: 'my-marker-info',
+                    html: '<div>' + unit.callsign + '</div>',
+                    iconSize: null
                 });
 
             if (!unit.infoMarker) {
@@ -876,8 +896,6 @@ function latLongToIso6709(lat, lon) {
 
     const isoLat = degreesLat + '°' + minutesLat + '\'' + decimalMinutesLat + '\"' + latHemisphere;
     const isoLon = degreesLon + '°' + minutesLon + '\'' + decimalMinutesLon + '\"' + lonHemisphere;
-
-
 
     return isoLat + ' ' + isoLon;
   }

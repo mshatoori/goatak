@@ -17,7 +17,11 @@ div.info {
 .leaflet-marker-icon.my-marker-info.leaflet-zoom-animated.leaflet-interactive {
     color: red;
     direction: ltr;
-    font-size: 10px;
+    font-size: 16px;
     margin-left: 16px;
     margin-top: 10px;
+    border: black 1px solid;
+    border-radius: 4px;
+    padding: 3px;
+    background: rgba(245, 222, 179, 0.4);
 }
