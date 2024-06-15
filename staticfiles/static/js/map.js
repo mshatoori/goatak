@@ -119,7 +119,7 @@ let app = new Vue({
                         const markerInfo = L.divIcon(
                             {
                                 className: 'my-marker-info',
-                                html: '<div>' + vm.config.callsign + '</div>',
+                                html: '<div>' + vm.config.callsign + '<br>' + vm.config.ip_address + '<br>' + vm.config.urn + '</div>',
                                 iconSize: null
                             });
 
@@ -356,7 +356,7 @@ let app = new Vue({
             const markerInfo = L.divIcon(
                 {
                     className: 'my-marker-info',
-                    html: '<div>' + unit.callsign + '</div>',
+                    html: '<div>' + unit.callsign + '<br>' + unit.ip_address + '<br>' + unit.urn + '</div>',
                     iconSize: null
                 });
 

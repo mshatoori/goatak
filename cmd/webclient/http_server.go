@@ -95,6 +95,9 @@ func getConfigHandler(app *App) air.Handler {
 
 		m["layers"] = getLayers(app.mapServer)
 
+		m["ip_address"] = app.ipAddress
+		m["urn"] = app.urn
+
 		return res.WriteJSON(m)
 	}
 }

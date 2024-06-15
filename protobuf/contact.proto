@@ -10,4 +10,14 @@ message Contact {
   // Endpoint is optional; if missing/empty do not populate.
   string endpoint = 1;           // endpoint=
   string callsign = 2;           // callsign=
+
+  optional ClientInfo client_info = 100;
+}
+
+message ClientInfo {
+  // IP address of the client (e.g., string or bytes)
+  string ip_address = 1;
+
+  // URN of the client
+  int32 urn = 2;
 }

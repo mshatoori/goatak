@@ -19,6 +19,7 @@ me:
   role: Team Member
   lat: 10
   lon: 10
+  urn: 2
 
 ssl:
   cert: ""

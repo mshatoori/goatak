@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"log/slog"
 	"math/rand"
+	"net"
 	"os"
 	"os/signal"
 	"strings"
@@ -73,9 +74,31 @@ type App struct {
 	role     string
 	pos      atomic.Pointer[model.Pos]
 	zoom     int8
+
+	ipAddress string
+	urn       int32
 }
 
-func NewApp(uid string, callsign string, connectStr string, webPort int, mapServer string) *App {
+// Get preferred outbound ip of this machine
+func getOutboundIP() net.IP {
+	logger := slog.Default()
+	conn, err := net.Dial("udp", "8.8.8.8:80")
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	defer func(conn net.Conn) {
+		err := conn.Close()
+		if err != nil {
+
+		}
+	}(conn)
+
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+
+	return localAddr.IP
+}
+
+func NewApp(uid string, callsign string, connectStr string, webPort int, mapServer string, urn int32) *App {
 	logger := slog.Default()
 	parts := strings.Split(connectStr, ":")
 
@@ -115,6 +138,8 @@ func NewApp(uid string, callsign string, connectStr string, webPort int, mapServ
 		eventProcessors: make([]*EventProcessor, 0),
 		pos:             atomic.Pointer[model.Pos]{},
 		mapServer:       mapServer,
+		ipAddress:       getOutboundIP().String(),
+		urn:             urn,
 	}
 }
 
@@ -279,6 +304,10 @@ func (app *App) MakeMe() *cotproto.TakMessage {
 		Contact: &cotproto.Contact{
 			Endpoint: "*:-1:stcp",
 			Callsign: app.callsign,
+			ClientInfo: &cotproto.ClientInfo{
+				IpAddress: app.ipAddress,
+				Urn:       app.urn,
+			},
 		},
 		Group: &cotproto.Group{
 			Name: app.team,
@@ -452,6 +481,7 @@ func main() {
 		viper.GetString("server_address"),
 		viper.GetInt("web_port"),
 		viper.GetString("map_server"),
+		viper.GetInt32("me.urn"),
 	)
 
 	app.saveFile = *saveFile

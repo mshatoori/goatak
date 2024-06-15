@@ -41,6 +41,8 @@ type WebUnit struct {
 	Local          bool      `json:"local"`
 	Send           bool      `json:"send"`
 	Missions       []string  `json:"missions"`
+	IPAddress      string    `json:"ip_address"`
+	URN            int32     `json:"urn"`
 }
 
 type Contact struct {
@@ -102,6 +104,8 @@ func (i *Item) ToWeb() *WebUnit {
 		Text:           msg.GetDetail().GetFirst("remarks").GetText(),
 		TakVersion:     "",
 		Status:         "",
+		IPAddress:      evt.GetDetail().GetContact().GetClientInfo().GetIpAddress(),
+		URN:            evt.GetDetail().GetContact().GetClientInfo().GetUrn(),
 	}
 
 	if i.class == CONTACT {

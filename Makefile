@@ -27,7 +27,7 @@ update:
 
 .PHONY: protoc
 protoc:
-	protoc -I=./protobuf --go_out=./pkg/cotproto --go_opt=module=github.com/kdudkov/goatak/cotproto ./protobuf/*.proto
+	protoc -I=./protobuf --go_out=./pkg/cotproto --go_opt=module=github.com/kdudkov/goatak/cotproto --experimental_allow_proto3_optional ./protobuf/*.proto
 
 .PHONY: checkdep
 checkdep:
