@@ -4,8 +4,6 @@ ARG branch
 ARG commit
 ARG https_proxy
 
-ARG GOPROXY=https://goproxy.io,direct
-
 WORKDIR /build
 COPY ./go.mod .
 COPY ./go.sum .

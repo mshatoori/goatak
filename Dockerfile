@@ -1,13 +1,16 @@
-FROM golang:alpine AS builder
+FROM docker.arvancloud.ir/golang:alpine AS builder
 
 ARG branch
 ARG commit
 
 WORKDIR /build
+COPY ./go.mod .
+COPY ./go.sum .
+RUN go mod download
 COPY . .
-RUN go mod tidy && go build -o dist/ -ldflags "-s -X main.gitRevision=$commit -X main.gitBranch=$branch" ./cmd/...
+RUN go build -o dist/ -ldflags "-s -X main.gitRevision=$commit -X main.gitBranch=$branch" ./cmd/...
 
-FROM alpine
+FROM docker.arvancloud.ir/alpine
 
 EXPOSE 8080/tcp
 EXPOSE 8088/tcp

@@ -31,3 +31,13 @@ services:
     command:
       - "-D2"
       - "udp://0.0.0.0:5577"
+  server:
+    build:
+      dockerfile: Dockerfile
+      context: .
+      args:
+        https_proxy: http://127.0.0.1:8889
+      network: host
+    ports:
+      - "8087:8080"
+      - "8089:8088"

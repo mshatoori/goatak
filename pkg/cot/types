@@ -1,936 +1,936 @@
-A;Air/Air Track;Air Track
-A-C-F;Air/Civ/fixed;FIXED WING
-A-C-F-q;Air/Civ/fixed/rpv, drone, uav;FIXED WING RPV/Drone
-A-C-H;Air/Civ/rotary;ROTARY WING
-A-C-L;Air/Civ/Blimp;LIGHTER THAN AIR
-A-M-F;Air/Mil/Fixed;FIXED WING
-A-M-F-g;Air/Mil/Fixed/Gunship;FIXED WING GUNSHIP
-A-M-F-A;Air/Mil/Fixed/Attack/Strike;ATTACK/STRIKE
-A-M-F-B;Air/Mil/Fixed/Bomber;BOMBER
-A-M-F-C;Air/Mil/Fixed/Transport;CARGO AIRLIFT (TRANSPORT)
-A-M-F-C-H;Air/Mil/Fixed/Transport/Heavy;CARGO AIRLIFT (HEAVY)
-A-M-F-C-L;Air/Mil/Fixed/Transport/Light;CARGO AIRLIFT (LIGHT)
-A-M-F-C-M;Air/Mil/Fixed/Transport/Medium;CARGO AIRLIFT (MEDIUM)
-A-M-F-D;Air/Mil/Fixed/C2;AIRBORNE COMMAND POST (C2)
-A-M-F-F;Air/Mil/Fixed/Fighter;FIGHTER
-A-M-F-F-I;Air/Mil/Fixed/Interceptor;INTERCEPTOR
-A-M-F-H;Air/Mil/Fixed/CSAR;COMBAT SEARCH AND RESCUE (CSAR)
-A-M-F-J;Air/Mil/Fixed/ECM/Jammer;ELECTRONIC COUNTERMEASURES (ECM/JAMMER)
-A-M-F-K;Air/Mil/Fixed/Tanker;TANKER
-A-M-F-L;Air/Mil/Fixed/VSTOL;VSTOL
-A-M-F-M;Air/Mil/Fixed/SOF;SPECIAL OPERATIONS FORCES (SOF)
-A-M-F-O;Air/Mil/Fixed/MEDEVAC;MEDEVAC
-A-M-F-P;Air/Mil/Fixed/Patrol;PATROL
-A-M-F-P-M;Air/Mil/Fixed/Mine Countermeasures;MINE COUNTERMEASURES
-A-M-F-P-N;Air/Mil/Fixed/ASUW;ANTISURFACE WARFARE/ASUW
-A-M-F-Q;Air/Mil/Fixed/Drone,RPV,UAV;DRONE (RPV/UAV)
-A-M-F-R;Air/Mil/Fixed/RECONN;RECONNAISSANCE
-A-M-F-R-W;Air/Mil/Fixed/AEW;AIRBORNE EARLY WARNING (AEW)
-A-M-F-R-X;Air/Mil/Fixed/Photo;PHOTOGRAPHIC
-A-M-F-R-Z;Air/Mil/Fixed/ESM;ELECTRONIC SURVEILLANCE MEASURES
-A-M-F-S;Air/Mil/Fixed/ASW/Carrier Based;ANTISUBMARINE WARFARE (ASW) CARRIER BASED
-A-M-F-T;Air/Mil/Fixed/Trainer;TRAINER
-A-M-F-U;Air/Mil/Fixed/Utility;UTILITY
-A-M-F-U-H;Air/Mil/Fixed/Utility/Heavy;UTILITY (HEAVY)
-A-M-F-U-L;Air/Mil/Fixed/Utility/Light;UTILITY (LIGHT)
-A-M-F-U-M;Air/Mil/Fixed/Utility/Medium;UTILITY (MEDIUM)
-A-M-F-Y;Air/Mil/Fixed/C3I;COMMUNICATIONS (C3I)
-A-M-H;Air/Mil/Rotor;ROTARY WING
-A-M-H-A;Air/Mil/Rotor/Attack;ATTACK
-A-M-H-C;Air/Mil/Rotor/Transport;CARGO AIRLIFT (TRANSPORT)
-A-M-H-C-H;Air/Mil/Rotor/Transport/Heavy;CARGO AIRLIFT (HEAVY)
-A-M-H-C-L;Air/Mil/Rotor/Transport/Light;CARGO AIRLIFT (LIGHT)
-A-M-H-C-M;Air/Mil/Rotor/Transport/Medium;CARGO AIRLIFT (MEDIUM)
-A-M-H-D;Air/Mil/Rotor/C2;AIRBORNE COMMAND POST (C2)
-A-M-H-H;Air/Mil/Rotor/CSAR;COMBAT SEARCH AND RESCUE (CSAR)
-A-M-H-I;Air/Mil/Rotor/Mine Countermeasures;MINE COUNTERMEASURES
-A-M-H-J;Air/Mil/Rotor/ECM/Jammer;ELECTRONIC COUNTERMEASURES (ECM/JAMMER)
-A-M-H-K;Air/Mil/Rotor/Tanker;TANKER
-A-M-H-M;Air/Mil/Rotor/SOF;SPECIAL OPERATIONS FORCES (SOF)
-A-M-H-O;Air/Mil/Rotor/MEDEVAC;MEDEVAC
-A-M-H-Q;Air/Mil/Rotor/Drone,RPV,UAV;DRONE (RPV/UAV)
-A-M-H-R;Air/Mil/Rotor/Reconnaissance;RECONNAISSANCE
-A-M-H-S;Air/Mil/Rotor/ASW/MPA;ANTISUBMARINE WARFARE/MPA
-A-M-H-T;Air/Mil/Rotor/Trainer;TRAINER
-A-M-H-U;Air/Mil/Rotor/Utility;UTILITY
-A-M-H-U-H;Air/Mil/Rotor/Utility/Heavy);UTILITY (HEAVY)
-A-M-H-U-L;Air/Mil/Rotor/Utility/Light);UTILITY (LIGHT)
-A-M-H-U-M;Air/Mil/Rotor/Utility/Medium);UTILITY (MEDIUM)
-A-M-L;Air/Mil/Blimp;LIGHTER THAN AIR
-A-W;Air/Weapon;WEAPON
-A-W-D;Air/Weapon/Decoy;DECOY
-A-W-M;Air/Weapon/Missile In Flight;MISSILE IN FLIGHT
-A-W-M-A;Air/Weapon/Missile/Air Launched;AIR LAUNCHED MISSILE
-A-W-M-A-A;Air/Weapon/Missile/Air To Air;AIR TO AIR MISSILE (AAM)
-A-W-M-A-S;Air/Weapon/Missile/Air To Surface;AIR TO SURFACE MISSILE (ASM)
-A-W-M-L;Air/Weapon/Missile/Attack Missile;LAND ATTACK MISSILE
-A-W-M-S;Air/Weapon/Missile/Land Launched Missile;SURFACE/LAND LAUNCHED MISSILE
-A-W-M-S-A;Air/Weapon/Missile/SAM;SURFACE TO AIR MISSILE (SAM)
-A-W-M-S-A-f;Air/Weapon/Missile/SAM/FixedSite;SAM (FixedSite)
-A-W-M-S-A-i;Air/Weapon/Missile/SAM/Manpad;SAM (Manpad)
-A-W-M-S-A-m;Air/Weapon/Missile/SAM/Mobile;SAM (Mobile)
-A-W-M-S-S;Air/Weapon/Missile/Surface To Surface (SSM);SURFACE TO SURFACE MISSILE (SSM)
-A-W-M-U;Air/Weapon/Missile/Subsurface To Surface (S/SSM);SUBSURFACE TO SURFACE MISSILE (S/SSM)
-G;Ground;GROUND TRACK
-G-E;Gnd/Equipment;EQUIPMENT
-G-E-S;Gnd/Equip/Sensor;SENSOR
-G-E-S-E;Gnd/Equip/Sensor/Emplaced;EMPLACED SENSOR
-G-E-S-R;Gnd/Equip/Sensor/Radar;RADAR
-G-E-V;Gnd/Equip/Vehicle;GROUND VEHICLE
-G-E-V-A;Gnd/Equip/Vehic/Armor/Gun;Armor (GUN)
-G-E-V-A-A;Gnd/Equip/Vehic/Armor/Apc;Armor (APC)
-G-E-V-A-A-R;Gnd/Equip/Vehic/Armor/Apc/Recovery;ARMORED PERSONNEL CARRIER RECOVERY
-G-E-V-A-C;Gnd/Equip/Vehic/Armor/C2V/ACV;C2V/ACV
-G-E-V-A-I;Gnd/Equip/Vehic/Armor/Infantry;ARMORED INFANTRY
-G-E-V-A-L;Gnd/Equip/Vehic/Armor/Light;LIGHT ARMORED VEHICLE
-G-E-V-A-S;Gnd/Equip/Vehic/Armor/Combat Service Support;COMBAT SERVICE SUPPORT VEHICLE
-G-E-V-A-T;Gnd/Equip/Vehic/Armor/Tank;TANK
-G-E-V-A-T-H;Gnd/Equip/Vehic/Armor/Tank/Heavy;TANK HEAVY
-G-E-V-A-T-H-R;Gnd/Equip/Vehic/Armor/Tank/Heavy/Recovery;TANK HEAVY RECOVERY
-G-E-V-A-T-L;Gnd/Equip/Vehic/Armor/Tank/Light;TANK LIGHT
-G-E-V-A-T-L-R;Gnd/Equip/Vehic/Armor/Tank/Light/Recovery;TANK LIGHT RECOVERY
-G-E-V-A-T-M;Gnd/Equip/Vehic/Armor/Tank/Medium;TANK MEDIUM
-G-E-V-A-T-M-R;Gnd/Equip/Vehic/Armor/Tank/Medium/Recovery;TANK MEDIUM RECOVERY
-G-E-V-C;Gnd/Equip/Vehic/Civilian;CIVILIAN VEHICLE
-G-E-V-E;Gnd/Equip/Vehic/Engineer;ENGINEER VEHICLE
-G-E-V-E-A;Gnd/Equip/Vehic/Mine Clearing Vehicle;MINE CLEARING VEHICLE
-G-E-V-E-A-A;Gnd/Equip/Vehic/Armored Mounted Mine Clearing Vehicle;ARMORED MOUNTED MINE CLEARING VEHICLE
-G-E-V-E-A-T;Gnd/Equip/Vehic/Trailer Mounted Mine Clearing Vehicle;TRAILER MOUNTED MINE CLEARING VEHICLE
-G-E-V-E-B;Gnd/Equip/Vehic/Bridge;BRIDGE
-G-E-V-E-C;Gnd/Equip/Vehic/Construction;CONSTRUCTION VEHICLE
-G-E-V-E-D;Gnd/Equip/Vehic/Dozer;DOZER
-G-E-V-E-E;Gnd/Equip/Vehic/Earthmover;EARTHMOVER
-G-E-V-E-M;Gnd/Equip/Vehic/Mine Laying Vehicle;MINE LAYING VEHICLE
-G-E-V-E-M-L;Gnd/Equip/Vehic/Truck Mounted With Volcano;TRUCK MOUNTED WITH VOLCANO
-G-E-V-E-M-V;Gnd/Equip/Vehic/Armored Carrier With Volcano;ARMORED CARRIER WITH VOLCANO
-G-E-V-T;Gnd/Equip/Vehic/Locomotive;Locomotive
-G-E-V-U;Gnd/Equip/Vehic/Utility;UTILITY VEHICLE
-G-E-V-U-B;Gnd/Equip/Vehic/Bus;BUS
-G-E-V-U-L;Gnd/Equip/Vehic/Limited Cross Country Truck;LIMITED CROSS COUNTRY TRUCK
-G-E-V-U-R;Gnd/Equip/Vehic/Boat;WATER CRAFT
-G-E-V-U-R-l;Gnd/Equip/Vehic/Boat/Large;Boat (Large)
-G-E-V-U-R-m;Gnd/Equip/Vehic/Boat/Med;Boat (Med)
-G-E-V-U-R-s;Gnd/Equip/Vehic/Boat/Small;Boat (Small)
-G-E-V-U-S;Gnd/Equip/Vehic/Semi;SEMI
-G-E-V-U-X;Gnd/Equip/Vehic/Cross Country Truck;CROSS COUNTRY TRUCK
-G-E-V-m;Gnd/Equip/Vehic/Ambulance;Ambulance
-G-E-W;Gnd/Equip/Weapon;WEAPON
-G-E-W-A;Gnd/Equip/Weapon/Air Defense Gun;AIR DEFENSE GUN
-G-E-W-A-H;Gnd/Equip/Weapon/AAA/Heavy;AAA (Heavy)
-G-E-W-A-L;Gnd/Equip/Weapon/AAA/Light;AAA (Light)
-G-E-W-A-M;Gnd/Equip/Weapon/AAA/Medium;AAA (Medium)
-G-E-W-D;Gnd/Equip/Weapon/DirectFire/;DIRECT FIRE GUN
-G-E-W-D-H;Gnd/Equip/Weapon/DirectFire/Heavy;DIRECT FIRE GUN HEAVY
-G-E-W-D-H-S;Gnd/Equip/Weapon/DirectFire/Heavy/Self Propelled;DIRECT FIRE GUN HEAVY SELF PROPELLED
-G-E-W-D-L;Gnd/Equip/Weapon/DirectFire/Light;DIRECT FIRE GUN LIGHT
-G-E-W-D-L-S;Gnd/Equip/Weapon/DirectFire/Light/Self Propelled;DIRECT FIRE GUN LIGHT SELF PROPELLED
-G-E-W-D-M;Gnd/Equip/Weapon/DirectFire/Medium;DIRECT FIRE GUN MEDIUM
-G-E-W-D-M-S;Gnd/Equip/Weapon/DirectFire/Medium/Self Propelled;DIRECT FIRE GUN MEDIUM SELF PROPELLED
-G-E-W-G;Gnd/Equip/Weapon/AnitTankGun;ANTI TANK GUN
-G-E-W-G-H;Gnd/Equip/Weapon/Atg/Heavy;ANTI TANK GUN HEAVY
-G-E-W-G-L;Gnd/Equip/Weapon/Atg/Light;ANTI TANK GUN LIGHT
-G-E-W-G-M;Gnd/Equip/Weapon/Atg/Medium;ANTI TANK GUN MEDIUM
-G-E-W-G-R;Gnd/Equip/Weapon/Atg/Recoilless;ANTI TANK GUN RECOILLESS
-G-E-W-H;Gnd/Equip/Weapon/Howitzer;HOWITZER
-G-E-W-H-H;Gnd/Equip/Weapon/Howitzer/Heavy;HOWITZER HEAVY
-G-E-W-H-H-S;Gnd/Equip/Weapon/Howitzer/Heavy/Self Propelled;HOWITZER HEAVY SELF PROPELLED
-G-E-W-H-L;Gnd/Equip/Weapon/Howitzer/Light;HOWITZER LIGHT
-G-E-W-H-L-S;Gnd/Equip/Weapon/Howitzer/Light/Self Propelled;HOWITZER LIGHT SELF PROPELLED
-G-E-W-H-M;Gnd/Equip/Weapon/Howitzer/Medium;HOWITZER MEDIUM
-G-E-W-H-M-S;Gnd/Equip/Weapon/Howitzer/Medium/Self Propelled;HOWITZER MEDIUM SELF PROPELLED
-G-E-W-M;Gnd/Equip/Weapon/MissileLauncher;MISSILE LAUNCHER
-G-E-W-M-A;Gnd/Equip/Weapon/MissileLauncher/Ad/Air Defense;AIR DEFENSE (AD) MISSILE LAUNCHER
-G-E-W-M-A-I;Gnd/Equip/Weapon/MissileLauncher/Ad/Intermediate Range;INTERMEDIATE RANGE AD MISSILE LAUNCHER
-G-E-W-M-A-L;Gnd/Equip/Weapon/MissileLauncher/Ad/Long Range;LONG RANGE AD MISSILE LAUNCHER
-G-E-W-M-A-S;Gnd/Equip/Weapon/MissileLauncher/Ad/Short Range;SHORT RANGE AD MISSILE LAUNCHER
-G-E-W-M-A-T;Gnd/Equip/Weapon/MissileLauncher/Ad/Theater;AD MISSILE LAUNCHER THEATER
-G-E-W-M-S;Gnd/Equip/Weapon/MissileLauncher/SS/Surface Surf (SS);SURF SURF (SS) MISSILE LAUNCHER
-G-E-W-M-S-I;Gnd/Equip/Weapon/MissileLauncher/SS/Intermediate Range;INTERMEDIATE RANGE SS MISSILE LAUNCHER
-G-E-W-M-S-L;Gnd/Equip/Weapon/MissileLauncher/SS/Long Range;LONG RANGE SS MISSILE LAUNCHER
-G-E-W-M-S-S;Gnd/Equip/Weapon/MissileLauncher/SS/Short Range;SHORT RANGE SS MISSILE LAUNCHER
-G-E-W-M-T;Gnd/Equip/Weapon/MissileLauncher/AT/Antitank;MISSILE LAUNCHER ANTITANK (AT)
-G-E-W-M-T-H;Gnd/Equip/Weapon/MissileLauncher/AT/Heavy;MISSILE LAUNCHER AT HEAVY
-G-E-W-M-T-L;Gnd/Equip/Weapon/MissileLauncher/AT/Light;MISSILE LAUNCHER AT LIGHT
-G-E-W-M-T-M;Gnd/Equip/Weapon/MissileLauncher/AT/Medium;MISSILE LAUNCHER AT MEDIUM
-G-E-W-O;Gnd/Equip/Weapon/Mortar;MORTAR
-G-E-W-O-H;Gnd/Equip/Weapon/Mortar/Heavy;MORTAR HEAVY
-G-E-W-O-L;Gnd/Equip/Weapon/Mortar/Light;MORTAR LIGHT
-G-E-W-O-M;Gnd/Equip/Weapon/Mortar/Medium;MORTAR MEDIUM
-G-E-W-R;Gnd/Equip/Weapon/Rifle/Automatic Weapon;RIFLE/AUTOMATIC WEAPON
-G-E-W-R-H;Gnd/Equip/Weapon/Rifle/Heavy Machine Gun;HEAVY MACHINE GUN
-G-E-W-R-L;Gnd/Equip/Weapon/Rifle/Light Machine Gun;LIGHT MACHINE GUN
-G-E-W-R-R;Gnd/Equip/Weapon/Rifle/Rifle;RIFLE
-G-E-W-S;Gnd/Equip/Weapon/RocketLauncher/Single/;SINGLE ROCKET LAUNCHER
-G-E-W-S-H;Gnd/Equip/Weapon/RocketLauncher/Single/Heavy;SINGLE ROCKET LAUNCHER HEAVY
-G-E-W-S-L;Gnd/Equip/Weapon/RocketLauncher/Single/Light;SINGLE ROCKET LAUNCHER LIGHT
-G-E-W-S-M;Gnd/Equip/Weapon/RocketLauncher/Single/Medium;SINGLE ROCKET LAUNCHER MEDIUM
-G-E-W-T;Gnd/Equip/Weapon/RocketLauncher/AntiTank;ANTI TANK ROCKET LAUNCHER
-G-E-W-T-H;Gnd/Equip/Weapon/RocketLauncher/AT/Heavy;ANTI TANK ROCKET LAUNCHER HEAVY
-G-E-W-T-L;Gnd/Equip/Weapon/RocketLauncher/AT/Light;ANTI TANK ROCKET LAUNCHER LIGHT
-G-E-W-T-M;Gnd/Equip/Weapon/RocketLauncher/AT/Medium;ANTI TANK ROCKET LAUNCHER MEDIUM
-G-E-W-X;Gnd/Equip/Weapon/RocketLauncher/Multiple ;MULTIPLE ROCKET LAUNCHER
-G-E-W-X-H;Gnd/Equip/Weapon/RocketLauncher/Multiple/Heavy;MULTIPLE ROCKET LAUNCHER HEAVY
-G-E-W-X-L;Gnd/Equip/Weapon/RocketLauncher/Multiple/Light;MULTIPLE ROCKET LAUNCHER LIGHT
-G-E-W-X-M;Gnd/Equip/Weapon/RocketLauncher/Multiple/Medium;MULTIPLE ROCKET LAUNCHER MEDIUM
-G-E-W-Z;Gnd/Equip/Weapon/Grenade Launcher;GRENADE LAUNCHER
-G-E-W-Z-H;Gnd/Equip/Weapon/Grenade Launcher/Heavy;GRENADE LAUNCHER HEAVY
-G-E-W-Z-L;Gnd/Equip/Weapon/Grenade Launcher/Light;GRENADE LAUNCHER LIGHT
-G-E-W-Z-M;Gnd/Equip/Weapon/Grenade Launcher/Medium;GRENADE LAUNCHER MEDIUM
-G-E-X;Gnd/Equip/Special Equipment;SPECIAL EQUIPMENT
-G-E-X-F;Gnd/Equip/Flame Thrower;FLAME THROWER
-G-E-X-L;Gnd/Equip/Laser;LASER
-G-E-X-M;Gnd/Equip/Land Mines;LAND MINES
-G-E-X-M-C;Gnd/Equip/Claymore;CLAYMORE
-G-E-X-M-L;Gnd/Equip/Less Than Lethal;LESS THAN LETHAL
-G-E-X-N;Gnd/Equip/Nbc Equipment;NBC EQUIPMENT
-G-I;Gnd/Building;Building
-G-I-B;Gnd/Structure/Base/Military;MILITARY BASE/FACILITY
-G-I-B-A;Gnd/Structure/Base/Airbase;AIRPORT/AIRBASE
-G-I-B-N;Gnd/Structure/Base/Naval Base;SEAPORT/NAVAL BASE
-G-I-c;Gnd/Structure/Civilian;Civilian
-G-I-c-b;Gnd/Structure/Civilian/Bridge;Bridge
-G-I-c-bar;Gnd/Structure/Civilian/Fence or Wall or Barrier;Fence/Wall/Barrier
-G-I-c-can;Gnd/Structure/Civilian/Canal;Canal
-G-I-c-can-l;Gnd/Structure/Civilian/Canal/Lock;Canal Lock
-G-I-c-frm;Gnd/Structure/Civilian/Farm;Farm
-G-I-c-l;Gnd/Structure/Civilian/Levee;Levy
-G-I-c-mon;Gnd/Structure/Civilian/Monument;Monument
-G-I-c-o;Gnd/Structure/Civilian/Offices;Offices
-G-I-c-rah;Gnd/Structure/Civilian/Residence or Apartment or Hotel;Residence/Apartment/Hotel
-G-I-c-rel;Gnd/Structure/Civilian/Religous;Religous
-G-I-c-res;Gnd/Structure/Civilian/Resevoir;Resevoir
-G-I-c-ret;Gnd/Structure/Civilian/Retail;Retail
-G-I-c-sch;Gnd/Structure/Civilian/School;School
-G-I-c-vip;Gnd/Structure/Civilian/VIP;VIP
-G-I-c-whs;Gnd/Structure/Civilian/Warehouse;Warehouse
-G-I-E;Gnd/Structure/Factory;EQUIPMENT MANUFACTURE
-G-I-E-h;Gnd/Structure/Factory/Heavy;Heavy
-G-I-E-l;Gnd/Structure/Factory/Light;Light
-G-I-E-o;Gnd/Structure/Factory/Plant Other;Plant Other
-G-I-G;Gnd/Structure/Government;GOVERNMENT LEADERSHIP
-G-I-i;Gnd/Structure/IM Facilities;IM Facilities
-G-I-i-e;Gnd/Structure/IM Facilities/Emergency Management;Emergency Management
-G-I-i-e-eoc;Gnd/Structure/IM Facilities/Emergency Management/Emergency Operations Center;Emergency Operations Center
-G-I-i-e-ic;Gnd/Structure/IM Facilities/Emergency Management/Incident Commander;Incident Commander
-G-I-i-e-icc;Gnd/Structure/IM Facilities/Emergency Management/Incident Communications Center;Incident Communications Center
-G-I-i-e-icp;Gnd/Structure/IM Facilities/Emergency Management/Incident Command Post;Incident Command Post
-G-I-i-e-wr;Gnd/Structure/IM Facilities/Emergency Management/War Room;War Room
-G-I-i-f;Gnd/Structure/IM Facilities/Fire and Hazmat;Fire/Hazmat
-G-I-i-f-fd;Gnd/Structure/IM Facilities/Fire and Hazmat/Fire Department;Fire Department
-G-I-i-h;Gnd/Structure/IM Facilities/Health and Medical;Health and Medical
-G-I-i-h-md;Gnd/Structure/IM Facilities/Health and Medical/Medical Dispatch;Medical Dispatch
-G-I-i-l;Gnd/Structure/IM Facilities/Law Enforcement;Law Enforcement
-G-I-i-l-cp;Gnd/Structure/IM Facilities/Law Enforcement/Police Checkpoint;Police Checkpoint
-G-I-i-l-hp;Gnd/Structure/IM Facilities/Law Enforcement/Highway Patrol;Highway Patrol
-G-I-i-l-lp;Gnd/Structure/IM Facilities/Law Enforcement/Local Police;Local Police
-G-I-i-l-ntz;Gnd/Structure/IM Facilities/Law Enforcement/No Trespassing Zone;No Trespassing Zone
-G-I-i-l-sd;Gnd/Structure/IM Facilities/Law Enforcement/Sheriffs Department;Sheriffs Department
-G-I-i-l-sp;Gnd/Structure/IM Facilities/Law Enforcement/State Police;State Police
-G-I-i-m;Gnd/Structure/IM Facilities/Emergency Medical Services;Emergency Medical Services
-G-I-i-o;Gnd/Structure/IM Facilities/Other;Other
-G-I-i-o-ad;Gnd/Structure/IM Facilities/Other/Agency Dispatch;Agency Dispatch
-G-I-i-o-ad-ems;Gnd/Structure/IM Facilities/Other/Agency Dispatch/EMS;EMS
-G-I-i-o-ad-f;Gnd/Structure/IM Facilities/Other/Agency Dispatch/Fire;Fire
-G-I-i-o-ad-hwy;Gnd/Structure/IM Facilities/Other/Agency Dispatch/Highway;Highway
-G-I-i-o-ad-mda;Gnd/Structure/IM Facilities/Other/Agency Dispatch/Media;Media
-G-I-i-o-ad-pl;Gnd/Structure/IM Facilities/Other/Agency Dispatch/Police Local;Police Local
-G-I-i-o-ad-ps;Gnd/Structure/IM Facilities/Other/Agency Dispatch/Police Station;Police Station
-G-I-i-o-ad-tow;Gnd/Structure/IM Facilities/Other/Agency Dispatch/Tow;Tow
-G-I-i-o-ad-ts;Gnd/Structure/IM Facilities/Other/Agency Dispatch/Transit;Transit
-G-I-i-o-bcc;Gnd/Structure/IM Facilities/Other/Border Control Checkpoint;Border Control Checkpoint
-G-I-i-o-dmz;Gnd/Structure/IM Facilities/Other/DMZ;DMZ
-G-I-i-o-isp;Gnd/Structure/IM Facilities/Other/Independent Service Provider;Independent Service Provider
-G-I-i-o-mc;Gnd/Structure/IM Facilities/Other/Mobile Center;Mobile Center
-G-I-i-o-mc-f;Gnd/Structure/IM Facilities/Other/Mobile Center/Fire;Fire
-G-I-i-o-mc-h;Gnd/Structure/IM Facilities/Other/Mobile Center/Medical;Medical
-G-I-i-o-mc-l;Gnd/Structure/IM Facilities/Other/Mobile Center/Law Enforcement;Law Enforcement
-G-I-i-o-mes;Gnd/Structure/IM Facilities/Other/Message Center;Message Center
-G-I-i-o-mob;Gnd/Structure/IM Facilities/Other/Mobilization Center;Mobilization Center
-G-I-i-o-mob-ems;Gnd/Structure/IM Facilities/Other/Mobilization Center/EMS;EMS
-G-I-i-o-mob-es;Gnd/Structure/IM Facilities/Other/Mobilization Center/Transit;Transit
-G-I-i-o-mob-f;Gnd/Structure/IM Facilities/Other/Mobilization Center/Fire;Fire
-G-I-i-o-mob-hwy;Gnd/Structure/IM Facilities/Other/Mobilization Center/Highway;Highway
-G-I-i-o-mob-mda;Gnd/Structure/IM Facilities/Other/Mobilization Center/Media;Media
-G-I-i-o-mob-pl;Gnd/Structure/IM Facilities/Other/Mobilization Center/Police Local;Ploce Local
-G-I-i-o-mob-ps;Gnd/Structure/IM Facilities/Other/Mobilization Center/Police Station;Police Station
-G-I-i-o-mob-tow;Gnd/Structure/IM Facilities/Other/Mobilization Center/Tow;Tow
-G-I-i-o-ps;Gnd/Structure/IM Facilities/Other/Public Safety;Public Safety
-G-I-i-o-rl;Gnd/Structure/IM Facilities/Other/Reporting Locations;Reporting Locations
-G-I-i-o-sa;Gnd/Structure/IM Facilities/Other/Staging Area;Staging Area
-G-I-i-o-sa-ems;Gnd/Structure/IM Facilities/Other/Staging Area/EMS;EMS
-G-I-i-o-sa-f;Gnd/Structure/IM Facilities/Other/Staging Area/Fire;Fire
-G-I-i-o-sa-hwy;Gnd/Structure/IM Facilities/Other/Staging Area/Highway;Highway
-G-I-i-o-sa-mda;Gnd/Structure/IM Facilities/Other/Staging Area/Media;Media
-G-I-i-o-sa-pl;Gnd/Structure/IM Facilities/Other/Staging Area/Police Local;Police Local
-G-I-i-o-sa-ps;Gnd/Structure/IM Facilities/Other/Staging Area/Police Station;Police Station
-G-I-i-o-sa-tow;Gnd/Structure/IM Facilities/Other/Staging Area/Tow;Tow
-G-I-i-o-sa-ts;Gnd/Structure/IM Facilities/Other/Staging Area/Transit;Transit
-G-I-i-o-sc;Gnd/Structure/IM Facilities/Other/Security Checkpoint;Security Checkpoint
-G-I-i-o-seg;Gnd/Structure/IM Facilities/Other/Segment;Segment
-G-I-i-o-t;Gnd/Structure/IM Facilities/Other/Transportation;Transportation
-G-I-i-o-t-im;Gnd/Structure/IM Facilities/Other/Transportation/Transit Incident Management Center;Transit Incident Management Center
-G-I-i-o-t-tc;Gnd/Structure/IM Facilities/Other/Transportation/Transit Management Center;Transit Management Center
-G-I-i-o-t-td;Gnd/Structure/IM Facilities/Other/Transportation/Traffic Inc Service Patrol Dispatch;Traffic Inc Service Patrol Dispatch
-G-I-i-o-t-tm;Gnd/Structure/IM Facilities/Other/Transportation/Traffic Management Center;Traffic Management Center
-G-I-i-o-tmp;Gnd/Structure/IM Facilities/Other/Temp;Temporary
-G-I-i-o-tmp-f;Gnd/Structure/IM Facilities/Other/Temp/Fire;Fire
-G-I-i-o-tmp-h;Gnd/Structure/IM Facilities/Other/Temp/Medical;Medical
-G-I-i-o-tmp-l;Gnd/Structure/IM Facilities/Other/Temp/Law Enforcement;Law Enforcement
-G-I-i-p;Gnd/Structure/IM Facilities/Public Works;Public Works
-G-I-M;Gnd/Structure/Mil/Military Materiel Facility;MILITARY MATERIEL FACILITY
-G-I-M-A;Gnd/Structure/Mil/Aircraft Production;AIRCRAFT PRODUCTION/ASSEMBLY
-G-I-M-C;Gnd/Structure/Mil/NBC Warfare Production;CHEMICAL/BIOLOGICAL WARFARE PRODUCTION
-G-I-M-E;Gnd/Structure/Mil/Ammunition Production;AMMUNITION AND EXPLOSIVES PRODUCTION
-G-I-M-F;Gnd/Structure/Mil/Nuclear Energy;NUCLEAR ENERGY
-G-I-M-F-A;Gnd/Structure/Mil/Atomic Energy Reactor;ATOMIC ENERGY REACTOR
-G-I-M-F-P;Gnd/Structure/Mil/Nuclear Material Production;NUCLEAR MATERIAL PRODUCTION
-G-I-M-F-P-W;Gnd/Structure/Mil/Nuclear/Weapons Grade;WEAPONS GRADE
-G-I-M-F-S;Gnd/Structure/Mil/Nuclear Material Storage;NUCLEAR MATERIAL STORAGE
-G-I-M-G;Gnd/Structure/Mil/Armament Production;ARMAMENT PRODUCTION
-G-I-M-M;Gnd/Structure/Mil/Missile+Space System Production;MISSILE/SPACE SYSTEM PRODUCTION
-G-I-M-N;Gnd/Structure/Mil/Engineering Equipment Production;ENGINEERING EQUIPMENT PRODUCTION
-G-I-M-N-B;Gnd/Structure/Mil/Bridge;BRIDGE
-G-I-M-N-B-l;Gnd/Structure/Mil/Bridge/Large;Bridge (Large)
-G-I-M-N-B-m;Gnd/Structure/Mil/Bridge/Med;Bridge (Med)
-G-I-M-N-B-s;Gnd/Structure/Mil/Bridge/Small;Bridge (Small)
-G-I-M-N-c;Gnd/Structure/Mil/Canal;Canal
-G-I-M-S;Gnd/Structure/Mil/Ship Construction;SHIP CONSTRUCTION
-G-I-M-V;Gnd/Structure/Mil/Military Vehicle Production;MILITARY VEHICLE PRODUCTION
-G-I-P;Gnd/Structure/Processing Facility;PROCESSING FACILITY
-G-I-P-D;Gnd/Structure/Decon;DECON
-G-I-R;Gnd/Structure/Raw Material Production/Storage;RAW MATERIAL PRODUCTION/STORAGE
-G-I-R-M;Gnd/Structure/Mine;MINE
-G-I-R-N;Gnd/Structure/NBC;NBC
-G-I-R-N-B;Gnd/Structure/Biological;BIOLOGICAL
-G-I-R-N-C;Gnd/Structure/Chemical;CHEMICAL
-G-I-R-N-N;Gnd/Structure/Nuclear;NUCLEAR
-G-I-R-P;Gnd/Structure/PETROLEUM/GAS/OIL;PETROLEUM/GAS/OIL
-G-I-R-P-r;Gnd/Structure/PETROLEUM/GAS/OIL/Refinery;Refinery
-G-I-T;Gnd/Structure/Transport Facility;TRANSPORT FACILITY
-G-I-T-a;Gnd/Structure/Transport Facility/Airport;Airport
-G-I-T-hb;Gnd/Structure/Transport Facility/Helibase;Helibase
-G-I-T-hs;Gnd/Structure/Transport Facility/Helispot;Helispot
-G-I-T-l;Gnd/Structure/Transport Facility/Land Port;Land Port
-G-I-T-pg;Gnd/Structure/Transport Facility/Parking Garage;Parking Garage
-G-I-T-r;Gnd/Structure/Transport Facility/Railroad;Railroad
-G-I-T-s;Gnd/Structure/Transport Facility/Seaport;Seaport
-G-I-U;Gnd/Structure/Utility/Service, Research, Utility Facility;SERVICE, RESEARCH, UTILITY FACILITY
-G-I-U-E;Gnd/Structure/Utility/Electric Power;ELECTRIC POWER FACILITY
-G-I-U-E-c;Gnd/Structure/Utility/Electric Power/Coal Power Plant;Coal Power Plant
-G-I-U-E-h;Gnd/Structure/Utility/Electric Power/Hydroelectric Power Plant;Hydroelectric Power Plant
-G-I-U-E-o;Gnd/Structure/Utility/Electric Power/Other Power;Other Power
-G-I-U-E-ps;Gnd/Structure/Utility/Electric Power/Power Substation;Power Substation
-G-I-U-E-D;Gnd/Structure/Utility/Dam;DAM
-G-I-U-E-F;Gnd/Structure/Utility/Fossil Fuel;FOSSIL FUEL
-G-I-U-E-N;Gnd/Structure/Utility/Nuclear Plant;NUCLEAR PLANT
-G-I-U-P;Gnd/Structure/Utility/Public Water Services;PUBLIC WATER SERVICES
-G-I-U-R;Gnd/Structure/Utility/Technological Research;TECHNOLOGICAL RESEARCH FACILITY
-G-I-U-T;Gnd/Structure/Utility/Telecommunications;TELECOMMUNICATIONS FACILITY
-G-I-U-T-com;Gnd/Structure/Utility/Telecommunications/Communications;Communications
-G-I-U-T-com-af;Gnd/Structure/Utility/Telecommunications/Communications/Antenna Farm;Antenna Farm
-G-I-U-T-com-sat;Gnd/Structure/Utility/Telecommunications/Communications/Satellite Communications;Satellite Communications
-G-I-U-T-com-tow;Gnd/Structure/Utility/Telecommunications/Communications/Tower;Tower
-G-I-U-T-r;Gnd/Structure/Utility/Telecommunications/Radio;Radio
-G-I-U-T-r-s;Gnd/Structure/Utility/Telecommunications/Radio/Station;Station
-G-I-U-T-tp;Gnd/Structure/Utility/Telecommunications/Telephone;Telephone
-G-I-U-T-tp-ts;Gnd/Structure/Utility/Telecommunications/Telephone/Telephone Switching;Telephone Switching
-G-I-U-T-tv;Gnd/Structure/Utility/Telecommunications/Television;Television
-G-I-U-T-tv-c;Gnd/Structure/Utility/Telecommunications/Television/Cable;Cable
-G-I-U-T-tv-s;Gnd/Structure/Utility/Telecommunications/Television/Station;Station
-G-I-X;Gnd/Structure/Medical Facility;MEDICAL FACILITY
-G-I-X-H;Gnd/Structure/Hospital;HOSPITAL
-G-I-X-hcf;Gnd/Structure/Medical Facility/Hospital/Hospital Care Facility;Hospital Care Facility
-G-I-r;Gnd/Structure/Road;Road
-G-I-r-h;Gnd/Structure/Road/Highway;Road (Highway)
-G-I-r-i;Gnd/Structure/Road/Improved;Road (Improved)
-G-I-r-ra;Gnd/Structure/Road/Rest Area;Rest Area
-G-I-r-u;Gnd/Structure/Road/Unimproved;Road (Un-improved)
-G-U;Gnd/Unit;UNIT
-G-U-C;Gnd/Combat;COMBAT
-G-U-C-A;Gnd/Combat/ARMOR;ARMOR
-G-U-C-A-A;Gnd/Combat/Armor/ANTI ARMOR;ANTI ARMOR
-G-U-C-A-A-A;Gnd/Combat/Armor/ANTI ARMOR ARMORED;ANTI ARMOR ARMORED
-G-U-C-A-A-A-S;Gnd/Combat/Armor/ANTI ARMOR ARMORED AIR ASSAULT;ANTI ARMOR ARMORED AIR ASSAULT
-G-U-C-A-A-A-T;Gnd/Combat/Armor/ANTI ARMOR ARMORED TRACKED;ANTI ARMOR ARMORED TRACKED
-G-U-C-A-A-A-W;Gnd/Combat/Armor/ANTI ARMOR ARMORED WHEELED;ANTI ARMOR ARMORED WHEELED
-G-U-C-A-A-C;Gnd/Combat/Armor/ANTI ARMOR ARCTIC;ANTI ARMOR ARCTIC
-G-U-C-A-A-D;Gnd/Combat/Armor/ANTI ARMOR DISMOUNTED;ANTI ARMOR DISMOUNTED
-G-U-C-A-A-L;Gnd/Combat/Armor/ANTI ARMOR LIGHT;ANTI ARMOR LIGHT
-G-U-C-A-A-M;Gnd/Combat/Armor/ANTI ARMOR AIRBORNE;ANTI ARMOR AIRBORNE
-G-U-C-A-A-O;Gnd/Combat/Armor/ANTI ARMOR MOTORIZED;ANTI ARMOR MOTORIZED
-G-U-C-A-A-O-S;Gnd/Combat/Armor/ANTI ARMOR MOTORIZED AIR ASSAULT;ANTI ARMOR MOTORIZED AIR ASSAULT
-G-U-C-A-A-S;Gnd/Combat/Armor/ANTI ARMOR AIR ASSAULT;ANTI ARMOR AIR ASSAULT
-G-U-C-A-A-U;Gnd/Combat/Armor/ANTI ARMOR MOUNTAIN;ANTI ARMOR MOUNTAIN
-G-U-C-A-T;Gnd/Combat/Armor/ARMOR TRACK;ARMOR TRACK
-G-U-C-A-T-A;Gnd/Combat/Armor/ARMOR TRACK AIRBORNE;ARMOR TRACK AIRBORNE
-G-U-C-A-T-H;Gnd/Combat/Armor/ARMOR TRACK, HEAVY;ARMOR TRACK, HEAVY
-G-U-C-A-T-L;Gnd/Combat/Armor/ARMOR TRACK, LIGHT;ARMOR TRACK, LIGHT
-G-U-C-A-T-M;Gnd/Combat/Armor/ARMOR TRACK, MEDIUM;ARMOR TRACK, MEDIUM
-G-U-C-A-T-R;Gnd/Combat/Armor/ARMOR TRACK, RECOVERY;ARMOR TRACK, RECOVERY
-G-U-C-A-T-W;Gnd/Combat/Armor/ARMOR TRACK AMPHIBIOUS;ARMOR TRACK AMPHIBIOUS
-G-U-C-A-T-W-R;Gnd/Combat/Armor/ARMOR TRACK AMPHIBIOUS RECOVERY;ARMOR TRACK AMPHIBIOUS RECOVERY
-G-U-C-A-W;Gnd/Combat/Armor/ARMOR, WHEELED;ARMOR, WHEELED
-G-U-C-A-W-A;Gnd/Combat/Armor/ARMOR, WHEELED AIRBORNE;ARMOR, WHEELED AIRBORNE
-G-U-C-A-W-H;Gnd/Combat/Armor/ARMOR, WHEELED HEAVY;ARMOR, WHEELED HEAVY
-G-U-C-A-W-L;Gnd/Combat/Armor/ARMOR, WHEELED LIGHT;ARMOR, WHEELED LIGHT
-G-U-C-A-W-M;Gnd/Combat/Armor/ARMOR, WHEELED MEDIUM;ARMOR, WHEELED MEDIUM
-G-U-C-A-W-R;Gnd/Combat/Armor/ARMOR, WHEELED RECOVERY;ARMOR, WHEELED RECOVERY
-G-U-C-A-W-S;Gnd/Combat/Armor/ARMOR, WHEELED AIR ASSAULT;ARMOR, WHEELED AIR ASSAULT
-G-U-C-A-W-W;Gnd/Combat/Armor/ARMOR, WHEELED AMPHIBIOUS;ARMOR, WHEELED AMPHIBIOUS
-G-U-C-A-W-W-R;Gnd/Combat/Armor/ARMOR, WHEELED AMPHIBIOUS RECOVERY;ARMOR, WHEELED AMPHIBIOUS RECOVERY
-G-U-C-D;Gnd/Combat/Defense/AIR DEFENSE;AIR DEFENSE
-G-U-C-D-C;Gnd/Combat/Defense/COMPOSITE;COMPOSITE
-G-U-C-D-G;Gnd/Combat/Defense/GUN UNIT;GUN UNIT
-G-U-C-D-H;Gnd/Combat/Defense/H/MAD;H/MAD
-G-U-C-D-H-H;Gnd/Combat/Defense/HAWK;HAWK
-G-U-C-D-H-P;Gnd/Combat/Defense/PATRIOT;PATRIOT
-G-U-C-D-M;Gnd/Combat/Defense/AIR DEFENSE MISSILE;AIR DEFENSE MISSILE
-G-U-C-D-M-H;Gnd/Combat/Defense/AIR DEFENSE MISSILE HEAVY;AIR DEFENSE MISSILE HEAVY
-G-U-C-D-M-L;Gnd/Combat/Defense/AIR DEFENSE MISSILE LIGHT;AIR DEFENSE MISSILE LIGHT
-G-U-C-D-M-L-A;Gnd/Combat/Defense/AIR DEFENSE MISSILE MOTORIZED (AVENGER);AIR DEFENSE MISSILE MOTORIZED (AVENGER)
-G-U-C-D-M-M;Gnd/Combat/Defense/AIR DEFENSE MISSILE MEDIUM;AIR DEFENSE MISSILE MEDIUM
-G-U-C-D-O;Gnd/Combat/Defense/THEATER MISSILE DEFENSE UNIT;THEATER MISSILE DEFENSE UNIT
-G-U-C-D-S;Gnd/Combat/Defense/SHORT RANGE;SHORT RANGE
-G-U-C-D-S-S;Gnd/Combat/Defense/STINGER;STINGER
-G-U-C-D-S-V;Gnd/Combat/Defense/VULCAN;VULCAN
-G-U-C-D-T;Gnd/Combat/Defense/TARGETING UNIT;TARGETING UNIT
-G-U-C-E;Gnd/Combat/Engineer/ENGINEER;ENGINEER
-G-U-C-E-C;Gnd/Combat/Engineer/ENGINEER COMBAT;ENGINEER COMBAT
-G-U-C-E-C-A;Gnd/Combat/Engineer/ENGINEER COMBAT AIRBORNE;ENGINEER COMBAT AIRBORNE
-G-U-C-E-C-C;Gnd/Combat/Engineer/ENGINEER COMBAT ARCTIC;ENGINEER COMBAT ARCTIC
-G-U-C-E-C-H;Gnd/Combat/Engineer/ENGINEER COMBAT HEAVY;ENGINEER COMBAT HEAVY
-G-U-C-E-C-L;Gnd/Combat/Engineer/ENGINEER COMBAT LIGHT (SAPPER);ENGINEER COMBAT LIGHT (SAPPER)
-G-U-C-E-C-M;Gnd/Combat/Engineer/ENGINEER COMBAT MEDIUM;ENGINEER COMBAT MEDIUM
-G-U-C-E-C-O;Gnd/Combat/Engineer/ENGINEER COMBAT MOUNTAIN;ENGINEER COMBAT MOUNTAIN
-G-U-C-E-C-R;Gnd/Combat/Engineer/ENGINEER COMBAT RECON;ENGINEER COMBAT RECON
-G-U-C-E-C-S;Gnd/Combat/Engineer/ENGINEER COMBAT AIR ASSAULT;ENGINEER COMBAT AIR ASSAULT
-G-U-C-E-C-T;Gnd/Combat/Engineer/ENGINEER COMBAT MECHANIZED (TRACK);ENGINEER COMBAT MECHANIZED (TRACK)
-G-U-C-E-C-W;Gnd/Combat/Engineer/ENGINEER COMBAT MOTORIZED;ENGINEER COMBAT MOTORIZED
-G-U-C-E-N;Gnd/Combat/Engineer/ENGINEER CONSTRUCTION;ENGINEER CONSTRUCTION
-G-U-C-E-N-N;Gnd/Combat/Engineer/ENGINEER NAVAL CONSTRUCTION;ENGINEER NAVAL CONSTRUCTION
-G-U-C-F;Gnd/Combat/Artillery (Fixed);Artillery (Fixed)
-G-U-C-F-H;Gnd/Combat/HOWITZER/GUN;HOWITZER/GUN
-G-U-C-F-H-A;Gnd/Combat/AIRBORNE;AIRBORNE
-G-U-C-F-H-C;Gnd/Combat/ARCTIC;ARCTIC
-G-U-C-F-H-E;Gnd/Combat/Artillery (Mobile);Artillery (Mobile)
-G-U-C-F-H-H;Gnd/Combat/HEAVY;HEAVY
-G-U-C-F-H-L;Gnd/Combat/LIGHT;LIGHT
-G-U-C-F-H-M;Gnd/Combat/MEDIUM;MEDIUM
-G-U-C-F-H-O;Gnd/Combat/MOUNTAIN;MOUNTAIN
-G-U-C-F-H-S;Gnd/Combat/AIR ASSAULT;AIR ASSAULT
-G-U-C-F-H-X;Gnd/Combat/AMPHIBIOUS;AMPHIBIOUS
-G-U-C-F-M;Gnd/Combat/MORTAR;MORTAR
-G-U-C-F-M-L;Gnd/Combat/AMPHIBIOUS MORTAR;AMPHIBIOUS MORTAR
-G-U-C-F-M-S;Gnd/Combat/SELF PROPELLED (SP) TRACKED MORTAR;SELF PROPELLED (SP) TRACKED MORTAR
-G-U-C-F-M-T;Gnd/Combat/TOWED MORTAR;TOWED MORTAR
-G-U-C-F-M-T-A;Gnd/Combat/TOWED AIRBORNE MORTAR;TOWED AIRBORNE MORTAR
-G-U-C-F-M-T-C;Gnd/Combat/TOWED ARCTIC MORTAR;TOWED ARCTIC MORTAR
-G-U-C-F-M-T-O;Gnd/Combat/TOWED MOUNTAIN MORTAR;TOWED MOUNTAIN MORTAR
-G-U-C-F-M-T-S;Gnd/Combat/TOWED AIR ASSAULT MORTAR;TOWED AIR ASSAULT MORTAR
-G-U-C-F-M-W;Gnd/Combat/SP WHEELED MORTAR;SP WHEELED MORTAR
-G-U-C-F-O;Gnd/Combat/METEOROLOGICAL;METEOROLOGICAL
-G-U-C-F-O-A;Gnd/Combat/AIRBORNE METEOROLOGICAL;AIRBORNE METEOROLOGICAL
-G-U-C-F-O-L;Gnd/Combat/LIGHT METEOROLOGICAL;LIGHT METEOROLOGICAL
-G-U-C-F-O-O;Gnd/Combat/MOUNTAIN METEOROLOGICAL;MOUNTAIN METEOROLOGICAL
-G-U-C-F-O-S;Gnd/Combat/AIR ASSAULT METEOROLOGICAL;AIR ASSAULT METEOROLOGICAL
-G-U-C-F-R;Gnd/Combat/ROCKET;ROCKET
-G-U-C-F-R-M;Gnd/Combat/Rockets (Fixed);Rockets (Fixed)
-G-U-C-F-R-M-R;Gnd/Combat/Rockets (Mobile);Rockets (Mobile)
-G-U-C-F-R-M-S;Gnd/Combat/MULTI ROCKET SELF PROPELLED;MULTI ROCKET SELF PROPELLED
-G-U-C-F-R-M-T;Gnd/Combat/MULTI ROCKET TOWED;MULTI ROCKET TOWED
-G-U-C-F-R-S;Gnd/Combat/SINGLE ROCKET LAUNCHER;SINGLE ROCKET LAUNCHER
-G-U-C-F-R-S-R;Gnd/Combat/SINGLE ROCKET TRUCK;SINGLE ROCKET TRUCK
-G-U-C-F-R-S-S;Gnd/Combat/SINGLE ROCKET SELF PROPELLED;SINGLE ROCKET SELF PROPELLED
-G-U-C-F-R-S-T;Gnd/Combat/SINGLE ROCKET TOWED;SINGLE ROCKET TOWED
-G-U-C-F-S;Gnd/Combat/ARTILLERY SURVEY;ARTILLERY SURVEY
-G-U-C-F-S-A;Gnd/Combat/AIRBORNE;AIRBORNE
-G-U-C-F-S-L;Gnd/Combat/LIGHT;LIGHT
-G-U-C-F-S-O;Gnd/Combat/MOUNTAIN;MOUNTAIN
-G-U-C-F-S-S;Gnd/Combat/AIR ASSAULT;AIR ASSAULT
-G-U-C-F-T;Gnd/Combat/TARGET ACQUISITION;TARGET ACQUISITION
-G-U-C-F-T-A;Gnd/Combat/ANGLICO;ANGLICO
-G-U-C-F-T-C;Gnd/Combat/COLT/FIST;COLT/FIST
-G-U-C-F-T-C-D;Gnd/Combat/DISMOUNTED COLT/FIST;DISMOUNTED COLT/FIST
-G-U-C-F-T-C-M;Gnd/Combat/TRACKED COLT/FIST;TRACKED COLT/FIST
-G-U-C-F-T-F;Gnd/Combat/FLASH (OPTICAL);FLASH (OPTICAL)
-G-U-C-F-T-R;Gnd/Combat/RADAR;RADAR
-G-U-C-F-T-S;Gnd/Combat/SOUND;SOUND
-G-U-C-I;Gnd/Combat/Infantry/Troops (Open);Troops (Open)
-G-U-C-I-A;Gnd/Combat/Infantry/Airborne;INFANTRY AIRBORNE
-G-U-C-I-C;Gnd/Combat/Infantry/Arctic;INFANTRY ARCTIC
-G-U-C-I-I;Gnd/Combat/Infantry/Fighting Vehicle;INFANTRY FIGHTING VEHICLE
-G-U-C-I-L;Gnd/Combat/Infantry/Light;INFANTRY LIGHT
-G-U-C-I-M;Gnd/Combat/Infantry/Motorized;INFANTRY MOTORIZED
-G-U-C-I-N;Gnd/Combat/Infantry/Naval;INFANTRY NAVAL
-G-U-C-I-O;Gnd/Combat/Infantry/Mountain;INFANTRY MOUNTAIN
-G-U-C-I-S;Gnd/Combat/Infantry/Air Assault;INFANTRY AIR ASSAULT
-G-U-C-I-Z;Gnd/Combat/Infantry/Mechanized;INFANTRY MECHANIZED
-G-U-C-I-d;Gnd/Combat/Infantry/DugIn;Troops (DugIn)
-G-U-C-M;Gnd/Combat/MISSILE (SURF SURF);MISSILE (SURF SURF)
-G-U-C-M-S;Gnd/Combat/MISSILE (SURF SURF) STRATEGIC;MISSILE (SURF SURF) STRATEGIC
-G-U-C-M-T;Gnd/Combat/MISSILE (SURF SURF) TACTICAL;MISSILE (SURF SURF) TACTICAL
-G-U-C-R;Gnd/Combat/Recon/;RECONNAISSANCE
-G-U-C-R-A;Gnd/Combat/Recon/AIRBORNE;RECONNAISSANCE AIRBORNE
-G-U-C-R-C;Gnd/Combat/Recon/ARCTIC;RECONNAISSANCE ARCTIC
-G-U-C-R-H;Gnd/Combat/Recon/HORSE;RECONNAISSANCE HORSE
-G-U-C-R-L;Gnd/Combat/Recon/LIGHT;RECONNAISSANCE LIGHT
-G-U-C-R-O;Gnd/Combat/Recon/MOUNTAIN;RECONNAISSANCE MOUNTAIN
-G-U-C-R-R;Gnd/Combat/Recon/MARINE;RECONNAISSANCE MARINE
-G-U-C-R-R-D;Gnd/Combat/Recon/MARINE DIVISION;RECONNAISSANCE MARINE DIVISION
-G-U-C-R-R-F;Gnd/Combat/Recon/MARINE FORCE;RECONNAISSANCE MARINE FORCE
-G-U-C-R-R-L;Gnd/Combat/Recon/MARINE LIGHT ARMORED;RECONNAISSANCE MARINE LIGHT ARMORED
-G-U-C-R-S;Gnd/Combat/Recon/AIR ASSAULT;RECONNAISSANCE AIR ASSAULT
-G-U-C-R-V;Gnd/Combat/Recon/CAVALRY;RECONNAISSANCE CAVALRY
-G-U-C-R-V-A;Gnd/Combat/Recon/CAVALRY ARMORED;RECONNAISSANCE CAVALRY ARMORED
-G-U-C-R-V-G;Gnd/Combat/Recon/CAVALRY GROUND;RECONNAISSANCE CAVALRY GROUND
-G-U-C-R-V-M;Gnd/Combat/Recon/CAVALRY MOTORIZED;RECONNAISSANCE CAVALRY MOTORIZED
-G-U-C-R-V-O;Gnd/Combat/Recon/CAVALRY AIR;RECONNAISSANCE CAVALRY AIR
-G-U-C-R-X;Gnd/Combat/Recon/LONG RANGE SURVEILLANCE;RECONNAISSANCE LONG RANGE SURVEILLANCE
-G-U-C-S;Gnd/Combat/Security/INTERNAL SECURITY FORCES;INTERNAL SECURITY FORCES
-G-U-C-S-A;Gnd/Combat/Security/AVIATION;AVIATION
-G-U-C-S-G;Gnd/Combat/Security/GROUND;GROUND
-G-U-C-S-G-A;Gnd/Combat/Security/MECHANIZED GROUND;MECHANIZED GROUND
-G-U-C-S-G-D;Gnd/Combat/Security/DISMOUNTED GROUND;DISMOUNTED GROUND
-G-U-C-S-G-M;Gnd/Combat/Security/MOTORIZED GROUND;MOTORIZED GROUND
-G-U-C-S-M;Gnd/Combat/Security/WHEELED MECHANIZED;WHEELED MECHANIZED
-G-U-C-S-R;Gnd/Combat/Security/Rail;Rail
-G-U-C-S-W;Gnd/Combat/Security/RIVERINE;RIVERINE
-G-U-C-V;Gnd/Combat/Aviation/AVIATION;AVIATION
-G-U-C-V-C;Gnd/Combat/Aviation/COMPOSITE;COMPOSITE
-G-U-C-V-F;Gnd/Combat/Aviation/FIXED WING;FIXED WING
-G-U-C-V-F-A;Gnd/Combat/Aviation/ATTACK FIXED WING;ATTACK FIXED WING
-G-U-C-V-F-R;Gnd/Combat/Aviation/RECON FIXED WING;RECON FIXED WING
-G-U-C-V-F-U;Gnd/Combat/Aviation/UTILITY FIXED WING;UTILITY FIXED WING
-G-U-C-V-R;Gnd/Combat/Aviation/ROTARY WING;ROTARY WING
-G-U-C-V-R-A;Gnd/Combat/Aviation/ATTACK ROTARY WING;ATTACK ROTARY WING
-G-U-C-V-R-M;Gnd/Combat/Aviation/MINE COUNTERMEASURE ROTARY WING;MINE COUNTERMEASURE ROTARY WING
-G-U-C-V-R-S;Gnd/Combat/Aviation/SCOUT ROTARY WING;SCOUT ROTARY WING
-G-U-C-V-R-U;Gnd/Combat/Aviation/UTILITY ROTARY WING;UTILITY ROTARY WING
-G-U-C-V-R-U-C;Gnd/Combat/Aviation/C2 ROTARY WING;C2 ROTARY WING
-G-U-C-V-R-U-E;Gnd/Combat/Aviation/MEDEVAC ROTARY WING;MEDEVAC ROTARY WING
-G-U-C-V-R-U-H;Gnd/Combat/Aviation/HEAVY UTILITY ROTARY WING;HEAVY UTILITY ROTARY WING
-G-U-C-V-R-U-L;Gnd/Combat/Aviation/LIGHT UTILITY ROTARY WING;LIGHT UTILITY ROTARY WING
-G-U-C-V-R-U-M;Gnd/Combat/Aviation/MEDIUM UTILITY ROTARY WING;MEDIUM UTILITY ROTARY WING
-G-U-C-V-R-W;Gnd/Combat/Aviation/ANTISUBMARINE WARFARE ROTARY WING;ANTISUBMARINE WARFARE ROTARY WING
-G-U-C-V-R-d;Gnd/Combat/Aviation/Helo/Dual;Helo ground unit (Dual)
-G-U-C-V-R-s;Gnd/Combat/Aviation/Helo/Single;Helo ground unit (Single)
-G-U-C-V-S;Gnd/Combat/Aviation/SEARCH AND RESCUE;SEARCH AND RESCUE
-G-U-C-V-U;Gnd/Combat/Aviation/UNMANNED AERIAL VEHICLE;UNMANNED AERIAL VEHICLE
-G-U-C-V-U-F;Gnd/Combat/Aviation/UNMANNED AERIAL VEHICLE FIXED WING;UNMANNED AERIAL VEHICLE FIXED WING
-G-U-C-V-U-R;Gnd/Combat/Aviation/UNMANNED AERIAL VEHICLE ROTARY WING;UNMANNED AERIAL VEHICLE ROTARY WING
-G-U-C-V-V;Gnd/Combat/Aviation/VERTICAL/SHORT TAKEOFF AND LANDING;VERTICAL/SHORT TAKEOFF AND LANDING
-G-U-H;Gnd/SPECIAL C2 HEADQUARTERS COMPONENT;SPECIAL C2 HEADQUARTERS COMPONENT
-G-U-S;Gnd/COMBAT SERVICE SUPPORT;COMBAT SERVICE SUPPORT
-G-U-S-A;Gnd/ADMINISTRATIVE (ADMIN);ADMINISTRATIVE (ADMIN)
-G-U-S-A-C;Gnd/ADMIN CORPS;ADMIN CORPS
-G-U-S-A-F;Gnd/FINANCE;FINANCE
-G-U-S-A-F-C;Gnd/FINANCE CORPS;FINANCE CORPS
-G-U-S-A-F-T;Gnd/FINANCE THEATER;FINANCE THEATER
-G-U-S-A-J;Gnd/JUDGE ADVOCATE GENERAL (JAG);JUDGE ADVOCATE GENERAL (JAG)
-G-U-S-A-J-C;Gnd/JAG CORPS;JAG CORPS
-G-U-S-A-J-T;Gnd/JAG THEATER;JAG THEATER
-G-U-S-A-L;Gnd/LABOR;LABOR
-G-U-S-A-L-C;Gnd/LABOR CORPS;LABOR CORPS
-G-U-S-A-L-T;Gnd/LABOR THEATER;LABOR THEATER
-G-U-S-A-M;Gnd/MORTUARY/GRAVES REGISTRY;MORTUARY/GRAVES REGISTRY
-G-U-S-A-M-C;Gnd/MORTUARY/GRAVES REGISTRY CORPS;MORTUARY/GRAVES REGISTRY CORPS
-G-U-S-A-M-T;Gnd/MORTUARY/GRAVES REGISTRY THEATER;MORTUARY/GRAVES REGISTRY THEATER
-G-U-S-A-O;Gnd/POSTAL;POSTAL
-G-U-S-A-O-C;Gnd/POSTAL CORPS;POSTAL CORPS
-G-U-S-A-O-T;Gnd/POSTAL THEATER;POSTAL THEATER
-G-U-S-A-P;Gnd/PUBLIC AFFAIRS;PUBLIC AFFAIRS
-G-U-S-A-P-B;Gnd/PUBLIC AFFAIRS BROADCAST;PUBLIC AFFAIRS BROADCAST
-G-U-S-A-P-B-C;Gnd/PUBLIC AFFAIRS BROADCAST CORPS;PUBLIC AFFAIRS BROADCAST CORPS
-G-U-S-A-P-B-T;Gnd/PUBLIC AFFAIRS BROADCAST THEATER;PUBLIC AFFAIRS BROADCAST THEATER
-G-U-S-A-P-C;Gnd/PUBLIC AFFAIRS CORPS;PUBLIC AFFAIRS CORPS
-G-U-S-A-P-M;Gnd/PUBLIC AFFAIRS JOINT INFORMATION BUREAU;PUBLIC AFFAIRS JOINT INFORMATION BUREAU
-G-U-S-A-P-M-C;Gnd/PUBLIC AFFAIRS JIB CORPS;PUBLIC AFFAIRS JIB CORPS
-G-U-S-A-P-M-T;Gnd/PUBLIC AFFAIRS JIB THEATER;PUBLIC AFFAIRS JIB THEATER
-G-U-S-A-P-T;Gnd/PUBLIC AFFAIRS THEATER;PUBLIC AFFAIRS THEATER
-G-U-S-A-Q;Gnd/QUARTERMASTER (SUPPLY);QUARTERMASTER (SUPPLY)
-G-U-S-A-Q-C;Gnd/QUARTERMASTER (SUPPLY) CORPS;QUARTERMASTER (SUPPLY) CORPS
-G-U-S-A-Q-T;Gnd/QUARTERMASTER (SUPPLY) THEATER;QUARTERMASTER (SUPPLY) THEATER
-G-U-S-A-R;Gnd/RELIGIOUS/CHAPLAIN;RELIGIOUS/CHAPLAIN
-G-U-S-A-R-C;Gnd/RELIGIOUS/CHAPLAIN CORPS;RELIGIOUS/CHAPLAIN CORPS
-G-U-S-A-R-T;Gnd/RELIGIOUS/CHAPLAIN THEATER;RELIGIOUS/CHAPLAIN THEATER
-G-U-S-A-S;Gnd/PERSONNEL SERVICES;PERSONNEL SERVICES
-G-U-S-A-S-C;Gnd/PERSONNEL CORPS;PERSONNEL CORPS
-G-U-S-A-S-T;Gnd/PERSONNEL THEATER;PERSONNEL THEATER
-G-U-S-A-T;Gnd/ADMIN THEATER;ADMIN THEATER
-G-U-S-A-W;Gnd/MORALE, WELFARE, RECREATION (MWR);MORALE, WELFARE, RECREATION (MWR)
-G-U-S-A-W-C;Gnd/MWR CORPS;MWR CORPS
-G-U-S-A-W-T;Gnd/MWR THEATER;MWR THEATER
-G-U-S-A-X;Gnd/REPLACEMENT HOLDING UNIT (RHU);REPLACEMENT HOLDING UNIT (RHU)
-G-U-S-A-X-C;Gnd/RHU CORPS;RHU CORPS
-G-U-S-A-X-T;Gnd/RHU THEATER;RHU THEATER
-G-U-S-M;Gnd/MEDICAL;MEDICAL
-G-U-S-M-C;Gnd/MEDICAL CORPS;MEDICAL CORPS
-G-U-S-M-D;Gnd/MEDICAL DENTAL;MEDICAL DENTAL
-G-U-S-M-D-C;Gnd/MEDICAL DENTAL CORPS;MEDICAL DENTAL CORPS
-G-U-S-M-D-T;Gnd/MEDICAL DENTAL THEATER;MEDICAL DENTAL THEATER
-G-U-S-M-M;Gnd/MEDICAL TREATMENT FACILITY;MEDICAL TREATMENT FACILITY
-G-U-S-M-M-C;Gnd/MEDICAL TREATMENT FACILITY CORPS;MEDICAL TREATMENT FACILITY CORPS
-G-U-S-M-M-T;Gnd/MEDICAL TREATMENT FACILITY THEATER;MEDICAL TREATMENT FACILITY THEATER
-G-U-S-M-P;Gnd/MEDICAL PSYCHOLOGICAL;MEDICAL PSYCHOLOGICAL
-G-U-S-M-P-C;Gnd/MEDICAL PSYCHOLOGICAL CORPS;MEDICAL PSYCHOLOGICAL CORPS
-G-U-S-M-P-T;Gnd/MEDICAL PSYCHOLOGICAL THEATER;MEDICAL PSYCHOLOGICAL THEATER
-G-U-S-M-T;Gnd/MEDICAL THEATER;MEDICAL THEATER
-G-U-S-M-V;Gnd/MEDICAL VETERINARY;MEDICAL VETERINARY
-G-U-S-M-V-C;Gnd/MEDICAL VETERINARY CORPS;MEDICAL VETERINARY CORPS
-G-U-S-M-V-T;Gnd/MEDICAL VETERINARY THEATER;MEDICAL VETERINARY THEATER
-G-U-S-S;Gnd/SUPPLY;SUPPLY
-G-U-S-S-1;Gnd/SUPPLY CLASS I;SUPPLY CLASS I
-G-U-S-S-1-C;Gnd/SUPPLY CLASS I CORPS;SUPPLY CLASS I CORPS
-G-U-S-S-1-T;Gnd/SUPPLY CLASS I THEATER;SUPPLY CLASS I THEATER
-G-U-S-S-2;Gnd/SUPPLY CLASS II;SUPPLY CLASS II
-G-U-S-S-2-C;Gnd/SUPPLY CLASS II CORPS;SUPPLY CLASS II CORPS
-G-U-S-S-2-T;Gnd/SUPPLY CLASS II THEATER;SUPPLY CLASS II THEATER
-G-U-S-S-3;Gnd/SUPPLY CLASS III;SUPPLY CLASS III
-G-U-S-S-3-A;Gnd/SUPPLY CLASS III AVIATION;SUPPLY CLASS III AVIATION
-G-U-S-S-3-A-C;Gnd/SUPPLY CLASS III AVIATION CORPS;SUPPLY CLASS III AVIATION CORPS
-G-U-S-S-3-A-T;Gnd/SUPPLY CLASS III AVIATION THEATER;SUPPLY CLASS III AVIATION THEATER
-G-U-S-S-3-C;Gnd/SUPPLY CLASS III CORPS;SUPPLY CLASS III CORPS
-G-U-S-S-3-T;Gnd/SUPPLY CLASS III THEATER;SUPPLY CLASS III THEATER
-G-U-S-S-4;Gnd/SUPPLY CLASS IV;SUPPLY CLASS IV
-G-U-S-S-4-C;Gnd/SUPPLY CLASS IV CORPS;SUPPLY CLASS IV CORPS
-G-U-S-S-4-T;Gnd/SUPPLY CLASS IV THEATER;SUPPLY CLASS IV THEATER
-G-U-S-S-5;Gnd/SUPPLY CLASS V;SUPPLY CLASS V
-G-U-S-S-5-C;Gnd/SUPPLY CLASS V CORPS;SUPPLY CLASS V CORPS
-G-U-S-S-5-T;Gnd/SUPPLY CLASS V THEATER;SUPPLY CLASS V THEATER
-G-U-S-S-6;Gnd/SUPPLY CLASS VI;SUPPLY CLASS VI
-G-U-S-S-6-C;Gnd/SUPPLY CLASS VI CORPS;SUPPLY CLASS VI CORPS
-G-U-S-S-6-T;Gnd/SUPPLY CLASS VI THEATER;SUPPLY CLASS VI THEATER
-G-U-S-S-7;Gnd/SUPPLY CLASS VII;SUPPLY CLASS VII
-G-U-S-S-7-C;Gnd/SUPPLY CLASS VII CORPS;SUPPLY CLASS VII CORPS
-G-U-S-S-7-T;Gnd/SUPPLY CLASS VII THEATER;SUPPLY CLASS VII THEATER
-G-U-S-S-8;Gnd/SUPPLY CLASS VIII;SUPPLY CLASS VIII
-G-U-S-S-8-C;Gnd/SUPPLY CLASS VIII CORPS;SUPPLY CLASS VIII CORPS
-G-U-S-S-8-T;Gnd/SUPPLY CLASS VIII THEATER;SUPPLY CLASS VIII THEATER
-G-U-S-S-9;Gnd/SUPPLY CLASS IX;SUPPLY CLASS IX
-G-U-S-S-9-C;Gnd/SUPPLY CLASS IX CORPS;SUPPLY CLASS IX CORPS
-G-U-S-S-9-T;Gnd/SUPPLY CLASS IX THEATER;SUPPLY CLASS IX THEATER
-G-U-S-S-C;Gnd/SUPPLY CORPS;SUPPLY CORPS
-G-U-S-S-L;Gnd/SUPPLY LAUNDRY/BATH;SUPPLY LAUNDRY/BATH
-G-U-S-S-L-C;Gnd/SUPPLY LAUNDRY/BATH CORPS;SUPPLY LAUNDRY/BATH CORPS
-G-U-S-S-L-T;Gnd/SUPPLY LAUNDRY/BATH THEATER;SUPPLY LAUNDRY/BATH THEATER
-G-U-S-S-T;Gnd/SUPPLY THEATER;SUPPLY THEATER
-G-U-S-S-W;Gnd/SUPPLY WATER;SUPPLY WATER
-G-U-S-S-W-C;Gnd/SUPPLY WATER CORPS;SUPPLY WATER CORPS
-G-U-S-S-W-P;Gnd/SUPPLY WATER PURIFICATION;SUPPLY WATER PURIFICATION
-G-U-S-S-W-P-C;Gnd/SUPPLY WATER PURIFICATION CORPS;SUPPLY WATER PURIFICATION CORPS
-G-U-S-S-W-P-T;Gnd/SUPPLY WATER PURIFICATION THEATER;SUPPLY WATER PURIFICATION THEATER
-G-U-S-S-W-T;Gnd/SUPPLY WATER THEATER;SUPPLY WATER THEATER
-G-U-S-S-X;Gnd/SUPPLY CLASS X;SUPPLY CLASS X
-G-U-S-S-X-C;Gnd/SUPPLY CLASS X CORPS;SUPPLY CLASS X CORPS
-G-U-S-S-X-T;Gnd/SUPPLY CLASS X THEATER;SUPPLY CLASS X THEATER
-G-U-S-S-d;Gnd/SupplyDepot;SupplyDepot
-G-U-S-T;Gnd/TRANSPORTATION;TRANSPORTATION
-G-U-S-T-A;Gnd/APOD/APOE;APOD/APOE
-G-U-S-T-A-C;Gnd/APOD/APOE CORPS;APOD/APOE CORPS
-G-U-S-T-A-T;Gnd/APOD/APOE THEATER;APOD/APOE THEATER
-G-U-S-T-C;Gnd/TRANSPORTATION CORPS;TRANSPORTATION CORPS
-G-U-S-T-I;Gnd/MISSILE;MISSILE
-G-U-S-T-I-C;Gnd/MISSILE CORPS;MISSILE CORPS
-G-U-S-T-I-T;Gnd/MISSILE THEATER;MISSILE THEATER
-G-U-S-T-M;Gnd/MOVEMENT CONTROL CENTER(MCC);MOVEMENT CONTROL CENTER(MCC)
-G-U-S-T-M-C;Gnd/MCC CORPS;MCC CORPS
-G-U-S-T-M-T;Gnd/MCC THEATER;MCC THEATER
-G-U-S-T-R;Gnd/RAILHEAD;RAILHEAD
-G-U-S-T-R-C;Gnd/RAILHEAD CORPS;RAILHEAD CORPS
-G-U-S-T-R-T;Gnd/RAILHEAD THEATER;RAILHEAD THEATER
-G-U-S-T-S;Gnd/SPOD/SPOE;SPOD/SPOE
-G-U-S-T-S-C;Gnd/SPOD/SPOE CORPS;SPOD/SPOE CORPS
-G-U-S-T-S-T;Gnd/SPOD/SPOE THEATER;SPOD/SPOE THEATER
-G-U-S-T-T;Gnd/TRANSPORTATION THEATER;TRANSPORTATION THEATER
-G-U-S-X;Gnd/MAINTENANCE;MAINTENANCE
-G-U-S-X-C;Gnd/MAINTENANCE CORPS;MAINTENANCE CORPS
-G-U-S-X-E;Gnd/ELECTRO OPTICAL;ELECTRO OPTICAL
-G-U-S-X-E-C;Gnd/ELECTRO OPTICAL CORPS;ELECTRO OPTICAL CORPS
-G-U-S-X-E-T;Gnd/ELECTRO OPTICAL THEATER;ELECTRO OPTICAL THEATER
-G-U-S-X-H;Gnd/MAINTENANCE HEAVY;MAINTENANCE HEAVY
-G-U-S-X-H-C;Gnd/MAINTENANCE HEAVY CORPS;MAINTENANCE HEAVY CORPS
-G-U-S-X-H-T;Gnd/MAINTENANCE HEAVY THEATER;MAINTENANCE HEAVY THEATER
-G-U-S-X-O;Gnd/ORDNANCE;ORDNANCE
-G-U-S-X-O-C;Gnd/ORDNANCE CORPS;ORDNANCE CORPS
-G-U-S-X-O-M;Gnd/ORDNANCE MISSILE;ORDNANCE MISSILE
-G-U-S-X-O-M-C;Gnd/ORDNANCE MISSILE CORPS;ORDNANCE MISSILE CORPS
-G-U-S-X-O-M-T;Gnd/ORDNANCE MISSILE THEATER;ORDNANCE MISSILE THEATER
-G-U-S-X-O-T;Gnd/ORDNANCE THEATER;ORDNANCE THEATER
-G-U-S-X-R;Gnd/MAINTENANCE RECOVERY;MAINTENANCE RECOVERY
-G-U-S-X-R-C;Gnd/MAINTENANCE RECOVERY CORPS;MAINTENANCE RECOVERY CORPS
-G-U-S-X-R-T;Gnd/MAINTENANCE RECOVERY THEATER;MAINTENANCE RECOVERY THEATER
-G-U-S-X-T;Gnd/MAINTENANCE THEATER;MAINTENANCE THEATER
-G-U-U;Gnd/COMBAT SUPPORT;COMBAT SUPPORT
-G-U-U-A;Gnd/COMBAT SUPPORT NBC;COMBAT SUPPORT NBC
-G-U-U-A-B;Gnd/BIOLOGICAL;BIOLOGICAL
-G-U-U-A-B-R;Gnd/RECON EQUIPPED;RECON EQUIPPED
-G-U-U-A-C;Gnd/CHEMICAL;CHEMICAL
-G-U-U-A-C-C;Gnd/SMOKE/DECON;SMOKE/DECON
-G-U-U-A-C-C-K;Gnd/MECHANIZED SMOKE/DECON;MECHANIZED SMOKE/DECON
-G-U-U-A-C-C-M;Gnd/MOTORIZED SMOKE/DECON;MOTORIZED SMOKE/DECON
-G-U-U-A-C-R;Gnd/CHEMICAL RECON;CHEMICAL RECON
-G-U-U-A-C-R-S;Gnd/CHEMICAL WHEELED ARMORED VEHICLE;CHEMICAL WHEELED ARMORED VEHICLE
-G-U-U-A-C-R-W;Gnd/CHEMICAL WHEELED ARMORED VEHICLE;CHEMICAL WHEELED ARMORED VEHICLE
-G-U-U-A-C-S;Gnd/SMOKE;SMOKE
-G-U-U-A-C-S-A;Gnd/ARMOR SMOKE;ARMOR SMOKE
-G-U-U-A-C-S-M;Gnd/MOTORIZED SMOKE;MOTORIZED SMOKE
-G-U-U-A-D;Gnd/DECONTAMINATION;DECONTAMINATION
-G-U-U-A-N;Gnd/NUCLEAR;NUCLEAR
-G-U-U-E;Gnd/EXPLOSIVE ORDINANCE DISPOSAL;EXPLOSIVE ORDINANCE DISPOSAL
-G-U-U-I;Gnd/INFORMATION WARFARE UNIT;INFORMATION WARFARE UNIT
-G-U-U-L;Gnd/LAW ENFORCEMENT UNIT;LAW ENFORCEMENT UNIT
-G-U-U-L-C;Gnd/CIVILIAN LAW ENFORCEMENT;CIVILIAN LAW ENFORCEMENT
-G-U-U-L-D;Gnd/CENTRAL INTELLIGENCE DIVISION (CID);CENTRAL INTELLIGENCE DIVISION (CID)
-G-U-U-L-F;Gnd/SECURITY POLICE (AIR);SECURITY POLICE (AIR)
-G-U-U-L-M;Gnd/MILITARY POLICE;MILITARY POLICE
-G-U-U-L-S;Gnd/SHORE PATROL;SHORE PATROL
-G-U-U-M;Gnd/MILITARY INTELLIGENCE;MILITARY INTELLIGENCE
-G-U-U-M-A;Gnd/AERIAL EXPLOITATION;AERIAL EXPLOITATION
-G-U-U-M-C;Gnd/COUNTER INTELLIGENCE;COUNTER INTELLIGENCE
-G-U-U-M-J;Gnd/JOINT INTELLIGENCE CENTER;JOINT INTELLIGENCE CENTER
-G-U-U-M-M-O;Gnd/METEOROLOGICAL;METEOROLOGICAL
-G-U-U-M-O;Gnd/OPERATIONS;OPERATIONS
-G-U-U-M-Q;Gnd/INTERROGATION;INTERROGATION
-G-U-U-M-R;Gnd/SURVEILLANCE;SURVEILLANCE
-G-U-U-M-R-G;Gnd/GROUND SURVEILLANCE RADAR;GROUND SURVEILLANCE RADAR
-G-U-U-M-R-S;Gnd/SENSOR;SENSOR
-G-U-U-M-R-S-S;Gnd/SENSOR SCM;SENSOR SCM
-G-U-U-M-R-X;Gnd/GROUND STATION MODULE;GROUND STATION MODULE
-G-U-U-M-S;Gnd/SIGNAL INTELLIGENCE (SIGINT);SIGNAL INTELLIGENCE (SIGINT)
-G-U-U-M-S-E;Gnd/ELECTRONIC WARFARE;ELECTRONIC WARFARE
-G-U-U-M-S-E-A;Gnd/ARMORED WHEELED VEHICLE;ARMORED WHEELED VEHICLE
-G-U-U-M-S-E-C;Gnd/CORPS;CORPS
-G-U-U-M-S-E-D;Gnd/DIRECTION FINDING;DIRECTION FINDING
-G-U-U-M-S-E-I;Gnd/INTERCEPT;INTERCEPT
-G-U-U-M-S-E-J;Gnd/JAMMING;JAMMING
-G-U-U-M-S-E-T;Gnd/THEATER;THEATER
-G-U-U-M-T;Gnd/TACTICAL EXPLOIT;TACTICAL EXPLOIT
-G-U-U-P;Gnd/LANDING SUPPORT;LANDING SUPPORT
-G-U-U-S;Gnd/SIGNAL UNIT;SIGNAL UNIT
-G-U-U-S-A;Gnd/AREA;AREA
-G-U-U-S-C;Gnd/COMMUNICATION CONFIGURED PACKAGE;COMMUNICATION CONFIGURED PACKAGE
-G-U-U-S-C-L;Gnd/LARGE COMMUNICATION CONFIGURED PACKAGE;LARGE COMMUNICATION CONFIGURED PACKAGE
-G-U-U-S-F;Gnd/FORWARD COMMUNICATIONS;FORWARD COMMUNICATIONS
-G-U-U-S-M;Gnd/MULTIPLE SUBSCRIBER ELEMENT;MULTIPLE SUBSCRIBER ELEMENT
-G-U-U-S-M-L;Gnd/LARGE EXTENSION NODE;LARGE EXTENSION NODE
-G-U-U-S-M-N;Gnd/NODE CENTER;NODE CENTER
-G-U-U-S-M-S;Gnd/SMALL EXTENSION NODE;SMALL EXTENSION NODE
-G-U-U-S-O;Gnd/COMMAND OPERATIONS;COMMAND OPERATIONS
-G-U-U-S-R;Gnd/RADIO UNIT;RADIO UNIT
-G-U-U-S-R-S;Gnd/TACTICAL SATELLITE;TACTICAL SATELLITE
-G-U-U-S-R-T;Gnd/TELETYPE CENTER;TELETYPE CENTER
-G-U-U-S-R-W;Gnd/RELAY;RELAY
-G-U-U-S-S;Gnd/SIGNAL SUPPORT;SIGNAL SUPPORT
-G-U-U-S-W;Gnd/TELEPHONE SWITCH;TELEPHONE SWITCH
-G-U-U-S-X;Gnd/ELECTRONIC RANGING;ELECTRONIC RANGING
-G-U-i;Gnd/IM Resources;Incident Management Resources
-G-U-i-a;Gnd/IM Resources/Animal Health;Animal Health
-G-U-i-a-lar;Gnd/Large Animal Rescue Strike Team;Large Animal Rescue Strike Team
-G-U-i-a-las;Gnd/Large Animal Sheltering Team;Large Animal Sheltering Team
-G-U-i-a-lat;Gnd/Large Animal Transport Team;Large Animal Transport Team
-G-U-i-a-sar;Gnd/Small Animal Rescue Strike Team;Small Animal Rescue Strike Team
-G-U-i-a-sas;Gnd/Small Animal Sheltering Team;Small Animal Sheltering Team
-G-U-i-a-sat;Gnd/Small Animal Transport Team;Small Animal Transport Team
-G-U-i-a-imt;Gnd/Incident Management Team Animal Protection;Incident Management Team Animal Protection
-G-U-i-e;Gnd/IM Resources/Emergency Management;Emergency Management
-G-U-i-e-acrc;Gnd/Airborne Communications Relay (CAP);Airborne Communications Relay(CAP)
-G-U-i-e-acrt;Gnd/Airborne Communications Relay Team;Airborne Communications Relay Team
-G-U-i-e-att;Gnd/Airborne Transport Team;Airborne Transport Team
-G-U-i-e-cis;Gnd/Critical Incident Stress Management Team;Critical Incident Stress Management Team
-G-U-i-e-cst;Gnd/Communications Support Team;Communications Support Team
-G-U-i-e-dc;Gnd/Donations Coordinator;Donations Coordinator
-G-U-i-e-dmt;Gnd/Donations Management Personnel Team;Donations Management Personnel Team
-G-U-i-e-ect;Gnd/Evacuation Coordination Team;Evacuation Coordination Team
-G-U-i-e-efa;Gnd/EOC Finance Administration;EOC Finance Administration
-G-U-i-e-elt;Gnd/Evacuation Liaison Team;Evacuation Liaison Team
-G-U-i-e-ems;Gnd/EOC Management Support Team;EOC Management Support Team
-G-U-i-e-eos;Gnd/EOC Operations Section Chief;EOC Operations Section Chief
-G-U-i-e-eps;Gnd/EOC Planning Section Chief;EOC Planning Section Chief
-G-U-i-e-ial;Gnd/Individual Assistance Disaster Assessment Team Leader;Individual Assistance Disaster Assessment Team Leader
-G-U-i-e-iat;Gnd/Individual Assistance Disaster Assessment Team;Individual Assistance Disaster Assessment Team
-G-U-i-e-imt;Gnd/Incident Management Team;Incident Management Team
-G-U-i-e-mcc;Gnd/Mobile Communications Center;Mobile Communications Center
-G-U-i-e-mfk;Gnd/Mobile Feeding Kitchen;Mobile Feeding Kitchen
-G-U-i-e-pac;Gnd/Public Assistance Coordinator;Public Assistance Coordinator
-G-U-i-e-rna;Gnd/Rapid Needs Assessment Team;Rapid Needs Assessment Team
-G-U-i-e-smt;Gnd/Shelter Management Team;Shelter Management Team
-G-U-i-e-val;Gnd/Volunteer Agency Liaison;Volunteer Agency Liaison
-G-U-i-m;Gnd/IM Resources/Emergency Medical Services;Emergency Medical Services
-G-U-i-m-aaf;Gnd/Air Ambulance (Fixed-Wing);Air Ambulance (Fixed-Wing)
-G-U-i-m-aar;Gnd/Air Ambulance (Rotary-Wing);Air Ambulance (Rotary-Wing)
-G-U-i-m-ag;Gnd/Ambulances (Ground);Ambulances (Ground)
-G-U-i-m-ast;Gnd/Ambulance Strike Team;Ambulance Strike Team
-G-U-i-m-atf;Gnd/Ambulance Task Force;Ambulance Task Force
-G-U-i-m-etf;Gnd/Emergency Medical Task Force;Emergency Medical Task Force
-G-U-i-f;Gnd/IM Resources/Fire HAZMAT;Fire HAZMAT
-G-U-i-f-act;Gnd/Area Command Team, Firefighting;Area Command Team, Firefighting
-G-U-i-f-bp;Gnd/Brush Patrol;Brush Patrol
-G-U-i-f-ct;Gnd/Crew Transport;Crew Transport
-G-U-i-f-efp;Gnd/Engine, Fire (Pumper);Engine, Fire (Pumper)
-G-U-i-f-fb;Gnd/Fire Boat;Fire Boat
-G-U-i-f-ft;Gnd/Fuel Tender;Fuel Tender
-G-U-i-f-fta;Gnd/Fire Truck;Fire Truck
-G-U-i-f-ftf;Gnd/Foam Tender;Foam Tender
-G-U-i-f-hc;Gnd/Hand Crew;Hand Crew
-G-U-i-f-het;Gnd/HazMat Entry Team;HazMat Entry Team
-G-U-i-f-hf;Gnd/Helicopters Firefighting;Helicopters, Firefighting
-G-U-i-f-ht;Gnd/Helitanker ;Helitanker
-G-U-i-f-imt;Gnd/Incident Management Team Firefighting;Incident Management Team Firefighting
-G-U-i-f-ibt;Gnd/Interagency Buying Team Firefighting;Interagency Buying Team Firefighting
-G-U-i-f-mcu;Gnd/Mobile Communications Unit;Mobile Communications Unit
-G-U-i-f-nsf;Gnd/USCG National Strike Force;USCG National Strike Force
-G-U-i-f-pp;Gnd/Portable Pump;Portable Pump
-G-U-i-f-st;Gnd/Strike Team, Engine (Fire);Strike Team, Engine (Fire)
-G-U-i-f-wt;Gnd/Water Tender, Firefighting (Tanker);Water Tender, Firefighting (Tanker)
-G-U-i-h;Gnd/IM Resources/Health and Medical;Health and Medical
-G-U-i-h-dmb;Gnd/Disaster Medical Assistance Team - Basic;Disaster Medical Assistance Team - Basic
-G-U-i-h-dmc;Gnd/Disaster Medical Assistance Team - Crush Injury Specialty;Disaster Medical Assistance Team - Crush Injury Specialty
-G-U-i-h-dmm;Gnd/Disaster Medical Assistance Team - Mental Health;Disaster Medical Assistance Team - Mental Health
-G-U-i-h-dmp;Gnd/Disaster Medical Assistance Team - Pediatric;Disaster Medical Assistance Team - Pediatric
-G-U-i-h-dms;Gnd/Disaster Medical Assistance Team - Burn;Disaster Medical Assistance Team - Burn
-G-U-i-h-mor;Gnd/Disaster Mortuary Operational Response Team;Disaster Mortuary Operational Response Team
-G-U-i-h-msr;Gnd/International Medical Surgical Response Team;International Medical Surgical Response Team
-G-U-i-h-mst;Gnd/NDMS Management Support Team;NDMS Management Support Team
-G-U-i-h-vma;Gnd/Veterinary Medical Assistance Team;Veterinary Medical Assistance Team
-G-U-i-l;Gnd/IM Resources/Law Enforcement;Law Enforcement
-G-U-i-l-bs;Gnd/Bomb Squad Explosives Team;Bomb Squad Explosives Team
-G-U-i-l-cct;Gnd/Crowd Control Team;Crowd Control Team
-G-U-i-l-dt;Gnd/Public Safety Dive Team;Public Safety Dive Team
-G-U-i-l-hps;Gnd/Aviation-Helicopters Patrol Surveillance;Aviation-Helicopters Patrol Surveillance
-G-U-i-l-oa;Gnd/Observation Aircraft;Observation Aircraft
-G-U-i-l-tt;Gnd/SWAT Tactical Team;SWAT Tactical Team
-G-U-i-p;Gnd/IM Resources/Public Works;Public Works
-G-U-i-p-acf;Gnd/Air Curtain Burners (Above Ground);Air Curtain Burners (Above Ground)
-G-U-i-p-ach;Gnd/Air Conditioner Heater;Air Conditioner Heater
-G-U-i-p-act;Gnd/Air Curtain Burners (In Ground);Air Curtain Burners (In Ground)
-G-U-i-p-atc;Gnd/All Terrain Cranes;All Terrain Cranes
-G-U-i-p-bh;Gnd/Backhoe Loader;Backhoe Loader
-G-U-i-p-cah;Gnd/Chillers Air Handlers;Chillers Air Handlers
-G-U-i-p-cc;Gnd/Crawler Cranes;Crawler Cranes
-G-U-i-p-cce;Gnd/Concrete Cutter Multi-Processor for Hydraulic Excavator;Concrete Cutter Multi-Processor for Hydraulic Excavator
-G-U-i-p-dat;Gnd/Disaster Assessment Team;Disaster Assessment Team
-G-U-i-p-dmm;Gnd/Debris Management Monitoring Team;Debris Management Monitoring Team
-G-U-i-p-dmr;Gnd/Debris Management Site Reduction Team;Debris Management Site Reduction Team
-G-U-i-p-dmt;Gnd/Debris Management Team;Debris Management Team
-G-U-i-p-drt;Gnd/Disaster Recovery Team;Disaster Recovery Team
-G-U-i-p-dt;Gnd/Dump Trailer;Dump Trailer
-G-U-i-p-dtf;Gnd/Dump Truck Off Road;Dump Truck Off Road
-G-U-i-p-dtn;Gnd/Dump Truck On Road;Dump Truck On Road
-G-U-i-p-epr;Gnd/Electrical Power Restoration Team;Electrical Power Restoration Team
-G-U-i-p-es;Gnd/Engineering Services;Engineering Services
-G-U-i-p-fbt;Gnd/Flat Bed Trailer Truck;Flat Bed Trailer Truck
-G-U-i-p-gen;Gnd/Generators ;Generators
-G-U-i-p-hel;Gnd/Hydraulic Excavator (Large);Hydraulic Excavator (Large)
-G-U-i-p-hem;Gnd/Hydraulic Excavator (Medium);Hydraulic Excavator (Medium)
-G-U-i-p-htc;Gnd/Hydraulic Truck Cranes;Hydraulic Truck Cranes
-G-U-i-p-ltc;Gnd/Lattice Truck Cranes;Lattice Truck Cranes
-G-U-i-p-tb;Gnd/Tug Boat;Tug Boat
-G-U-i-p-td;Gnd/Track Dozer;Track Dozer
-G-U-i-p-tg;Gnd/Tub Grinder;Tub Grinder
-G-U-i-p-tt;Gnd/Tractor Trailer;Tractor Trailer
-G-U-i-p-wd;Gnd/Wheel Dozer;Wheel Dozer
-G-U-i-p-wll;Gnd/Wheel Loaders (Large);Wheel Loaders (Large)
-G-U-i-p-wlm;Gnd/Wheel Loaders (Medium);Wheel Loaders (Medium)
-G-U-i-p-wls;Gnd/Wheel Loaders (Small);Wheel Loaders (Small)
-G-U-i-p-wpt;Gnd/Water Purification Team;Water Purification Team
-G-U-i-p-wt;Gnd/Water Truck;Water Truck
-G-U-i-s;Gnd/IM Resources/Search and Rescue;Search and Rescue
-G-U-i-s-ar;Gnd/Airborne Reconnaissance;Airborne Reconnaissance
-G-U-i-s-ast;Gnd/Air Search Team;Air Search Team
-G-U-i-s-cas;Gnd/Canine SAR Team Avalanche Snow;Canine SAR Team Avalanche Snow
-G-U-i-s-cav;Gnd/Cave SAR Team;Cave SAR Team
-G-U-i-s-cdr;Gnd/Canine SAR Team Disaster Response;Canine SAR Team Disaster Response
-G-U-i-s-clc;Gnd/Canine SAR Team Land Cadaver;Canine SAR Team Land Cadaver
-G-U-i-s-col;Gnd/Collapse SAR Team;Collapse SAR Team
-G-U-i-s-cwa;Gnd/Canine SAR Team Water;Canine SAR Team Water
-G-U-i-s-cwi;Gnd/Canine SAR Team Wilderness;Canine SAR Team Wilderness
-G-U-i-s-cwt;Gnd/Canine SAR Team Wilderness Tracking;Canine SAR Team Wilderness Tracking
-G-U-i-s-mt;Gnd/Mine Tunnel SAR Team;Mine Tunnel SAR Team
-G-U-i-s-mnt;Gnd/Mountain SAR Team;Mountain SAR Team
-G-U-i-s-rdf;Gnd/Radio Direction Finding Team;Radio Direction Finding Team
-G-U-i-s-sfd;Gnd/Swiftwater Flood Search and Dive Rescue Team;Swiftwater Flood Search and Dive Rescue Team
-G-U-i-s-uis;Gnd/USAR Incident Support Team;USAR Incident Support Team
-G-U-i-s-utf;Gnd/USAR Task Force;USAR Task Force
-G-U-i-s-wi;Gnd/Wilderness SAR Team;Wilderness SAR Team
-G-U-i-o;Gnd/IM Resources/Other;Other
-S;Surface/SEA SURFACE TRACK;SEA SURFACE TRACK
-S-C;Surface/COMBATANT;COMBATANT
-S-C-A;Surface/AMPHIBIOUS WARFARE SHIP;AMPHIBIOUS WARFARE SHIP
-S-C-A-L-A;Surface/ASSAULT VESSEL;ASSAULT VESSEL
-S-C-A-L-C;Surface/LANDING CRAFT;LANDING CRAFT
-S-C-A-L-S;Surface/LANDING SHIP;LANDING SHIP
-S-C-H;Surface/HOVERCRAFT;HOVERCRAFT
-S-C-L;Surface/LINE;LINE
-S-C-L-B-B;Surface/BATTLESHIP;BATTLESHIP
-S-C-L-C-C;Surface/CRUISER;CRUISER
-S-C-L-C-V;Surface/CARRIER;CARRIER
-S-C-L-D-D;Surface/DESTROYER;DESTROYER
-S-C-L-F-F;Surface/FRIGATE/CORVETTE;FRIGATE/CORVETTE
-S-C-M;Surface/MINE WARFARE VESSEL;MINE WARFARE VESSEL
-S-C-M-M-A;Surface/MCM SUPPORT;MCM SUPPORT
-S-C-M-M-D;Surface/MCM DRONE;MCM DRONE
-S-C-M-M-H;Surface/MINEHUNTER;MINEHUNTER
-S-C-M-M-L;Surface/MINELAYER;MINELAYER
-S-C-M-M-S;Surface/MINESWEEPER;MINESWEEPER
-S-C-P;Surface/PATROL;PATROL
-S-C-P-S-B;Surface/ANTISUBMARINE WARFARE;ANTISUBMARINE WARFARE
-S-C-P-S-U;Surface/ANTISURFACE WARFARE;ANTISURFACE WARFARE
-S-G;Surface/NAVY GROUP;NAVY GROUP
-S-G-C;Surface/CONVOY;CONVOY
-S-G-G;Surface/NAVY TASK GROUP;NAVY TASK GROUP
-S-G-T;Surface/NAVY TASK FORCE;NAVY TASK FORCE
-S-G-U;Surface/NAVY TASK UNIT;NAVY TASK UNIT
-S-N;Surface/NONCOMBATANT;NONCOMBATANT
-S-N-F;Surface/FLEET SUPPORT;FLEET SUPPORT
-S-N-H;Surface/HOVERCRAFT;HOVERCRAFT
-S-N-I;Surface/INTELLIGENCE;INTELLIGENCE
-S-N-M;Surface/HOSPITAL SHIP;HOSPITAL SHIP
-S-N-N;Surface/STATION;STATION
-S-N-N-R;Surface/RESCUE;RESCUE
-S-N-R;Surface/UNDERWAY REPLENISHMENT;UNDERWAY REPLENISHMENT
-S-N-S;Surface/SERVICE/SUPPORT HARBOR;SERVICE/SUPPORT HARBOR
-S-O;Surface/OWN TRACK;OWN TRACK
-S-S;Surface/STATION;STATION
-S-S-A;Surface/ASW SHIP;ASW SHIP
-S-S-P;Surface/PICKET;PICKET
-S-X;Surface/NON MILITARY;NON MILITARY
-S-X-F;Surface/FISHING;FISHING
-S-X-F-D-F;Surface/DRIFTER;DRIFTER
-S-X-F-D-R;Surface/DREDGE;DREDGE
-S-X-F-T-R;Surface/TRAWLER;TRAWLER
-S-X-H;Surface/HOVERCRAFT;HOVERCRAFT
-S-X-L;Surface/LAW ENFORCEMENT VESSEL;LAW ENFORCEMENT VESSEL
-S-X-M;Surface/MERCHANT;MERCHANT
-S-X-M-C;Surface/CARGO;CARGO
-S-X-M-F;Surface/FERRY;FERRY
-S-X-M-H;Surface/HAZARDOUS MATERIALS (HAZMAT);HAZARDOUS MATERIALS (HAZMAT)
-S-X-M-O;Surface/OILER/TANKER;OILER/TANKER
-S-X-M-P;Surface/PASSENGER;PASSENGER
-S-X-M-R;Surface/ROLL ON/ROLL OFF;ROLL ON/ROLL OFF
-S-X-M-T-O;Surface/TOWING VESSEL;TOWING VESSEL
-S-X-M-T-U;Surface/TUG;TUG
-S-X-R;Surface/LEISURE CRAFT;LEISURE CRAFT
-U;SubSurf/SUBSURFACE TRACK;SUBSURFACE TRACK
-U-N;SubSurf/NON SUBMARINE;NON SUBMARINE
-U-N-D;SubSurf/DIVER;DIVER
-U-S;SubSurf/SUBMARINE;SUBMARINE
-U-S-C;SubSurf/SUBMARINE CONVENTIONAL PROPULSION;SUBMARINE CONVENTIONAL PROPULSION
-U-S-N;SubSurf/SUBMARINE NUCLEAR PROPULSION;SUBMARINE NUCLEAR PROPULSION
-U-S-O;SubSurf/OTHER SUBMERSIBLE;OTHER SUBMERSIBLE
-U-S-S;SubSurf/STATION;STATION
-U-S-S-A;SubSurf/ASW SUBMARINE;ASW SUBMARINE
-U-S-U;SubSurf/UNMANNED UNDERWATER VEHICLE (UUV);UNMANNED UNDERWATER VEHICLE (UUV)
-U-W;SubSurf/UNDERWATER WEAPON;UNDERWATER WEAPON
-U-W-D;SubSurf/UNDERWATER DECOY;UNDERWATER DECOY
-U-W-D-M;SubSurf/SEA MINE DECOY;SEA MINE DECOY
-U-W-M;SubSurf/SEA MINE;SEA MINE
-U-W-M-D;SubSurf/SEA MINE DEALT;SEA MINE DEALT
-U-W-M-F;SubSurf/SEA MINE (FLOATING);SEA MINE (FLOATING)
-U-W-M-F-D;SubSurf/SEA MINE (FLOATING) DEALT;SEA MINE (FLOATING) DEALT
-U-W-M-G;SubSurf/SEA MINE (GROUND);SEA MINE (GROUND)
-U-W-M-G-D;SubSurf/SEA MINE (GROUND) DEALT;SEA MINE (GROUND) DEALT
-U-W-M-M;SubSurf/SEA MINE (MOORED);SEA MINE (MOORED)
-U-W-M-M-D;SubSurf/SEA MINE (MOORED) DEALT;SEA MINE (MOORED) DEALT
-U-W-M-O;SubSurf/SEA MINE (IN OTHER POSITION);SEA MINE (IN OTHER POSITION)
-U-W-M-O-D;SubSurf/SEA MINE (IN OTHER POSITION) DEALT;SEA MINE (IN OTHER POSITION) DEALT
-U-W-T;SubSurf/TORPEDO;TORPEDO
+A;هوا;Air Track
+A-C-F;هوا/غیرنظامی/ثابت‌بال;FIXED WING
+A-C-F-q;هوا/غیرنظامی/ثابت‌بال/پهپاد;FIXED WING RPV/Drone
+A-C-H;هوا/غیرنظامی/بالگرد;ROTARY WING
+A-C-L;هوا/غیرنظامی/بلیمپ;LIGHTER THAN AIR
+A-M-F;هوا/نظامی/ثابت‌بال;FIXED WING
+A-M-F-g;هوا/نظامی/ثابت‌بال/Gunship;FIXED WING GUNSHIP
+A-M-F-A;هوا/نظامی/ثابت‌بال/هجومی/Strike;ATTACK/STRIKE
+A-M-F-B;هوا/نظامی/ثابت‌بال/Bomber;BOMBER
+A-M-F-C;هوا/نظامی/ثابت‌بال/ترابری;CARGO AIRLIFT (TRANSPORT)
+A-M-F-C-H;هوا/نظامی/ثابت‌بال/ترابری/سنگین;CARGO AIRLIFT (HEAVY)
+A-M-F-C-L;هوا/نظامی/ثابت‌بال/ترابری/سبک;CARGO AIRLIFT (LIGHT)
+A-M-F-C-M;هوا/نظامی/ثابت‌بال/ترابری/متوسط;CARGO AIRLIFT (MEDIUM)
+A-M-F-D;هوا/نظامی/ثابت‌بال/C2;AIRBORNE COMMAND POST (C2)
+A-M-F-F;هوا/نظامی/ثابت‌بال/Fighter;FIGHTER
+A-M-F-F-I;هوا/نظامی/ثابت‌بال/Interceptor;INTERCEPTOR
+A-M-F-H;هوا/نظامی/ثابت‌بال/CSAR;COMBAT SEARCH AND RESCUE (CSAR)
+A-M-F-J;هوا/نظامی/ثابت‌بال/ECM/Jammer;ELECTRONIC COUNTERMEASURES (ECM/JAMMER)
+A-M-F-K;هوا/نظامی/ثابت‌بال/Tanker;TANKER
+A-M-F-L;هوا/نظامی/ثابت‌بال/VSTOL;VSTOL
+A-M-F-M;هوا/نظامی/ثابت‌بال/SOF;SPECIAL OPERATIONS FORCES (SOF)
+A-M-F-O;هوا/نظامی/ثابت‌بال/MEDEVAC;MEDEVAC
+A-M-F-P;هوا/نظامی/ثابت‌بال/Patrol;PATROL
+A-M-F-P-M;هوا/نظامی/ثابت‌بال/Mine Countermeasures;MINE COUNTERMEASURES
+A-M-F-P-N;هوا/نظامی/ثابت‌بال/ASUW;ANTISURFACE WARFARE/ASUW
+A-M-F-Q;هوا/نظامی/ثابت‌بال/Drone,RPV,UAV;DRONE (RPV/UAV)
+A-M-F-R;هوا/نظامی/ثابت‌بال/RECONN;RECONNAISSANCE
+A-M-F-R-W;هوا/نظامی/ثابت‌بال/AEW;AIRBORNE EARLY WARNING (AEW)
+A-M-F-R-X;هوا/نظامی/ثابت‌بال/Photo;PHOTOGRAPHIC
+A-M-F-R-Z;هوا/نظامی/ثابت‌بال/ESM;ELECTRONIC SURVEILLANCE MEASURES
+A-M-F-S;هوا/نظامی/ثابت‌بال/ASW/Carrier Based;ANTISUBMARINE WARFARE (ASW) CARRIER BASED
+A-M-F-T;هوا/نظامی/ثابت‌بال/Trainer;TRAINER
+A-M-F-U;هوا/نظامی/ثابت‌بال/چندمنظوره;UTILITY
+A-M-F-U-H;هوا/نظامی/ثابت‌بال/چندمنظوره/سنگین;UTILITY (HEAVY)
+A-M-F-U-L;هوا/نظامی/ثابت‌بال/چندمنظوره/سبک;UTILITY (LIGHT)
+A-M-F-U-M;هوا/نظامی/ثابت‌بال/چندمنظوره/متوسط;UTILITY (MEDIUM)
+A-M-F-Y;هوا/نظامی/ثابت‌بال/C3I;COMMUNICATIONS (C3I)
+A-M-H;هوا/نظامی/بالگرد;ROTARY WING
+A-M-H-A;هوا/نظامی/بالگرد/هجومی;ATTACK
+A-M-H-C;هوا/نظامی/بالگرد/ترابری;CARGO AIRLIFT (TRANSPORT)
+A-M-H-C-H;هوا/نظامی/بالگرد/ترابری/سنگین;CARGO AIRLIFT (HEAVY)
+A-M-H-C-L;هوا/نظامی/بالگرد/ترابری/سبک;CARGO AIRLIFT (LIGHT)
+A-M-H-C-M;هوا/نظامی/بالگرد/ترابری/متوسط;CARGO AIRLIFT (MEDIUM)
+A-M-H-D;هوا/نظامی/بالگرد/C2;AIRBORNE COMMAND POST (C2)
+A-M-H-H;هوا/نظامی/بالگرد/CSAR;COMBAT SEARCH AND RESCUE (CSAR)
+A-M-H-I;هوا/نظامی/بالگرد/Mine Countermeasures;MINE COUNTERMEASURES
+A-M-H-J;هوا/نظامی/بالگرد/ECM/Jammer;ELECTRONIC COUNTERMEASURES (ECM/JAMMER)
+A-M-H-K;هوا/نظامی/بالگرد/Tanker;TANKER
+A-M-H-M;هوا/نظامی/بالگرد/SOF;SPECIAL OPERATIONS FORCES (SOF)
+A-M-H-O;هوا/نظامی/بالگرد/MEDEVAC;MEDEVAC
+A-M-H-Q;هوا/نظامی/بالگرد/Drone,RPV,UAV;DRONE (RPV/UAV)
+A-M-H-R;هوا/نظامی/بالگرد/Reconnaissance;RECONNAISSANCE
+A-M-H-S;هوا/نظامی/بالگرد/ASW/MPA;ANTISUBMARINE WARFARE/MPA
+A-M-H-T;هوا/نظامی/بالگرد/Trainer;TRAINER
+A-M-H-U;هوا/نظامی/بالگرد/چندمنظوره;UTILITY
+A-M-H-U-H;هوا/نظامی/بالگرد/چندمنظوره/سنگین);UTILITY (HEAVY)
+A-M-H-U-L;هوا/نظامی/بالگرد/چندمنظوره/سبک);UTILITY (LIGHT)
+A-M-H-U-M;هوا/نظامی/بالگرد/چندمنظوره/متوسط);UTILITY (MEDIUM)
+A-M-L;هوا/نظامی/بلیمپ;LIGHTER THAN AIR
+A-W;هوا/سلاج;WEAPON
+A-W-D;هوا/سلاج/Decoy;DECOY
+A-W-M;هوا/سلاج/Missile In Flight;MISSILE IN FLIGHT
+A-W-M-A;هوا/سلاج/موشک/Air Launched;AIR LAUNCHED MISSILE
+A-W-M-A-A;هوا/سلاج/موشک/Air To Air;AIR TO AIR MISSILE (AAM)
+A-W-M-A-S;هوا/سلاج/موشک/Air To Surface;AIR TO SURFACE MISSILE (ASM)
+A-W-M-L;هوا/سلاج/موشک/Attack Missile;LAND ATTACK MISSILE
+A-W-M-S;هوا/سلاج/موشک/Land Launched Missile;سطح/LAND LAUNCHED MISSILE
+A-W-M-S-A;هوا/سلاج/موشک/SAM;SURFACE TO AIR MISSILE (SAM)
+A-W-M-S-A-f;هوا/سلاج/موشک/SAM/Fixed Site;SAM (FixedSite)
+A-W-M-S-A-i;هوا/سلاج/موشک/SAM/Manpad;SAM (Manpad)
+A-W-M-S-A-m;هوا/سلاج/موشک/SAM/Mobile;SAM (Mobile)
+A-W-M-S-S;هوا/سلاج/موشک/Surface To Surface (SSM);SURFACE TO SURFACE MISSILE (SSM)
+A-W-M-U;هوا/سلاج/موشک/Subsurface To Surface (S/SSM);SUBSURFACE TO SURFACE MISSILE (S/SSM)
+G;زمین;GROUND TRACK
+G-E;زمین/Equipment;EQUIPMENT
+G-E-S;زمین/تجهیز/سنسور;SENSOR
+G-E-S-E;زمین/تجهیز/سنسور/Emplaced;EMPLACED SENSOR
+G-E-S-R;زمین/تجهیز/سنسور/Radar;RADAR
+G-E-V;زمین/تجهیز/Vehicle;GROUND VEHICLE
+G-E-V-A;زمین/تجهیز/Vehic/زرهی/Gun;Armor (GUN)
+G-E-V-A-A;زمین/تجهیز/Vehic/زرهی/Apc;Armor (APC)
+G-E-V-A-A-R;زمین/تجهیز/Vehic/زرهی/Apc/Recovery;ARMORED PERSONNEL CARRIER RECOVERY
+G-E-V-A-C;زمین/تجهیز/Vehic/زرهی/C2V/ACV;C2V/ACV
+G-E-V-A-I;زمین/تجهیز/Vehic/زرهی/Infantry;ARMORED INFANTRY
+G-E-V-A-L;زمین/تجهیز/Vehic/زرهی/سبک;LIGHT ARMORED VEHICLE
+G-E-V-A-S;زمین/تجهیز/Vehic/زرهی/Combat Service Support;COMBAT SERVICE SUPPORT VEHICLE
+G-E-V-A-T;زمین/تجهیز/Vehic/زرهی/Tank;TANK
+G-E-V-A-T-H;زمین/تجهیز/Vehic/زرهی/Tank/سنگین;TANK HEAVY
+G-E-V-A-T-H-R;زمین/تجهیز/Vehic/زرهی/Tank/سنگین/Recovery;TANK HEAVY RECOVERY
+G-E-V-A-T-L;زمین/تجهیز/Vehic/زرهی/Tank/سبک;TANK LIGHT
+G-E-V-A-T-L-R;زمین/تجهیز/Vehic/زرهی/Tank/سبک/Recovery;TANK LIGHT RECOVERY
+G-E-V-A-T-M;زمین/تجهیز/Vehic/زرهی/Tank/متوسط;TANK MEDIUM
+G-E-V-A-T-M-R;زمین/تجهیز/Vehic/زرهی/Tank/متوسط/Recovery;TANK MEDIUM RECOVERY
+G-E-V-C;زمین/تجهیز/Vehic/غیرنظامی;CIVILIAN VEHICLE
+G-E-V-E;زمین/تجهیز/Vehic/Engineer;ENGINEER VEHICLE
+G-E-V-E-A;زمین/تجهیز/Vehic/Mine Clearing Vehicle;MINE CLEARING VEHICLE
+G-E-V-E-A-A;زمین/تجهیز/Vehic/Armored Mounted Mine Clearing Vehicle;ARMORED MOUNTED MINE CLEARING VEHICLE
+G-E-V-E-A-T;زمین/تجهیز/Vehic/Trailer Mounted Mine Clearing Vehicle;TRAILER MOUNTED MINE CLEARING VEHICLE
+G-E-V-E-B;زمین/تجهیز/Vehic/Bridge;BRIDGE
+G-E-V-E-C;زمین/تجهیز/Vehic/Construction;CONSTRUCTION VEHICLE
+G-E-V-E-D;زمین/تجهیز/Vehic/Dozer;DOZER
+G-E-V-E-E;زمین/تجهیز/Vehic/Earthmover;EARTHMOVER
+G-E-V-E-M;زمین/تجهیز/Vehic/Mine Laying Vehicle;MINE LAYING VEHICLE
+G-E-V-E-M-L;زمین/تجهیز/Vehic/Truck Mounted With Volcano;TRUCK MOUNTED WITH VOLCANO
+G-E-V-E-M-V;زمین/تجهیز/Vehic/Armored Carrier With Volcano;ARMORED CARRIER WITH VOLCANO
+G-E-V-T;زمین/تجهیز/Vehic/Locomotive;Locomotive
+G-E-V-U;زمین/تجهیز/Vehic/چندمنظوره;UTILITY VEHICLE
+G-E-V-U-B;زمین/تجهیز/Vehic/Bus;BUS
+G-E-V-U-L;زمین/تجهیز/Vehic/Limited Cross Country Truck;LIMITED CROSS COUNTRY TRUCK
+G-E-V-U-R;زمین/تجهیز/Vehic/Boat;WATER CRAFT
+G-E-V-U-R-l;زمین/تجهیز/Vehic/Boat/Large;Boat (Large)
+G-E-V-U-R-m;زمین/تجهیز/Vehic/Boat/Med;Boat (Med)
+G-E-V-U-R-s;زمین/تجهیز/Vehic/Boat/Small;Boat (Small)
+G-E-V-U-S;زمین/تجهیز/Vehic/Semi;SEMI
+G-E-V-U-X;زمین/تجهیز/Vehic/Cross Country Truck;CROSS COUNTRY TRUCK
+G-E-V-m;زمین/تجهیز/Vehic/Ambulance;Ambulance
+G-E-W;زمین/تجهیز/سلاج;WEAPON
+G-E-W-A;زمین/تجهیز/سلاج/Air Defense Gun;AIR DEFENSE GUN
+G-E-W-A-H;زمین/تجهیز/سلاج/AAA/سنگین;AAA (Heavy)
+G-E-W-A-L;زمین/تجهیز/سلاج/AAA/سبک;AAA (Light)
+G-E-W-A-M;زمین/تجهیز/سلاج/AAA/متوسط;AAA (Medium)
+G-E-W-D;زمین/تجهیز/سلاج/DirectFire/;DIRECT FIRE GUN
+G-E-W-D-H;زمین/تجهیز/سلاج/DirectFire/سنگین;DIRECT FIRE GUN HEAVY
+G-E-W-D-H-S;زمین/تجهیز/سلاج/DirectFire/سنگین/Self Propelled;DIRECT FIRE GUN HEAVY SELF PROPELLED
+G-E-W-D-L;زمین/تجهیز/سلاج/DirectFire/سبک;DIRECT FIRE GUN LIGHT
+G-E-W-D-L-S;زمین/تجهیز/سلاج/DirectFire/سبک/Self Propelled;DIRECT FIRE GUN LIGHT SELF PROPELLED
+G-E-W-D-M;زمین/تجهیز/سلاج/DirectFire/متوسط;DIRECT FIRE GUN MEDIUM
+G-E-W-D-M-S;زمین/تجهیز/سلاج/DirectFire/متوسط/Self Propelled;DIRECT FIRE GUN MEDIUM SELF PROPELLED
+G-E-W-G;زمین/تجهیز/سلاج/AnitTankGun;ANTI TANK GUN
+G-E-W-G-H;زمین/تجهیز/سلاج/Atg/سنگین;ANTI TANK GUN HEAVY
+G-E-W-G-L;زمین/تجهیز/سلاج/Atg/سبک;ANTI TANK GUN LIGHT
+G-E-W-G-M;زمین/تجهیز/سلاج/Atg/متوسط;ANTI TANK GUN MEDIUM
+G-E-W-G-R;زمین/تجهیز/سلاج/Atg/Recoilless;ANTI TANK GUN RECOILLESS
+G-E-W-H;زمین/تجهیز/سلاج/Howitzer;HOWITZER
+G-E-W-H-H;زمین/تجهیز/سلاج/Howitzer/سنگین;HOWITZER HEAVY
+G-E-W-H-H-S;زمین/تجهیز/سلاج/Howitzer/سنگین/Self Propelled;HOWITZER HEAVY SELF PROPELLED
+G-E-W-H-L;زمین/تجهیز/سلاج/Howitzer/سبک;HOWITZER LIGHT
+G-E-W-H-L-S;زمین/تجهیز/سلاج/Howitzer/سبک/Self Propelled;HOWITZER LIGHT SELF PROPELLED
+G-E-W-H-M;زمین/تجهیز/سلاج/Howitzer/متوسط;HOWITZER MEDIUM
+G-E-W-H-M-S;زمین/تجهیز/سلاج/Howitzer/متوسط/Self Propelled;HOWITZER MEDIUM SELF PROPELLED
+G-E-W-M;زمین/تجهیز/سلاج/MissileLauncher;MISSILE LAUNCHER
+G-E-W-M-A;زمین/تجهیز/سلاج/MissileLauncher/Ad/Air Defense;AIR DEFENSE (AD) MISSILE LAUNCHER
+G-E-W-M-A-I;زمین/تجهیز/سلاج/MissileLauncher/Ad/Intermediate Range;INTERMEDIATE RANGE AD MISSILE LAUNCHER
+G-E-W-M-A-L;زمین/تجهیز/سلاج/MissileLauncher/Ad/Long Range;LONG RANGE AD MISSILE LAUNCHER
+G-E-W-M-A-S;زمین/تجهیز/سلاج/MissileLauncher/Ad/Short Range;SHORT RANGE AD MISSILE LAUNCHER
+G-E-W-M-A-T;زمین/تجهیز/سلاج/MissileLauncher/Ad/Theater;AD MISSILE LAUNCHER THEATER
+G-E-W-M-S;زمین/تجهیز/سلاج/MissileLauncher/SS/Surface Surf (SS);SURF SURF (SS) MISSILE LAUNCHER
+G-E-W-M-S-I;زمین/تجهیز/سلاج/MissileLauncher/SS/Intermediate Range;INTERMEDIATE RANGE SS MISSILE LAUNCHER
+G-E-W-M-S-L;زمین/تجهیز/سلاج/MissileLauncher/SS/Long Range;LONG RANGE SS MISSILE LAUNCHER
+G-E-W-M-S-S;زمین/تجهیز/سلاج/MissileLauncher/SS/Short Range;SHORT RANGE SS MISSILE LAUNCHER
+G-E-W-M-T;زمین/تجهیز/سلاج/MissileLauncher/AT/Antitank;MISSILE LAUNCHER ANTITANK (AT)
+G-E-W-M-T-H;زمین/تجهیز/سلاج/MissileLauncher/AT/سنگین;MISSILE LAUNCHER AT HEAVY
+G-E-W-M-T-L;زمین/تجهیز/سلاج/MissileLauncher/AT/سبک;MISSILE LAUNCHER AT LIGHT
+G-E-W-M-T-M;زمین/تجهیز/سلاج/MissileLauncher/AT/متوسط;MISSILE LAUNCHER AT MEDIUM
+G-E-W-O;زمین/تجهیز/سلاج/Mortar;MORTAR
+G-E-W-O-H;زمین/تجهیز/سلاج/Mortar/سنگین;MORTAR HEAVY
+G-E-W-O-L;زمین/تجهیز/سلاج/Mortar/سبک;MORTAR LIGHT
+G-E-W-O-M;زمین/تجهیز/سلاج/Mortar/متوسط;MORTAR MEDIUM
+G-E-W-R;زمین/تجهیز/سلاج/Rifle/Automatic Weapon;RIFLE/AUTOMATIC WEAPON
+G-E-W-R-H;زمین/تجهیز/سلاج/Rifle/سنگین Machine Gun;HEAVY MACHINE GUN
+G-E-W-R-L;زمین/تجهیز/سلاج/Rifle/سبک Machine Gun;LIGHT MACHINE GUN
+G-E-W-R-R;زمین/تجهیز/سلاج/Rifle/Rifle;RIFLE
+G-E-W-S;زمین/تجهیز/سلاج/RocketLauncher/Single/;SINGLE ROCKET LAUNCHER
+G-E-W-S-H;زمین/تجهیز/سلاج/RocketLauncher/Single/سنگین;SINGLE ROCKET LAUNCHER HEAVY
+G-E-W-S-L;زمین/تجهیز/سلاج/RocketLauncher/Single/سبک;SINGLE ROCKET LAUNCHER LIGHT
+G-E-W-S-M;زمین/تجهیز/سلاج/RocketLauncher/Single/متوسط;SINGLE ROCKET LAUNCHER MEDIUM
+G-E-W-T;زمین/تجهیز/سلاج/RocketLauncher/AntiTank;ANTI TANK ROCKET LAUNCHER
+G-E-W-T-H;زمین/تجهیز/سلاج/RocketLauncher/AT/سنگین;ANTI TANK ROCKET LAUNCHER HEAVY
+G-E-W-T-L;زمین/تجهیز/سلاج/RocketLauncher/AT/سبک;ANTI TANK ROCKET LAUNCHER LIGHT
+G-E-W-T-M;زمین/تجهیز/سلاج/RocketLauncher/AT/متوسط;ANTI TANK ROCKET LAUNCHER MEDIUM
+G-E-W-X;زمین/تجهیز/سلاج/RocketLauncher/Multiple ;MULTIPLE ROCKET LAUNCHER
+G-E-W-X-H;زمین/تجهیز/سلاج/RocketLauncher/Multiple/سنگین;MULTIPLE ROCKET LAUNCHER HEAVY
+G-E-W-X-L;زمین/تجهیز/سلاج/RocketLauncher/Multiple/سبک;MULTIPLE ROCKET LAUNCHER LIGHT
+G-E-W-X-M;زمین/تجهیز/سلاج/RocketLauncher/Multiple/متوسط;MULTIPLE ROCKET LAUNCHER MEDIUM
+G-E-W-Z;زمین/تجهیز/سلاج/Grenade Launcher;GRENADE LAUNCHER
+G-E-W-Z-H;زمین/تجهیز/سلاج/Grenade Launcher/سنگین;GRENADE LAUNCHER HEAVY
+G-E-W-Z-L;زمین/تجهیز/سلاج/Grenade Launcher/سبک;GRENADE LAUNCHER LIGHT
+G-E-W-Z-M;زمین/تجهیز/سلاج/Grenade Launcher/متوسط;GRENADE LAUNCHER MEDIUM
+G-E-X;زمین/تجهیز/Special Equipment;SPECIAL EQUIPMENT
+G-E-X-F;زمین/تجهیز/Flame Thrower;FLAME THROWER
+G-E-X-L;زمین/تجهیز/Laser;LASER
+G-E-X-M;زمین/تجهیز/Land Mines;LAND MINES
+G-E-X-M-C;زمین/تجهیز/Claymore;CLAYMORE
+G-E-X-M-L;زمین/تجهیز/Less Than Lethal;LESS THAN LETHAL
+G-E-X-N;زمین/تجهیز/Nbc Equipment;NBC EQUIPMENT
+G-I;زمین/سازه;Building
+G-I-B;زمین/سازه/Base/Military;MILITARY BASE/FACILITY
+G-I-B-A;زمین/سازه/Base/Airbase;AIRPORT/AIRBASE
+G-I-B-N;زمین/سازه/Base/Naval Base;SEAPORT/NAVAL BASE
+G-I-c;زمین/سازه/غیرنظامی;Civilian
+G-I-c-b;زمین/سازه/غیرنظامی/Bridge;Bridge
+G-I-c-bar;زمین/سازه/غیرنظامی/Fence or Wall or Barrier;Fence/Wall/Barrier
+G-I-c-can;زمین/سازه/غیرنظامی/Canal;Canal
+G-I-c-can-l;زمین/سازه/غیرنظامی/Canal/Lock;Canal Lock
+G-I-c-frm;زمین/سازه/غیرنظامی/Farm;Farm
+G-I-c-l;زمین/سازه/غیرنظامی/Levee;Levy
+G-I-c-mon;زمین/سازه/غیرنظامی/Monument;Monument
+G-I-c-o;زمین/سازه/غیرنظامی/Offices;Offices
+G-I-c-rah;زمین/سازه/غیرنظامی/Residence or Apartment or Hotel;Residence/Apartment/Hotel
+G-I-c-rel;زمین/سازه/غیرنظامی/Religous;Religous
+G-I-c-res;زمین/سازه/غیرنظامی/Resevoir;Resevoir
+G-I-c-ret;زمین/سازه/غیرنظامی/Retail;Retail
+G-I-c-sch;زمین/سازه/غیرنظامی/School;School
+G-I-c-vip;زمین/سازه/غیرنظامی/VIP;VIP
+G-I-c-whs;زمین/سازه/غیرنظامی/Warehouse;Warehouse
+G-I-E;زمین/سازه/Factory;EQUIPMENT MANUFACTURE
+G-I-E-h;زمین/سازه/Factory/سنگین;Heavy
+G-I-E-l;زمین/سازه/Factory/سبک;Light
+G-I-E-o;زمین/سازه/Factory/Plant Other;Plant Other
+G-I-G;زمین/سازه/Government;GOVERNMENT LEADERSHIP
+G-I-i;زمین/سازه/IM Facilities;IM Facilities
+G-I-i-e;زمین/سازه/IM Facilities/Emergency Management;Emergency Management
+G-I-i-e-eoc;زمین/سازه/IM Facilities/Emergency Management/Emergency Operations Center;Emergency Operations Center
+G-I-i-e-ic;زمین/سازه/IM Facilities/Emergency Management/Incident Commander;Incident Commander
+G-I-i-e-icc;زمین/سازه/IM Facilities/Emergency Management/Incident Communications Center;Incident Communications Center
+G-I-i-e-icp;زمین/سازه/IM Facilities/Emergency Management/Incident Command Post;Incident Command Post
+G-I-i-e-wr;زمین/سازه/IM Facilities/Emergency Management/War Room;War Room
+G-I-i-f;زمین/سازه/IM Facilities/Fire and Hazmat;Fire/Hazmat
+G-I-i-f-fd;زمین/سازه/IM Facilities/Fire and Hazmat/Fire Department;Fire Department
+G-I-i-h;زمین/سازه/IM Facilities/Health and Medical;Health and Medical
+G-I-i-h-md;زمین/سازه/IM Facilities/Health and Medical/Medical Dispatch;Medical Dispatch
+G-I-i-l;زمین/سازه/IM Facilities/Law Enforcement;Law Enforcement
+G-I-i-l-cp;زمین/سازه/IM Facilities/Law Enforcement/Police Checkpoint;Police Checkpoint
+G-I-i-l-hp;زمین/سازه/IM Facilities/Law Enforcement/Highway Patrol;Highway Patrol
+G-I-i-l-lp;زمین/سازه/IM Facilities/Law Enforcement/Local Police;Local Police
+G-I-i-l-ntz;زمین/سازه/IM Facilities/Law Enforcement/No Trespassing Zone;No Trespassing Zone
+G-I-i-l-sd;زمین/سازه/IM Facilities/Law Enforcement/Sheriffs Department;Sheriffs Department
+G-I-i-l-sp;زمین/سازه/IM Facilities/Law Enforcement/State Police;State Police
+G-I-i-m;زمین/سازه/IM Facilities/Emergency Medical Services;Emergency Medical Services
+G-I-i-o;زمین/سازه/IM Facilities/Other;Other
+G-I-i-o-ad;زمین/سازه/IM Facilities/Other/Agency Dispatch;Agency Dispatch
+G-I-i-o-ad-ems;زمین/سازه/IM Facilities/Other/Agency Dispatch/EMS;EMS
+G-I-i-o-ad-f;زمین/سازه/IM Facilities/Other/Agency Dispatch/Fire;Fire
+G-I-i-o-ad-hwy;زمین/سازه/IM Facilities/Other/Agency Dispatch/Highway;Highway
+G-I-i-o-ad-mda;زمین/سازه/IM Facilities/Other/Agency Dispatch/Media;Media
+G-I-i-o-ad-pl;زمین/سازه/IM Facilities/Other/Agency Dispatch/Police Local;Police Local
+G-I-i-o-ad-ps;زمین/سازه/IM Facilities/Other/Agency Dispatch/Police Station;Police Station
+G-I-i-o-ad-tow;زمین/سازه/IM Facilities/Other/Agency Dispatch/Tow;Tow
+G-I-i-o-ad-ts;زمین/سازه/IM Facilities/Other/Agency Dispatch/Transit;Transit
+G-I-i-o-bcc;زمین/سازه/IM Facilities/Other/Border Control Checkpoint;Border Control Checkpoint
+G-I-i-o-dmz;زمین/سازه/IM Facilities/Other/DMZ;DMZ
+G-I-i-o-isp;زمین/سازه/IM Facilities/Other/Independent Service Provider;Independent Service Provider
+G-I-i-o-mc;زمین/سازه/IM Facilities/Other/Mobile Center;Mobile Center
+G-I-i-o-mc-f;زمین/سازه/IM Facilities/Other/Mobile Center/Fire;Fire
+G-I-i-o-mc-h;زمین/سازه/IM Facilities/Other/Mobile Center/Medical;Medical
+G-I-i-o-mc-l;زمین/سازه/IM Facilities/Other/Mobile Center/Law Enforcement;Law Enforcement
+G-I-i-o-mes;زمین/سازه/IM Facilities/Other/Message Center;Message Center
+G-I-i-o-mob;زمین/سازه/IM Facilities/Other/Mobilization Center;Mobilization Center
+G-I-i-o-mob-ems;زمین/سازه/IM Facilities/Other/Mobilization Center/EMS;EMS
+G-I-i-o-mob-es;زمین/سازه/IM Facilities/Other/Mobilization Center/Transit;Transit
+G-I-i-o-mob-f;زمین/سازه/IM Facilities/Other/Mobilization Center/Fire;Fire
+G-I-i-o-mob-hwy;زمین/سازه/IM Facilities/Other/Mobilization Center/Highway;Highway
+G-I-i-o-mob-mda;زمین/سازه/IM Facilities/Other/Mobilization Center/Media;Media
+G-I-i-o-mob-pl;زمین/سازه/IM Facilities/Other/Mobilization Center/Police Local;Ploce Local
+G-I-i-o-mob-ps;زمین/سازه/IM Facilities/Other/Mobilization Center/Police Station;Police Station
+G-I-i-o-mob-tow;زمین/سازه/IM Facilities/Other/Mobilization Center/Tow;Tow
+G-I-i-o-ps;زمین/سازه/IM Facilities/Other/Public Safety;Public Safety
+G-I-i-o-rl;زمین/سازه/IM Facilities/Other/Reporting Locations;Reporting Locations
+G-I-i-o-sa;زمین/سازه/IM Facilities/Other/Staging Area;Staging Area
+G-I-i-o-sa-ems;زمین/سازه/IM Facilities/Other/Staging Area/EMS;EMS
+G-I-i-o-sa-f;زمین/سازه/IM Facilities/Other/Staging Area/Fire;Fire
+G-I-i-o-sa-hwy;زمین/سازه/IM Facilities/Other/Staging Area/Highway;Highway
+G-I-i-o-sa-mda;زمین/سازه/IM Facilities/Other/Staging Area/Media;Media
+G-I-i-o-sa-pl;زمین/سازه/IM Facilities/Other/Staging Area/Police Local;Police Local
+G-I-i-o-sa-ps;زمین/سازه/IM Facilities/Other/Staging Area/Police Station;Police Station
+G-I-i-o-sa-tow;زمین/سازه/IM Facilities/Other/Staging Area/Tow;Tow
+G-I-i-o-sa-ts;زمین/سازه/IM Facilities/Other/Staging Area/Transit;Transit
+G-I-i-o-sc;زمین/سازه/IM Facilities/Other/Security Checkpoint;Security Checkpoint
+G-I-i-o-seg;زمین/سازه/IM Facilities/Other/Segment;Segment
+G-I-i-o-t;زمین/سازه/IM Facilities/Other/ترابریation;Transportation
+G-I-i-o-t-im;زمین/سازه/IM Facilities/Other/ترابریation/Transit Incident Management Center;Transit Incident Management Center
+G-I-i-o-t-tc;زمین/سازه/IM Facilities/Other/ترابریation/Transit Management Center;Transit Management Center
+G-I-i-o-t-td;زمین/سازه/IM Facilities/Other/ترابریation/Traffic Inc Service Patrol Dispatch;Traffic Inc Service Patrol Dispatch
+G-I-i-o-t-tm;زمین/سازه/IM Facilities/Other/ترابریation/Traffic Management Center;Traffic Management Center
+G-I-i-o-tmp;زمین/سازه/IM Facilities/Other/Temp;Temporary
+G-I-i-o-tmp-f;زمین/سازه/IM Facilities/Other/Temp/Fire;Fire
+G-I-i-o-tmp-h;زمین/سازه/IM Facilities/Other/Temp/Medical;Medical
+G-I-i-o-tmp-l;زمین/سازه/IM Facilities/Other/Temp/Law Enforcement;Law Enforcement
+G-I-i-p;زمین/سازه/IM Facilities/Public Works;Public Works
+G-I-M;زمین/سازه/نظامی/Military Materiel Facility;MILITARY MATERIEL FACILITY
+G-I-M-A;زمین/سازه/نظامی/Aircraft Production;AIRCRAFT PRODUCTION/ASSEMBLY
+G-I-M-C;زمین/سازه/نظامی/NBC Warfare Production;CHEMICAL/BIOLOGICAL WARFARE PRODUCTION
+G-I-M-E;زمین/سازه/نظامی/Ammunition Production;AMMUNITION AND EXPLOSIVES PRODUCTION
+G-I-M-F;زمین/سازه/نظامی/Nuclear Energy;NUCLEAR ENERGY
+G-I-M-F-A;زمین/سازه/نظامی/Atomic Energy Reactor;ATOMIC ENERGY REACTOR
+G-I-M-F-P;زمین/سازه/نظامی/Nuclear Material Production;NUCLEAR MATERIAL PRODUCTION
+G-I-M-F-P-W;زمین/سازه/نظامی/Nuclear/سلاجs Grade;WEAPONS GRADE
+G-I-M-F-S;زمین/سازه/نظامی/Nuclear Material Storage;NUCLEAR MATERIAL STORAGE
+G-I-M-G;زمین/سازه/نظامی/Armament Production;ARMAMENT PRODUCTION
+G-I-M-M;زمین/سازه/نظامی/Missile+Space System Production;MISSILE/SPACE SYSTEM PRODUCTION
+G-I-M-N;زمین/سازه/نظامی/Engineering Equipment Production;ENGINEERING EQUIPMENT PRODUCTION
+G-I-M-N-B;زمین/سازه/نظامی/Bridge;BRIDGE
+G-I-M-N-B-l;زمین/سازه/نظامی/Bridge/Large;Bridge (Large)
+G-I-M-N-B-m;زمین/سازه/نظامی/Bridge/Med;Bridge (Med)
+G-I-M-N-B-s;زمین/سازه/نظامی/Bridge/Small;Bridge (Small)
+G-I-M-N-c;زمین/سازه/نظامی/Canal;Canal
+G-I-M-S;زمین/سازه/نظامی/Ship Construction;SHIP CONSTRUCTION
+G-I-M-V;زمین/سازه/نظامی/Military Vehicle Production;MILITARY VEHICLE PRODUCTION
+G-I-P;زمین/سازه/Processing Facility;PROCESSING FACILITY
+G-I-P-D;زمین/سازه/Decon;DECON
+G-I-R;زمین/سازه/Raw Material Production/Storage;RAW MATERIAL PRODUCTION/STORAGE
+G-I-R-M;زمین/سازه/Mine;MINE
+G-I-R-N;زمین/سازه/NBC;NBC
+G-I-R-N-B;زمین/سازه/Biological;BIOLOGICAL
+G-I-R-N-C;زمین/سازه/Chemical;CHEMICAL
+G-I-R-N-N;زمین/سازه/Nuclear;NUCLEAR
+G-I-R-P;زمین/سازه/PETROLEUM/GAS/OIL;PETROLEUM/GAS/OIL
+G-I-R-P-r;زمین/سازه/PETROLEUM/GAS/OIL/Refinery;Refinery
+G-I-T;زمین/سازه/Transport Facility;TRANSPORT FACILITY
+G-I-T-a;زمین/سازه/Transport Facility/Airport;Airport
+G-I-T-hb;زمین/سازه/Transport Facility/Helibase;Helibase
+G-I-T-hs;زمین/سازه/Transport Facility/Helispot;Helispot
+G-I-T-l;زمین/سازه/Transport Facility/Land Port;Land Port
+G-I-T-pg;زمین/سازه/Transport Facility/Parking Garage;Parking Garage
+G-I-T-r;زمین/سازه/Transport Facility/Railroad;Railroad
+G-I-T-s;زمین/سازه/Transport Facility/Seaport;Seaport
+G-I-U;زمین/سازه/خدماتی/Service, Research, Utility Facility;SERVICE, RESEARCH, UTILITY FACILITY
+G-I-U-E;زمین/سازه/خدماتی/Electric Power;ELECTRIC POWER FACILITY
+G-I-U-E-c;زمین/سازه/خدماتی/Electric Power/Coal Power Plant;Coal Power Plant
+G-I-U-E-h;زمین/سازه/خدماتی/Electric Power/Hydroelectric Power Plant;Hydroelectric Power Plant
+G-I-U-E-o;زمین/سازه/خدماتی/Electric Power/Other Power;Other Power
+G-I-U-E-ps;زمین/سازه/خدماتی/Electric Power/Power Substation;Power Substation
+G-I-U-E-D;زمین/سازه/خدماتی/Dam;DAM
+G-I-U-E-F;زمین/سازه/خدماتی/Fossil Fuel;FOSSIL FUEL
+G-I-U-E-N;زمین/سازه/خدماتی/Nuclear Plant;NUCLEAR PLANT
+G-I-U-P;زمین/سازه/خدماتی/Public Water Services;PUBLIC WATER SERVICES
+G-I-U-R;زمین/سازه/خدماتی/Technological Research;TECHNOLOGICAL RESEARCH FACILITY
+G-I-U-T;زمین/سازه/خدماتی/Telecommunications;TELECOMMUNICATIONS FACILITY
+G-I-U-T-com;زمین/سازه/خدماتی/Telecommunications/Communications;Communications
+G-I-U-T-com-af;زمین/سازه/خدماتی/Telecommunications/Communications/Antenna Farm;Antenna Farm
+G-I-U-T-com-sat;زمین/سازه/خدماتی/Telecommunications/Communications/Satellite Communications;Satellite Communications
+G-I-U-T-com-tow;زمین/سازه/خدماتی/Telecommunications/Communications/Tower;Tower
+G-I-U-T-r;زمین/سازه/خدماتی/Telecommunications/Radio;Radio
+G-I-U-T-r-s;زمین/سازه/خدماتی/Telecommunications/Radio/Station;Station
+G-I-U-T-tp;زمین/سازه/خدماتی/Telecommunications/Telephone;Telephone
+G-I-U-T-tp-ts;زمین/سازه/خدماتی/Telecommunications/Telephone/Telephone Switching;Telephone Switching
+G-I-U-T-tv;زمین/سازه/خدماتی/Telecommunications/Television;Television
+G-I-U-T-tv-c;زمین/سازه/خدماتی/Telecommunications/Television/Cable;Cable
+G-I-U-T-tv-s;زمین/سازه/خدماتی/Telecommunications/Television/Station;Station
+G-I-X;زمین/سازه/Medical Facility;MEDICAL FACILITY
+G-I-X-H;زمین/سازه/Hospital;HOSPITAL
+G-I-X-hcf;زمین/سازه/Medical Facility/Hospital/Hospital Care Facility;Hospital Care Facility
+G-I-r;زمین/سازه/Road;Road
+G-I-r-h;زمین/سازه/Road/Highway;Road (Highway)
+G-I-r-i;زمین/سازه/Road/Improved;Road (Improved)
+G-I-r-ra;زمین/سازه/Road/Rest Area;Rest Area
+G-I-r-u;زمین/سازه/Road/Unimproved;Road (Un-improved)
+G-U;زمین/نیرو;UNIT
+G-U-C;زمین/رزمی;COMBAT
+G-U-C-A;زمین/رزمی/زرهی;ARMOR
+G-U-C-A-A;زمین/رزمی/زرهی/ANTI ARMOR;ANTI ARMOR
+G-U-C-A-A-A;زمین/رزمی/زرهی/ANTI ARMOR ARMORED;ANTI ARMOR ARMORED
+G-U-C-A-A-A-S;زمین/رزمی/زرهی/ANTI ARMOR ARMORED AIR ASSAULT;ANTI ARMOR ARMORED AIR ASSAULT
+G-U-C-A-A-A-T;زمین/رزمی/زرهی/ANTI ARMOR ARMORED TRACKED;ANTI ARMOR ARMORED TRACKED
+G-U-C-A-A-A-W;زمین/رزمی/زرهی/ANTI ARMOR ARMORED WHEELED;ANTI ARMOR ARMORED WHEELED
+G-U-C-A-A-C;زمین/رزمی/زرهی/ANTI ARMOR ARCTIC;ANTI ARMOR ARCTIC
+G-U-C-A-A-D;زمین/رزمی/زرهی/ANTI ARMOR DISMOUNTED;ANTI ARMOR DISMOUNTED
+G-U-C-A-A-L;زمین/رزمی/زرهی/ANTI ARMOR LIGHT;ANTI ARMOR LIGHT
+G-U-C-A-A-M;زمین/رزمی/زرهی/ANTI ARMOR AIRBORNE;ANTI ARMOR AIRBORNE
+G-U-C-A-A-O;زمین/رزمی/زرهی/ANTI ARMOR MOTORIZED;ANTI ARMOR MOTORIZED
+G-U-C-A-A-O-S;زمین/رزمی/زرهی/ANTI ARMOR MOTORIZED AIR ASSAULT;ANTI ARMOR MOTORIZED AIR ASSAULT
+G-U-C-A-A-S;زمین/رزمی/زرهی/ANTI ARMOR AIR ASSAULT;ANTI ARMOR AIR ASSAULT
+G-U-C-A-A-U;زمین/رزمی/زرهی/ANTI ARMOR MOUNTAIN;ANTI ARMOR MOUNTAIN
+G-U-C-A-T;زمین/رزمی/زرهی/ARMOR TRACK;ARMOR TRACK
+G-U-C-A-T-A;زمین/رزمی/زرهی/ARMOR TRACK AIRBORNE;ARMOR TRACK AIRBORNE
+G-U-C-A-T-H;زمین/رزمی/زرهی/ARMOR TRACK, HEAVY;ARMOR TRACK, HEAVY
+G-U-C-A-T-L;زمین/رزمی/زرهی/ARMOR TRACK, LIGHT;ARMOR TRACK, LIGHT
+G-U-C-A-T-M;زمین/رزمی/زرهی/ARMOR TRACK, MEDIUM;ARMOR TRACK, MEDIUM
+G-U-C-A-T-R;زمین/رزمی/زرهی/ARMOR TRACK, RECOVERY;ARMOR TRACK, RECOVERY
+G-U-C-A-T-W;زمین/رزمی/زرهی/ARMOR TRACK AMPHIBIOUS;ARMOR TRACK AMPHIBIOUS
+G-U-C-A-T-W-R;زمین/رزمی/زرهی/ARMOR TRACK AMPHIBIOUS RECOVERY;ARMOR TRACK AMPHIBIOUS RECOVERY
+G-U-C-A-W;زمین/رزمی/زرهی/ARMOR, WHEELED;ARMOR, WHEELED
+G-U-C-A-W-A;زمین/رزمی/زرهی/ARMOR, WHEELED AIRBORNE;ARMOR, WHEELED AIRBORNE
+G-U-C-A-W-H;زمین/رزمی/زرهی/ARMOR, WHEELED HEAVY;ARMOR, WHEELED HEAVY
+G-U-C-A-W-L;زمین/رزمی/زرهی/ARMOR, WHEELED LIGHT;ARMOR, WHEELED LIGHT
+G-U-C-A-W-M;زمین/رزمی/زرهی/ARMOR, WHEELED MEDIUM;ARMOR, WHEELED MEDIUM
+G-U-C-A-W-R;زمین/رزمی/زرهی/ARMOR, WHEELED RECOVERY;ARMOR, WHEELED RECOVERY
+G-U-C-A-W-S;زمین/رزمی/زرهی/ARMOR, WHEELED AIR ASSAULT;ARMOR, WHEELED AIR ASSAULT
+G-U-C-A-W-W;زمین/رزمی/زرهی/ARMOR, WHEELED AMPHIBIOUS;ARMOR, WHEELED AMPHIBIOUS
+G-U-C-A-W-W-R;زمین/رزمی/زرهی/ARMOR, WHEELED AMPHIBIOUS RECOVERY;ARMOR, WHEELED AMPHIBIOUS RECOVERY
+G-U-C-D;زمین/رزمی/Defense/AIR DEFENSE;AIR DEFENSE
+G-U-C-D-C;زمین/رزمی/Defense/COMPOSITE;COMPOSITE
+G-U-C-D-G;زمین/رزمی/Defense/GUN UNIT;GUN UNIT
+G-U-C-D-H;زمین/رزمی/Defense/H/MAD;H/MAD
+G-U-C-D-H-H;زمین/رزمی/Defense/HAWK;HAWK
+G-U-C-D-H-P;زمین/رزمی/Defense/PATRIOT;PATRIOT
+G-U-C-D-M;زمین/رزمی/Defense/AIR DEFENSE MISSILE;AIR DEFENSE MISSILE
+G-U-C-D-M-H;زمین/رزمی/Defense/AIR DEFENSE MISSILE HEAVY;AIR DEFENSE MISSILE HEAVY
+G-U-C-D-M-L;زمین/رزمی/Defense/AIR DEFENSE MISSILE LIGHT;AIR DEFENSE MISSILE LIGHT
+G-U-C-D-M-L-A;زمین/رزمی/Defense/AIR DEFENSE MISSILE MOTORIZED (AVENGER);AIR DEFENSE MISSILE MOTORIZED (AVENGER)
+G-U-C-D-M-M;زمین/رزمی/Defense/AIR DEFENSE MISSILE MEDIUM;AIR DEFENSE MISSILE MEDIUM
+G-U-C-D-O;زمین/رزمی/Defense/THEATER MISSILE DEFENSE UNIT;THEATER MISSILE DEFENSE UNIT
+G-U-C-D-S;زمین/رزمی/Defense/SHORT RANGE;SHORT RANGE
+G-U-C-D-S-S;زمین/رزمی/Defense/STINGER;STINGER
+G-U-C-D-S-V;زمین/رزمی/Defense/VULCAN;VULCAN
+G-U-C-D-T;زمین/رزمی/Defense/TARGETING UNIT;TARGETING UNIT
+G-U-C-E;زمین/رزمی/مهندسی/ENGINEER;ENGINEER
+G-U-C-E-C;زمین/رزمی/مهندسی/ENGINEER COMBAT;ENGINEER COMBAT
+G-U-C-E-C-A;زمین/رزمی/مهندسی/ENGINEER COMBAT AIRBORNE;ENGINEER COMBAT AIRBORNE
+G-U-C-E-C-C;زمین/رزمی/مهندسی/ENGINEER COMBAT ARCTIC;ENGINEER COMBAT ARCTIC
+G-U-C-E-C-H;زمین/رزمی/مهندسی/ENGINEER COMBAT HEAVY;ENGINEER COMBAT HEAVY
+G-U-C-E-C-L;زمین/رزمی/مهندسی/ENGINEER COMBAT LIGHT (SAPPER);ENGINEER COMBAT LIGHT (SAPPER)
+G-U-C-E-C-M;زمین/رزمی/مهندسی/ENGINEER COMBAT MEDIUM;ENGINEER COMBAT MEDIUM
+G-U-C-E-C-O;زمین/رزمی/مهندسی/ENGINEER COMBAT MOUNTAIN;ENGINEER COMBAT MOUNTAIN
+G-U-C-E-C-R;زمین/رزمی/مهندسی/ENGINEER COMBAT RECON;ENGINEER COMBAT RECON
+G-U-C-E-C-S;زمین/رزمی/مهندسی/ENGINEER COMBAT AIR ASSAULT;ENGINEER COMBAT AIR ASSAULT
+G-U-C-E-C-T;زمین/رزمی/مهندسی/ENGINEER COMBAT MECHANIZED (TRACK);ENGINEER COMBAT MECHANIZED (TRACK)
+G-U-C-E-C-W;زمین/رزمی/مهندسی/ENGINEER COMBAT MOTORIZED;ENGINEER COMBAT MOTORIZED
+G-U-C-E-N;زمین/رزمی/مهندسی/ENGINEER CONSTRUCTION;ENGINEER CONSTRUCTION
+G-U-C-E-N-N;زمین/رزمی/مهندسی/ENGINEER NAVAL CONSTRUCTION;ENGINEER NAVAL CONSTRUCTION
+G-U-C-F;زمین/رزمی/Artillery (Fixed);Artillery (Fixed)
+G-U-C-F-H;زمین/رزمی/HOWITZER/GUN;HOWITZER/GUN
+G-U-C-F-H-A;زمین/رزمی/AIRBORNE;AIRBORNE
+G-U-C-F-H-C;زمین/رزمی/ARCTIC;ARCTIC
+G-U-C-F-H-E;زمین/رزمی/Artillery (Mobile);Artillery (Mobile)
+G-U-C-F-H-H;زمین/رزمی/سنگین;HEAVY
+G-U-C-F-H-L;زمین/رزمی/سبک;LIGHT
+G-U-C-F-H-M;زمین/رزمی/متوسط;MEDIUM
+G-U-C-F-H-O;زمین/رزمی/MOUNTAIN;MOUNTAIN
+G-U-C-F-H-S;زمین/رزمی/AIR ASSAULT;AIR ASSAULT
+G-U-C-F-H-X;زمین/رزمی/AMPHIBIOUS;AMPHIBIOUS
+G-U-C-F-M;زمین/رزمی/MORTAR;MORTAR
+G-U-C-F-M-L;زمین/رزمی/AMPHIBIOUS MORTAR;AMPHIBIOUS MORTAR
+G-U-C-F-M-S;زمین/رزمی/SELF PROPELLED (SP) TRACKED MORTAR;SELF PROPELLED (SP) TRACKED MORTAR
+G-U-C-F-M-T;زمین/رزمی/TOWED MORTAR;TOWED MORTAR
+G-U-C-F-M-T-A;زمین/رزمی/TOWED AIRBORNE MORTAR;TOWED AIRBORNE MORTAR
+G-U-C-F-M-T-C;زمین/رزمی/TOWED ARCTIC MORTAR;TOWED ARCTIC MORTAR
+G-U-C-F-M-T-O;زمین/رزمی/TOWED MOUNTAIN MORTAR;TOWED MOUNTAIN MORTAR
+G-U-C-F-M-T-S;زمین/رزمی/TOWED AIR ASSAULT MORTAR;TOWED AIR ASSAULT MORTAR
+G-U-C-F-M-W;زمین/رزمی/SP WHEELED MORTAR;SP WHEELED MORTAR
+G-U-C-F-O;زمین/رزمی/METEOROLOGICAL;METEOROLOGICAL
+G-U-C-F-O-A;زمین/رزمی/AIRBORNE METEOROLOGICAL;AIRBORNE METEOROLOGICAL
+G-U-C-F-O-L;زمین/رزمی/سبک METEOROLOGICAL;LIGHT METEOROLOGICAL
+G-U-C-F-O-O;زمین/رزمی/MOUNTAIN METEOROLOGICAL;MOUNTAIN METEOROLOGICAL
+G-U-C-F-O-S;زمین/رزمی/AIR ASSAULT METEOROLOGICAL;AIR ASSAULT METEOROLOGICAL
+G-U-C-F-R;زمین/رزمی/ROCKET;ROCKET
+G-U-C-F-R-M;زمین/رزمی/Rockets (Fixed);Rockets (Fixed)
+G-U-C-F-R-M-R;زمین/رزمی/Rockets (Mobile);Rockets (Mobile)
+G-U-C-F-R-M-S;زمین/رزمی/MULTI ROCKET SELF PROPELLED;MULTI ROCKET SELF PROPELLED
+G-U-C-F-R-M-T;زمین/رزمی/MULTI ROCKET TOWED;MULTI ROCKET TOWED
+G-U-C-F-R-S;زمین/رزمی/SINGLE ROCKET LAUNCHER;SINGLE ROCKET LAUNCHER
+G-U-C-F-R-S-R;زمین/رزمی/SINGLE ROCKET TRUCK;SINGLE ROCKET TRUCK
+G-U-C-F-R-S-S;زمین/رزمی/SINGLE ROCKET SELF PROPELLED;SINGLE ROCKET SELF PROPELLED
+G-U-C-F-R-S-T;زمین/رزمی/SINGLE ROCKET TOWED;SINGLE ROCKET TOWED
+G-U-C-F-S;زمین/رزمی/ARTILLERY SURVEY;ARTILLERY SURVEY
+G-U-C-F-S-A;زمین/رزمی/AIRBORNE;AIRBORNE
+G-U-C-F-S-L;زمین/رزمی/سبک;LIGHT
+G-U-C-F-S-O;زمین/رزمی/MOUNTAIN;MOUNTAIN
+G-U-C-F-S-S;زمین/رزمی/AIR ASSAULT;AIR ASSAULT
+G-U-C-F-T;زمین/رزمی/TARGET ACQUISITION;TARGET ACQUISITION
+G-U-C-F-T-A;زمین/رزمی/ANGLICO;ANGLICO
+G-U-C-F-T-C;زمین/رزمی/COLT/FIST;COLT/FIST
+G-U-C-F-T-C-D;زمین/رزمی/DISMOUNTED COLT/FIST;DISMOUNTED COLT/FIST
+G-U-C-F-T-C-M;زمین/رزمی/TRACKED COLT/FIST;TRACKED COLT/FIST
+G-U-C-F-T-F;زمین/رزمی/FLASH (OPTICAL);FLASH (OPTICAL)
+G-U-C-F-T-R;زمین/رزمی/RADAR;RADAR
+G-U-C-F-T-S;زمین/رزمی/SOUND;SOUND
+G-U-C-I;زمین/رزمی/پیاده/Troops (Open);Troops (Open)
+G-U-C-I-A;زمین/رزمی/پیاده/Airborne;INFANTRY AIRBORNE
+G-U-C-I-C;زمین/رزمی/پیاده/Arctic;INFANTRY ARCTIC
+G-U-C-I-I;زمین/رزمی/پیاده/Fighting Vehicle;INFANTRY FIGHTING VEHICLE
+G-U-C-I-L;زمین/رزمی/پیاده/سبک;INFANTRY LIGHT
+G-U-C-I-M;زمین/رزمی/پیاده/Motorized;INFANTRY MOTORIZED
+G-U-C-I-N;زمین/رزمی/پیاده/Naval;INFANTRY NAVAL
+G-U-C-I-O;زمین/رزمی/پیاده/Mountain;INFANTRY MOUNTAIN
+G-U-C-I-S;زمین/رزمی/پیاده/Air Assault;INFANTRY AIR ASSAULT
+G-U-C-I-Z;زمین/رزمی/پیاده/Mechanized;INFANTRY MECHANIZED
+G-U-C-I-d;زمین/رزمی/پیاده/DugIn;Troops (DugIn)
+G-U-C-M;زمین/رزمی/MISSILE (SURF SURF);MISSILE (SURF SURF)
+G-U-C-M-S;زمین/رزمی/MISSILE (SURF SURF) STRATEGIC;MISSILE (SURF SURF) STRATEGIC
+G-U-C-M-T;زمین/رزمی/MISSILE (SURF SURF) TACTICAL;MISSILE (SURF SURF) TACTICAL
+G-U-C-R;زمین/رزمی/شناسایی/;RECONNAISSANCE
+G-U-C-R-A;زمین/رزمی/شناسایی/AIRBORNE;RECONNAISSANCE AIRBORNE
+G-U-C-R-C;زمین/رزمی/شناسایی/ARCTIC;RECONNAISSANCE ARCTIC
+G-U-C-R-H;زمین/رزمی/شناسایی/HORSE;RECONNAISSANCE HORSE
+G-U-C-R-L;زمین/رزمی/شناسایی/سبک;RECONNAISSANCE LIGHT
+G-U-C-R-O;زمین/رزمی/شناسایی/MOUNTAIN;RECONNAISSANCE MOUNTAIN
+G-U-C-R-R;زمین/رزمی/شناسایی/MARINE;RECONNAISSANCE MARINE
+G-U-C-R-R-D;زمین/رزمی/شناسایی/MARINE DIVISION;RECONNAISSANCE MARINE DIVISION
+G-U-C-R-R-F;زمین/رزمی/شناسایی/MARINE FORCE;RECONNAISSANCE MARINE FORCE
+G-U-C-R-R-L;زمین/رزمی/شناسایی/MARINE LIGHT ARMORED;RECONNAISSANCE MARINE LIGHT ARMORED
+G-U-C-R-S;زمین/رزمی/شناسایی/AIR ASSAULT;RECONNAISSANCE AIR ASSAULT
+G-U-C-R-V;زمین/رزمی/شناسایی/CAVALRY;RECONNAISSANCE CAVALRY
+G-U-C-R-V-A;زمین/رزمی/شناسایی/CAVALRY ARMORED;RECONNAISSANCE CAVALRY ARMORED
+G-U-C-R-V-G;زمین/رزمی/شناسایی/CAVALRY GROUND;RECONNAISSANCE CAVALRY GROUND
+G-U-C-R-V-M;زمین/رزمی/شناسایی/CAVALRY MOTORIZED;RECONNAISSANCE CAVALRY MOTORIZED
+G-U-C-R-V-O;زمین/رزمی/شناسایی/CAVALRY AIR;RECONNAISSANCE CAVALRY AIR
+G-U-C-R-X;زمین/رزمی/شناسایی/LONG RANGE SURVEILLANCE;RECONNAISSANCE LONG RANGE SURVEILLANCE
+G-U-C-S;زمین/رزمی/Security/INTERNAL SECURITY FORCES;INTERNAL SECURITY FORCES
+G-U-C-S-A;زمین/رزمی/Security/AVIATION;AVIATION
+G-U-C-S-G;زمین/رزمی/Security/GROUND;GROUND
+G-U-C-S-G-A;زمین/رزمی/Security/MECHANIZED GROUND;MECHANIZED GROUND
+G-U-C-S-G-D;زمین/رزمی/Security/DISMOUNTED GROUND;DISMOUNTED GROUND
+G-U-C-S-G-M;زمین/رزمی/Security/MOTORIZED GROUND;MOTORIZED GROUND
+G-U-C-S-M;زمین/رزمی/Security/WHEELED MECHANIZED;WHEELED MECHANIZED
+G-U-C-S-R;زمین/رزمی/Security/Rail;Rail
+G-U-C-S-W;زمین/رزمی/Security/RIVERINE;RIVERINE
+G-U-C-V;زمین/رزمی/Aviation/AVIATION;AVIATION
+G-U-C-V-C;زمین/رزمی/Aviation/COMPOSITE;COMPOSITE
+G-U-C-V-F;زمین/رزمی/Aviation/ثابت‌بال WING;FIXED WING
+G-U-C-V-F-A;زمین/رزمی/Aviation/ATTACK FIXED WING;ATTACK FIXED WING
+G-U-C-V-F-R;زمین/رزمی/Aviation/RECON FIXED WING;RECON FIXED WING
+G-U-C-V-F-U;زمین/رزمی/Aviation/UTILITY FIXED WING;UTILITY FIXED WING
+G-U-C-V-R;زمین/رزمی/Aviation/ROTARY WING;ROTARY WING
+G-U-C-V-R-A;زمین/رزمی/Aviation/ATTACK ROTARY WING;ATTACK ROTARY WING
+G-U-C-V-R-M;زمین/رزمی/Aviation/MINE COUNTERMEASURE ROTARY WING;MINE COUNTERMEASURE ROTARY WING
+G-U-C-V-R-S;زمین/رزمی/Aviation/SCOUT ROTARY WING;SCOUT ROTARY WING
+G-U-C-V-R-U;زمین/رزمی/Aviation/UTILITY ROTARY WING;UTILITY ROTARY WING
+G-U-C-V-R-U-C;زمین/رزمی/Aviation/C2 ROTARY WING;C2 ROTARY WING
+G-U-C-V-R-U-E;زمین/رزمی/Aviation/MEDEVAC ROTARY WING;MEDEVAC ROTARY WING
+G-U-C-V-R-U-H;زمین/رزمی/Aviation/سنگین UTILITY ROTARY WING;HEAVY UTILITY ROTARY WING
+G-U-C-V-R-U-L;زمین/رزمی/Aviation/سبک UTILITY ROTARY WING;LIGHT UTILITY ROTARY WING
+G-U-C-V-R-U-M;زمین/رزمی/Aviation/متوسط UTILITY ROTARY WING;MEDIUM UTILITY ROTARY WING
+G-U-C-V-R-W;زمین/رزمی/Aviation/ANTISUBMARINE WARFARE ROTARY WING;ANTISUBMARINE WARFARE ROTARY WING
+G-U-C-V-R-d;زمین/رزمی/Aviation/Helo/Dual;Helo ground unit (Dual)
+G-U-C-V-R-s;زمین/رزمی/Aviation/Helo/Single;Helo ground unit (Single)
+G-U-C-V-S;زمین/رزمی/Aviation/SEARCH AND RESCUE;SEARCH AND RESCUE
+G-U-C-V-U;زمین/رزمی/Aviation/UNMANNED AERIAL VEHICLE;UNMANNED AERIAL VEHICLE
+G-U-C-V-U-F;زمین/رزمی/Aviation/UNMANNED AERIAL VEHICLE FIXED WING;UNMANNED AERIAL VEHICLE FIXED WING
+G-U-C-V-U-R;زمین/رزمی/Aviation/UNMANNED AERIAL VEHICLE ROTARY WING;UNMANNED AERIAL VEHICLE ROTARY WING
+G-U-C-V-V;زمین/رزمی/Aviation/VERTICAL/SHORT TAKEOFF AND LANDING;VERTICAL/SHORT TAKEOFF AND LANDING
+G-U-H;زمین/SPECIAL C2 HEADQUARTERS COMPONENT;SPECIAL C2 HEADQUARTERS COMPONENT
+G-U-S;زمین/COMBAT SERVICE SUPPORT;COMBAT SERVICE SUPPORT
+G-U-S-A;زمین/ADMINISTRATIVE (ADMIN);ADMINISTRATIVE (ADMIN)
+G-U-S-A-C;زمین/ADMIN CORPS;ADMIN CORPS
+G-U-S-A-F;زمین/FINANCE;FINANCE
+G-U-S-A-F-C;زمین/FINANCE CORPS;FINANCE CORPS
+G-U-S-A-F-T;زمین/FINANCE THEATER;FINANCE THEATER
+G-U-S-A-J;زمین/JUDGE ADVOCATE GENERAL (JAG);JUDGE ADVOCATE GENERAL (JAG)
+G-U-S-A-J-C;زمین/JAG CORPS;JAG CORPS
+G-U-S-A-J-T;زمین/JAG THEATER;JAG THEATER
+G-U-S-A-L;زمین/LABOR;LABOR
+G-U-S-A-L-C;زمین/LABOR CORPS;LABOR CORPS
+G-U-S-A-L-T;زمین/LABOR THEATER;LABOR THEATER
+G-U-S-A-M;زمین/MORTUARY/GRAVES REGISTRY;MORTUARY/GRAVES REGISTRY
+G-U-S-A-M-C;زمین/MORTUARY/GRAVES REGISTRY CORPS;MORTUARY/GRAVES REGISTRY CORPS
+G-U-S-A-M-T;زمین/MORTUARY/GRAVES REGISTRY THEATER;MORTUARY/GRAVES REGISTRY THEATER
+G-U-S-A-O;زمین/POSTAL;POSTAL
+G-U-S-A-O-C;زمین/POSTAL CORPS;POSTAL CORPS
+G-U-S-A-O-T;زمین/POSTAL THEATER;POSTAL THEATER
+G-U-S-A-P;زمین/PUBLIC AFFAIRS;PUBLIC AFFAIRS
+G-U-S-A-P-B;زمین/PUBLIC AFFAIRS BROADCAST;PUBLIC AFFAIRS BROADCAST
+G-U-S-A-P-B-C;زمین/PUBLIC AFFAIRS BROADCAST CORPS;PUBLIC AFFAIRS BROADCAST CORPS
+G-U-S-A-P-B-T;زمین/PUBLIC AFFAIRS BROADCAST THEATER;PUBLIC AFFAIRS BROADCAST THEATER
+G-U-S-A-P-C;زمین/PUBLIC AFFAIRS CORPS;PUBLIC AFFAIRS CORPS
+G-U-S-A-P-M;زمین/PUBLIC AFFAIRS JOINT INFORMATION BUREAU;PUBLIC AFFAIRS JOINT INFORMATION BUREAU
+G-U-S-A-P-M-C;زمین/PUBLIC AFFAIRS JIB CORPS;PUBLIC AFFAIRS JIB CORPS
+G-U-S-A-P-M-T;زمین/PUBLIC AFFAIRS JIB THEATER;PUBLIC AFFAIRS JIB THEATER
+G-U-S-A-P-T;زمین/PUBLIC AFFAIRS THEATER;PUBLIC AFFAIRS THEATER
+G-U-S-A-Q;زمین/QUARTERMASTER (SUPPLY);QUARTERMASTER (SUPPLY)
+G-U-S-A-Q-C;زمین/QUARTERMASTER (SUPPLY) CORPS;QUARTERMASTER (SUPPLY) CORPS
+G-U-S-A-Q-T;زمین/QUARTERMASTER (SUPPLY) THEATER;QUARTERMASTER (SUPPLY) THEATER
+G-U-S-A-R;زمین/RELIGIOUS/CHAPLAIN;RELIGIOUS/CHAPLAIN
+G-U-S-A-R-C;زمین/RELIGIOUS/CHAPLAIN CORPS;RELIGIOUS/CHAPLAIN CORPS
+G-U-S-A-R-T;زمین/RELIGIOUS/CHAPLAIN THEATER;RELIGIOUS/CHAPLAIN THEATER
+G-U-S-A-S;زمین/PERSONNEL SERVICES;PERSONNEL SERVICES
+G-U-S-A-S-C;زمین/PERSONNEL CORPS;PERSONNEL CORPS
+G-U-S-A-S-T;زمین/PERSONNEL THEATER;PERSONNEL THEATER
+G-U-S-A-T;زمین/ADMIN THEATER;ADMIN THEATER
+G-U-S-A-W;زمین/MORALE, WELFARE, RECREATION (MWR);MORALE, WELFARE, RECREATION (MWR)
+G-U-S-A-W-C;زمین/MWR CORPS;MWR CORPS
+G-U-S-A-W-T;زمین/MWR THEATER;MWR THEATER
+G-U-S-A-X;زمین/REPLACEMENT HOLDING UNIT (RHU);REPLACEMENT HOLDING UNIT (RHU)
+G-U-S-A-X-C;زمین/RHU CORPS;RHU CORPS
+G-U-S-A-X-T;زمین/RHU THEATER;RHU THEATER
+G-U-S-M;زمین/MEDICAL;MEDICAL
+G-U-S-M-C;زمین/MEDICAL CORPS;MEDICAL CORPS
+G-U-S-M-D;زمین/MEDICAL DENTAL;MEDICAL DENTAL
+G-U-S-M-D-C;زمین/MEDICAL DENTAL CORPS;MEDICAL DENTAL CORPS
+G-U-S-M-D-T;زمین/MEDICAL DENTAL THEATER;MEDICAL DENTAL THEATER
+G-U-S-M-M;زمین/MEDICAL TREATMENT FACILITY;MEDICAL TREATMENT FACILITY
+G-U-S-M-M-C;زمین/MEDICAL TREATMENT FACILITY CORPS;MEDICAL TREATMENT FACILITY CORPS
+G-U-S-M-M-T;زمین/MEDICAL TREATMENT FACILITY THEATER;MEDICAL TREATMENT FACILITY THEATER
+G-U-S-M-P;زمین/MEDICAL PSYCHOLOGICAL;MEDICAL PSYCHOLOGICAL
+G-U-S-M-P-C;زمین/MEDICAL PSYCHOLOGICAL CORPS;MEDICAL PSYCHOLOGICAL CORPS
+G-U-S-M-P-T;زمین/MEDICAL PSYCHOLOGICAL THEATER;MEDICAL PSYCHOLOGICAL THEATER
+G-U-S-M-T;زمین/MEDICAL THEATER;MEDICAL THEATER
+G-U-S-M-V;زمین/MEDICAL VETERINARY;MEDICAL VETERINARY
+G-U-S-M-V-C;زمین/MEDICAL VETERINARY CORPS;MEDICAL VETERINARY CORPS
+G-U-S-M-V-T;زمین/MEDICAL VETERINARY THEATER;MEDICAL VETERINARY THEATER
+G-U-S-S;زمین/SUPPLY;SUPPLY
+G-U-S-S-1;زمین/SUPPLY CLASS I;SUPPLY CLASS I
+G-U-S-S-1-C;زمین/SUPPLY CLASS I CORPS;SUPPLY CLASS I CORPS
+G-U-S-S-1-T;زمین/SUPPLY CLASS I THEATER;SUPPLY CLASS I THEATER
+G-U-S-S-2;زمین/SUPPLY CLASS II;SUPPLY CLASS II
+G-U-S-S-2-C;زمین/SUPPLY CLASS II CORPS;SUPPLY CLASS II CORPS
+G-U-S-S-2-T;زمین/SUPPLY CLASS II THEATER;SUPPLY CLASS II THEATER
+G-U-S-S-3;زمین/SUPPLY CLASS III;SUPPLY CLASS III
+G-U-S-S-3-A;زمین/SUPPLY CLASS III AVIATION;SUPPLY CLASS III AVIATION
+G-U-S-S-3-A-C;زمین/SUPPLY CLASS III AVIATION CORPS;SUPPLY CLASS III AVIATION CORPS
+G-U-S-S-3-A-T;زمین/SUPPLY CLASS III AVIATION THEATER;SUPPLY CLASS III AVIATION THEATER
+G-U-S-S-3-C;زمین/SUPPLY CLASS III CORPS;SUPPLY CLASS III CORPS
+G-U-S-S-3-T;زمین/SUPPLY CLASS III THEATER;SUPPLY CLASS III THEATER
+G-U-S-S-4;زمین/SUPPLY CLASS IV;SUPPLY CLASS IV
+G-U-S-S-4-C;زمین/SUPPLY CLASS IV CORPS;SUPPLY CLASS IV CORPS
+G-U-S-S-4-T;زمین/SUPPLY CLASS IV THEATER;SUPPLY CLASS IV THEATER
+G-U-S-S-5;زمین/SUPPLY CLASS V;SUPPLY CLASS V
+G-U-S-S-5-C;زمین/SUPPLY CLASS V CORPS;SUPPLY CLASS V CORPS
+G-U-S-S-5-T;زمین/SUPPLY CLASS V THEATER;SUPPLY CLASS V THEATER
+G-U-S-S-6;زمین/SUPPLY CLASS VI;SUPPLY CLASS VI
+G-U-S-S-6-C;زمین/SUPPLY CLASS VI CORPS;SUPPLY CLASS VI CORPS
+G-U-S-S-6-T;زمین/SUPPLY CLASS VI THEATER;SUPPLY CLASS VI THEATER
+G-U-S-S-7;زمین/SUPPLY CLASS VII;SUPPLY CLASS VII
+G-U-S-S-7-C;زمین/SUPPLY CLASS VII CORPS;SUPPLY CLASS VII CORPS
+G-U-S-S-7-T;زمین/SUPPLY CLASS VII THEATER;SUPPLY CLASS VII THEATER
+G-U-S-S-8;زمین/SUPPLY CLASS VIII;SUPPLY CLASS VIII
+G-U-S-S-8-C;زمین/SUPPLY CLASS VIII CORPS;SUPPLY CLASS VIII CORPS
+G-U-S-S-8-T;زمین/SUPPLY CLASS VIII THEATER;SUPPLY CLASS VIII THEATER
+G-U-S-S-9;زمین/SUPPLY CLASS IX;SUPPLY CLASS IX
+G-U-S-S-9-C;زمین/SUPPLY CLASS IX CORPS;SUPPLY CLASS IX CORPS
+G-U-S-S-9-T;زمین/SUPPLY CLASS IX THEATER;SUPPLY CLASS IX THEATER
+G-U-S-S-C;زمین/SUPPLY CORPS;SUPPLY CORPS
+G-U-S-S-L;زمین/SUPPLY LAUNDRY/BATH;SUPPLY LAUNDRY/BATH
+G-U-S-S-L-C;زمین/SUPPLY LAUNDRY/BATH CORPS;SUPPLY LAUNDRY/BATH CORPS
+G-U-S-S-L-T;زمین/SUPPLY LAUNDRY/BATH THEATER;SUPPLY LAUNDRY/BATH THEATER
+G-U-S-S-T;زمین/SUPPLY THEATER;SUPPLY THEATER
+G-U-S-S-W;زمین/SUPPLY WATER;SUPPLY WATER
+G-U-S-S-W-C;زمین/SUPPLY WATER CORPS;SUPPLY WATER CORPS
+G-U-S-S-W-P;زمین/SUPPLY WATER PURIFICATION;SUPPLY WATER PURIFICATION
+G-U-S-S-W-P-C;زمین/SUPPLY WATER PURIFICATION CORPS;SUPPLY WATER PURIFICATION CORPS
+G-U-S-S-W-P-T;زمین/SUPPLY WATER PURIFICATION THEATER;SUPPLY WATER PURIFICATION THEATER
+G-U-S-S-W-T;زمین/SUPPLY WATER THEATER;SUPPLY WATER THEATER
+G-U-S-S-X;زمین/SUPPLY CLASS X;SUPPLY CLASS X
+G-U-S-S-X-C;زمین/SUPPLY CLASS X CORPS;SUPPLY CLASS X CORPS
+G-U-S-S-X-T;زمین/SUPPLY CLASS X THEATER;SUPPLY CLASS X THEATER
+G-U-S-S-d;زمین/SupplyDepot;SupplyDepot
+G-U-S-T;زمین/ترابریATION;TRANSPORTATION
+G-U-S-T-A;زمین/APOD/APOE;APOD/APOE
+G-U-S-T-A-C;زمین/APOD/APOE CORPS;APOD/APOE CORPS
+G-U-S-T-A-T;زمین/APOD/APOE THEATER;APOD/APOE THEATER
+G-U-S-T-C;زمین/ترابریATION CORPS;TRANSPORTATION CORPS
+G-U-S-T-I;زمین/MISSILE;MISSILE
+G-U-S-T-I-C;زمین/MISSILE CORPS;MISSILE CORPS
+G-U-S-T-I-T;زمین/MISSILE THEATER;MISSILE THEATER
+G-U-S-T-M;زمین/MOVEMENT CONTROL CENTER(MCC);MOVEMENT CONTROL CENTER(MCC)
+G-U-S-T-M-C;زمین/MCC CORPS;MCC CORPS
+G-U-S-T-M-T;زمین/MCC THEATER;MCC THEATER
+G-U-S-T-R;زمین/RAILHEAD;RAILHEAD
+G-U-S-T-R-C;زمین/RAILHEAD CORPS;RAILHEAD CORPS
+G-U-S-T-R-T;زمین/RAILHEAD THEATER;RAILHEAD THEATER
+G-U-S-T-S;زمین/SPOD/SPOE;SPOD/SPOE
+G-U-S-T-S-C;زمین/SPOD/SPOE CORPS;SPOD/SPOE CORPS
+G-U-S-T-S-T;زمین/SPOD/SPOE THEATER;SPOD/SPOE THEATER
+G-U-S-T-T;زمین/ترابریATION THEATER;TRANSPORTATION THEATER
+G-U-S-X;زمین/MAINTENANCE;MAINTENANCE
+G-U-S-X-C;زمین/MAINTENANCE CORPS;MAINTENANCE CORPS
+G-U-S-X-E;زمین/ELECTRO OPTICAL;ELECTRO OPTICAL
+G-U-S-X-E-C;زمین/ELECTRO OPTICAL CORPS;ELECTRO OPTICAL CORPS
+G-U-S-X-E-T;زمین/ELECTRO OPTICAL THEATER;ELECTRO OPTICAL THEATER
+G-U-S-X-H;زمین/MAINTENANCE HEAVY;MAINTENANCE HEAVY
+G-U-S-X-H-C;زمین/MAINTENANCE HEAVY CORPS;MAINTENANCE HEAVY CORPS
+G-U-S-X-H-T;زمین/MAINTENANCE HEAVY THEATER;MAINTENANCE HEAVY THEATER
+G-U-S-X-O;زمین/ORDNANCE;ORDNANCE
+G-U-S-X-O-C;زمین/ORDNANCE CORPS;ORDNANCE CORPS
+G-U-S-X-O-M;زمین/ORDNANCE MISSILE;ORDNANCE MISSILE
+G-U-S-X-O-M-C;زمین/ORDNANCE MISSILE CORPS;ORDNANCE MISSILE CORPS
+G-U-S-X-O-M-T;زمین/ORDNANCE MISSILE THEATER;ORDNANCE MISSILE THEATER
+G-U-S-X-O-T;زمین/ORDNANCE THEATER;ORDNANCE THEATER
+G-U-S-X-R;زمین/MAINTENANCE RECOVERY;MAINTENANCE RECOVERY
+G-U-S-X-R-C;زمین/MAINTENANCE RECOVERY CORPS;MAINTENANCE RECOVERY CORPS
+G-U-S-X-R-T;زمین/MAINTENANCE RECOVERY THEATER;MAINTENANCE RECOVERY THEATER
+G-U-S-X-T;زمین/MAINTENANCE THEATER;MAINTENANCE THEATER
+G-U-U;زمین/COMBAT SUPPORT;COMBAT SUPPORT
+G-U-U-A;زمین/COMBAT SUPPORT NBC;COMBAT SUPPORT NBC
+G-U-U-A-B;زمین/BIOLOGICAL;BIOLOGICAL
+G-U-U-A-B-R;زمین/RECON EQUIPPED;RECON EQUIPPED
+G-U-U-A-C;زمین/CHEMICAL;CHEMICAL
+G-U-U-A-C-C;زمین/SMOKE/DECON;SMOKE/DECON
+G-U-U-A-C-C-K;زمین/MECHANIZED SMOKE/DECON;MECHANIZED SMOKE/DECON
+G-U-U-A-C-C-M;زمین/MOTORIZED SMOKE/DECON;MOTORIZED SMOKE/DECON
+G-U-U-A-C-R;زمین/CHEMICAL RECON;CHEMICAL RECON
+G-U-U-A-C-R-S;زمین/CHEMICAL WHEELED ARMORED VEHICLE;CHEMICAL WHEELED ARMORED VEHICLE
+G-U-U-A-C-R-W;زمین/CHEMICAL WHEELED ARMORED VEHICLE;CHEMICAL WHEELED ARMORED VEHICLE
+G-U-U-A-C-S;زمین/SMOKE;SMOKE
+G-U-U-A-C-S-A;زمین/ARMOR SMOKE;ARMOR SMOKE
+G-U-U-A-C-S-M;زمین/MOTORIZED SMOKE;MOTORIZED SMOKE
+G-U-U-A-D;زمین/DECONTAMINATION;DECONTAMINATION
+G-U-U-A-N;زمین/NUCLEAR;NUCLEAR
+G-U-U-E;زمین/EXPLOSIVE ORDINANCE DISPOSAL;EXPLOSIVE ORDINANCE DISPOSAL
+G-U-U-I;زمین/INFORMATION WARFARE UNIT;INFORMATION WARFARE UNIT
+G-U-U-L;زمین/LAW ENFORCEMENT UNIT;LAW ENFORCEMENT UNIT
+G-U-U-L-C;زمین/غیرنظامی LAW ENFORCEMENT;CIVILIAN LAW ENFORCEMENT
+G-U-U-L-D;زمین/CENTRAL INTELLIGENCE DIVISION (CID);CENTRAL INTELLIGENCE DIVISION (CID)
+G-U-U-L-F;زمین/SECURITY POLICE (AIR);SECURITY POLICE (AIR)
+G-U-U-L-M;زمین/Military POLICE;MILITARY POLICE
+G-U-U-L-S;زمین/SHORE PATROL;SHORE PATROL
+G-U-U-M;زمین/Military INTELLIGENCE;MILITARY INTELLIGENCE
+G-U-U-M-A;زمین/AERIAL EXPLOITATION;AERIAL EXPLOITATION
+G-U-U-M-C;زمین/COUNTER INTELLIGENCE;COUNTER INTELLIGENCE
+G-U-U-M-J;زمین/JOINT INTELLIGENCE CENTER;JOINT INTELLIGENCE CENTER
+G-U-U-M-M-O;زمین/METEOROLOGICAL;METEOROLOGICAL
+G-U-U-M-O;زمین/OPERATIONS;OPERATIONS
+G-U-U-M-Q;زمین/INTERROGATION;INTERROGATION
+G-U-U-M-R;زمین/SURVEILLANCE;SURVEILLANCE
+G-U-U-M-R-G;زمین/GROUND SURVEILLANCE RADAR;GROUND SURVEILLANCE RADAR
+G-U-U-M-R-S;زمین/سنسور;SENSOR
+G-U-U-M-R-S-S;زمین/SENSOR SCM;SENSOR SCM
+G-U-U-M-R-X;زمین/GROUND STATION MODULE;GROUND STATION MODULE
+G-U-U-M-S;زمین/SIGNAL INTELLIGENCE (SIGINT);SIGNAL INTELLIGENCE (SIGINT)
+G-U-U-M-S-E;زمین/ELECTRONIC WARFARE;ELECTRONIC WARFARE
+G-U-U-M-S-E-A;زمین/ARMORED WHEELED VEHICLE;ARMORED WHEELED VEHICLE
+G-U-U-M-S-E-C;زمین/CORPS;CORPS
+G-U-U-M-S-E-D;زمین/DIRECTION FINDING;DIRECTION FINDING
+G-U-U-M-S-E-I;زمین/INTERCEPT;INTERCEPT
+G-U-U-M-S-E-J;زمین/JAMMING;JAMMING
+G-U-U-M-S-E-T;زمین/THEATER;THEATER
+G-U-U-M-T;زمین/TACTICAL EXPLOIT;TACTICAL EXPLOIT
+G-U-U-P;زمین/LANDING SUPPORT;LANDING SUPPORT
+G-U-U-S;زمین/SIGNAL UNIT;SIGNAL UNIT
+G-U-U-S-A;زمین/AREA;AREA
+G-U-U-S-C;زمین/COMMUNICATION CONFIGURED PACKAGE;COMMUNICATION CONFIGURED PACKAGE
+G-U-U-S-C-L;زمین/LARGE COMMUNICATION CONFIGURED PACKAGE;LARGE COMMUNICATION CONFIGURED PACKAGE
+G-U-U-S-F;زمین/FORWARD COMMUNICATIONS;FORWARD COMMUNICATIONS
+G-U-U-S-M;زمین/MULTIPLE SUBSCRIBER ELEMENT;MULTIPLE SUBSCRIBER ELEMENT
+G-U-U-S-M-L;زمین/LARGE EXTENSION NODE;LARGE EXTENSION NODE
+G-U-U-S-M-N;زمین/NODE CENTER;NODE CENTER
+G-U-U-S-M-S;زمین/SMALL EXTENSION NODE;SMALL EXTENSION NODE
+G-U-U-S-O;زمین/COMMAND OPERATIONS;COMMAND OPERATIONS
+G-U-U-S-R;زمین/RADIO UNIT;RADIO UNIT
+G-U-U-S-R-S;زمین/TACTICAL SATELLITE;TACTICAL SATELLITE
+G-U-U-S-R-T;زمین/TELETYPE CENTER;TELETYPE CENTER
+G-U-U-S-R-W;زمین/RELAY;RELAY
+G-U-U-S-S;زمین/SIGNAL SUPPORT;SIGNAL SUPPORT
+G-U-U-S-W;زمین/TELEPHONE SWITCH;TELEPHONE SWITCH
+G-U-U-S-X;زمین/ELECTRONIC RANGING;ELECTRONIC RANGING
+G-U-i;زمین/IM Resources;Incident Management Resources
+G-U-i-a;زمین/IM Resources/Animal Health;Animal Health
+G-U-i-a-lar;زمین/Large Animal Rescue Strike Team;Large Animal Rescue Strike Team
+G-U-i-a-las;زمین/Large Animal Sheltering Team;Large Animal Sheltering Team
+G-U-i-a-lat;زمین/Large Animal Transport Team;Large Animal Transport Team
+G-U-i-a-sar;زمین/Small Animal Rescue Strike Team;Small Animal Rescue Strike Team
+G-U-i-a-sas;زمین/Small Animal Sheltering Team;Small Animal Sheltering Team
+G-U-i-a-sat;زمین/Small Animal Transport Team;Small Animal Transport Team
+G-U-i-a-imt;زمین/Incident Management Team Animal Protection;Incident Management Team Animal Protection
+G-U-i-e;زمین/IM Resources/Emergency Management;Emergency Management
+G-U-i-e-acrc;زمین/Airborne Communications Relay (CAP);Airborne Communications Relay(CAP)
+G-U-i-e-acrt;زمین/Airborne Communications Relay Team;Airborne Communications Relay Team
+G-U-i-e-att;زمین/Airborne Transport Team;Airborne Transport Team
+G-U-i-e-cis;زمین/Critical Incident Stress Management Team;Critical Incident Stress Management Team
+G-U-i-e-cst;زمین/Communications Support Team;Communications Support Team
+G-U-i-e-dc;زمین/Donations Coordinator;Donations Coordinator
+G-U-i-e-dmt;زمین/Donations Management Personnel Team;Donations Management Personnel Team
+G-U-i-e-ect;زمین/Evacuation Coordination Team;Evacuation Coordination Team
+G-U-i-e-efa;زمین/EOC Finance Administration;EOC Finance Administration
+G-U-i-e-elt;زمین/Evacuation Liaison Team;Evacuation Liaison Team
+G-U-i-e-ems;زمین/EOC Management Support Team;EOC Management Support Team
+G-U-i-e-eos;زمین/EOC Operations Section Chief;EOC Operations Section Chief
+G-U-i-e-eps;زمین/EOC Planning Section Chief;EOC Planning Section Chief
+G-U-i-e-ial;زمین/Individual Assistance Disaster Assessment Team Leader;Individual Assistance Disaster Assessment Team Leader
+G-U-i-e-iat;زمین/Individual Assistance Disaster Assessment Team;Individual Assistance Disaster Assessment Team
+G-U-i-e-imt;زمین/Incident Management Team;Incident Management Team
+G-U-i-e-mcc;زمین/Mobile Communications Center;Mobile Communications Center
+G-U-i-e-mfk;زمین/Mobile Feeding Kitchen;Mobile Feeding Kitchen
+G-U-i-e-pac;زمین/Public Assistance Coordinator;Public Assistance Coordinator
+G-U-i-e-rna;زمین/Rapid Needs Assessment Team;Rapid Needs Assessment Team
+G-U-i-e-smt;زمین/Shelter Management Team;Shelter Management Team
+G-U-i-e-val;زمین/Volunteer Agency Liaison;Volunteer Agency Liaison
+G-U-i-m;زمین/IM Resources/Emergency Medical Services;Emergency Medical Services
+G-U-i-m-aaf;زمین/Air Ambulance (Fixed-Wing);Air Ambulance (Fixed-Wing)
+G-U-i-m-aar;زمین/Air Ambulance (Rotary-Wing);Air Ambulance (Rotary-Wing)
+G-U-i-m-ag;زمین/Ambulances (Ground);Ambulances (Ground)
+G-U-i-m-ast;زمین/Ambulance Strike Team;Ambulance Strike Team
+G-U-i-m-atf;زمین/Ambulance Task Force;Ambulance Task Force
+G-U-i-m-etf;زمین/Emergency Medical Task Force;Emergency Medical Task Force
+G-U-i-f;زمین/IM Resources/Fire HAZMAT;Fire HAZMAT
+G-U-i-f-act;زمین/Area Command Team, Firefighting;Area Command Team, Firefighting
+G-U-i-f-bp;زمین/Brush Patrol;Brush Patrol
+G-U-i-f-ct;زمین/Crew Transport;Crew Transport
+G-U-i-f-efp;زمین/Engine, Fire (Pumper);Engine, Fire (Pumper)
+G-U-i-f-fb;زمین/Fire Boat;Fire Boat
+G-U-i-f-ft;زمین/Fuel Tender;Fuel Tender
+G-U-i-f-fta;زمین/Fire Truck;Fire Truck
+G-U-i-f-ftf;زمین/Foam Tender;Foam Tender
+G-U-i-f-hc;زمین/Hand Crew;Hand Crew
+G-U-i-f-het;زمین/HazMat Entry Team;HazMat Entry Team
+G-U-i-f-hf;زمین/Helicopters Firefighting;Helicopters, Firefighting
+G-U-i-f-ht;زمین/Helitanker ;Helitanker
+G-U-i-f-imt;زمین/Incident Management Team Firefighting;Incident Management Team Firefighting
+G-U-i-f-ibt;زمین/Interagency Buying Team Firefighting;Interagency Buying Team Firefighting
+G-U-i-f-mcu;زمین/Mobile Communications Unit;Mobile Communications Unit
+G-U-i-f-nsf;زمین/USCG National Strike Force;USCG National Strike Force
+G-U-i-f-pp;زمین/Portable Pump;Portable Pump
+G-U-i-f-st;زمین/Strike Team, Engine (Fire);Strike Team, Engine (Fire)
+G-U-i-f-wt;زمین/Water Tender, Firefighting (Tanker);Water Tender, Firefighting (Tanker)
+G-U-i-h;زمین/IM Resources/Health and Medical;Health and Medical
+G-U-i-h-dmb;زمین/Disaster Medical Assistance Team - Basic;Disaster Medical Assistance Team - Basic
+G-U-i-h-dmc;زمین/Disaster Medical Assistance Team - Crush Injury Specialty;Disaster Medical Assistance Team - Crush Injury Specialty
+G-U-i-h-dmm;زمین/Disaster Medical Assistance Team - Mental Health;Disaster Medical Assistance Team - Mental Health
+G-U-i-h-dmp;زمین/Disaster Medical Assistance Team - Pediatric;Disaster Medical Assistance Team - Pediatric
+G-U-i-h-dms;زمین/Disaster Medical Assistance Team - Burn;Disaster Medical Assistance Team - Burn
+G-U-i-h-mor;زمین/Disaster Mortuary Operational Response Team;Disaster Mortuary Operational Response Team
+G-U-i-h-msr;زمین/International Medical Surgical Response Team;International Medical Surgical Response Team
+G-U-i-h-mst;زمین/NDMS Management Support Team;NDMS Management Support Team
+G-U-i-h-vma;زمین/Veterinary Medical Assistance Team;Veterinary Medical Assistance Team
+G-U-i-l;زمین/IM Resources/Law Enforcement;Law Enforcement
+G-U-i-l-bs;زمین/Bomb Squad Explosives Team;Bomb Squad Explosives Team
+G-U-i-l-cct;زمین/Crowd Control Team;Crowd Control Team
+G-U-i-l-dt;زمین/Public Safety Dive Team;Public Safety Dive Team
+G-U-i-l-hps;زمین/Aviation-Helicopters Patrol Surveillance;Aviation-Helicopters Patrol Surveillance
+G-U-i-l-oa;زمین/Observation Aircraft;Observation Aircraft
+G-U-i-l-tt;زمین/SWAT Tactical Team;SWAT Tactical Team
+G-U-i-p;زمین/IM Resources/Public Works;Public Works
+G-U-i-p-acf;زمین/Air Curtain Burners (Above Ground);Air Curtain Burners (Above Ground)
+G-U-i-p-ach;زمین/Air Conditioner Heater;Air Conditioner Heater
+G-U-i-p-act;زمین/Air Curtain Burners (In Ground);Air Curtain Burners (In Ground)
+G-U-i-p-atc;زمین/All Terrain Cranes;All Terrain Cranes
+G-U-i-p-bh;زمین/Backhoe Loader;Backhoe Loader
+G-U-i-p-cah;زمین/Chillers Air Handlers;Chillers Air Handlers
+G-U-i-p-cc;زمین/Crawler Cranes;Crawler Cranes
+G-U-i-p-cce;زمین/Concrete Cutter Multi-Processor for Hydraulic Excavator;Concrete Cutter Multi-Processor for Hydraulic Excavator
+G-U-i-p-dat;زمین/Disaster Assessment Team;Disaster Assessment Team
+G-U-i-p-dmm;زمین/Debris Management Monitoring Team;Debris Management Monitoring Team
+G-U-i-p-dmr;زمین/Debris Management Site Reduction Team;Debris Management Site Reduction Team
+G-U-i-p-dmt;زمین/Debris Management Team;Debris Management Team
+G-U-i-p-drt;زمین/Disaster Recovery Team;Disaster Recovery Team
+G-U-i-p-dt;زمین/Dump Trailer;Dump Trailer
+G-U-i-p-dtf;زمین/Dump Truck Off Road;Dump Truck Off Road
+G-U-i-p-dtn;زمین/Dump Truck On Road;Dump Truck On Road
+G-U-i-p-epr;زمین/Electrical Power Restoration Team;Electrical Power Restoration Team
+G-U-i-p-es;زمین/Engineering Services;Engineering Services
+G-U-i-p-fbt;زمین/Flat Bed Trailer Truck;Flat Bed Trailer Truck
+G-U-i-p-gen;زمین/Generators ;Generators
+G-U-i-p-hel;زمین/Hydraulic Excavator (Large);Hydraulic Excavator (Large)
+G-U-i-p-hem;زمین/Hydraulic Excavator (Medium);Hydraulic Excavator (Medium)
+G-U-i-p-htc;زمین/Hydraulic Truck Cranes;Hydraulic Truck Cranes
+G-U-i-p-ltc;زمین/Lattice Truck Cranes;Lattice Truck Cranes
+G-U-i-p-tb;زمین/Tug Boat;Tug Boat
+G-U-i-p-td;زمین/Track Dozer;Track Dozer
+G-U-i-p-tg;زمین/Tub Grinder;Tub Grinder
+G-U-i-p-tt;زمین/Tractor Trailer;Tractor Trailer
+G-U-i-p-wd;زمین/Wheel Dozer;Wheel Dozer
+G-U-i-p-wll;زمین/Wheel Loaders (Large);Wheel Loaders (Large)
+G-U-i-p-wlm;زمین/Wheel Loaders (Medium);Wheel Loaders (Medium)
+G-U-i-p-wls;زمین/Wheel Loaders (Small);Wheel Loaders (Small)
+G-U-i-p-wpt;زمین/Water Purification Team;Water Purification Team
+G-U-i-p-wt;زمین/Water Truck;Water Truck
+G-U-i-s;زمین/IM Resources/Search and Rescue;Search and Rescue
+G-U-i-s-ar;زمین/Airborne Reconnaissance;Airborne Reconnaissance
+G-U-i-s-ast;زمین/Air Search Team;Air Search Team
+G-U-i-s-cas;زمین/Canine SAR Team Avalanche Snow;Canine SAR Team Avalanche Snow
+G-U-i-s-cav;زمین/Cave SAR Team;Cave SAR Team
+G-U-i-s-cdr;زمین/Canine SAR Team Disaster Response;Canine SAR Team Disaster Response
+G-U-i-s-clc;زمین/Canine SAR Team Land Cadaver;Canine SAR Team Land Cadaver
+G-U-i-s-col;زمین/Collapse SAR Team;Collapse SAR Team
+G-U-i-s-cwa;زمین/Canine SAR Team Water;Canine SAR Team Water
+G-U-i-s-cwi;زمین/Canine SAR Team Wilderness;Canine SAR Team Wilderness
+G-U-i-s-cwt;زمین/Canine SAR Team Wilderness Tracking;Canine SAR Team Wilderness Tracking
+G-U-i-s-mt;زمین/Mine Tunnel SAR Team;Mine Tunnel SAR Team
+G-U-i-s-mnt;زمین/Mountain SAR Team;Mountain SAR Team
+G-U-i-s-rdf;زمین/Radio Direction Finding Team;Radio Direction Finding Team
+G-U-i-s-sfd;زمین/Swiftwater Flood Search and Dive Rescue Team;Swiftwater Flood Search and Dive Rescue Team
+G-U-i-s-uis;زمین/USAR Incident Support Team;USAR Incident Support Team
+G-U-i-s-utf;زمین/USAR Task Force;USAR Task Force
+G-U-i-s-wi;زمین/Wilderness SAR Team;Wilderness SAR Team
+G-U-i-o;زمین/IM Resources/Other;Other
+S;سطج دریا;SEA SURFACE TRACK
+S-C;سطح/رزمی;COMBATANT
+S-C-A;سطح/رزمی/تهاجم آبی‌خاکی;AMPHIBIOUS WARFARE SHIP
+S-C-A-L-A;سطح/رزمی/کشتی تهاجمی;ASSAULT VESSEL
+S-C-A-L-C;سطح/رزمی/ناوچه آبی‌خاکی;LANDING CRAFT
+S-C-A-L-S;سطح/رزمی/کشتی آبی‌خاکی;LANDING SHIP
+S-C-H;سطح/رزمی/هواناو;HOVERCRAFT
+S-C-L;سطح/رزمی/کشتی جنگی;LINE
+S-C-L-B-B;سطح/رزمی/کشتی جنگی/نبردناو;BATTLESHIP
+S-C-L-C-C;سطح/رزمی/کشتی جنگی/ناو;CRUISER
+S-C-L-C-V;سطح/رزمی/کشتی جنگی/ناو هواپیمابر;CARRIER
+S-C-L-D-D;سطح/رزمی/کشتی جنگی/ناوشکن;DESTROYER
+S-C-L-F-F;سطح/رزمی/کشتی جنگی/ناوچه;FRIGATE/CORVETTE
+S-C-M;سطح/رزمی/جنگ مین;MINE WARFARE VESSEL
+S-C-M-M-A;سطح/رزمی/جنگ مین/پشتیبانی جنگ مین;MCM SUPPORT
+S-C-M-M-D;سطح/رزمی/جنگ مین/پهپاد جنگ مین;MCM DRONE
+S-C-M-M-H;سطح/رزمی/جنگ مین/مین‌یاب;MINEHUNTER
+S-C-M-M-L;سطح/رزمی/جنگ مین/مین‌گذار;MINELAYER
+S-C-M-M-S;سطح/رزمی/جنگ مین/مین‌روب;MINESWEEPER
+S-C-P;سطح/رزمی/گشت;PATROL
+S-C-P-S-B;سطح/رزمی/گشت/جنگ ضد زیردریایی;ANTISUBMARINE WARFARE
+S-C-P-S-U;سطح/رزمی/گشت/جنگ ضد سطحی;ANTISURFACE WARFARE
+S-G;سطح/گروه نیروی دریایی;NAVY GROUP
+S-G-C;سطح/کاروان;CONVOY
+S-G-G;سطح/NAVY TASK GROUP;NAVY TASK GROUP
+S-G-T;سطح/NAVY TASK FORCE;NAVY TASK FORCE
+S-G-U;سطح/NAVY TASK UNIT;NAVY TASK UNIT
+S-N;سطح/غیررزمی;NONCOMBATANT
+S-N-F;سطح/غیررزمی/پشتیبانی ناوگان;FLEET SUPPORT
+S-N-H;سطح/غیررزمی/هواناو;HOVERCRAFT
+S-N-I;سطح/غیررزمی/اطلاعات;INTELLIGENCE
+S-N-M;سطح/غیررزمی/کشتی بیمارستانی;HOSPITAL SHIP
+S-N-N;سطح/غیررزمی/ایستگاه;STATION
+S-N-N-R;سطح/غیررزمی/RESCUE;RESCUE
+S-N-R;سطح/غیررزمی/UNDERWAY REPLENISHMENT;UNDERWAY REPLENISHMENT
+S-N-S;سطح/غیررزمی/SERVICE/SUPPORT HARBOR;SERVICE/SUPPORT HARBOR
+S-O;سطح/OWN TRACK;OWN TRACK
+S-S;سطح/STATION;STATION
+S-S-A;سطح/ASW SHIP;ASW SHIP
+S-S-P;سطح/PICKET;PICKET
+S-X;سطح/غیرنظامی;NON MILITARY
+S-X-F;سطح/غیرنظامی/FISHING;FISHING
+S-X-F-D-F;سطح/غیرنظامی/DRIFTER;DRIFTER
+S-X-F-D-R;سطح/غیرنظامی/DREDGE;DREDGE
+S-X-F-T-R;سطح/غیرنظامی/TRAWLER;TRAWLER
+S-X-H;سطح/غیرنظامی/HOVERCRAFT;HOVERCRAFT
+S-X-L;سطح/غیرنظامی/LAW ENFORCEMENT VESSEL;LAW ENFORCEMENT VESSEL
+S-X-M;سطح/غیرنظامی/MERCHANT;MERCHANT
+S-X-M-C;سطح/غیرنظامی/CARGO;CARGO
+S-X-M-F;سطح/غیرنظامی/FERRY;FERRY
+S-X-M-H;سطح/غیرنظامی/HAZARDOUS MATERIALS (HAZMAT);HAZARDOUS MATERIALS (HAZMAT)
+S-X-M-O;سطح/غیرنظامی/OILER/TANKER;OILER/TANKER
+S-X-M-P;سطح/غیرنظامی/PASSENGER;PASSENGER
+S-X-M-R;سطح/غیرنظامی/ROLL ON/ROLL OFF;ROLL ON/ROLL OFF
+S-X-M-T-O;سطح/غیرنظامی/TOWING VESSEL;TOWING VESSEL
+S-X-M-T-U;سطح/غیرنظامی/TUG;TUG
+S-X-R;سطح/غیرنظامی/LEISURE CRAFT;LEISURE CRAFT
+U;زیرسطح/زیر سطح دریا;SUBSURFACE TRACK
+U-N;زیرسطح/NON SUBMARINE;NON SUBMARINE
+U-N-D;زیرسطح/DIVER;DIVER
+U-S;زیرسطح/SUBMARINE;SUBMARINE
+U-S-C;زیرسطح/SUBMARINE CONVENTIONAL PROPULSION;SUBMARINE CONVENTIONAL PROPULSION
+U-S-N;زیرسطح/SUBMARINE NUCLEAR PROPULSION;SUBMARINE NUCLEAR PROPULSION
+U-S-O;زیرسطح/OTHER SUBMERSIBLE;OTHER SUBMERSIBLE
+U-S-S;زیرسطح/STATION;STATION
+U-S-S-A;زیرسطح/ASW SUBMARINE;ASW SUBMARINE
+U-S-U;زیرسطح/UNMANNED UNDERWATER VEHICLE (UUV);UNMANNED UNDERWATER VEHICLE (UUV)
+U-W;زیرسطح/UNDERWATER WEAPON;UNDERWATER WEAPON
+U-W-D;زیرسطح/UNDERWATER DECOY;UNDERWATER DECOY
+U-W-D-M;زیرسطح/SEA MINE DECOY;SEA MINE DECOY
+U-W-M;زیرسطح/SEA MINE;SEA MINE
+U-W-M-D;زیرسطح/SEA MINE DEALT;SEA MINE DEALT
+U-W-M-F;زیرسطح/SEA MINE (FLOATING);SEA MINE (FLOATING)
+U-W-M-F-D;زیرسطح/SEA MINE (FLOATING) DEALT;SEA MINE (FLOATING) DEALT
+U-W-M-G;زیرسطح/SEA MINE (GROUND);SEA MINE (GROUND)
+U-W-M-G-D;زیرسطح/SEA MINE (GROUND) DEALT;SEA MINE (GROUND) DEALT
+U-W-M-M;زیرسطح/SEA MINE (MOORED);SEA MINE (MOORED)
+U-W-M-M-D;زیرسطح/SEA MINE (MOORED) DEALT;SEA MINE (MOORED) DEALT
+U-W-M-O;زیرسطح/SEA MINE (IN OTHER POSITION);SEA MINE (IN OTHER POSITION)
+U-W-M-O-D;زیرسطح/SEA MINE (IN OTHER POSITION) DEALT;SEA MINE (IN OTHER POSITION) DEALT
+U-W-T;زیرسطح/TORPEDO;TORPEDO
