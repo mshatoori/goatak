@@ -17,9 +17,9 @@ services:
       - GPSD=127.0.0.1:2948
     network_mode: host
   map:
-    build:
-      dockerfile: ./Dockerfile
-      context: ./maps
+    # build:
+    #   dockerfile: ./Dockerfile
+    #   context: ./maps
     image: ghcr.io/mshatoori/goatak-maps:latest
     ports:
       - "8000:8000"
