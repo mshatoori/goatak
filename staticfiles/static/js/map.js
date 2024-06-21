@@ -8,7 +8,7 @@ function needIconUpdate(oldUnit, newUnit) {
 }
 
 L.Marker.RotatedMarker = L.Marker.extend({
-    _reset: function() {
+    _reset: function () {
         var pos = this._map.latLngToLayerPoint(this._latlng).round();
 
         L.DomUtil.setPosition(this._icon, pos);
@@ -68,7 +68,7 @@ let app = new Vue({
         this.map = L.map('map');
         this.map.setView([60, 30], 11);
 
-        L.control.scale({metric: true}).addTo(this.map);
+        L.control.scale({ metric: true }).addTo(this.map);
 
         this.getConfig();
 
@@ -124,7 +124,7 @@ let app = new Vue({
                             });
 
                         if (!vm.myInfoMarker) {
-                            vm.myInfoMarker = L.marker([data.lat, data.lon], {icon: markerInfo});
+                            vm.myInfoMarker = L.marker([data.lat, data.lon], { icon: markerInfo });
                             vm.myInfoMarker.addTo(vm.map);
                         }
 
@@ -140,7 +140,7 @@ let app = new Vue({
                             });
                     }
 
-                    layers = L.control.layers({}, null, {hideSingleBase: true});
+                    layers = L.control.layers({}, null, { hideSingleBase: true });
                     layers.addTo(vm.map);
 
                     let first = true;
@@ -189,10 +189,7 @@ let app = new Vue({
 
             this.conn.onmessage = function (e) {
                 let parsed = JSON.parse(e.data);
-                if (parsed.uid === vm.config.uid)
-                    vm.processMe(parsed);
-                else
-                    vm.processWS(parsed);
+                vm.processWS(parsed);
             };
 
             this.conn.onopen = function (e) {
@@ -250,8 +247,8 @@ let app = new Vue({
 
                 const requestOptions = {
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({lat: p.lat, lon: p.lng, name: "DP1"})
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ lat: p.lat, lon: p.lng, name: "DP1" })
                 };
                 fetch("/dp", requestOptions);
             }
@@ -310,7 +307,10 @@ let app = new Vue({
 
         processWS: function (u) {
             if (u.type === "unit") {
-                this.processUnit(u.unit);
+                if (u.unit.uid === this.config.uid)
+                    this.processMe(u.unit);
+                else
+                    this.processUnit(u.unit);
             }
 
             if (u.type === "delete") {
@@ -332,14 +332,14 @@ let app = new Vue({
                 return
             }
 
-            console.log(unit);
+            // console.log(unit);
 
             if (unit.marker) {
                 if (updateIcon) {
                     unit.marker.setIcon(getIcon(unit, true));
                 }
             } else {
-                unit.marker = L.marker([unit.lat, unit.lon], {draggable: draggable});
+                unit.marker = L.marker([unit.lat, unit.lon], { draggable: draggable });
                 unit.marker.on('click', function (e) {
                     app.setCurrentUnitUid(unit.uid, false);
                 });
@@ -353,15 +353,22 @@ let app = new Vue({
                 unit.marker.addTo(this.map);
             }
 
+            let markerHtml = '<div>' + unit.callsign;
+            if (unit.ip_address) 
+                markerHtml += '<br>' + unit.ip_address;
+            if (unit.urn)
+                markerHtml += '<br>' + unit.urn;
+            markerHtml += '</div>';
+
             const markerInfo = L.divIcon(
                 {
                     className: 'my-marker-info',
-                    html: '<div>' + unit.callsign + '<br>' + unit.ip_address + '<br>' + unit.urn + '</div>',
+                    html: markerHtml,
                     iconSize: null
                 });
 
             if (!unit.infoMarker) {
-                unit.infoMarker = L.marker([unit.lat, unit.lon], {icon: markerInfo});
+                unit.infoMarker = L.marker([unit.lat, unit.lon], { icon: markerInfo });
                 unit.infoMarker.addTo(this.map);
             }
 
@@ -481,15 +488,19 @@ let app = new Vue({
                     parent_uid: "",
                     parent_callsign: "",
                     local: true,
-                    send: false,
+                    send: true,
+                    web_sensor: "",
                 }
                 if (this.config && this.config.uid) {
                     u.parent_uid = this.config.uid;
                     u.parent_callsign = this.config.callsign;
                 }
 
-                this.sendUnit(u);
-                this.setCurrentUnitUid(u.uid, true);
+                const vm = this
+                this.sendUnit(u, function() {
+                    vm.setCurrentUnitUid(u.uid, true);
+                    new bootstrap.Modal(document.querySelector("#edit")).show();
+                });
             }
             if (this.modeIs("me")) {
                 this.config.lat = e.latlng.lat;
@@ -497,17 +508,17 @@ let app = new Vue({
                 this.me.setLatLng(e.latlng);
                 const requestOptions = {
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({lat: e.latlng.lat, lon: e.latlng.lng})
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ lat: e.latlng.lat, lon: e.latlng.lng })
                 };
                 fetch("/pos", requestOptions);
             }
         },
 
-        sendUnit: function (u) {
+        sendUnit: function (u, cb) {
             const requestOptions = {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(this.cleanUnit(u))
             };
             let vm = this;
@@ -517,6 +528,9 @@ let app = new Vue({
                 })
                 .then(function (data) {
                     vm.processUnit(data, true);
+                    if (cb) {
+                        cb()
+                    }
                 });
         },
 
@@ -531,6 +545,7 @@ let app = new Vue({
                     text: "",
                     send: false,
                     root_sidc: null,
+                    web_sensor: "",
                 };
             } else {
                 this.form_unit = {
@@ -542,6 +557,7 @@ let app = new Vue({
                     text: u.text,
                     send: u.send,
                     root_sidc: this.types,
+                    web_sensor: u.web_sensor,
                 };
 
                 if (u.type.startsWith('a-')) {
@@ -561,6 +577,7 @@ let app = new Vue({
             u.category = this.form_unit.category;
             u.send = this.form_unit.send;
             u.text = this.form_unit.text;
+            u.web_sensor = this.form_unit.web_sensor;
 
             if (this.form_unit.category === "unit") {
                 u.type = ["a", this.form_unit.aff, this.form_unit.subtype].join('-');
@@ -830,7 +847,7 @@ let app = new Vue({
 
         deleteCurrentUnit: function () {
             if (!this.current_unit_uid) return;
-            fetch("unit/" + this.current_unit_uid, {method: "DELETE"})
+            fetch("unit/" + this.current_unit_uid, { method: "DELETE" })
                 .then(function (response) {
                     return response.json()
                 })
@@ -850,7 +867,7 @@ let app = new Vue({
 
             const requestOptions = {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(msg)
             };
             let vm = this;
@@ -899,4 +916,4 @@ function latLongToIso6709(lat, lon) {
     const isoLon = degreesLon + '°' + minutesLon + '\'' + decimalMinutesLon + '\"' + lonHemisphere;
 
     return isoLat + ' ' + isoLon;
-  }
+}

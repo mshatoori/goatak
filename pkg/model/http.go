@@ -43,6 +43,7 @@ type WebUnit struct {
 	Missions       []string  `json:"missions"`
 	IPAddress      string    `json:"ip_address"`
 	URN            int32     `json:"urn"`
+	WebSensor      string    `json:"web_sensor"`
 }
 
 type Contact struct {
@@ -75,6 +76,13 @@ func (i *Item) ToWeb() *WebUnit {
 
 	parentUID, parentCallsign := msg.GetParent()
 
+	webSensor := ""
+	for _, sensorData := range evt.GetDetail().GetSensorData() {
+		if sensorData.GetSensorName() == "WEB" {
+			webSensor = sensorData.GetValue()
+		}
+	}
+
 	w := &WebUnit{
 		UID:            i.uid,
 		Category:       i.class,
@@ -106,6 +114,7 @@ func (i *Item) ToWeb() *WebUnit {
 		Status:         "",
 		IPAddress:      evt.GetDetail().GetContact().GetClientInfo().GetIpAddress(),
 		URN:            evt.GetDetail().GetContact().GetClientInfo().GetUrn(),
+		WebSensor:      webSensor,
 	}
 
 	if i.class == CONTACT {
@@ -178,6 +187,15 @@ func (w *WebUnit) ToMsg() *cot.CotMessage {
 
 	if w.StaleTime.Before(zero) {
 		msg.CotEvent.StaleTime = cot.TimeToMillis(time.Now().Add(time.Hour * 24))
+	}
+
+	if w.WebSensor != "" {
+		sensorData := make([]*cotproto.SensorData, 1)
+		sensorData = append(sensorData, &cotproto.SensorData{
+			SensorName: "WEB",
+			Value:      w.WebSensor,
+		})
+		msg.CotEvent.Detail.SensorData = sensorData
 	}
 
 	return &cot.CotMessage{

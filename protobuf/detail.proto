@@ -69,4 +69,12 @@ message Detail {
 
   // <track>
   Track track = 7;
+
+
+  repeated SensorData sensorData = 100;
+}
+
+message SensorData {
+  string sensorName = 1;
+  string value = 2;
 }

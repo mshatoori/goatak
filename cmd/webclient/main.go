@@ -19,7 +19,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/kdudkov/goatak/pkg/gpsd"
+	"github.com/kdudkov/goatak/pkg/sensors"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/spf13/viper"
 
@@ -63,6 +64,8 @@ type App struct {
 	connected       uint32
 	mapServer       string
 
+	selfPosEventMutators sync.Map
+
 	callsign string
 	uid      string
 	typ      string
@@ -77,6 +80,29 @@ type App struct {
 
 	ipAddress string
 	urn       int32
+}
+
+type CoTEventMutator struct {
+	mutation *cotproto.CotEvent
+	logger   *slog.Logger
+}
+
+func (m *CoTEventMutator) mutate(event *cotproto.CotEvent) bool {
+	// m.logger.Debug("Started mutating")
+	if m.mutation.GetStaleTime() == 0 || m.mutation.GetStaleTime() > cot.TimeToMillis(time.Now()) {
+		// m.logger.Debug("... Valid mutation")
+		if mutationCopy, ok := proto.Clone(m.mutation).(*cotproto.CotEvent); ok {
+			// m.logger.Debug("... Copied CotEvent ->" + mutationCopy.String())
+			mutationCopy.Uid = ""
+			mutationCopy.StaleTime = 0
+			// m.logger.Debug("... Removed Fields")
+			proto.Merge(event, mutationCopy)
+			// m.logger.Debug("... Merged")
+			return true
+		}
+	}
+
+	return false
 }
 
 // Get preferred outbound ip of this machine
@@ -140,6 +166,8 @@ func NewApp(uid string, callsign string, connectStr string, webPort int, mapServ
 		mapServer:       mapServer,
 		ipAddress:       getOutboundIP().String(),
 		urn:             urn,
+
+		selfPosEventMutators: sync.Map{},
 	}
 }
 
@@ -152,6 +180,25 @@ func (app *App) Init() {
 
 	app.ch = make(chan []byte, 20)
 	app.InitMessageProcessors()
+}
+
+func (app *App) sensorCallback(data any) {
+	switch data := data.(type) {
+	case *cotproto.CotEvent:
+		if strings.HasPrefix(data.GetUid(), "$self") {
+			if data.GetUid() == "$self.pos" {
+				app.pos.Store(model.NewPosFull(data.Lat, data.Lon, data.Hae, data.Detail.Track.Speed, data.Detail.Track.Course))
+				app.logger.Info("position from gpsd", "lat", data.Lat, "lon", data.Lon, "alt", data.Hae, "speed", data.Detail.Track.Speed, "track", data.Detail.Track.Course)
+				app.changeCb.AddMessage(model.FromMsg(cot.LocalCotMessage(app.MakeMe())))
+			}
+			app.selfPosEventMutators.Store(data.GetUid(), CoTEventMutator{
+				mutation: data,
+				logger:   app.logger.With("logger", "mutators"+data.GetUid()),
+			})
+		}
+	default:
+		app.logger.Info("Unknown sensor data")
+	}
 }
 
 func (app *App) Run(ctx context.Context) {
@@ -171,12 +218,14 @@ func (app *App) Run(ctx context.Context) {
 	app.logger.Debug("GPSD", "addr", viper.GetString("gpsd"))
 
 	if addr := viper.GetString("gpsd"); addr != "" {
-		c := gpsd.New(addr, app.logger.With("logger", "gpsd"))
-		go c.Listen(ctx, func(lat, lon, alt, speed, track float64) {
-			app.pos.Store(model.NewPosFull(lat, lon, alt, speed, track))
-			app.logger.Info("position from gpsd", "lat", lat, "lon", lon, "alt", alt, "speed", speed, "track", track)
-			app.changeCb.AddMessage(model.FromMsg(cot.LocalCotMessage(app.MakeMe())))
-		})
+		var gpsdSensor = &sensors.GpsdSensor{
+			Addr:   addr,
+			Conn:   nil,
+			Logger: app.logger.With("logger", "gpsd"),
+			Reader: nil,
+		}
+		gpsdSensor.Initialize(ctx)
+		go gpsdSensor.Start(ctx, app.sensorCallback)
 	}
 
 	app.mesh = client.NewMeshHandler(&client.MeshHandlerConfig{
@@ -291,6 +340,19 @@ func (app *App) ProcessEvent(msg *cot.CotMessage) {
 	}
 }
 
+func (app *App) MutateSelfPosMessage(msg *cotproto.CotEvent) {
+	// app.logger.Debug("Mutate self pos message...")
+	app.selfPosEventMutators.Range(func(key, value any) bool {
+		if mutator, ok := value.(CoTEventMutator); ok {
+			// app.logger.Debug("Mutator -> " + mutator.mutation.String())
+			if !mutator.mutate(msg) {
+				app.selfPosEventMutators.LoadAndDelete(key.(string))
+			}
+		}
+		return true
+	})
+}
+
 func (app *App) MakeMe() *cotproto.TakMessage {
 	ev := cot.BasicMsg(app.typ, app.uid, time.Minute*2)
 	pos := app.pos.Load()
@@ -319,17 +381,19 @@ func (app *App) MakeMe() *cotproto.TakMessage {
 			Os:       app.os,
 			Version:  app.version,
 		},
-		Track: &cotproto.Track{
-			Speed:  pos.GetSpeed(),
-			Course: pos.GetTrack(),
-		},
-		PrecisionLocation: &cotproto.PrecisionLocation{
-			Geopointsrc: "GPS",
-			Altsrc:      "GPS",
-		},
+		// Track: &cotproto.Track{
+		// 	Speed:  pos.GetSpeed(),
+		// 	Course: pos.GetTrack(),
+		// },
+		// PrecisionLocation: &cotproto.PrecisionLocation{
+		// 	Geopointsrc: "GPS",
+		// 	Altsrc:      "GPS",
+		// },
 		Status: &cotproto.Status{Battery: 39},
 	}
 	ev.CotEvent.Detail.XmlDetail = fmt.Sprintf("<uid Droid=\"%s\"></uid>", app.callsign)
+
+	app.MutateSelfPosMessage(ev.CotEvent)
 
 	return ev
 }
