@@ -506,6 +506,20 @@ let app = new Vue({
                 this.config.lat = e.latlng.lat;
                 this.config.lon = e.latlng.lng;
                 this.me.setLatLng(e.latlng);
+                const markerInfo = L.divIcon(
+                    {
+                        className: 'my-marker-info',
+                        html: '<div>' + this.config.callsign + '<br>' + this.config.ip_address + '<br>' + this.config.urn + '</div>',
+                        iconSize: null
+                    });
+
+                if (!this.myInfoMarker) {
+                    this.myInfoMarker = L.marker([e.latlng.lat, e.latlng.lon], { icon: markerInfo });
+                    this.myInfoMarker.addTo(this.map);
+                }
+
+                this.myInfoMarker.setLatLng(e.latlng);
+                this.myInfoMarker.setIcon(markerInfo);
                 const requestOptions = {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
