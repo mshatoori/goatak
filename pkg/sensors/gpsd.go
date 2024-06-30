@@ -62,10 +62,12 @@ type GpsdSensor struct {
 }
 
 func (sensor *GpsdSensor) Initialize(ctx context.Context) bool {
-	return sensor.connect(ctx)
+	return true
 }
 
 func (sensor *GpsdSensor) Start(ctx context.Context, cb func(data any)) {
+	sensor.connect(ctx)
+	
 	for ctx.Err() == nil {
 		if sensor.Conn == nil {
 			if !sensor.connect(ctx) {
