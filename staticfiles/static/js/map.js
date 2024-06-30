@@ -46,6 +46,8 @@ let app = new Vue({
         layers: null,
         conn: null,
         units: new Map(),
+        outgoing_feeds: new Map(),
+        incoming_feeds: new Map(),
         messages: [],
         seenMessages: new Set(),
         ts: 0,
@@ -62,6 +64,17 @@ let app = new Vue({
         chatroom: "",
         chat_uid: "",
         chat_msg: "",
+
+        new_out_feed: {
+            ip: '',
+            port: '',
+            outgoing: true,
+        },
+        new_in_feed: {
+            ip: '',
+            port: '',
+            outgoing: false,
+        }
     },
 
     mounted() {
@@ -184,6 +197,7 @@ let app = new Vue({
 
             this.fetchAllUnits();
             this.fetchMessages();
+            this.fetchFeeds();
 
             this.conn = new WebSocket(url);
 
@@ -222,6 +236,16 @@ let app = new Vue({
                 .then(vm.processUnits);
         },
 
+        fetchFeeds: function () {
+            let vm = this;
+
+            fetch('/feeds')
+                .then(function (response) {
+                    return response.json()
+                })
+                .then(vm.processFeeds);
+        },
+
         fetchMessages: function () {
             let vm = this;
 
@@ -252,6 +276,56 @@ let app = new Vue({
                 };
                 fetch("/dp", requestOptions);
             }
+        },
+
+        processFeeds: function (data) {
+            let keys = new Set();
+            this.incoming_feeds = new Map();
+            this.outgoing_feeds = new Map();
+
+            for (let u of data) {
+                keys.add(this.processFeed(u)?.uid);
+            }
+
+            this.ts += 1;
+        },
+
+        processFeed: function (f) {
+            if (!f) return;
+            let feed = null;
+            console.log("processing feed", f);
+            if (f.outgoing) {
+                feed = this.outgoing_feeds.get(f.uid);
+                if (!feed) {
+                    this.outgoing_feeds.set(f.uid, f);
+                    feed = f;
+                } else {
+                    for (const k of Object.keys(f)) {
+                        feed[k] = f[k];
+                    }
+                }
+            }
+            else {
+                feed = this.incoming_feeds.get(f.uid);
+                if (!feed) {
+                    this.incoming_feeds.set(f.uid, f);
+                    feed = f;
+                } else {
+                    for (const k of Object.keys(f)) {
+                        feed[k] = f[k];
+                    }
+                }
+            }
+
+            return feed;
+        },
+
+        removeFeed: function (uid) {
+            // TODO
+            // if (!this.feeds.has(uid)) return;
+
+            // let item = this.feeds.get(uid);
+            // this.feeds.delete(uid);
         },
 
         processUnits: function (data) {
@@ -354,7 +428,7 @@ let app = new Vue({
             }
 
             let markerHtml = '<div>' + unit.callsign;
-            if (unit.ip_address) 
+            if (unit.ip_address)
                 markerHtml += '<br>' + unit.ip_address;
             if (unit.urn)
                 markerHtml += '<br>' + unit.urn;
@@ -497,7 +571,7 @@ let app = new Vue({
                 }
 
                 const vm = this
-                this.sendUnit(u, function() {
+                this.sendUnit(u, function () {
                     vm.setCurrentUnitUid(u.uid, true);
                     new bootstrap.Modal(document.querySelector("#edit")).show();
                 });
@@ -740,6 +814,10 @@ let app = new Vue({
             return online + "/" + total;
         },
 
+        feedsCount: function () {
+            return this.incoming_feeds.size + "/" + this.outgoing_feeds.size;
+        },
+
         countByCategory: function (s) {
             let total = 0;
             this.units.forEach(function (u) {
@@ -783,8 +861,20 @@ let app = new Vue({
             }
         },
 
+        openFeeds: function () {
+            new bootstrap.Modal(document.getElementById('feeds-modal')).show();
+        },
+
         getStatus: function (uid) {
             return this.ts && this.units.get(uid)?.status;
+        },
+
+        getOutgoingFeeds: function () {
+            return this.outgoing_feeds.values().toArray();
+        },
+
+        getIncomingFeeds: function () {
+            return this.incoming_feeds.values().toArray();
         },
 
         getMessages: function () {
@@ -893,7 +983,42 @@ let app = new Vue({
                     vm.messages = data;
                 });
 
+        },
+        newOutFeed: function () {
+            let postData = {
+                addr: this.new_out_feed.ip,
+                port: parseInt(this.new_out_feed.port),
+                outgoing: this.new_out_feed.outgoing,
+            }
+            const requestOptions = {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(postData),
+            };
+            fetch("/feeds", requestOptions)
+                .then(function (response) {
+                    return response.json()
+                })
+                .then(this.processFeeds);
+        },
+        newInFeed: function () {
+            let postData = {
+                addr: this.new_in_feed.ip,
+                port: parseInt(this.new_in_feed.port),
+                outgoing: this.new_in_feed.outgoing,
+            }
+            const requestOptions = {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(postData),
+            };
+            fetch("/feeds", requestOptions)
+                .then(function (response) {
+                    return response.json()
+                })
+                .then(this.processFeeds);
         }
+
     },
 });
 

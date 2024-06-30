@@ -7,6 +7,7 @@ import (
 	"runtime/pprof"
 	"time"
 
+	"github.com/kdudkov/goatak/internal/client"
 	"github.com/kdudkov/goatak/internal/wshandler"
 
 	"github.com/aofei/air"
@@ -23,6 +24,7 @@ var templates embed.FS
 func NewHttp(app *App, address string) *air.Air {
 	srv := air.New()
 	srv.Address = address
+	srv.DebugMode = true
 
 	staticfiles.EmbedFiles(srv, "/static")
 	renderer := new(staticfiles.Renderer)
@@ -43,6 +45,10 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.GET("/message", getMessagesHandler(app))
 	srv.POST("/message", addMessageHandler(app))
 	srv.DELETE("/unit/:uid", deleteItemHandler(app))
+
+	srv.GET("/feeds", getFeedsHandler(app))
+	srv.POST("/feeds", addFeedHandler(app))
+	// srv.DELETE("/feeds/:uid", deleteFeedHandler(app))  // TODO
 
 	srv.GET("/stack", getStackHandler())
 
@@ -70,6 +76,12 @@ func getIndexHandler(app *App, r *staticfiles.Renderer) air.Handler {
 func getUnitsHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
 		return res.WriteJSON(getUnits(app))
+	}
+}
+
+func getFeedsHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		return res.WriteJSON(getFeeds(app))
 	}
 }
 
@@ -144,6 +156,36 @@ func getPosHandler(app *App) air.Handler {
 		app.SendMsg(app.MakeMe())
 
 		return res.WriteString("Ok")
+	}
+}
+
+func addFeedHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		f := new(model.CoTFeed)
+
+		if req.Body == nil {
+			return nil
+		}
+
+		if err := json.NewDecoder(req.Body).Decode(f); err != nil {
+			return err
+		}
+
+		direction := client.INCOMING
+		if f.Outgoing {
+			direction = client.OUTGOING
+		}
+
+		newFeed := client.NewUDPFeed(&client.UDPFeedConfig{
+			MessageCb: app.ProcessEvent,
+			Addr:      f.Addr,
+			Port:      f.Port,
+			Direction: direction,
+		})
+
+		app.feeds = append(app.feeds, newFeed)
+		newFeed.Start()
+		return res.WriteJSON(getFeeds(app))
 	}
 }
 
@@ -270,6 +312,22 @@ func getUnits(app *App) []*model.WebUnit {
 	})
 
 	return units
+}
+
+func getFeeds(app *App) []*model.CoTFeed {
+	cotFeeds := make([]*model.CoTFeed, 0)
+
+	for _, feed := range app.feeds {
+		println("FEEEEEEED", feed.Addr.String(), feed.Direction)
+		cotFeeds = append(cotFeeds, &model.CoTFeed{
+			UID:      feed.UID,
+			Addr:     feed.Addr.IP.String(),
+			Port:     feed.Addr.Port,
+			Outgoing: (feed.Direction == client.OUTGOING),
+		})
+	}
+
+	return cotFeeds
 }
 
 func getStringParam(req *air.Request, name string) string {

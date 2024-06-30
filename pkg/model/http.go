@@ -62,6 +62,13 @@ type DigitalPointer struct {
 	Name string  `json:"name"`
 }
 
+type CoTFeed struct {
+	Addr     string `json:"addr"`
+	Port     int    `json:"port"`
+	UID      string `json:"uid"`
+	Outgoing bool   `json:"outgoing"`
+}
+
 func (i *Item) ToWeb() *WebUnit {
 	i.mx.RLock()
 	defer i.mx.RUnlock()

@@ -4,7 +4,7 @@ services:
       dockerfile: Dockerfile.webclient
       context: .
       args:
-        https_proxy: http://127.0.0.1:8889
+        https_proxy: http://host.docker.internal:8889
       network: host
     image: ghcr.io/mshatoori/goatak-client:latest
 #    ports:
@@ -24,7 +24,13 @@ services:
     ports:
       - "8000:8000"
   gpsd:
-    image: ghcr.io/mshatoori/docker-gpsd:latest
+    build:
+      dockerfile: ./Dockerfile
+      context: ./gpsd
+      args:
+        https_proxy: http://host.docker.internal:8889
+      network: host
+    image: docker.arvancloud.ir/gpsdntpd
     ports:
       - "2948:2947"
       - "5577:5577/udp"
@@ -36,8 +42,10 @@ services:
       dockerfile: Dockerfile
       context: .
       args:
-        https_proxy: http://127.0.0.1:8889
+        https_proxy: http://host.docker.internal:8889
       network: host
     ports:
       - "8087:8080"
       - "8089:8088"
+      - "8999:8999"
+      - "8999:8999/udp"

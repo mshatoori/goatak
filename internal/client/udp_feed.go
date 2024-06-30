@@ -11,11 +11,19 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/kdudkov/goatak/pkg/cot"
 	"github.com/kdudkov/goatak/pkg/cotproto"
 )
 
-type BroadcastHandlerConfig struct {
+type FeedDirection int
+
+const (
+	INCOMING FeedDirection = 1 << iota // 1
+	OUTGOING FeedDirection = 1 << iota // 2
+)
+
+type UDPFeedConfig struct {
 	// User         *model.User
 	// Serial       string
 	// UID          string
@@ -25,15 +33,17 @@ type BroadcastHandlerConfig struct {
 	// NewContactCb func(uid, callsign string)
 	// RoutePings   bool
 	// Logger       *slog.Logger
-	Addr       string
+	Addr      string
+	Port      int
+	Direction FeedDirection
 }
 
-type BroadcastHandler struct {
-	cancel   context.CancelFunc
-	conn     *net.UDPConn
-	addr     string
-	localUID string
-	ver      int32
+type UDPFeed struct {
+	cancel context.CancelFunc
+	conn   *net.UDPConn
+	Addr   *net.UDPAddr
+	UID    string
+	ver    int32
 	//routePings   bool
 	//uids         sync.Map
 	//lastActivity atomic.Pointer[time.Time]
@@ -45,86 +55,67 @@ type BroadcastHandler struct {
 	messageCb func(msg *cot.CotMessage)
 	// removeCb     func(ch ClientHandler)
 	//newContactCb func(uid, callsign string)
-	logger *slog.Logger
+	logger    *slog.Logger
+	Direction FeedDirection
 }
 
-func NewBroadcastHandler(config *BroadcastHandlerConfig) *BroadcastHandler {
-	addr, err := net.ResolveUDPAddr("udp", config.Addr)
+func NewUDPFeed(config *UDPFeedConfig) *UDPFeed {
+	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", config.Addr, config.Port))
 	if err != nil {
 		return nil
 	}
-	m := &BroadcastHandler{
-		active:   1,
-		logger:   slog.Default(),
-		sendChan: make(chan []byte, 10),
+	m := &UDPFeed{
+		active:    1,
+		logger:    slog.Default(),
+		sendChan:  make(chan []byte, 10),
+		Addr:      addr,
+		Direction: config.Direction,
+		UID:       uuid.NewString(),
 	}
 
 	m.conn, _ = net.DialUDP("udp", nil, addr)
 	// TODO: set version using all mesh clients according to TAK protocol
 	m.SetVersion(1)
 
-	if config != nil {
+	if config != nil && config.Direction == INCOMING {
 		m.messageCb = config.MessageCb
 	}
 
 	return m
 }
 
-func (h *BroadcastHandler) IsActive() bool {
+func (h *UDPFeed) IsActive() bool {
 	return atomic.LoadInt32(&h.active) == 1
 }
 
-func (h *BroadcastHandler) Start() {
-	h.logger.Info("starting")
+func (h *UDPFeed) Start() {
+	h.logger.Info("UDPFeed starting")
 
 	var ctx context.Context
 	ctx, h.cancel = context.WithCancel(context.Background())
 
 	go h.handleWrite()
 	go h.handleRead(ctx)
-
-	// if h.isClient {
-	// go h.pinger(ctx)
-	// }
-
-	// if !h.isClient {
-	// 	h.logger.Debug("send version msg")
-
-	// 	if err := h.sendEvent(cot.VersionSupportMsg(1)); err != nil {
-	// 		h.logger.Error("error sending ver req", "error", err.Error())
-	// 	}
-	// }
 }
 
-func (h *BroadcastHandler) pinger(ctx context.Context) {
-	ticker := time.NewTicker(pingTimeout)
-	defer ticker.Stop()
-
-	for ctx.Err() == nil {
-		select {
-		case <-ticker.C:
-			h.logger.Debug("ping")
-
-			if err := h.SendCot(cot.MakePing(h.localUID)); err != nil {
-				h.logger.Debug("sendMsg error", "error", err)
-			}
-		case <-ctx.Done():
-			return
-		}
+func (h *UDPFeed) handleRead(ctx context.Context) {
+	if h.Direction&INCOMING == 0 {
+		h.logger.Debug("UDPFeed Ignoring read")
+		return
 	}
-}
 
-func (h *BroadcastHandler) handleRead(ctx context.Context) {
-	h.logger.Debug("Handling read")
+	h.logger.Debug("UDPFeed Handling read")
 	defer h.stopHandle()
 
-	addr, err := net.ResolveUDPAddr("udp", ":6970")
+	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", h.Addr.Port))
 	if err != nil {
+		h.logger.Debug("UDPFeed can't resolve")
 		return
 	}
 
 	readConn, err := net.ListenUDP("udp", addr)
 	if err != nil {
+		h.logger.Debug("UDPFeed can't listen", "error", err.Error())
 		return
 	}
 
@@ -160,7 +151,7 @@ func (h *BroadcastHandler) handleRead(ctx context.Context) {
 			continue
 		}
 
-		msg.From = h.addr
+		msg.From = h.Addr.String()
 		// TODO
 		// msg.Scope = h.GetUser().GetScope()
 		msg.Scope = ""
@@ -184,33 +175,15 @@ func (h *BroadcastHandler) handleRead(ctx context.Context) {
 		// 	h.uids.Delete(uid)
 		// }
 
-		// // ping
-		// if msg.GetType() == "t-x-c-t" {
-		// 	h.logger.Debug(fmt.Sprintf("ping from %s %s", h.addr, msg.GetUID()))
-
-		// 	if err := h.SendCot(cot.MakePong()); err != nil {
-		// 		h.logger.Error("SendMsg error", "error", err)
-		// 	}
-
-		// 	if !h.routePings {
-		// 		continue
-		// 	}
-		// }
-
-		// // pong
-		// if msg.GetType() == "t-x-c-t-r" {
-		// 	continue
-		// }
-
 		h.messageCb(msg)
 	}
 }
 
-func (h *BroadcastHandler) processXMLRead(r *cot.TagReader) (*cot.CotMessage, error) {
+func (h *UDPFeed) processXMLRead(r *cot.TagReader) (*cot.CotMessage, error) {
 	return nil, nil
 }
 
-func (h *BroadcastHandler) processProtoRead(r *cot.ProtoReader) (*cot.CotMessage, error) {
+func (h *UDPFeed) processProtoRead(r *cot.ProtoReader) (*cot.CotMessage, error) {
 	msg, err := r.ReadProtoBuf()
 	if err != nil {
 		return nil, err
@@ -224,19 +197,24 @@ func (h *BroadcastHandler) processProtoRead(r *cot.ProtoReader) (*cot.CotMessage
 	return &cot.CotMessage{TakMessage: msg, Detail: d}, err
 }
 
-func (h *BroadcastHandler) SetVersion(n int32) {
+func (h *UDPFeed) SetVersion(n int32) {
 	atomic.StoreInt32(&h.ver, n)
 }
 
-func (h *BroadcastHandler) GetVersion() int32 {
+func (h *UDPFeed) GetVersion() int32 {
 	return atomic.LoadInt32(&h.ver)
 }
 
-func (h *BroadcastHandler) handleWrite() {
+func (h *UDPFeed) handleWrite() {
+	if h.Direction&OUTGOING == 0 {
+		h.logger.Debug("UDPFeed Ignoring write")
+		return
+	}
+
 	for msg := range h.sendChan {
-		h.logger.Debug("handleWrite")
+		h.logger.Debug("UDPFeed handleWrite")
 		if _, err := h.conn.Write(msg); err != nil {
-			h.logger.Debug(fmt.Sprintf("client %s write error %v", h.addr, err))
+			h.logger.Debug(fmt.Sprintf("UDPFeed client %s write error %v", h.Addr, err))
 			h.stopHandle()
 
 			break
@@ -244,7 +222,7 @@ func (h *BroadcastHandler) handleWrite() {
 	}
 }
 
-func (h *BroadcastHandler) stopHandle() {
+func (h *UDPFeed) stopHandle() {
 	if atomic.CompareAndSwapInt32(&h.active, 1, 0) {
 		h.logger.Info("stopping")
 		h.cancel()
@@ -263,42 +241,11 @@ func (h *BroadcastHandler) stopHandle() {
 	}
 }
 
-// func (h *BroadcastHandler) sendEvent(evt *cot.Event) error {
-// 	if h.GetVersion() != 0 {
-// 		return fmt.Errorf("bad client version")
-// 	}
-
-// 	msg, err := xml.Marshal(evt)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	h.logger.Debug("sending " + string(msg))
-
-// 	if h.tryAddPacket(msg) {
-// 		return nil
-// 	}
-
-// 	return fmt.Errorf("client is off")
-// }
-
-func (h *BroadcastHandler) SendMsg(msg *cot.CotMessage) error {
-	// if msg.IsLocal() || h.CanSeeScope(msg.Scope) {
-	// 	return h.SendCot(msg.GetTakMessage())
-	// }
-
-	// if viper.GetBool("interscope_chat") && (msg.IsChat() || msg.IsChatReceipt()) {
-	// 	return h.SendCot(cot.CloneMessageNoCoords(msg.GetTakMessage()))
-	// }
-
-	return nil
-}
-
-func (h *BroadcastHandler) SendCot(msg *cotproto.TakMessage) error {
-	h.logger.Debug("SendCot")
+func (h *UDPFeed) SendCot(msg *cotproto.TakMessage) error {
+	h.logger.Debug("UDPFeed SendCot")
 	switch h.GetVersion() {
 	case 0:
-		h.logger.Debug("SendCot v0")
+		h.logger.Debug("UDPFeed SendCot v0")
 		buf, err := xml.Marshal(cot.ProtoToEvent(msg))
 		if err != nil {
 			return err
@@ -308,7 +255,7 @@ func (h *BroadcastHandler) SendCot(msg *cotproto.TakMessage) error {
 			return nil
 		}
 	case 1:
-		h.logger.Debug("SendCot v1")
+		h.logger.Debug("UDPFeed SendCot v1")
 		buf, err := cot.MakeProtoPacket(msg)
 		if err != nil {
 			return err
@@ -322,8 +269,8 @@ func (h *BroadcastHandler) SendCot(msg *cotproto.TakMessage) error {
 	return fmt.Errorf("client is off")
 }
 
-func (h *BroadcastHandler) tryAddPacket(msg []byte) bool {
-	h.logger.Debug("BroadcastHandler tryAddPacket", "active", h.IsActive())
+func (h *UDPFeed) tryAddPacket(msg []byte) bool {
+	h.logger.Debug("UDPFeed tryAddPacket", "active", h.IsActive())
 	if !h.IsActive() {
 		return false
 	}

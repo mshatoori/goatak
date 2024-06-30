@@ -54,7 +54,6 @@ type App struct {
 	cas             *x509.CertPool
 	cl              *client.ConnClientHandler
 	mesh            *client.MeshHandler
-	broadcast       *client.BroadcastHandler
 	changeCb        *callback.Callback[*model.Item]
 	deleteCb        *callback.Callback[string]
 	chatCb          *callback.Callback[*model.ChatMessage]
@@ -63,6 +62,8 @@ type App struct {
 	saveFile        string
 	connected       uint32
 	mapServer       string
+
+	feeds []*client.UDPFeed
 
 	selfPosEventMutators sync.Map
 
@@ -104,6 +105,16 @@ func (m *CoTEventMutator) mutate(event *cotproto.CotEvent) bool {
 
 	return false
 }
+
+type FeedConfig struct {
+	Addr string `mapstructure:"address"`
+	Port int    `mapstructure:"port"`
+}
+
+// type FeedsConfig struct {
+// 	incoming []FeedConfig `mapstructure:"incoming"`
+// 	outgoing []FeedConfig `mapstructure:"outgoing"`
+// }
 
 // Get preferred outbound ip of this machine
 func getOutboundIP() net.IP {
@@ -166,6 +177,7 @@ func NewApp(uid string, callsign string, connectStr string, webPort int, mapServ
 		mapServer:       mapServer,
 		ipAddress:       getOutboundIP().String(),
 		urn:             urn,
+		feeds:           make([]*client.UDPFeed, 0),
 
 		selfPosEventMutators: sync.Map{},
 	}
@@ -180,6 +192,36 @@ func (app *App) Init() {
 
 	app.ch = make(chan []byte, 20)
 	app.InitMessageProcessors()
+
+	var outgoingFeedConfigs []FeedConfig
+	var incomingFeedConfigs []FeedConfig
+
+	if err := viper.UnmarshalKey("feeds.outgoing", &outgoingFeedConfigs); err != nil {
+		panic(err)
+	}
+
+	for _, feedConfig := range outgoingFeedConfigs {
+		app.feeds = append(app.feeds, client.NewUDPFeed(&client.UDPFeedConfig{
+			Addr:      feedConfig.Addr,
+			Port:      feedConfig.Port,
+			Direction: client.OUTGOING,
+		}))
+		app.logger.Info("Outgoing feed added", "addr", fmt.Sprintf("%s:%d", feedConfig.Addr, feedConfig.Port))
+	}
+
+	if err := viper.UnmarshalKey("feeds.incoming", &incomingFeedConfigs); err != nil {
+		panic(err)
+	}
+
+	for _, feedConfig := range incomingFeedConfigs {
+		app.feeds = append(app.feeds, client.NewUDPFeed(&client.UDPFeedConfig{
+			MessageCb: app.ProcessEvent,
+			Addr:      feedConfig.Addr,
+			Port:      feedConfig.Port,
+			Direction: client.INCOMING,
+		}))
+		app.logger.Info("Incoming feed added", "addr", fmt.Sprintf("%s:%d", feedConfig.Addr, feedConfig.Port))
+	}
 }
 
 func (app *App) sensorCallback(data any) {
@@ -233,11 +275,9 @@ func (app *App) Run(ctx context.Context) {
 	})
 	app.mesh.Start()
 
-	app.broadcast = client.NewBroadcastHandler(&client.BroadcastHandlerConfig{
-		MessageCb: app.ProcessEvent,
-		Addr: viper.GetString("broadcast"),
-	})
-	app.broadcast.Start()
+	for _, feed := range app.feeds {
+		feed.Start()
+	}
 
 	go app.myPosSender(ctx)
 
@@ -320,14 +360,15 @@ func (app *App) SendMsg(msg *cotproto.TakMessage) {
 			app.logger.Error("mesh send error", "error", err)
 		}
 	}
-	if app.broadcast != nil {
-		if err := app.broadcast.SendCot(msg); err != nil {
-			app.logger.Error("broadcast send error", "error", err)
-		}
-	}
 	if app.cl != nil {
 		if err := app.cl.SendCot(msg); err != nil {
 			app.logger.Error("client send error", "error", err)
+		}
+	}
+
+	for _, feed := range app.feeds {
+		if err := feed.SendCot(msg); err != nil {
+			app.logger.Error("feed send error", "error", err, "feed", feed)
 		}
 	}
 }
@@ -521,7 +562,6 @@ func main() {
 	viper.BindEnv("ssl.enroll_password", "SSL_ENROLL_PASSWORD")
 	viper.BindEnv("ssl.cert", "SSL_CERT")
 
-	viper.BindEnv("broadcast", "BROADCAST")
 	viper.BindEnv("me.urn", "URN")
 
 	err := viper.ReadInConfig()
