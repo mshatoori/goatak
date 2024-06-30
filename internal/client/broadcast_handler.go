@@ -25,6 +25,7 @@ type BroadcastHandlerConfig struct {
 	// NewContactCb func(uid, callsign string)
 	// RoutePings   bool
 	// Logger       *slog.Logger
+	Addr       string
 }
 
 type BroadcastHandler struct {
@@ -48,7 +49,7 @@ type BroadcastHandler struct {
 }
 
 func NewBroadcastHandler(config *BroadcastHandlerConfig) *BroadcastHandler {
-	addr, err := net.ResolveUDPAddr("udp", "192.168.1.255:6970")
+	addr, err := net.ResolveUDPAddr("udp", config.Addr)
 	if err != nil {
 		return nil
 	}

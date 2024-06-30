@@ -235,6 +235,7 @@ func (app *App) Run(ctx context.Context) {
 
 	app.broadcast = client.NewBroadcastHandler(&client.BroadcastHandlerConfig{
 		MessageCb: app.ProcessEvent,
+		Addr: viper.GetString("broadcast"),
 	})
 	app.broadcast.Start()
 
@@ -519,6 +520,9 @@ func main() {
 	viper.BindEnv("ssl.enroll_user", "SSL_ENROLL_USER")
 	viper.BindEnv("ssl.enroll_password", "SSL_ENROLL_PASSWORD")
 	viper.BindEnv("ssl.cert", "SSL_CERT")
+
+	viper.BindEnv("broadcast", "BROADCAST")
+	viper.BindEnv("me.urn", "URN")
 
 	err := viper.ReadInConfig()
 	if err != nil {
