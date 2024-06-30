@@ -1,0 +1,37 @@
+services:
+  webclient1:
+    build:
+      dockerfile: Dockerfile.webclient
+      context: .
+      # args:
+      #   https_proxy: http://127.0.0.1:8889
+      network: host
+    image: ghcr.io/mshatoori/goatak-client:latest
+    ports:
+     - "8081:8080"
+     - "6969"
+     - "6969/udp"
+    environment:
+      - ME_UID=USER1
+      - CALLSIGN=CALLSIGN1
+      - MAP_SERVER=127.0.0.1:8000
+      - GPSD=gpsd:2947
+      - SERVER_ADDRESS=host.docker.internal:8999:tcp
+      - BROADCAST=host.docker.internal:6970
+      - URN=1
+    # network_mode: host
+  map:
+    build:
+      dockerfile: ./Dockerfile
+      context: ./maps
+    image: ghcr.io/mshatoori/goatak-maps:latest
+    ports:
+      - "8000:8000"
+  gpsd:
+    image: ghcr.io/mshatoori/docker-gpsd:latest
+    ports:
+      - "2948:2947"
+      - "5577:5577/udp"
+    command:
+      - "-D2"
+      - "udp://0.0.0.0:5577"

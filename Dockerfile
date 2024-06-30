@@ -6,10 +6,9 @@ ARG commit
 WORKDIR /build
 COPY ./go.mod .
 COPY ./go.sum .
-RUN go mod download
+# RUN go mod download
 COPY . .
-RUN go build -o dist/ -ldflags "-s -X main.gitRevision=$commit -X main.gitBranch=$branch" ./cmd/...
-
+RUN --mount=type=cache,target=/go/pkg/mod go build -o dist/ -ldflags "-s -X main.gitRevision=$commit -X main.gitBranch=$branch" ./cmd/...
 FROM docker.arvancloud.ir/alpine
 
 EXPOSE 8080/tcp
