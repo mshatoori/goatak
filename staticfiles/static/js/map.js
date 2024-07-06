@@ -48,6 +48,7 @@ let app = new Vue({
         units: new Map(),
         outgoing_feeds: new Map(),
         incoming_feeds: new Map(),
+        sensors: new Map(),
         messages: [],
         seenMessages: new Set(),
         ts: 0,
@@ -74,6 +75,11 @@ let app = new Vue({
             ip: '',
             port: '',
             outgoing: false,
+        },
+        new_sensor: {
+            ip: '',
+            port: '',
+            type: '',
         }
     },
 
@@ -198,6 +204,7 @@ let app = new Vue({
             this.fetchAllUnits();
             this.fetchMessages();
             this.fetchFeeds();
+            this.fetchSensors();
 
             this.conn = new WebSocket(url);
 
@@ -244,6 +251,16 @@ let app = new Vue({
                     return response.json()
                 })
                 .then(vm.processFeeds);
+        },
+
+        fetchSensors: function () {
+            let vm = this;
+
+            fetch('/sensors')
+                .then(function (response) {
+                    return response.json()
+                })
+                .then(vm.processSensors);
         },
 
         fetchMessages: function () {
@@ -326,6 +343,19 @@ let app = new Vue({
 
             // let item = this.feeds.get(uid);
             // this.feeds.delete(uid);
+        },
+
+        processSensors: function (data) {
+            // TODO
+            /*let keys = new Set();
+            this.incoming_feeds = new Map();
+            this.outgoing_feeds = new Map();
+
+            for (let u of data) {
+                keys.add(this.processFeed(u)?.uid);
+            }
+
+            this.ts += 1;*/
         },
 
         processUnits: function (data) {
@@ -818,6 +848,10 @@ let app = new Vue({
             return this.incoming_feeds.size + "/" + this.outgoing_feeds.size;
         },
 
+        sensorsCount: function () {
+            return this.sensors.size;
+        },
+
         countByCategory: function (s) {
             let total = 0;
             this.units.forEach(function (u) {
@@ -865,16 +899,24 @@ let app = new Vue({
             new bootstrap.Modal(document.getElementById('feeds-modal')).show();
         },
 
+        openSensors: function () {
+            new bootstrap.Modal(document.getElementById('sensors-modal')).show();
+        },
+
         getStatus: function (uid) {
             return this.ts && this.units.get(uid)?.status;
         },
 
         getOutgoingFeeds: function () {
-            return this.outgoing_feeds.values().toArray();
+            return this.outgoing_feeds.values();
         },
 
         getIncomingFeeds: function () {
-            return this.incoming_feeds.values().toArray();
+            return this.incoming_feeds.values();
+        },
+
+        getSensors: function () {
+            return this.sensors.values();
         },
 
         getMessages: function () {
@@ -1017,8 +1059,13 @@ let app = new Vue({
                     return response.json()
                 })
                 .then(this.processFeeds);
+        },
+        newSensor: function () {
+            // TODO:
+        },
+        removeSensor: function () {
+            // TODO:
         }
-
     },
 });
 
