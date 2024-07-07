@@ -31,6 +31,8 @@ feeds:
   incoming:
   - address: 0.0.0.0
     port: 6075
+  - address: 9.9.9.9
+    port: 6075
 
 ssl:
   cert: ""

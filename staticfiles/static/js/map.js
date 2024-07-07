@@ -66,6 +66,8 @@ let app = new Vue({
         chat_uid: "",
         chat_msg: "",
 
+        state: store.state,
+
         new_out_feed: {
             ip: '',
             port: '',

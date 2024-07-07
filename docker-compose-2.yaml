@@ -13,7 +13,7 @@ services:
      - "6970:6969/udp"
     environment:
       - ME_UID=USER2
-      - CALLSIGN=CALLSIGN2
+      - CALLSIGN=سرباز2
       - MAP_SERVER=127.0.0.1:8000
       - GPSD=gpsd:2948
       - SERVER_ADDRESS=host.docker.internal:8999:tcp

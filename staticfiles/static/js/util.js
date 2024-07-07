@@ -32,37 +32,37 @@ function getIconUri(item, withText) {
         if (item.status !== "Offline") {
             col = colors.get(item.team);
         }
-        return {uri: toUri(circle(24, col, '#000', roles.get(item.role) ?? '')), x: 12, y: 12};
+        return { uri: toUri(circle(24, col, '#000', roles.get(item.role) ?? '')), x: 12, y: 12 };
     }
     if (item.icon && item.icon.startsWith("COT_MAPPING_SPOTMAP/")) {
-        return {uri: toUri(circle(16, item.color ?? 'green', '#000', null)), x: 8, y: 8}
+        return { uri: toUri(circle(16, item.color ?? 'green', '#000', null)), x: 8, y: 8 }
     }
     if (item.type === "b") {
-        return {uri: "/static/icons/b.png", x: 16, y: 16}
+        return { uri: "/static/icons/b.png", x: 16, y: 16 }
     }
     if (item.type === "b-m-p-w-GOTO") {
-        return {uri: "/static/icons/green_flag.png", x: 6, y: 30}
+        return { uri: "/static/icons/green_flag.png", x: 6, y: 30 }
     }
     if (item.type === "b-m-p-s-p-op") {
-        return {uri: "/static/icons/binos.png", x: 16, y: 16}
+        return { uri: "/static/icons/binos.png", x: 16, y: 16 }
     }
     if (item.type === "b-m-p-s-p-loc") {
-        return {uri: "/static/icons/sensor_location.png", x: 16, y: 16}
+        return { uri: "/static/icons/sensor_location.png", x: 16, y: 16 }
     }
     if (item.type === "b-m-p-s-p-i") {
-        return {uri: "/static/icons/b-m-p-s-p-i.png", x: 16, y: 16}
+        return { uri: "/static/icons/b-m-p-s-p-i.png", x: 16, y: 16 }
     }
     if (item.type === "b-m-p-a") {
-        return {uri: "/static/icons/aimpoint.png", x: 16, y: 16}
+        return { uri: "/static/icons/aimpoint.png", x: 16, y: 16 }
     }
     if (item.category === "point") {
-        return {uri: toUri(circle(16, item.color ?? 'green', '#000', null)), x: 8, y: 8}
+        return { uri: toUri(circle(16, item.color ?? 'green', '#000', null)), x: 8, y: 8 }
     }
     return getMilIcon(item, withText);
 }
 
 function getMilIcon(item, withText) {
-    let opts = {size: 24};
+    let opts = { size: 24 };
 
     if (!item.sidc) {
         return "";
@@ -80,7 +80,7 @@ function getMilIcon(item, withText) {
     }
 
     let symb = new ms.Symbol(item.sidc, opts);
-    return {uri: symb.toDataURL(), x: symb.getAnchor().x, y: symb.getAnchor().y}
+    return { uri: symb.toDataURL(), x: symb.getAnchor().x, y: symb.getAnchor().y }
 }
 
 function getIcon(item, withText) {
@@ -120,4 +120,22 @@ function uuidv4() {
     return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =>
         (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
     );
+}
+
+var store = {
+    debug: true,
+    state: {
+        sensors: new Map(),
+    },
+    createSensor(sensorData) {
+        this.state.sensors.set(1, sensorData)
+    },
+    setMessageAction(newValue) {
+        if (this.debug) console.log('setMessageAction triggered with', newValue)
+        this.state.message = newValue
+    },
+    clearMessageAction() {
+        if (this.debug) console.log('clearMessageAction triggered')
+        this.state.message = ''
+    }
 }
