@@ -3,15 +3,15 @@ Vue.component('SensorsModal', {
         return {
             newSensor: {
                 type: "",
-                ip: "",
-                port: "",
+                addr: "",
+                port: 1,
             },
+            sharedState: store.state,
         }
     },
     methods: {
         createSensor: function () {
-            // TODO:
-            console.log("Create Sensor:", this.newSensor);
+            console.log("Creating Sensor:", this.newSensor);
             store.createSensor({ ...this.newSensor });
         },
         removeSensor: function () {
@@ -20,7 +20,7 @@ Vue.component('SensorsModal', {
     },
     computed: {
         allSensors: function () {
-            return store.state.sensors.values();
+            return this.sharedState.sensors;
         },
     },
     template: `
@@ -51,11 +51,16 @@ Vue.component('SensorsModal', {
                         </tr>
                         <tr>
                             <td><button class="btn btn-success" v-on:click="createSensor">+</button></th>
-                            <td><select class="form-select" v-model="newSensor.type" aria-label="type"><option value="" selected>-----------</option><option value="GPS">GPS/AIS</option></select>
+                            <td>
+                                <select class="form-select" v-model="newSensor.type" aria-label="type">
+                                    <option value="" selected>-----------</option>
+                                    <option value="GPS">GPS (gpsd)</option>
+                                    <option value="AIS">AIS</option>
+                                </select>
                             </td>
-                            <td><input type="text" class="form-control" v-model="newSensor.ip" placeholder="IP" aria-label="IP">
+                            <td><input type="text" class="form-control" v-model="newSensor.addr" placeholder="IP" aria-label="IP">
                             </td>
-                            <td><input type="text" class="form-control" v-model="newSensor.port" placeholder="Port"
+                            <td><input type="number" min="1" max="65535" class="form-control" v-model="newSensor.port" placeholder="Port"
                                        aria-label="Port"></td>
                         </tr>
                         </tbody>

@@ -50,6 +50,10 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.POST("/feeds", addFeedHandler(app))
 	// srv.DELETE("/feeds/:uid", deleteFeedHandler(app))  // TODO
 
+	srv.GET("/sensors", getSensorsHandler(app))
+	srv.POST("/sensors", addSensorHandler(app))
+	// srv.DELETE("/sensors/:uid", deleteSensorHandler(app))  // TODO
+
 	srv.GET("/stack", getStackHandler())
 
 	srv.RendererTemplateLeftDelim = "[["
@@ -62,6 +66,14 @@ func getIndexHandler(app *App, r *staticfiles.Renderer) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
 		data := map[string]any{
 			"js": []string{"util.js", "components.js", "map.js"},
+		}
+
+		compf, err := staticfiles.StaticFiles.ReadDir("static/js/components")
+		if err != nil {
+			return err
+		}
+		for _, f := range compf {
+			data["js"] = append(data["js"].([]string), fmt.Sprintf("components/%s", f.Name()))
 		}
 
 		s, err := r.Render(data, "map.html", "header.html")

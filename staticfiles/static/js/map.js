@@ -66,7 +66,7 @@ let app = new Vue({
         chat_uid: "",
         chat_msg: "",
 
-        state: store.state,
+        sharedState: store.state,
 
         new_out_feed: {
             ip: '',
@@ -84,7 +84,14 @@ let app = new Vue({
             type: '',
         }
     },
-
+    provide: function() {
+        return {
+            map: this.map,
+            printCoords: this.printCoords,
+            distBea: this.distBea,
+            latlng: this.latlng,
+        }
+    },
     mounted() {
         this.map = L.map('map');
         this.map.setView([60, 30], 11);
@@ -206,7 +213,7 @@ let app = new Vue({
             this.fetchAllUnits();
             this.fetchMessages();
             this.fetchFeeds();
-            this.fetchSensors();
+            store.fetchSensors()
 
             this.conn = new WebSocket(url);
 
@@ -253,16 +260,6 @@ let app = new Vue({
                     return response.json()
                 })
                 .then(vm.processFeeds);
-        },
-
-        fetchSensors: function () {
-            let vm = this;
-
-            fetch('/sensors')
-                .then(function (response) {
-                    return response.json()
-                })
-                .then(vm.processSensors);
         },
 
         fetchMessages: function () {
@@ -345,19 +342,6 @@ let app = new Vue({
 
             // let item = this.feeds.get(uid);
             // this.feeds.delete(uid);
-        },
-
-        processSensors: function (data) {
-            // TODO
-            /*let keys = new Set();
-            this.incoming_feeds = new Map();
-            this.outgoing_feeds = new Map();
-
-            for (let u of data) {
-                keys.add(this.processFeed(u)?.uid);
-            }
-
-            this.ts += 1;*/
         },
 
         processUnits: function (data) {
@@ -851,7 +835,7 @@ let app = new Vue({
         },
 
         sensorsCount: function () {
-            return this.sensors.size;
+            return this.sharedState.sensors.length;
         },
 
         countByCategory: function (s) {
@@ -915,10 +899,6 @@ let app = new Vue({
 
         getIncomingFeeds: function () {
             return this.incoming_feeds.values();
-        },
-
-        getSensors: function () {
-            return this.sensors.values();
         },
 
         getMessages: function () {
@@ -1062,12 +1042,6 @@ let app = new Vue({
                 })
                 .then(this.processFeeds);
         },
-        newSensor: function () {
-            // TODO:
-        },
-        removeSensor: function () {
-            // TODO:
-        }
     },
 });
 

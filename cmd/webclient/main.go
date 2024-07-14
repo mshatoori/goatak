@@ -63,7 +63,8 @@ type App struct {
 	connected       uint32
 	mapServer       string
 
-	feeds []*client.UDPFeed
+	feeds   []*client.UDPFeed
+	sensors []*Sensor
 
 	selfPosEventMutators sync.Map
 

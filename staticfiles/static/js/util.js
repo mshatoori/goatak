@@ -125,11 +125,23 @@ function uuidv4() {
 var store = {
     debug: true,
     state: {
-        sensors: new Map(),
+        sensors: [],
     },
+
     createSensor(sensorData) {
-        this.state.sensors.set(1, sensorData)
+        const sensorJson = { uid: uuidv4(), ...sensorData, port: parseInt(sensorData.port) }
+        fetch('/sensors', { headers: { "Content-Type": "application/json" }, method: "POST", body: JSON.stringify(sensorJson) })
+            .then(response => response.json())
+            .then(response => this.state.sensors = response);
+
     },
+
+    fetchSensors() {
+        fetch('/sensors')
+            .then(response => response.json())
+            .then(response => this.state.sensors = response);
+    },
+
     setMessageAction(newValue) {
         if (this.debug) console.log('setMessageAction triggered with', newValue)
         this.state.message = newValue

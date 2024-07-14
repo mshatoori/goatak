@@ -81,28 +81,7 @@
             <div id="map" class="col-9 h-100" style="cursor:crosshair;">
             </div>
             <div class="col-3">
-                <div class="card mb-1" v-if="config && config.callsign">
-                    <div class="card-header">من ({{ config.callsign }})</div>
-                    <div class="card-body">
-                        <dl>
-                            <dt>UID</dt>
-                            <dd>{{ config.uid }}</dd>
-                            <template v-if="config.team">
-                                <dt>تیم</dt>
-                                <dd>{{ config.team }}</dd>`
-                                <dt>نقش</dt>
-                                <dd>{{ config.role }}</dd>
-                            </template>
-                            <dt>مختصات</dt>
-                            <dd>{{ printCoords(config.lat, config.lon) }}
-                                <span class="badge rounded-pill bg-success" style="cursor:default;"
-                                    v-on:click="map.setView([config.lat, config.lon])"><i class="bi bi-geo"></i></span>
-                                <span v-if="coords">({{ distBea(latlng(config.lat, config.lon), coords) }} تا
-                                    نشانگر)</span>
-                            </dd>
-                        </dl>
-                    </div>
-                </div>
+                <user-info :config="config" :coords="coords"></user-info>
                 <div class="card mb-1">
                     <div class="card-header">ابزارها</div>
                     <div class="card-body">

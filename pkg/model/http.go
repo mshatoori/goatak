@@ -69,6 +69,15 @@ type CoTFeed struct {
 	Outgoing bool   `json:"outgoing"`
 }
 
+type Sensor struct {
+	// TODO: Change Addr & Port with a general config map
+	Addr string `json:"addr"`
+
+	Port int    `json:"port"`
+	UID  string `json:"uid"`
+	Type string `json:"type"`
+}
+
 func (i *Item) ToWeb() *WebUnit {
 	i.mx.RLock()
 	defer i.mx.RUnlock()

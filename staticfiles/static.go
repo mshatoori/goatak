@@ -13,9 +13,9 @@ import (
 )
 
 //go:embed static
-var staticFiles embed.FS
+var StaticFiles embed.FS
 
-var hfs = http.FS(staticFiles)
+var hfs = http.FS(StaticFiles)
 
 func EmbedFiles(a *air.Air, prefix string) {
 	if strings.HasSuffix(prefix, "/") {
