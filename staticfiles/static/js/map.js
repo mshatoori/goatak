@@ -212,8 +212,8 @@ let app = new Vue({
 
             this.fetchAllUnits();
             this.fetchMessages();
-            this.fetchFeeds();
             store.fetchSensors()
+            store.fetchFeeds()
 
             this.conn = new WebSocket(url);
 
@@ -252,16 +252,6 @@ let app = new Vue({
                 .then(vm.processUnits);
         },
 
-        fetchFeeds: function () {
-            let vm = this;
-
-            fetch('/feeds')
-                .then(function (response) {
-                    return response.json()
-                })
-                .then(vm.processFeeds);
-        },
-
         fetchMessages: function () {
             let vm = this;
 
@@ -294,55 +284,6 @@ let app = new Vue({
             }
         },
 
-        processFeeds: function (data) {
-            let keys = new Set();
-            this.incoming_feeds = new Map();
-            this.outgoing_feeds = new Map();
-
-            for (let u of data) {
-                keys.add(this.processFeed(u)?.uid);
-            }
-
-            this.ts += 1;
-        },
-
-        processFeed: function (f) {
-            if (!f) return;
-            let feed = null;
-            console.log("processing feed", f);
-            if (f.outgoing) {
-                feed = this.outgoing_feeds.get(f.uid);
-                if (!feed) {
-                    this.outgoing_feeds.set(f.uid, f);
-                    feed = f;
-                } else {
-                    for (const k of Object.keys(f)) {
-                        feed[k] = f[k];
-                    }
-                }
-            }
-            else {
-                feed = this.incoming_feeds.get(f.uid);
-                if (!feed) {
-                    this.incoming_feeds.set(f.uid, f);
-                    feed = f;
-                } else {
-                    for (const k of Object.keys(f)) {
-                        feed[k] = f[k];
-                    }
-                }
-            }
-
-            return feed;
-        },
-
-        removeFeed: function (uid) {
-            // TODO
-            // if (!this.feeds.has(uid)) return;
-
-            // let item = this.feeds.get(uid);
-            // this.feeds.delete(uid);
-        },
 
         processUnits: function (data) {
             let keys = new Set();
@@ -893,14 +834,6 @@ let app = new Vue({
             return this.ts && this.units.get(uid)?.status;
         },
 
-        getOutgoingFeeds: function () {
-            return this.outgoing_feeds.values();
-        },
-
-        getIncomingFeeds: function () {
-            return this.incoming_feeds.values();
-        },
-
         getMessages: function () {
             if (!this.chat_uid) {
                 return [];
@@ -1007,40 +940,6 @@ let app = new Vue({
                     vm.messages = data;
                 });
 
-        },
-        newOutFeed: function () {
-            let postData = {
-                addr: this.new_out_feed.ip,
-                port: parseInt(this.new_out_feed.port),
-                outgoing: this.new_out_feed.outgoing,
-            }
-            const requestOptions = {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(postData),
-            };
-            fetch("/feeds", requestOptions)
-                .then(function (response) {
-                    return response.json()
-                })
-                .then(this.processFeeds);
-        },
-        newInFeed: function () {
-            let postData = {
-                addr: this.new_in_feed.ip,
-                port: parseInt(this.new_in_feed.port),
-                outgoing: this.new_in_feed.outgoing,
-            }
-            const requestOptions = {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(postData),
-            };
-            fetch("/feeds", requestOptions)
-                .then(function (response) {
-                    return response.json()
-                })
-                .then(this.processFeeds);
         },
     },
 });

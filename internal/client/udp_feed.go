@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"github.com/kdudkov/goatak/pkg/model"
 	"io"
 	"log/slog"
 	"net"
@@ -21,7 +22,15 @@ type FeedDirection int
 const (
 	INCOMING FeedDirection = 1 << iota // 1
 	OUTGOING FeedDirection = 1 << iota // 2
+	BOTH     FeedDirection = INCOMING | OUTGOING
 )
+
+type CoTFeed interface {
+	Start()
+	SendCot(msg *cotproto.TakMessage) error
+	GetType() string
+	ToCoTFeedModel() *model.CoTFeed
+}
 
 type UDPFeedConfig struct {
 	// User         *model.User
@@ -86,6 +95,19 @@ func NewUDPFeed(config *UDPFeedConfig) *UDPFeed {
 
 func (h *UDPFeed) IsActive() bool {
 	return atomic.LoadInt32(&h.active) == 1
+}
+func (h *UDPFeed) GetType() string {
+	return "UDP"
+}
+
+func (h *UDPFeed) ToCoTFeedModel() *model.CoTFeed {
+	return &model.CoTFeed{
+		UID:       h.UID,
+		Addr:      h.Addr.IP.String(),
+		Port:      h.Addr.Port,
+		Direction: int(h.Direction),
+		Type:      h.GetType(),
+	}
 }
 
 func (h *UDPFeed) Start() {

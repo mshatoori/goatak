@@ -183,20 +183,29 @@ func addFeedHandler(app *App) air.Handler {
 			return err
 		}
 
-		direction := client.INCOMING
-		if f.Outgoing {
-			direction = client.OUTGOING
+		if len(f.Type) > 0 && f.Type == "Rabbit" {
+			newFeed := client.NewRabbitFeed(&client.RabbitFeedConfig{
+				MessageCb: app.ProcessEvent,
+				Addr:      f.Addr,
+				Direction: client.FeedDirection(f.Direction),
+				RecvQueue: f.RecvQueue,
+				SendQueue: f.SendQueue,
+			})
+
+			app.feeds = append(app.feeds, newFeed)
+			newFeed.Start()
+		} else if len(f.Type) == 0 || f.Type == "UDP" {
+			newFeed := client.NewUDPFeed(&client.UDPFeedConfig{
+				MessageCb: app.ProcessEvent,
+				Addr:      f.Addr,
+				Port:      f.Port,
+				Direction: client.FeedDirection(f.Direction),
+			})
+
+			app.feeds = append(app.feeds, newFeed)
+			newFeed.Start()
 		}
 
-		newFeed := client.NewUDPFeed(&client.UDPFeedConfig{
-			MessageCb: app.ProcessEvent,
-			Addr:      f.Addr,
-			Port:      f.Port,
-			Direction: direction,
-		})
-
-		app.feeds = append(app.feeds, newFeed)
-		newFeed.Start()
 		return res.WriteJSON(getFeeds(app))
 	}
 }
@@ -330,13 +339,7 @@ func getFeeds(app *App) []*model.CoTFeed {
 	cotFeeds := make([]*model.CoTFeed, 0)
 
 	for _, feed := range app.feeds {
-		println("FEEEEEEED", feed.Addr.String(), feed.Direction)
-		cotFeeds = append(cotFeeds, &model.CoTFeed{
-			UID:      feed.UID,
-			Addr:     feed.Addr.IP.String(),
-			Port:     feed.Addr.Port,
-			Outgoing: (feed.Direction == client.OUTGOING),
-		})
+		cotFeeds = append(cotFeeds, feed.ToCoTFeedModel())
 	}
 
 	return cotFeeds

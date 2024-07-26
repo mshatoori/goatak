@@ -11,6 +11,7 @@ require (
 	github.com/jroimartin/gocui v0.5.0
 	github.com/kdudkov/goutils v0.0.0-20240523090608-c589e6c759b7
 	github.com/prometheus/client_golang v1.19.0
+	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/spf13/viper v1.18.2
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/crypto v0.22.0

@@ -235,76 +235,9 @@
         </div>
     </div>
 
-    <div class="modal fade" id="feeds-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">ارتباطات</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <h6>ارتباطات خروجی</h6>
-                
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col" class="col-2">#</th>
-                                <th scope="col" class="col-6">IP</th>
-                                <th scope="col" class="col-4">Port</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(feed, idx) in getOutgoingFeeds()">
-                                <th scope="row">{{ idx + 1 }}</th>
-                                <td>{{ feed.addr }}</td>
-                                <td>{{ feed.port }}</td>
-                            </tr>
-                            <tr>
-                                <td><button class="btn btn-success" v-on:click="newOutFeed">+</button></th>
-                                <td><input type="text" class="form-control" v-model="new_out_feed.ip" placeholder="IP" aria-label="IP">
-                                </td>
-                                <td><input type="text" class="form-control" v-model="new_out_feed.port" placeholder="Port"
-                                        aria-label="Port"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <h6>ارتباطات ورودی</h6>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th scope="col" class="col-2">#</th>
-                                <th scope="col" class="col-6">IP</th>
-                                <th scope="col" class="col-4">Port</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(feed, idx) in getIncomingFeeds()">
-                                <th scope="row">{{ idx + 1 }}</th>
-                                <td>{{ feed.addr }}</td>
-                                <td>{{ feed.port }}</td>
-                            </tr>
-                            <tr>
-                                <td><button class="btn btn-success" v-on:click="newInFeed">+</button></th>
-                                <td><input type="text" class="form-control" v-model="new_in_feed.ip" placeholder="IP" aria-label="IP">
-                                </td>
-                                <td><input type="text" class="form-control" v-model="new_in_feed.port" placeholder="Port"
-                                        aria-label="Port"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <!-- <div class="modal-footer">
-                    <form @submit.prevent="sendMessage">
-                        <input type="text" class="form-control" id="message-text" v-model="chat_msg" />
-                    </form>
-                    <button type="button" class="btn btn-primary" v-on:click="sendMessage">ارسال پیام</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">خروج</button>
-                </div> -->
-            </div>
-        </div>
-    </div>
-    <sensors-modal/>
+    <feeds-modal></feeds-modal>
+    <sensors-modal></sensors-modal>
+
     <div class="modal fade" id="edit" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="staticBackdropLabel1" aria-hidden="true">
         <div class="modal-dialog modal-lg">

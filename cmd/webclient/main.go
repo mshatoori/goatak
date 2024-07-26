@@ -63,7 +63,7 @@ type App struct {
 	connected       uint32
 	mapServer       string
 
-	feeds   []*client.UDPFeed
+	feeds   []client.CoTFeed
 	sensors []*Sensor
 
 	selfPosEventMutators sync.Map
@@ -178,7 +178,7 @@ func NewApp(uid string, callsign string, connectStr string, webPort int, mapServ
 		mapServer:       mapServer,
 		ipAddress:       getOutboundIP().String(),
 		urn:             urn,
-		feeds:           make([]*client.UDPFeed, 0),
+		feeds:           make([]client.CoTFeed, 0),
 
 		selfPosEventMutators: sync.Map{},
 	}
@@ -201,6 +201,7 @@ func (app *App) Init() {
 		panic(err)
 	}
 
+	// TODO: rabbit
 	for _, feedConfig := range outgoingFeedConfigs {
 		app.feeds = append(app.feeds, client.NewUDPFeed(&client.UDPFeedConfig{
 			Addr:      feedConfig.Addr,
@@ -214,6 +215,7 @@ func (app *App) Init() {
 		panic(err)
 	}
 
+	// TODO: rabbit
 	for _, feedConfig := range incomingFeedConfigs {
 		app.feeds = append(app.feeds, client.NewUDPFeed(&client.UDPFeedConfig{
 			MessageCb: app.ProcessEvent,

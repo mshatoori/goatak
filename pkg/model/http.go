@@ -63,10 +63,14 @@ type DigitalPointer struct {
 }
 
 type CoTFeed struct {
-	Addr     string `json:"addr"`
-	Port     int    `json:"port"`
-	UID      string `json:"uid"`
-	Outgoing bool   `json:"outgoing"`
+	Addr string `json:"addr"`
+	Port int    `json:"port,omitempty"`
+	UID  string `json:"uid"`
+	//Outgoing bool   `json:"outgoing"`
+	Direction int    `json:"direction"`
+	Type      string `json:"type,omitempty"`
+	SendQueue string `json:"send_queue,omitempty"`
+	RecvQueue string `json:"recv_queue,omitempty"`
 }
 
 type Sensor struct {

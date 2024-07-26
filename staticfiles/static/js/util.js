@@ -126,6 +126,7 @@ var store = {
     debug: true,
     state: {
         sensors: [],
+        feeds: [],
     },
 
     createSensor(sensorData) {
@@ -141,6 +142,25 @@ var store = {
             .then(response => response.json())
             .then(response => this.state.sensors = response);
     },
+
+    removeSensor: function (uid) {
+        // TODO
+    },
+
+    createFeed(feedData) {
+        // TODO
+    },
+
+    fetchFeeds() {
+        fetch('/feeds')
+            .then(response => response.json())
+            .then(response => this.state.feeds = response);
+    },
+
+    removeFeed: function (uid) {
+        // TODO
+    },
+
 
     setMessageAction(newValue) {
         if (this.debug) console.log('setMessageAction triggered with', newValue)
