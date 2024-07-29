@@ -1,4 +1,4 @@
-const html = String.raw;
+// const html = String.raw;
 Vue.component("UserInfo", {
   data: function () {
     return {
@@ -7,16 +7,26 @@ Vue.component("UserInfo", {
     };
   },
   methods: {
-    toggleEdit: function () {
+    toggleEdit() {
+      if (this.editing)
+        this.save();
       this.editing = !this.editing;
       // TODO: Save (in server)
       // TODO: Fix infomarker
+    },
+    save() {
+      fetch('/config', { headers: { "Content-Type": "application/json" }, method: "PATCH", body: JSON.stringify({
+        callsign: this.config.callsign,
+        uid: this.config.uid,
+        ip_address: this.config.ip_address,
+        urn: this.config.urn,
+      }) })
     },
   },
   computed: {},
   props: ["config", "coords"],
   inject: ["map", "printCoords", "distBea", "latlng"],
-  template: html`
+  template: /*html*/`
     <div class="card mb-1" v-if="config && config.callsign">
       <div class="card-header">
         اطلاعات Node جاری

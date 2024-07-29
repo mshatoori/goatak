@@ -273,10 +273,10 @@ func (app *App) Run(ctx context.Context) {
 		go gpsdSensor.Start(ctx, app.sensorCallback)
 	}
 
-	app.mesh = client.NewMeshHandler(&client.MeshHandlerConfig{
+	/* app.mesh = client.NewMeshHandler(&client.MeshHandlerConfig{
 		MessageCb: app.ProcessEvent,
 	})
-	app.mesh.Start()
+	app.mesh.Start() */
 
 	for _, feed := range app.feeds {
 		feed.Start()

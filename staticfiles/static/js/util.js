@@ -134,7 +134,6 @@ var store = {
         fetch('/sensors', { headers: { "Content-Type": "application/json" }, method: "POST", body: JSON.stringify(sensorJson) })
             .then(response => response.json())
             .then(response => this.state.sensors = response);
-
     },
 
     fetchSensors() {
@@ -148,7 +147,10 @@ var store = {
     },
 
     createFeed(feedData) {
-        // TODO
+        const feedJson = { uid: uuidv4(), ...feedData, port: parseInt(feedData.port), direction: parseInt(feedData.direction) }
+        fetch('/feeds', { headers: { "Content-Type": "application/json" }, method: "POST", body: JSON.stringify(feedJson) })
+            .then(response => response.json())
+            .then(response => this.state.feeds = response);
     },
 
     fetchFeeds() {

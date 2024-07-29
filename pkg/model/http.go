@@ -69,8 +69,8 @@ type CoTFeed struct {
 	//Outgoing bool   `json:"outgoing"`
 	Direction int    `json:"direction"`
 	Type      string `json:"type,omitempty"`
-	SendQueue string `json:"send_queue,omitempty"`
-	RecvQueue string `json:"recv_queue,omitempty"`
+	SendQueue string `json:"sendQueue,omitempty"`
+	RecvQueue string `json:"recvQueue,omitempty"`
 }
 
 type Sensor struct {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"runtime/pprof"
+	"strconv"
 	"time"
 
 	"github.com/kdudkov/goatak/internal/client"
@@ -34,6 +35,7 @@ func NewHttp(app *App, address string) *air.Air {
 
 	srv.GET("/", getIndexHandler(app, renderer))
 	srv.GET("/config", getConfigHandler(app))
+	srv.PATCH("/config", changeConfigHandler(app))
 	srv.GET("/types", getTypes)
 	srv.POST("/dp", getDpHandler(app))
 	srv.POST("/pos", getPosHandler(app))
@@ -126,6 +128,28 @@ func getConfigHandler(app *App) air.Handler {
 	}
 }
 
+func changeConfigHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		wu := make(map[string]string, 0)
+
+		if req.Body == nil {
+			return nil
+		}
+
+		if err := json.NewDecoder(req.Body).Decode(wu); err != nil {
+			return err
+		}
+
+		app.uid = wu["uid"]
+		app.callsign = wu["callsign"]
+		app.ipAddress = wu["ip_address"]
+		newUrn, _ := strconv.ParseInt(wu["urn"], 10, 32)
+		app.urn = int32(newUrn)
+
+		return res.WriteString("Ok")
+	}
+}
+
 func getDpHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
 		dp := new(model.DigitalPointer)
@@ -193,7 +217,9 @@ func addFeedHandler(app *App) air.Handler {
 			})
 
 			app.feeds = append(app.feeds, newFeed)
-			newFeed.Start()
+			if newFeed.IsActive() {
+				newFeed.Start()
+			}
 		} else if len(f.Type) == 0 || f.Type == "UDP" {
 			newFeed := client.NewUDPFeed(&client.UDPFeedConfig{
 				MessageCb: app.ProcessEvent,

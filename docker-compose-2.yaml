@@ -12,13 +12,15 @@ services:
      - "6970:6969"
      - "6970:6969/udp"
     environment:
-      - ME_UID=USER2
-      - CALLSIGN=سرباز2
+      - ME_UID=NET-CENTER
+      - CALLSIGN=مرکز شبکه
       - MAP_SERVER=127.0.0.1:8000
       - GPSD=gpsd:2948
       - SERVER_ADDRESS=host.docker.internal:8999:tcp
       - BROADCAST=host.docker.internal:6969
       - URN=2
+      - LAT=35.710838
+      - LON=51.372070
     # network_mode: host
   # map:
   #   build:

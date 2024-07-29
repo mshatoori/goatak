@@ -5,12 +5,13 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/kdudkov/goatak/pkg/model"
-	amqp "github.com/rabbitmq/amqp091-go"
 	"io"
 	"log/slog"
 	"sync/atomic"
 	"time"
+
+	"github.com/kdudkov/goatak/pkg/model"
+	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/google/uuid"
 	"github.com/kdudkov/goatak/pkg/cot"
@@ -85,14 +86,16 @@ func NewRabbitFeed(config *RabbitFeedConfig) *RabbitFeed {
 
 	if err != nil {
 		m.logger.Error("RabbitFeed connection failed")
-		return nil
+		m.active = 0
+		return m
 	}
 
 	m.ch, err = m.conn.Channel()
 
 	if err != nil {
 		m.logger.Error("RabbitFeed channel failed")
-		return nil
+		m.active = 0
+		return m
 	}
 
 	m.SetVersion(1)
@@ -246,8 +249,8 @@ func (h *RabbitFeed) handleWrite(ctx context.Context) {
 			false,
 			false,
 			amqp.Publishing{
-				ContentType: "text/plain",       // TODO: check
-				Body:        h.wrapMessage(msg), // TODO: prepare msg
+				ContentType: "text/plain", // TODO: check
+				Body:        msg,          // TODO: prepare msg
 			})
 
 		if err != nil {
@@ -298,7 +301,7 @@ func (h *RabbitFeed) SendCot(msg *cotproto.TakMessage) error {
 			return err
 		}
 
-		if h.tryAddPacket(buf) {
+		if h.tryAddPacket(h.wrapMessage(buf, msg)) {
 			return nil
 		}
 	}
@@ -319,6 +322,6 @@ func (h *RabbitFeed) tryAddPacket(msg []byte) bool {
 	return true
 }
 
-func (h *RabbitFeed) wrapMessage(msg []byte) []byte {
-	return msg // TODO: wrap
+func (h *RabbitFeed) wrapMessage(buf []byte, _msg *cotproto.TakMessage) []byte {
+	return buf // TODO: wrap
 }

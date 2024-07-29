@@ -772,11 +772,13 @@ let app = new Vue({
         },
 
         feedsCount: function () {
-            return this.incoming_feeds.size + "/" + this.outgoing_feeds.size;
+            return "↓" + this.sharedState.feeds.filter(it => it.direction==1).length.toLocaleString('fa-ir') +
+            " / ↑" + this.sharedState.feeds.filter(it => it.direction==2).length.toLocaleString('fa-ir') +
+            " / ↕" + this.sharedState.feeds.filter(it => it.direction==3).length.toLocaleString('fa-ir');
         },
 
         sensorsCount: function () {
-            return this.sharedState.sensors.length;
+            return this.sharedState.sensors.length.toLocaleString('fa-ir');
         },
 
         countByCategory: function (s) {
