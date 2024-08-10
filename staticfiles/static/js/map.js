@@ -84,7 +84,7 @@ let app = new Vue({
             type: '',
         }
     },
-    provide: function() {
+    provide: function () {
         return {
             map: this.map,
             printCoords: this.printCoords,
@@ -96,7 +96,7 @@ let app = new Vue({
         this.map = L.map('map');
         this.map.setView([60, 30], 11);
 
-        L.control.scale({ metric: true }).addTo(this.map);
+        L.control.scale({metric: true}).addTo(this.map);
 
         this.getConfig();
 
@@ -123,6 +123,18 @@ let app = new Vue({
     },
 
     methods: {
+        configUpdated: function () {
+            console.log("config updated")
+            const markerInfo = L.divIcon(
+                {
+                    className: 'my-marker-info',
+                    html: '<div>' + this.config.callsign + '<br>' + this.config.ip_address + '<br>' + this.config.urn + '</div>',
+                    iconSize: null
+                });
+
+            this.myInfoMarker.setIcon(markerInfo);
+
+        },
         getConfig: function () {
             let vm = this;
 
@@ -152,7 +164,7 @@ let app = new Vue({
                             });
 
                         if (!vm.myInfoMarker) {
-                            vm.myInfoMarker = L.marker([data.lat, data.lon], { icon: markerInfo });
+                            vm.myInfoMarker = L.marker([data.lat, data.lon], {icon: markerInfo});
                             vm.myInfoMarker.addTo(vm.map);
                         }
 
@@ -168,7 +180,7 @@ let app = new Vue({
                             });
                     }
 
-                    layers = L.control.layers({}, null, { hideSingleBase: true });
+                    layers = L.control.layers({}, null, {hideSingleBase: true});
                     layers.addTo(vm.map);
 
                     let first = true;
@@ -277,8 +289,8 @@ let app = new Vue({
 
                 const requestOptions = {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ lat: p.lat, lon: p.lng, name: "DP1" })
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({lat: p.lat, lon: p.lng, name: "DP1"})
                 };
                 fetch("/dp", requestOptions);
             }
@@ -370,7 +382,7 @@ let app = new Vue({
                     unit.marker.setIcon(getIcon(unit, true));
                 }
             } else {
-                unit.marker = L.marker([unit.lat, unit.lon], { draggable: draggable });
+                unit.marker = L.marker([unit.lat, unit.lon], {draggable: draggable});
                 unit.marker.on('click', function (e) {
                     app.setCurrentUnitUid(unit.uid, false);
                 });
@@ -399,7 +411,7 @@ let app = new Vue({
                 });
 
             if (!unit.infoMarker) {
-                unit.infoMarker = L.marker([unit.lat, unit.lon], { icon: markerInfo });
+                unit.infoMarker = L.marker([unit.lat, unit.lon], {icon: markerInfo});
                 unit.infoMarker.addTo(this.map);
             }
 
@@ -545,7 +557,7 @@ let app = new Vue({
                     });
 
                 if (!this.myInfoMarker) {
-                    this.myInfoMarker = L.marker([e.latlng.lat, e.latlng.lon], { icon: markerInfo });
+                    this.myInfoMarker = L.marker([e.latlng.lat, e.latlng.lon], {icon: markerInfo});
                     this.myInfoMarker.addTo(this.map);
                 }
 
@@ -553,8 +565,8 @@ let app = new Vue({
                 this.myInfoMarker.setIcon(markerInfo);
                 const requestOptions = {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ lat: e.latlng.lat, lon: e.latlng.lng })
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({lat: e.latlng.lat, lon: e.latlng.lng})
                 };
                 fetch("/pos", requestOptions);
             }
@@ -563,7 +575,7 @@ let app = new Vue({
         sendUnit: function (u, cb) {
             const requestOptions = {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(this.cleanUnit(u))
             };
             let vm = this;
@@ -772,9 +784,9 @@ let app = new Vue({
         },
 
         feedsCount: function () {
-            return "↓" + this.sharedState.feeds.filter(it => it.direction==1).length.toLocaleString('fa-ir') +
-            " / ↑" + this.sharedState.feeds.filter(it => it.direction==2).length.toLocaleString('fa-ir') +
-            " / ↕" + this.sharedState.feeds.filter(it => it.direction==3).length.toLocaleString('fa-ir');
+            return "↓" + this.sharedState.feeds.filter(it => it.direction == 1).length.toLocaleString('fa-ir') +
+                " / ↑" + this.sharedState.feeds.filter(it => it.direction == 2).length.toLocaleString('fa-ir') +
+                " / ↕" + this.sharedState.feeds.filter(it => it.direction == 3).length.toLocaleString('fa-ir');
         },
 
         sensorsCount: function () {
@@ -910,7 +922,7 @@ let app = new Vue({
 
         deleteCurrentUnit: function () {
             if (!this.current_unit_uid) return;
-            fetch("unit/" + this.current_unit_uid, { method: "DELETE" })
+            fetch("unit/" + this.current_unit_uid, {method: "DELETE"})
                 .then(function (response) {
                     return response.json()
                 })
@@ -930,7 +942,7 @@ let app = new Vue({
 
             const requestOptions = {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(msg)
             };
             let vm = this;

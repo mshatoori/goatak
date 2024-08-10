@@ -1,7 +1,7 @@
 # TODO
 
 ## Incomplete tasks
-1. Fix user info form (submit get 500)
+1. ~~Fix user info form (submit get 500)~~
 2. Implement sensors logic (using interfaces)
 3. Add active field to feeds
 4. ~~Fix feed counter in navbar~~

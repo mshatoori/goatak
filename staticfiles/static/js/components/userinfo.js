@@ -19,12 +19,14 @@ Vue.component("UserInfo", {
         callsign: this.config.callsign,
         uid: this.config.uid,
         ip_address: this.config.ip_address,
-        urn: this.config.urn,
-      }) })
+        urn: this.config.urn.toString(),
+      }) }).then(_ => {
+        this.configUpdated()
+      })
     },
   },
   computed: {},
-  props: ["config", "coords"],
+  props: ["config", "coords", "configUpdated"],
   inject: ["map", "printCoords", "distBea", "latlng"],
   template: /*html*/`
     <div class="card mb-1" v-if="config && config.callsign">

@@ -130,13 +130,13 @@ func getConfigHandler(app *App) air.Handler {
 
 func changeConfigHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
-		wu := make(map[string]string, 0)
+		wu := make(map[string]string)
 
 		if req.Body == nil {
 			return nil
 		}
 
-		if err := json.NewDecoder(req.Body).Decode(wu); err != nil {
+		if err := json.NewDecoder(req.Body).Decode(&wu); err != nil {
 			return err
 		}
 
