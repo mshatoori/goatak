@@ -429,6 +429,10 @@ let app = new Vue({
             if (item.marker) {
                 this.map.removeLayer(item.marker);
                 item.marker.remove();
+                if (item.infoMarker) {
+                    this.map.removeLayer(item.infoMarker)
+                    item.infoMarker.remove()
+                }
             }
             this.units.delete(uid);
             if (this.current_unit_uid === uid) {
@@ -926,7 +930,11 @@ let app = new Vue({
                 .then(function (response) {
                     return response.json()
                 })
-                .then(this.processUnits);
+                .then(({units}) => {
+                        this.processUnits(units)
+                    }
+                )
+            ;
             // this.removeUnit(this.current_unit_uid);
         },
 

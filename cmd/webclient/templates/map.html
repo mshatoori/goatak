@@ -1,14 +1,17 @@
 <div id="app">
     <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">سامانه آگاهی وضعیتی تاکتیکی<span v-if="config">{{ config.version
-                    }}</span></a>
+            <a class="navbar-brand" href="#">سامانه آگاهی وضعیتی تاکتیکی
+<!--                <span v-if="config">{{ config.version}}</span>-->
+            </a>
             <span class="badge rounded-pill bg-primary"
-                :class="{ 'bg-success': connected(), 'bg-secondary': !connected() }">.</span>
-            <div class="collapse navbar-collapse" id="navbarCollapse">
-                <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                  :class="{ 'bg-success': connected(), 'bg-secondary': !connected() }">.</span>
+            <span class="flex-grow-1"></span>
+            <div class="NOT-collapse NOT-navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav mb-2 mb-md-0">
                     <li class="nav-item">
-                        <a class="nav-link" href="#" id="navbarSensorsMenuLink" role="button" v-on:click="openSensors()">
+                        <a class="nav-link" href="#" id="navbarSensorsMenuLink" role="button"
+                           v-on:click="openSensors()">
                             سنسورها<span class="badge rounded-pill bg-success">{{ sensorsCount() }}</span>
                         </a>
                     </li>
@@ -19,13 +22,13 @@
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
+                           data-bs-toggle="dropdown" aria-expanded="false">
                             مخاطبین <span class="badge rounded-pill bg-success">{{ contactsNum() }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
                             <li v-for="u in byCategory('contact')">
                                 <a class="dropdown-item" href="#" v-on:click="setCurrentUnitUid(u.uid, true)">
-                                    <img :src="getImg(u)" />
+                                    <img :src="getImg(u)"/>
                                     <span v-if="u.lat === 0 && u.lon === 0">* </span>{{ u.callsign }}<span
                                         v-if="u.status"> ({{ u.status }})</span>
                                 </a>
@@ -34,7 +37,7 @@
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink2" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
+                           data-bs-toggle="dropdown" aria-expanded="false">
                             نیروها <span class="badge rounded-pill bg-success">{{ countByCategory('unit') }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink2">
@@ -47,7 +50,7 @@
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink3" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
+                           data-bs-toggle="dropdown" aria-expanded="false">
                             نقاط <span class="badge rounded-pill bg-success">{{ countByCategory('point') }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink3">
@@ -60,7 +63,7 @@
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink4" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
+                           data-bs-toggle="dropdown" aria-expanded="false">
                             پیام‌ها <span class="badge rounded-pill bg-success">{{ msgNum() }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink4">
@@ -87,7 +90,7 @@
                     <div class="card-body">
                         <div class="btn-group" role="group" aria-label="Tools">
                             <input type="radio" class="btn-check" name="btnradio" id="select" autocomplete="off"
-                                checked>
+                                   checked>
                             <label class="btn btn-outline-primary btn-sm" for="select">انتخاب</label>
 
                             <input type="radio" class="btn-check" name="btnradio" id="redx" autocomplete="off">
@@ -100,16 +103,16 @@
                             <label class="btn btn-outline-primary btn-sm" for="point">ایجاد نقطه</label>
 
                             <input v-if="config && config.callsign" type="radio" class="btn-check" name="btnradio"
-                                id="me" autocomplete="off">
+                                   id="me" autocomplete="off">
                             <label v-if="config && config.callsign" class="btn btn-outline-primary btn-sm"
-                                for="me">من</label>
+                                   for="me">من</label>
                         </div>
                         <div v-if="getTool('redx')" class="mt-1">
                             <span class="badge bg-danger">نشان</span>: {{ printCoordsll(getTool('redx').getLatLng()) }}
                             <span class="badge rounded-pill bg-success" style="cursor:default;"
-                                v-on:click="map.setView(getTool('redx').getLatLng())"><i class="bi bi-geo"></i></span>
+                                  v-on:click="map.setView(getTool('redx').getLatLng())"><i class="bi bi-geo"></i></span>
                             <span class="badge rounded-pill bg-danger" style="cursor:default;"
-                                v-on:click="removeTool('redx')">X</span>
+                                  v-on:click="removeTool('redx')">X</span>
                         </div>
                         <!--                        <div v-if="getTool('dp1')" class="mt-1">-->
                         <!--                            <span class="badge bg-success">DP1</span>: {{ printCoordsll(getTool('dp1').getLatLng()) }}-->
@@ -128,23 +131,23 @@
                 <div class="card" v-if="current_unit">
                     <div class="card-header">
                         <span class="pull-left fw-bold" v-on:click="mapToUnit(current_unit)">
-                            <img :src="milImg(current_unit)" /> {{ getUnitName(current_unit) }} <span
+                            <img :src="milImg(current_unit)"/> {{ getUnitName(current_unit) }} <span
                                 v-if="current_unit.status"> ({{ current_unit.status }})</span>
                             <img height="24" src="/static/icons/coord_unlock.png"
-                                v-if="current_unit.category !== 'point' && locked_unit_uid != current_unit.uid"
-                                v-on:click="locked_unit_uid=current_unit.uid" />
+                                 v-if="current_unit.category !== 'point' && locked_unit_uid != current_unit.uid"
+                                 v-on:click="locked_unit_uid=current_unit.uid"/>
                             <img height="24" src="/static/icons/coord_lock.png"
-                                v-if="locked_unit_uid == current_unit.uid" v-on:click="locked_unit_uid=''" />
+                                 v-if="locked_unit_uid == current_unit.uid" v-on:click="locked_unit_uid=''"/>
                         </span>
                         <span class="pull-right" v-if="current_unit.category === 'contact'">
                             <button type="button" class="btn btn-sm btn-primary"
-                                v-if="current_unit.category === 'contact'"
-                                v-on:click="openChat(current_unit.uid, current_unit.callsign);"><i
+                                    v-if="current_unit.category === 'contact'"
+                                    v-on:click="openChat(current_unit.uid, current_unit.callsign);"><i
                                     class="bi bi-chat-text-fill"></i></button>
                         </span>
                         <span class="pull-right" v-if="current_unit.category !== 'contact'">
                             <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                data-bs-target="#edit">
+                                    data-bs-target="#edit">
                                 <i class="bi bi-pencil-square"></i>
                             </button>
                             <button type="button" class="btn btn-sm btn-danger" v-on:click="deleteCurrentUnit">
@@ -170,7 +173,7 @@
                             <dt>مختصات</dt>
                             <dd>{{ printCoords(current_unit.lat, current_unit.lon) }}
                                 <span class="badge rounded-pill bg-success" style="cursor:default;"
-                                    v-on:click="map.setView([current_unit.lat, current_unit.lon])"><i
+                                      v-on:click="map.setView([current_unit.lat, current_unit.lon])"><i
                                         class="bi bi-geo"></i></span>
                                 <span v-if="coords">({{ distBea(latlng(current_unit.lat, current_unit.lon), coords) }}
                                     تا نشانگر)</span>
@@ -205,13 +208,13 @@
 
     <!-- Modal -->
     <div class="modal fade" id="messages" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        aria-labelledby="staticBackdropLabel" aria-hidden="true">
+         aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="staticBackdropLabel">پیام‌های چت {{ chatroom }}
                         <span v-if="getStatus(chat_uid)" class="badge"
-                            :class="getStatus(chat_uid) == 'Online' ?'text-bg-success':'text-bg-secondary'">
+                              :class="getStatus(chat_uid) == 'Online' ?'text-bg-success':'text-bg-secondary'">
                             {{ getStatus(chat_uid) }}</span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -226,7 +229,7 @@
                 </div>
                 <div class="modal-footer">
                     <form @submit.prevent="sendMessage">
-                        <input type="text" class="form-control" id="message-text" v-model="chat_msg" />
+                        <input type="text" class="form-control" id="message-text" v-model="chat_msg"/>
                     </form>
                     <button type="button" class="btn btn-primary" v-on:click="sendMessage">ارسال پیام</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">خروج</button>
@@ -239,7 +242,7 @@
     <sensors-modal></sensors-modal>
 
     <div class="modal fade" id="edit" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        aria-labelledby="staticBackdropLabel1" aria-hidden="true">
+         aria-labelledby="staticBackdropLabel1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -256,16 +259,16 @@
 
                             <div class="btn-group col-4" role="group" aria-label="Type">
                                 <input type="radio" class="btn-check" name="btnradio" value="point"
-                                    v-model="form_unit.category" id="ed-point">
+                                       v-model="form_unit.category" id="ed-point">
                                 <label class="btn btn-outline-primary btn-sm" for="ed-point">نقطه</label>
 
                                 <input type="radio" class="btn-check" name="btnradio" value="unit"
-                                    v-model="form_unit.category" id="ed-unit">
+                                       v-model="form_unit.category" id="ed-unit">
                                 <label class="btn btn-outline-primary btn-sm" for="ed-unit">نیرو</label>
                             </div>
 
                             <div class="form-check col-2">
-                                <input type="checkbox" id="ed-send" v-model="form_unit.send" />
+                                <input type="checkbox" id="ed-send" v-model="form_unit.send"/>
                                 <label for="ed-send">ارسال</label>
                             </div>
                         </div>
@@ -295,8 +298,8 @@
                                 <label class="my-1 mr-2" for="ed-subtype">نوع</label>
                                 <div class="col-1">
                                     <button type="button" class="btn btn-secondary"
-                                        v-if="form_unit.root_sidc.code !== ''"
-                                        v-on:click="setFormRootSidc(getRootSidc(form_unit.root_sidc.code).code)">
+                                            v-if="form_unit.root_sidc.code !== ''"
+                                            v-on:click="setFormRootSidc(getRootSidc(form_unit.root_sidc.code).code)">
                                         &lt;
                                     </button>
                                 </div>
@@ -308,8 +311,8 @@
                                 </div>
                                 <div class="col-1">
                                     <button type="button" class="btn btn-secondary"
-                                        v-if="getSidc(form_unit.subtype).next"
-                                        v-on:click="setFormRootSidc(form_unit.subtype)">&gt;
+                                            v-if="getSidc(form_unit.subtype).next"
+                                            v-on:click="setFormRootSidc(form_unit.subtype)">&gt;
                                     </button>
                                 </div>
                             </div>
@@ -318,14 +321,14 @@
                             <div class="col-12">
                                 <label for="ed-remarks">توضیحات</label>
                                 <textarea id="ed-remarks" class="form-control" id="exampleFormControlTextarea1" rows="3"
-                                    v-model="form_unit.text"></textarea>
+                                          v-model="form_unit.text"></textarea>
                             </div>
                         </div>
                         <div class="form-group row my-2 mx-2">
                             <div class="col-12">
                                 <label for="ed-websensor">اطلاعات اضافه</label>
                                 <textarea id="ed-websensor" class="form-control" rows="3"
-                                    v-model="form_unit.web_sensor"></textarea>
+                                          v-model="form_unit.web_sensor"></textarea>
                             </div>
                         </div>
                     </form>

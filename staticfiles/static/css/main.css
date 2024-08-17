@@ -1,16 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
-
 table.units {
-    font-family: 'Roboto', sans-serif;
     font-size: 10pt;
 }
 
 div.info {
-    font-family: 'Roboto', sans-serif;
     font-size: 11pt;
 }
 
 #app {
+    font-family: 'Vazirmatn', sans-serif;
     direction: rtl;
 }
 
@@ -24,4 +21,14 @@ div.info {
     border-radius: 4px;
     padding: 3px;
     background: rgba(245, 222, 179, 0.6);
+}
+
+.nav-item {
+    border: 1px gray solid;
+    border-radius: 11px;
+    margin: 0 5px;
+}
+
+.nav-item span {
+    margin-inline-start: 5px;
 }
