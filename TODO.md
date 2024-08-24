@@ -12,6 +12,13 @@
 9. ~~Fix delete point~~
 10. Add SensorConnectionRecord in UI (has timer interval) :-?
 11. Keep data size under 1k (100bit is preferred)
+12. Add radar to sensors
+13. All entities should have names
 
 ## Idea:
 1. Show received messages in UI (like logs)
+
+
+## Documentation
+1. پیوست فنی شامل توضیحات پروتکل‌های NMEA و AIS و ...
+2. به نسبت سری قبل باید پروپیمون‌تر باشه
