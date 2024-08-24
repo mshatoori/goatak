@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"github.com/google/uuid"
 	"log/slog"
 	"math/rand"
 	"net"
@@ -19,6 +18,8 @@ import (
 	"sync/atomic"
 	"syscall"
 	"time"
+
+	"github.com/google/uuid"
 
 	"github.com/kdudkov/goatak/pkg/sensors"
 	"google.golang.org/protobuf/proto"
@@ -36,7 +37,7 @@ import (
 )
 
 const (
-	selfPosSendPeriod      = time.Second * 5
+	selfPosSendPeriod      = time.Minute * 2
 	lastSeenOfflineTimeout = time.Minute * 15
 	alfaNum                = "abcdefghijklmnopqrstuvwxyz012346789"
 )
@@ -242,6 +243,7 @@ func (app *App) sensorCallback(data any) {
 				logger:   app.logger.With("logger", "mutators"+data.GetUid()),
 			})
 		}
+		app.SendMsg(app.MakeMe()) // TODO: should we send such a big message every time???
 	default:
 		app.logger.Info("Unknown sensor data")
 	}
@@ -265,17 +267,19 @@ func (app *App) Run(ctx context.Context) {
 
 	if addr := viper.GetString("gpsd"); addr != "" {
 		var gpsdSensor = &sensors.GpsdSensor{
-			Addr:   addr,
-			Conn:   nil,
-			Logger: app.logger.With("logger", "gpsd"),
-			Reader: nil,
-			Type:   "GPS",
-			UID:    uuid.New().String(),
+			Addr:     addr,
+			Conn:     nil,
+			Logger:   app.logger.With("logger", "gpsd"),
+			Reader:   nil,
+			Type:     "GPS",
+			UID:      uuid.New().String(),
+			Interval: time.Duration(2) * time.Second,
+			Ctx:      ctx,
 		}
 		app.sensors = append(app.sensors, gpsdSensor)
 
-		gpsdSensor.Initialize(ctx)
-		go gpsdSensor.Start(ctx, app.sensorCallback)
+		gpsdSensor.Initialize()
+		go gpsdSensor.Start(app.sensorCallback)
 	}
 
 	/* app.mesh = client.NewMeshHandler(&client.MeshHandlerConfig{

@@ -1,13 +1,16 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
+	"time"
+
 	"github.com/aofei/air"
 	"github.com/google/uuid"
 	"github.com/kdudkov/goatak/pkg/model"
 	"github.com/kdudkov/goatak/pkg/sensors"
+	"golang.org/x/net/context"
 )
 
 func getSensorsHandler(app *App) air.Handler {
@@ -33,18 +36,19 @@ func addSensorHandler(app *App) air.Handler {
 		if f.Type == "GPS" || f.Type == "AIS" {
 			//gpsAddr := fmt.Sprintf("%s:%d", f.Addr, f.Port)
 			var gpsdSensor = &sensors.GpsdSensor{
-				Addr:   fmt.Sprintf("%s:%d", f.Addr, f.Port),
-				Conn:   nil,
-				Logger: app.logger.With("logger", "gpsd"),
-				Reader: nil,
-				Type:   f.Type,
-				UID:    uuid.New().String(),
+				Addr:     fmt.Sprintf("%s:%d", f.Addr, f.Port),
+				Conn:     nil,
+				Logger:   app.logger.With("logger", "gpsd"),
+				Reader:   nil,
+				Type:     f.Type,
+				UID:      uuid.New().String(),
+				Interval: time.Second * time.Duration(f.Interval),
+				Ctx:      context.Background(),
 			}
 
 			app.sensors = append(app.sensors, gpsdSensor)
-			gpsdSensor.Initialize(context.TODO())
-			gpsdSensor.Start(context.TODO(), app.sensorCallback)
-
+			gpsdSensor.Initialize()
+			go gpsdSensor.Start(app.sensorCallback)
 		}
 
 		return res.WriteJSON(getSensors(app))
@@ -61,4 +65,24 @@ func getSensors(app *App) []*model.SensorModel {
 	}
 
 	return sensorModels
+}
+
+func deleteSensorHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		uid := getStringParam(req, "uid")
+
+		sensorIdx := slices.IndexFunc(app.sensors, func(sensor sensors.BaseSensor) bool {
+			return sensor.GetUID() == uid
+		})
+
+		if sensorIdx == -1 {
+			res.Status = 404
+		} else {
+			sensor := app.sensors[sensorIdx]
+			sensor.Stop()
+			app.sensors = append(app.sensors[:sensorIdx], app.sensors[sensorIdx+1:]...)
+		}
+
+		return res.WriteJSON(getSensors(app))
+	}
 }

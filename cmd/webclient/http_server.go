@@ -54,7 +54,7 @@ func NewHttp(app *App, address string) *air.Air {
 
 	srv.GET("/sensors", getSensorsHandler(app))
 	srv.POST("/sensors", addSensorHandler(app))
-	// srv.DELETE("/sensors/:uid", deleteSensorHandler(app))  // TODO
+	srv.DELETE("/sensors/:uid", deleteSensorHandler(app))
 
 	srv.GET("/stack", getStackHandler())
 

@@ -86,7 +86,7 @@ func NewUDPFeed(config *UDPFeedConfig) *UDPFeed {
 	// TODO: set version using all mesh clients according to TAK protocol
 	m.SetVersion(1)
 
-	if config != nil && config.Direction == INCOMING {
+	if config != nil && config.Direction&INCOMING != 0 {
 		m.messageCb = config.MessageCb
 	}
 

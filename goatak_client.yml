@@ -22,17 +22,17 @@ me:
   lon: 0
   urn: 1
 
-# feeds:
-#   outgoing:
-#   - address: 127.0.0.1
-#     port: 6073
-#   - address: 127.0.0.1
-#     port: 6074
-#   incoming:
-#   - address: 0.0.0.0
-#     port: 6075
-#   - address: 9.9.9.9
-#     port: 6075
+feeds:
+  outgoing:
+  - address: 127.0.0.1
+    port: 6073
+  - address: 127.0.0.1
+    port: 6074
+  incoming:
+  - address: 0.0.0.0
+    port: 6075
+  - address: 9.9.9.9
+    port: 6075
 
 ssl:
   cert: ""

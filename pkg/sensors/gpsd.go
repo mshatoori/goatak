@@ -5,12 +5,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/kdudkov/goatak/pkg/model"
 	"log/slog"
 	"net"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
+
+	"github.com/kdudkov/goatak/pkg/model"
 
 	"github.com/kdudkov/goatak/pkg/cot"
 	"github.com/kdudkov/goatak/pkg/cotproto"
@@ -58,24 +60,56 @@ type VERSIONMsg struct {
 }
 
 type GpsdSensor struct {
-	Addr   string
-	Conn   net.Conn
-	Logger *slog.Logger
-	Reader *bufio.Reader
-	Type   string // Could be GPS or AIS
-	UID    string
+	Addr        string
+	Conn        net.Conn
+	Logger      *slog.Logger
+	Reader      *bufio.Reader
+	Type        string // Could be GPS or AIS
+	UID         string
+	Interval    time.Duration
+	Ctx         context.Context
+	latestEvent *cotproto.CotEvent
+
+	mu         sync.Mutex
+	cancelFunc context.CancelFunc
 }
 
-func (sensor *GpsdSensor) Initialize(ctx context.Context) bool {
+func (sensor *GpsdSensor) Stop() {
+	sensor.cancelFunc()
+}
+
+func (sensor *GpsdSensor) Initialize() bool {
+	sensor.Ctx, sensor.cancelFunc = context.WithCancel(sensor.Ctx)
 	return true
 }
 
-func (sensor *GpsdSensor) Start(ctx context.Context, cb func(data any)) {
-	sensor.connect(ctx)
+func (sensor *GpsdSensor) sendLoop(cb func(data any)) {
+	ticker := time.NewTicker(sensor.Interval)
+	for {
+		select {
+		case <-ticker.C:
+			sensor.Logger.Warn(fmt.Sprintf("GPS sensor [%s] tick", sensor.UID))
+			sensor.mu.Lock()
+			if sensor.latestEvent != nil {
+				sensor.Logger.Warn("GPS sensor sending data")
+				cb(sensor.latestEvent)
+				sensor.latestEvent = nil
+			}
+			sensor.mu.Unlock()
+		case <-sensor.Ctx.Done():
+			return
+		}
+	}
+}
 
-	for ctx.Err() == nil {
+func (sensor *GpsdSensor) Start(cb func(data any)) {
+	sensor.connect()
+
+	go sensor.sendLoop(cb)
+
+	for sensor.Ctx.Err() == nil {
 		if sensor.Conn == nil {
-			if !sensor.connect(ctx) {
+			if !sensor.connect() {
 				return
 			}
 		}
@@ -114,45 +148,46 @@ func (sensor *GpsdSensor) Start(ctx context.Context, cb func(data any)) {
 				sensor.Logger.Error("JSON decode error", "error", err1)
 			}
 
-			if cb != nil {
-				var posCoTEvent = &cotproto.CotEvent{
-					Uid:       "$self.pos",
-					How:       "m-g",
-					Lat:       r.Lat,
-					Lon:       r.Lon,
-					Hae:       r.Alt,
-					StaleTime: cot.TimeToMillis(time.Now().Add(StaleTime)),
-					Detail: &cotproto.Detail{
-						Track: &cotproto.Track{
-							Speed:  r.Speed,
-							Course: r.Track,
-						},
-						PrecisionLocation: &cotproto.PrecisionLocation{
-							Geopointsrc: "GPS",
-							Altsrc:      "GPS",
-						},
+			sensor.mu.Lock()
+			sensor.latestEvent = &cotproto.CotEvent{
+				Uid:       "$self.pos",
+				How:       "m-g",
+				Lat:       r.Lat,
+				Lon:       r.Lon,
+				Hae:       r.Alt,
+				StaleTime: cot.TimeToMillis(time.Now().Add(StaleTime)),
+				Detail: &cotproto.Detail{
+					Track: &cotproto.Track{
+						Speed:  r.Speed,
+						Course: r.Track,
 					},
-				}
-				cb(posCoTEvent)
+					PrecisionLocation: &cotproto.PrecisionLocation{
+						Geopointsrc: "GPS",
+						Altsrc:      "GPS",
+					},
+				},
 			}
+			sensor.mu.Unlock()
+
 		case "AIS":
 			if sensor.Type != "AIS" {
 				continue
 			}
-			if cb != nil {
-				sensorData := make([]*cotproto.SensorData, 1)
-				sensorData = append(sensorData, &cotproto.SensorData{
-					SensorName: "AIS",
-					Value:      string(data),
-				})
 
-				var aisCoTEvent = &cotproto.CotEvent{
-					Uid:       "$self.ais",
-					StaleTime: cot.TimeToMillis(time.Now().Add(StaleTime)),
-					Detail:    &cotproto.Detail{SensorData: sensorData},
-				}
-				cb(aisCoTEvent)
+			sensorData := make([]*cotproto.SensorData, 0)
+			sensorData = append(sensorData, &cotproto.SensorData{
+				SensorName: "AIS",
+				Value:      string(data),
+			})
+
+			sensor.mu.Lock()
+			sensor.latestEvent = &cotproto.CotEvent{
+				Uid:       "$self.ais",
+				StaleTime: cot.TimeToMillis(time.Now().Add(StaleTime)),
+				Detail:    &cotproto.Detail{SensorData: sensorData},
 			}
+			sensor.mu.Unlock()
+
 		case "VERSION":
 			var r *VERSIONMsg
 			if err1 := json.Unmarshal(data, &r); err1 != nil {
@@ -163,7 +198,7 @@ func (sensor *GpsdSensor) Start(ctx context.Context, cb func(data any)) {
 	}
 }
 
-func (sensor *GpsdSensor) connect(ctx context.Context) bool {
+func (sensor *GpsdSensor) connect() bool {
 	timeout := time.Second * 5
 
 	for {
@@ -182,7 +217,7 @@ func (sensor *GpsdSensor) connect(ctx context.Context) bool {
 
 		select {
 		case <-time.After(timeout):
-		case <-ctx.Done():
+		case <-sensor.Ctx.Done():
 			sensor.Logger.Error("stop connection attempts")
 			return false
 		}
@@ -193,9 +228,6 @@ func (sensor *GpsdSensor) connect(ctx context.Context) bool {
 	}
 }
 
-//	GetType() string
-//	ToSensorModel() *model.SensorModel
-
 func (sensor *GpsdSensor) GetType() string {
 	return sensor.Type
 }
@@ -204,10 +236,15 @@ func (sensor *GpsdSensor) ToSensorModel() *model.SensorModel {
 	gpsAddrParts := strings.Split(sensor.Addr, ":")
 	gpsPort, _ := strconv.Atoi(gpsAddrParts[1])
 	sensorModel := model.SensorModel{
-		Addr: gpsAddrParts[0],
-		Port: gpsPort,
-		UID:  sensor.UID,
-		Type: sensor.Type,
+		Addr:     gpsAddrParts[0],
+		Port:     gpsPort,
+		UID:      sensor.UID,
+		Type:     sensor.Type,
+		Interval: int(sensor.Interval / time.Second),
 	}
 	return &sensorModel
+}
+
+func (sensor *GpsdSensor) GetUID() string {
+	return sensor.UID
 }

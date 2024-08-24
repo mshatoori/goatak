@@ -300,6 +300,9 @@ let app = new Vue({
         processUnits: function (data) {
             let keys = new Set();
 
+            console.log("units:")
+            console.log(data)
+
             for (let u of data) {
                 keys.add(this.processUnit(u)?.uid);
             }
