@@ -12,14 +12,17 @@
 9. ~~Fix delete point~~
 10. Add SensorConnectionRecord in UI (has timer interval) :-?
 11. Keep data size under 1k (100bit is preferred)
-12. Add radar to sensors
+12. Add radar to sensors (up-to-date enemy positions :-?)
 13. All entities should have names
-14. Work on running the server and adding it to UI
+14. Work on running the server and adding it to UI (+ login)
+15. We could also make connections persistent (in db)
+16. Be ready to deploy on a new network
+17. Make UI simpler and more user friendly (names, ...)
 
 ## Idea:
 1. Show received messages in UI (like logs)
 
 
 ## Documentation
-1. پیوست فنی شامل توضیحات پروتکل‌های NMEA و AIS و ...
-2. به نسبت سری قبل باید پروپیمون‌تر باشه
+1. **پیوست فنی شامل توضیحات پروتکل‌های NMEA و AIS و ...**
+2. **به نسبت سری قبل باید پروپیمون‌تر باشه**
