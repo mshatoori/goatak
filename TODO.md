@@ -14,6 +14,7 @@
 11. Keep data size under 1k (100bit is preferred)
 12. Add radar to sensors
 13. All entities should have names
+14. Work on running the server and adding it to UI
 
 ## Idea:
 1. Show received messages in UI (like logs)
