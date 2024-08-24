@@ -73,7 +73,7 @@ type CoTFeed struct {
 	RecvQueue string `json:"recvQueue,omitempty"`
 }
 
-type Sensor struct {
+type SensorModel struct {
 	// TODO: Change Addr & Port with a general config map
 	Addr string `json:"addr"`
 

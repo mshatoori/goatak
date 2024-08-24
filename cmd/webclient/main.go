@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"github.com/google/uuid"
 	"log/slog"
 	"math/rand"
 	"net"
@@ -64,7 +65,7 @@ type App struct {
 	mapServer       string
 
 	feeds   []client.CoTFeed
-	sensors []*Sensor
+	sensors []sensors.BaseSensor
 
 	selfPosEventMutators sync.Map
 
@@ -268,7 +269,11 @@ func (app *App) Run(ctx context.Context) {
 			Conn:   nil,
 			Logger: app.logger.With("logger", "gpsd"),
 			Reader: nil,
+			Type:   "GPS",
+			UID:    uuid.New().String(),
 		}
+		app.sensors = append(app.sensors, gpsdSensor)
+
 		gpsdSensor.Initialize(ctx)
 		go gpsdSensor.Start(ctx, app.sensorCallback)
 	}

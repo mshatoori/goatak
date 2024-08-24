@@ -2,7 +2,7 @@
 
 ## Incomplete tasks
 1. ~~Fix user info form (submit get 500)~~
-2. Implement sensors logic (using interfaces)
+2. ~~Implement sensors logic (using interfaces)~~
 3. Add active field to feeds
 4. ~~Fix feed counter in navbar~~
 5. Feed refactor in configs (include rabbit && change how we handle directions)

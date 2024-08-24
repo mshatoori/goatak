@@ -5,8 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/kdudkov/goatak/pkg/model"
 	"log/slog"
 	"net"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/kdudkov/goatak/pkg/cot"
@@ -59,6 +62,8 @@ type GpsdSensor struct {
 	Conn   net.Conn
 	Logger *slog.Logger
 	Reader *bufio.Reader
+	Type   string // Could be GPS or AIS
+	UID    string
 }
 
 func (sensor *GpsdSensor) Initialize(ctx context.Context) bool {
@@ -67,7 +72,7 @@ func (sensor *GpsdSensor) Initialize(ctx context.Context) bool {
 
 func (sensor *GpsdSensor) Start(ctx context.Context, cb func(data any)) {
 	sensor.connect(ctx)
-	
+
 	for ctx.Err() == nil {
 		if sensor.Conn == nil {
 			if !sensor.connect(ctx) {
@@ -101,6 +106,9 @@ func (sensor *GpsdSensor) Start(ctx context.Context, cb func(data any)) {
 
 		switch msg.Class {
 		case "TPV":
+			if sensor.Type != "GPS" {
+				continue
+			}
 			var r *TPVMsg
 			if err1 := json.Unmarshal(data, &r); err1 != nil {
 				sensor.Logger.Error("JSON decode error", "error", err1)
@@ -128,6 +136,9 @@ func (sensor *GpsdSensor) Start(ctx context.Context, cb func(data any)) {
 				cb(posCoTEvent)
 			}
 		case "AIS":
+			if sensor.Type != "AIS" {
+				continue
+			}
 			if cb != nil {
 				sensorData := make([]*cotproto.SensorData, 1)
 				sensorData = append(sensorData, &cotproto.SensorData{
@@ -180,4 +191,23 @@ func (sensor *GpsdSensor) connect(ctx context.Context) bool {
 			timeout = timeout * 2
 		}
 	}
+}
+
+//	GetType() string
+//	ToSensorModel() *model.SensorModel
+
+func (sensor *GpsdSensor) GetType() string {
+	return sensor.Type
+}
+
+func (sensor *GpsdSensor) ToSensorModel() *model.SensorModel {
+	gpsAddrParts := strings.Split(sensor.Addr, ":")
+	gpsPort, _ := strconv.Atoi(gpsAddrParts[1])
+	sensorModel := model.SensorModel{
+		Addr: gpsAddrParts[0],
+		Port: gpsPort,
+		UID:  sensor.UID,
+		Type: sensor.Type,
+	}
+	return &sensorModel
 }
