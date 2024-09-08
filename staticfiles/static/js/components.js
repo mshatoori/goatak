@@ -62,6 +62,7 @@ Vue.component("SensorsModal", {
                                     <option value="" selected>-----------</option>
                                     <option value="GPS">GPS (gpsd)</option>
                                     <option value="AIS">AIS</option>
+                                    <option value="Radar">Radar</option>
                                 </select>
                             </td>
                             <td><input type="text" class="form-control" v-model="newSensor.addr" placeholder="IP" aria-label="IP">

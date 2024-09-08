@@ -242,8 +242,13 @@ func (app *App) sensorCallback(data any) {
 				mutation: data,
 				logger:   app.logger.With("logger", "mutators"+data.GetUid()),
 			})
+			app.SendMsg(app.MakeMe()) // TODO: should we send such a big message every time???
+		} else {
+			data.SendTime = cot.TimeToMillis(time.Now())
+			takMessage := &cotproto.TakMessage{CotEvent: data}
+			app.ProcessEvent(cot.LocalCotMessage(takMessage))
+			app.SendMsg(takMessage)
 		}
-		app.SendMsg(app.MakeMe()) // TODO: should we send such a big message every time???
 	default:
 		app.logger.Info("Unknown sensor data")
 	}

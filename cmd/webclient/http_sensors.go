@@ -33,6 +33,7 @@ func addSensorHandler(app *App) air.Handler {
 			return err
 		}
 
+		// TODO: Refactor with switch case
 		if f.Type == "GPS" || f.Type == "AIS" {
 			//gpsAddr := fmt.Sprintf("%s:%d", f.Addr, f.Port)
 			var gpsdSensor = &sensors.GpsdSensor{
@@ -49,6 +50,12 @@ func addSensorHandler(app *App) air.Handler {
 			app.sensors = append(app.sensors, gpsdSensor)
 			gpsdSensor.Initialize()
 			go gpsdSensor.Start(app.sensorCallback)
+		} else if f.Type == "Radar" {
+			var radarSensor = sensors.NewRadarSensor(f, app.logger.With("logger", "radar"))
+
+			app.sensors = append(app.sensors, radarSensor)
+			radarSensor.Initialize()
+			go radarSensor.Start(app.sensorCallback)
 		}
 
 		return res.WriteJSON(getSensors(app))

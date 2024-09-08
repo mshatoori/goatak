@@ -20,6 +20,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/gorm v1.25.9
 	software.sslmate.com/src/go-pkcs12 v0.4.0
+	github.com/adrianmo/go-nmea v1.10.0
 )
 
 require (
