@@ -34,6 +34,8 @@ type RadarSensor struct {
 
 	mu         sync.Mutex
 	cancelFunc context.CancelFunc
+
+	Title string
 }
 
 func NewRadarSensor(sensorModel *model.SensorModel, logger *slog.Logger) *RadarSensor {
@@ -44,6 +46,7 @@ func NewRadarSensor(sensorModel *model.SensorModel, logger *slog.Logger) *RadarS
 		UID:      uuid.New().String(),
 		Interval: time.Second * time.Duration(sensorModel.Interval),
 		Ctx:      context.Background(),
+		Title:    sensorModel.Title,
 	}
 }
 
@@ -156,6 +159,7 @@ func (sensor *RadarSensor) ToSensorModel() *model.SensorModel {
 		UID:      sensor.UID,
 		Type:     RadarType,
 		Interval: int(sensor.Interval / time.Second),
+		Title:    sensor.Title,
 	}
 
 	return &sensorModel

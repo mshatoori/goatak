@@ -4,6 +4,7 @@ Vue.component('FeedsModal', {
         return {
             newFeed: {
                 type: "UDP",
+                title: "",
                 addr: "",
                 port: "",
                 direction: 1,
@@ -59,7 +60,7 @@ Vue.component('FeedsModal', {
                         <div class="list-group-item" v-for="(feed, idx) in allFeeds">
                             <div class="d-flex w-100 justify-content-between" v-if="feed.type === 'UDP'">
                               <div>
-                                <h5 class="mb-1">شناسه: {{ feed.uid }}</h5>
+                                <h5 class="mb-1">نام: {{ feed.title }}</h5>
                                 <div>آدرس: {{ feed.addr }}</div>
                                 <div>پورت: {{ feed.port }}</div>
                               </div>
@@ -110,6 +111,21 @@ Vue.component('FeedsModal', {
                             <div class="form" v-if="newFeed.type === 'UDP'">
                                 <div class="form-group row">
                                     <label
+                                            for="newFeedTitle"
+                                            class="col-sm-4 col-form-label font-weight-bold"
+                                    ><strong>نام</strong></label
+                                    >
+                                    <div class="col-sm-8">
+                                        <input
+                                                type="text"
+                                                class="form-control"
+                                                id="newFeedTitle"
+                                                v-model="newFeed.title"
+                                        />
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label
                                     for="newFeedAddr"
                                     class="col-sm-4 col-form-label font-weight-bold"
                                     ><strong>آدرس</strong></label
@@ -140,6 +156,21 @@ Vue.component('FeedsModal', {
                                 </div>
                             </div>
                             <div class="form" v-if="newFeed.type === 'Rabbit'">
+                                <div class="form-group row">
+                                    <label
+                                            for="newFeedTitle2"
+                                            class="col-sm-4 col-form-label font-weight-bold"
+                                    ><strong>نام</strong></label
+                                    >
+                                    <div class="col-sm-8">
+                                        <input
+                                                type="text"
+                                                class="form-control"
+                                                id="newFeedTitle2"
+                                                v-model="newFeed.title"
+                                        />
+                                    </div>
+                                </div>
                                 <div class="form-group row">
                                     <label
                                     for="newFeedAddr2"

@@ -214,6 +214,7 @@ func addFeedHandler(app *App) air.Handler {
 				Direction: client.FeedDirection(f.Direction),
 				RecvQueue: f.RecvQueue,
 				SendQueue: f.SendQueue,
+				Title:     f.Title,
 			})
 
 			app.feeds = append(app.feeds, newFeed)
@@ -226,6 +227,7 @@ func addFeedHandler(app *App) air.Handler {
 				Addr:      f.Addr,
 				Port:      f.Port,
 				Direction: client.FeedDirection(f.Direction),
+				Title:     f.Title,
 			})
 
 			app.feeds = append(app.feeds, newFeed)

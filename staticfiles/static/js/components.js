@@ -3,6 +3,7 @@ Vue.component("SensorsModal", {
     return {
       newSensor: {
         type: "",
+        title: "",
         addr: "",
         port: 1,
         interval: 5,
@@ -39,9 +40,10 @@ Vue.component("SensorsModal", {
                         <thead>
                         <tr>
                             <th scope="col" class="col-1">#</th>
+                            <th scope="col" class="col-3">نام</th>
                             <th scope="col" class="col-2">نوع سنسور</th>
-                            <th scope="col" class="col-4">هاست</th>
-                            <th scope="col" class="col-2">پورت</th>
+                            <th scope="col" class="col-2">هاست</th>
+                            <th scope="col" class="col-1">پورت</th>
                             <th scope="col" class="col-2">بازه ارسال (ثانیه)</th>
                             <th scope="col" class="col-1">حذف؟</th>
                         </tr>
@@ -49,6 +51,7 @@ Vue.component("SensorsModal", {
                         <tbody>
                         <tr v-for="(sensor, idx) in allSensors">
                             <th scope="row">{{ idx + 1 }}</th>
+                            <td>{{ sensor.title }}</td>
                             <td>{{ sensor.type }}</td>
                             <td>{{ sensor.addr }}</td>
                             <td>{{ sensor.port }}</td>
@@ -57,6 +60,7 @@ Vue.component("SensorsModal", {
                         </tr>
                         <tr>
                             <td><button class="btn btn-success" v-on:click="createSensor">+</button></th>
+                            <td><input type="text" class="form-control" v-model="newSensor.title"></td>
                             <td>
                                 <select class="form-select" v-model="newSensor.type" aria-label="type">
                                     <option value="" selected>-----------</option>

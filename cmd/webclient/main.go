@@ -280,6 +280,7 @@ func (app *App) Run(ctx context.Context) {
 			UID:      uuid.New().String(),
 			Interval: time.Duration(2) * time.Second,
 			Ctx:      ctx,
+			Title:    "مکان‌یاب",
 		}
 		app.sensors = append(app.sensors, gpsdSensor)
 

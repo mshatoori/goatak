@@ -72,6 +72,8 @@ type GpsdSensor struct {
 
 	mu         sync.Mutex
 	cancelFunc context.CancelFunc
+
+	Title string
 }
 
 func (sensor *GpsdSensor) Stop() {
@@ -241,6 +243,7 @@ func (sensor *GpsdSensor) ToSensorModel() *model.SensorModel {
 		UID:      sensor.UID,
 		Type:     sensor.Type,
 		Interval: int(sensor.Interval / time.Second),
+		Title:    sensor.Title,
 	}
 	return &sensorModel
 }

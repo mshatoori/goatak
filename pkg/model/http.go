@@ -64,9 +64,10 @@ type DigitalPointer struct {
 }
 
 type CoTFeed struct {
-	Addr string `json:"addr"`
-	Port int    `json:"port,omitempty"`
-	UID  string `json:"uid"`
+	Title string `json:"title"`
+	Addr  string `json:"addr"`
+	Port  int    `json:"port,omitempty"`
+	UID   string `json:"uid"`
 	//Outgoing bool   `json:"outgoing"`
 	Direction int    `json:"direction"`
 	Type      string `json:"type,omitempty"`
@@ -75,6 +76,7 @@ type CoTFeed struct {
 }
 
 type SensorModel struct {
+	Title string `json:"title"`
 	// TODO: Change Addr & Port with a general config map
 	Addr string `json:"addr"`
 

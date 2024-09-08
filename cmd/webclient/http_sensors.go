@@ -45,6 +45,7 @@ func addSensorHandler(app *App) air.Handler {
 				UID:      uuid.New().String(),
 				Interval: time.Second * time.Duration(f.Interval),
 				Ctx:      context.Background(),
+				Title:    f.Title,
 			}
 
 			app.sensors = append(app.sensors, gpsdSensor)

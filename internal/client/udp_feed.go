@@ -45,6 +45,7 @@ type UDPFeedConfig struct {
 	Addr      string
 	Port      int
 	Direction FeedDirection
+	Title     string
 }
 
 type UDPFeed struct {
@@ -66,6 +67,7 @@ type UDPFeed struct {
 	//newContactCb func(uid, callsign string)
 	logger    *slog.Logger
 	Direction FeedDirection
+	Title     string
 }
 
 func NewUDPFeed(config *UDPFeedConfig) *UDPFeed {
@@ -80,6 +82,7 @@ func NewUDPFeed(config *UDPFeedConfig) *UDPFeed {
 		Addr:      addr,
 		Direction: config.Direction,
 		UID:       uuid.NewString(),
+		Title:     config.Title,
 	}
 
 	m.conn, _ = net.DialUDP("udp", nil, addr)
@@ -107,6 +110,7 @@ func (h *UDPFeed) ToCoTFeedModel() *model.CoTFeed {
 		Port:      h.Addr.Port,
 		Direction: int(h.Direction),
 		Type:      h.GetType(),
+		Title:     h.Title,
 	}
 }
 

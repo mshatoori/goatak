@@ -32,6 +32,7 @@ type RabbitFeedConfig struct {
 	Direction FeedDirection
 	SendQueue string
 	RecvQueue string
+	Title     string
 }
 
 type RabbitFeed struct {
@@ -56,6 +57,7 @@ type RabbitFeed struct {
 	Direction FeedDirection
 	sendQueue string
 	recvQueue string
+	Title     string
 }
 
 type RabbitReader struct {
@@ -79,6 +81,7 @@ func NewRabbitFeed(config *RabbitFeedConfig) *RabbitFeed {
 		UID:       uuid.NewString(),
 		sendQueue: config.SendQueue,
 		recvQueue: config.RecvQueue,
+		Title:     config.Title,
 	}
 
 	var err error = nil
@@ -122,6 +125,7 @@ func (h *RabbitFeed) ToCoTFeedModel() *model.CoTFeed {
 		RecvQueue: h.recvQueue,
 		SendQueue: h.sendQueue,
 		Type:      h.GetType(),
+		Title:     h.Title,
 	}
 }
 
