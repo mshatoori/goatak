@@ -91,6 +91,10 @@ type CoTEventMutator struct {
 	logger   *slog.Logger
 }
 
+func (app *App) getServerConnection() {
+	return
+}
+
 func (m *CoTEventMutator) mutate(event *cotproto.CotEvent) bool {
 	// m.logger.Debug("Started mutating")
 	if m.mutation.GetStaleTime() == 0 || m.mutation.GetStaleTime() > cot.TimeToMillis(time.Now()) {

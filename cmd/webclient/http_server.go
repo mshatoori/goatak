@@ -56,6 +56,10 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.POST("/sensors", addSensorHandler(app))
 	srv.DELETE("/sensors/:uid", deleteSensorHandler(app))
 
+	srv.GET("/server", getServerHandler(app))
+	srv.POST("/server", connectServerHandler(app))
+	srv.POST("/server", disconnectServerHandler(app))
+
 	srv.GET("/stack", getStackHandler())
 
 	srv.RendererTemplateLeftDelim = "[["
