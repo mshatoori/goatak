@@ -14,6 +14,7 @@ services:
     environment:
       - ME_UID=NET-CENTER
       - CALLSIGN=مرکز شبکه
+      - TYPE=a-f-G-I-B
       - MAP_SERVER=127.0.0.1:8000
       - GPSD=gpsd:2948
       - SERVER_ADDRESS=host.docker.internal:8999:tcp

@@ -14,6 +14,7 @@ const (
 	POINT              = "point"
 	UNIT               = "unit"
 	CONTACT            = "contact"
+	DRAWING            = "drawing"
 	MaxTrackPoints     = 5000
 )
 
@@ -150,8 +151,10 @@ func GetClass(msg *cot.CotMessage) string {
 		} else {
 			return UNIT
 		}
-	case cot.MatchAnyPattern(t, "b-", "u-"):
+	case cot.MatchAnyPattern(t, "b-"):
 		return POINT
+	case cot.MatchAnyPattern(t, "u-d-"):
+		return DRAWING
 	}
 
 	return ""

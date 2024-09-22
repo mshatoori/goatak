@@ -12,7 +12,7 @@ me:
   # your uid. If 'auto' uid is generated
   uid: TEST2
   # your unit type
-  type: a-f-G-U-C
+  type: a-f-G-I-B
   # your team: one of (White, Yellow, Orange, Magenta, Red, Maroon, Purple, Dark Blue, Blue, Cyan, Teal, Green, Dark Green, Brown)
   team: White
   # your role: one of (HQ, Team Lead, Team Member, K9, Forward Observer, Sniper, Medic, RTO)

@@ -45,6 +45,7 @@ type WebUnit struct {
 	URN            int32             `json:"urn"`
 	WebSensor      string            `json:"web_sensor"`
 	SensorData     map[string]string `json:"sensor_data"`
+	Links          []string          `json:"links"`
 }
 
 type Contact struct {
@@ -146,6 +147,20 @@ func (i *Item) ToWeb() *WebUnit {
 		SensorData:     allSensorData,
 	}
 
+	println(i.msg.Detail.String())
+
+	if links := i.msg.Detail.GetAll("link"); len(links) > 0 {
+		linksList := make([]string, 0)
+		for _, link := range links {
+			point := link.GetAttr("point")
+			if len(point) > 0 {
+				linksList = append(linksList, point)
+			}
+		}
+		println(linksList)
+		w.Links = linksList
+	}
+
 	if i.class == CONTACT {
 		if i.online {
 			w.Status = "Online"
@@ -196,6 +211,12 @@ func (w *WebUnit) ToMsg() *cot.CotMessage {
 
 	if w.Text != "" {
 		xd.AddChild("remarks", nil, w.Text)
+	}
+
+	if len(w.Links) > 0 {
+		for _, link := range w.Links {
+			xd.AddChild("link", map[string]string{"point": link}, "")
+		}
 	}
 
 	msg.GetCotEvent().Detail.XmlDetail = xd.AsXMLString()

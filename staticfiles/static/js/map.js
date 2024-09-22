@@ -94,6 +94,107 @@ let app = new Vue({
     },
     mounted() {
         this.map = L.map('map');
+        this.inDrawMode = false;
+
+        this.drawnItems = new L.FeatureGroup();
+        this.map.addLayer(this.drawnItems);
+
+        this.drawControl = new L.Control.Draw({
+            edit: {
+                featureGroup: this.drawnItems,
+                poly: {
+                    allowIntersection: false
+                }
+            },
+            draw: {
+                polygon: {
+                    allowIntersection: false,
+                    showArea: true
+                }
+            }
+        });
+        this.map.addControl(this.drawControl);
+        vm = this;
+
+        const drawStart = function (event) {
+            console.log("IN DRAW MODE")
+            vm.inDrawMode = true
+        }
+        const drawStop = function (event) {
+            console.log("OUT OF DRAW MODE")
+            vm.inDrawMode = false
+        }
+
+        this.map.on(L.Draw.Event.DRAWSTART, drawStart);
+        this.map.on(L.Draw.Event.EDITSTART, drawStart);
+
+        this.map.on(L.Draw.Event.DRAWSTOP, drawStop);
+        this.map.on(L.Draw.Event.EDITSTOP, drawStop);
+        this.map.on(L.Draw.Event.CREATED, function (event) {
+            var layer = event.layer;
+
+            console.log("DRAWN:", event)
+
+            if (event.layerType === "polygon") {
+                let uid = uuidv4();
+                let now = new Date();
+                let stale = new Date(now);
+                stale.setDate(stale.getDate() + 365);
+                let u = {
+                    uid: uid,
+                    category: "drawing",
+                    callsign: uid,
+                    sidc: "",
+                    start_time: now,
+                    last_seen: now,
+                    stale_time: stale,
+                    type: "u-d-f",
+                    lat: 0,
+                    lon: 0,
+                    hae: 0,
+                    speed: 0,
+                    course: 0,
+                    status: "",
+                    text: "",
+                    parent_uid: "",
+                    parent_callsign: "",
+                    local: true,
+                    send: true,
+                    web_sensor: "",
+                    links: []
+                }
+                if (vm.config && vm.config.uid) {
+                    u.parent_uid = vm.config.uid;
+                    u.parent_callsign = vm.config.callsign;
+                }
+
+                let latSum = 0
+                let lngSum = 0
+
+                layer.editing.latlngs[0][0].forEach((latlng) => {
+                    console.log(latlng)
+                    latSum += latlng.lat
+                    lngSum += latlng.lng
+                    u.links.push(latlng.lat + "," + latlng.lng)
+                })
+
+                u.lat = latSum / layer.editing.latlngs[0][0].length
+                u.lng = lngSum / layer.editing.latlngs[0][0].length
+
+                console.log("TrySending:", u)
+
+                vm.sendUnit(u, function () {
+                    // vm.setCurrentUnitUid(u.uid, true);
+                    // new bootstrap.Modal(document.querySelector("#edit")).show();
+                });
+            }
+
+            // vm.drawnItems.addLayer(layer);
+        });
+        this.map.on(L.Draw.Event.DRAWVERTEX, function (event) {
+            console.log("DRAW VERTEX:", event)
+        })
+
         this.map.setView([60, 30], 11);
 
         L.control.scale({metric: true}).addTo(this.map);
@@ -319,24 +420,43 @@ let app = new Vue({
         processUnit: function (u, forceUpdate) {
             if (!u) return;
             let unit = this.units.get(u.uid);
-            let updateIcon = false;
 
-            if (!unit) {
-                this.units.set(u.uid, u);
-                unit = u;
-                updateIcon = true;
+            if (u.category === "drawing") {
+                // TODO: Handle things other than polygon!
+                let latlngs = u.links.map((it) => {
+                    return it.split(",").map(parseFloat)
+                })
+                u.polygon = L.polygon(latlngs);
+
+                if (!unit) {
+                    this.units.set(u.uid, u);
+                    unit = u;
+                } else {
+                    vm.drawnItems.removeLayer(unit.polygon);
+                    for (const k of Object.keys(u)) {
+                        unit[k] = u[k];
+                    }
+                }
+                u.polygon.addTo(vm.drawnItems);
             } else {
-                updateIcon = forceUpdate || needIconUpdate(unit, u);
-                for (const k of Object.keys(u)) {
-                    unit[k] = u[k];
+                let updateIcon = false;
+
+                if (!unit) {
+                    this.units.set(u.uid, u);
+                    unit = u;
+                    updateIcon = true;
+                } else {
+                    updateIcon = forceUpdate || needIconUpdate(unit, u);
+                    for (const k of Object.keys(u)) {
+                        unit[k] = u[k];
+                    }
+                }
+                this.updateUnitMarker(unit, false, updateIcon);
+
+                if (this.locked_unit_uid === unit.uid) {
+                    this.map.setView([unit.lat, unit.lon]);
                 }
             }
-            this.updateUnitMarker(unit, false, updateIcon);
-
-            if (this.locked_unit_uid === unit.uid) {
-                this.map.setView([unit.lat, unit.lon]);
-            }
-
             return unit;
         },
 
@@ -506,6 +626,9 @@ let app = new Vue({
         },
 
         mapClick: function (e) {
+            if (this.inDrawMode) {
+                return;
+            }
             if (this.modeIs("redx")) {
                 this.addOrMove("redx", e.latlng, "/static/icons/x.png")
                 return;
@@ -580,6 +703,7 @@ let app = new Vue({
         },
 
         sendUnit: function (u, cb) {
+            console.log("Sending:", this.cleanUnit(u))
             const requestOptions = {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},

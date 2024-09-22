@@ -257,7 +257,7 @@ func addItemHandler(app *App) air.Handler {
 		}
 
 		var u *model.Item
-		if wu.Category == "unit" || wu.Category == "point" {
+		if wu.Category == "unit" || wu.Category == "point" || wu.Category == "drawing" {
 			if u = app.items.Get(msg.GetUID()); u != nil {
 				u.Update(msg)
 				u.SetSend(wu.Send)
