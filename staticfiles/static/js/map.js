@@ -182,6 +182,10 @@ let app = new Vue({
                 u.lng = lngSum / layer.editing.latlngs[0][0].length
 
                 u.color = "white"
+                u.geofence = false
+                u.geofence_aff = "All"
+                // u.geofence_send = false
+
 
                 console.log("TrySending:", u)
 
@@ -756,6 +760,10 @@ let app = new Vue({
                 if (u.type.startsWith('u-')) {
                     // drawing
                     this.form_unit.color = u.color;
+
+                    this.form_unit.geofence = u.geofence
+                    this.form_unit.geofence_aff = u.geofence_aff
+                    // this.form_unit.geofence_send = u.geofence_send
                 }
 
                 if (u.type.startsWith('a-')) {
@@ -782,6 +790,10 @@ let app = new Vue({
                 u.type = ["a", this.form_unit.aff, this.form_unit.subtype].join('-');
                 u.sidc = this.sidcFromType(u.type);
             } else {
+                if (this.form_unit.category === "drawing") {
+                    u.geofence = this.form_unit.geofence;
+                    u.geofence_aff = this.form_unit.geofence_aff;
+                }
                 u.type = this.form_unit.type;
                 u.sidc = "";
             }

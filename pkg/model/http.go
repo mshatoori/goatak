@@ -46,6 +46,8 @@ type WebUnit struct {
 	WebSensor      string            `json:"web_sensor"`
 	SensorData     map[string]string `json:"sensor_data"`
 	Links          []string          `json:"links"`
+	Geofence       bool              `json:"geofence"`
+	GeofenceAff    string            `json:"geofence_aff"`
 }
 
 type Contact struct {
@@ -145,6 +147,8 @@ func (i *Item) ToWeb() *WebUnit {
 		URN:            evt.GetDetail().GetContact().GetClientInfo().GetUrn(),
 		WebSensor:      webSensor,
 		SensorData:     allSensorData,
+		Geofence:       msg.GetGeofence(),
+		GeofenceAff:    msg.GetGeofenceAff(),
 	}
 
 	println(i.msg.Detail.String())
@@ -221,6 +225,20 @@ func (w *WebUnit) ToMsg() *cot.CotMessage {
 
 	if w.Color != "" {
 		xd.AddChild("color", map[string]string{"argb": w.Color}, "")
+	}
+
+	if w.Category == "drawing" {
+		var tracking string
+		if w.Geofence {
+			tracking = "true"
+		} else {
+			tracking = "false"
+		}
+		xd.AddChild("__geofence", map[string]string{
+			"trigger":  "Entry",
+			"monitor":  w.GeofenceAff,
+			"tracking": tracking,
+		}, "")
 	}
 
 	msg.GetCotEvent().Detail.XmlDetail = xd.AsXMLString()

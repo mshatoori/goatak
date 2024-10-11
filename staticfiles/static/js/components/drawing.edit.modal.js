@@ -5,7 +5,11 @@ Vue.component('DrawingEditModal', {
         }
     },
     methods: {},
-    computed: {},
+    computed: {
+        is_geofence_active: function () {
+            return this.unit.geofence;
+        }
+    },
     props: ["unit", "cancelEditForm", "saveEditForm"],
     template: `
         <div class="modal fade" id="drawing-edit" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
@@ -37,6 +41,27 @@ Vue.component('DrawingEditModal', {
                                         <option value="white">خنثی</option>
                                         <option value="gray">نامعلوم</option>
                                         <option value="orange">مشکوک</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            <div class="form-group row my-2 mr-sm-2">
+                                <div class="form-check col-6">
+                                    <input type="checkbox" id="drawing-ed-geofence" v-model="unit.geofence"/>
+                                    <label for="drawing-ed-geofence">ژئوفنس</label>
+                                </div>
+<!--                                <div class="form-check col-2">-->
+<!--                                    <input type="checkbox" id="drawing-ed-geofence-send" v-model="unit.geofence_send" :disabled="!unit.geofence"/>-->
+<!--                                    <label for="drawing-ed-geofence-send">ارسال ژئوفنس</label>-->
+<!--                                </div>-->
+                                <div class="col-12">
+                                    <label class="my-1 mr-2 col-6" for="drawing-ed-geofence-aff">هشدار هنگام حضور نیروهای:</label>
+                                    <select class="form-select my-1 mr-sm-2" id="drawing-ed-geofence-aff"
+                                            v-model="unit.geofence_aff">
+                                        <option value="Hostile">دشمن</option>
+                                        <option value="Friendly">خودی</option>
+                                        <option value="All">همه</option>
                                     </select>
                                 </div>
                             </div>

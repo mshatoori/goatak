@@ -279,6 +279,17 @@ func (m *CotMessage) GetFirstLink(relation string) *Node {
 	return nil
 }
 
+func (m *CotMessage) GetGeofence() bool {
+	if m.GetDetail().GetFirst("__geofence") != nil {
+		return m.GetDetail().GetFirst("__geofence").GetAttr("tracking") == "true"
+	}
+	return false
+}
+
+func (m *CotMessage) GetGeofenceAff() string {
+	return m.GetDetail().GetFirst("__geofence").GetAttr("monitor")
+}
+
 func TimeFromMillis(ms uint64) time.Time {
 	return time.UnixMilli(int64(ms))
 }
