@@ -219,6 +219,10 @@ func (w *WebUnit) ToMsg() *cot.CotMessage {
 		}
 	}
 
+	if w.Color != "" {
+		xd.AddChild("color", map[string]string{"argb": w.Color}, "")
+	}
+
 	msg.GetCotEvent().Detail.XmlDetail = xd.AsXMLString()
 
 	zero := time.Unix(0, 0)

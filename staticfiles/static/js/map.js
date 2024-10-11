@@ -143,7 +143,7 @@ let app = new Vue({
                 let u = {
                     uid: uid,
                     category: "drawing",
-                    callsign: uid,
+                    callsign: "ناحیه",
                     sidc: "",
                     start_time: now,
                     last_seen: now,
@@ -181,11 +181,13 @@ let app = new Vue({
                 u.lat = latSum / layer.editing.latlngs[0][0].length
                 u.lng = lngSum / layer.editing.latlngs[0][0].length
 
+                u.color = "white"
+
                 console.log("TrySending:", u)
 
                 vm.sendUnit(u, function () {
-                    // vm.setCurrentUnitUid(u.uid, true);
-                    // new bootstrap.Modal(document.querySelector("#edit")).show();
+                    vm.setCurrentUnitUid(u.uid, true);
+                    new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
                 });
             }
 
@@ -426,7 +428,7 @@ let app = new Vue({
                 let latlngs = u.links.map((it) => {
                     return it.split(",").map(parseFloat)
                 })
-                u.polygon = L.polygon(latlngs);
+                u.polygon = L.polygon(latlngs, {color: u.color});
 
                 if (!unit) {
                     this.units.set(u.uid, u);
@@ -437,6 +439,9 @@ let app = new Vue({
                         unit[k] = u[k];
                     }
                 }
+                u.polygon.on('click', function (e) {
+                    app.setCurrentUnitUid(u.uid, false);
+                });
                 u.polygon.addTo(vm.drawnItems);
             } else {
                 let updateIcon = false;
@@ -748,6 +753,11 @@ let app = new Vue({
                     web_sensor: u.web_sensor,
                 };
 
+                if (u.type.startsWith('u-')) {
+                    // drawing
+                    this.form_unit.color = u.color;
+                }
+
                 if (u.type.startsWith('a-')) {
                     this.form_unit.type = 'b-m-p-s-m';
                     this.form_unit.aff = u.type.substring(2, 3);
@@ -766,6 +776,7 @@ let app = new Vue({
             u.send = this.form_unit.send;
             u.text = this.form_unit.text;
             u.web_sensor = this.form_unit.web_sensor;
+            u.color = this.form_unit.color;
 
             if (this.form_unit.category === "unit") {
                 u.type = ["a", this.form_unit.aff, this.form_unit.subtype].join('-');
@@ -774,6 +785,9 @@ let app = new Vue({
                 u.type = this.form_unit.type;
                 u.sidc = "";
             }
+
+            console.log(u)
+
             this.sendUnit(u);
         },
 
@@ -1044,7 +1058,7 @@ let app = new Vue({
             let res = {};
 
             for (const k in u) {
-                if (k !== 'marker' && k !== 'infoMarker') {
+                if (k !== 'marker' && k !== 'infoMarker' && k !== 'polygon') {
                     res[k] = u[k];
                 }
             }

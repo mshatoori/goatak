@@ -13,3 +13,5 @@ report.xml
 maps/*/
 .env
 gpsd/
+pkg/mod/
+pkg/sumdb/

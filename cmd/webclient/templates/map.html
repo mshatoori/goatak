@@ -159,7 +159,13 @@
                             </span>
                             <span class="pull-right" v-if="current_unit.category !== 'contact'">
                                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#edit">
+                                        v-if="current_unit.category !== 'drawing'"
+                                        data-bs-target="#edit">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                                        v-if="current_unit.category === 'drawing'"
+                                        data-bs-target="#drawing-edit">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
                                 <button type="button" class="btn btn-sm btn-danger" v-on:click="deleteCurrentUnit">
@@ -265,13 +271,14 @@
 
     <feeds-modal></feeds-modal>
     <sensors-modal></sensors-modal>
+    <drawing-edit-modal :unit="form_unit" :cancel-edit-form="cancelEditForm" :save-edit-form="saveEditForm"></drawing-edit-modal>
 
     <div class="modal fade" id="edit" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="staticBackdropLabel1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel1">ویرایش نقطه</h5>
+                    <h5 class="modal-title" id="staticBackdropLabel1">ویرایش</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
