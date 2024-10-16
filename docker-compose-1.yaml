@@ -3,8 +3,8 @@ services:
     build:
       dockerfile: Dockerfile.webclient
       context: .
-      args:
-        https_proxy: http://127.0.0.1:8889
+      # args:
+      #   https_proxy: http://127.0.0.1:8889
       network: host
     image: ghcr.io/mshatoori/goatak-client:latest
     ports:
