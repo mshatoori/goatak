@@ -9,8 +9,8 @@ services:
     image: ghcr.io/mshatoori/goatak-client:latest
     ports:
      - "8081:8080"
-     - "6969:6969"
-     - "6969:6969/udp"
+     - "6970:6969"
+     - "6970:6969/udp"
     environment:
       - ME_UID=COMMAND
       - CALLSIGN=ناو فرماندهی

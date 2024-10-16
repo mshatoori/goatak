@@ -25,15 +25,15 @@ me:
 feeds:
  outgoing:
  - address: 192.168.2.44
-   port: 6969
+   port: 6970
  - address: 192.168.2.54
-   port: 6969
+   port: 6970
  - address: 192.168.2.64
-   port: 6969
+   port: 6970
  - address: 192.168.2.74
-   port: 6969
+   port: 6970
  - address: 192.168.2.84
-   port: 6969
+   port: 6970
  incoming:
  - address: 0.0.0.0
    port: 6969
