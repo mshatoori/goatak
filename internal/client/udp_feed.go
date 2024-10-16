@@ -5,12 +5,13 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/kdudkov/goatak/pkg/model"
 	"io"
 	"log/slog"
 	"net"
 	"sync/atomic"
 	"time"
+
+	"github.com/kdudkov/goatak/pkg/model"
 
 	"github.com/google/uuid"
 	"github.com/kdudkov/goatak/pkg/cot"
@@ -85,7 +86,6 @@ func NewUDPFeed(config *UDPFeedConfig) *UDPFeed {
 		Title:     config.Title,
 	}
 
-	m.conn, _ = net.DialUDP("udp", nil, addr)
 	// TODO: set version using all mesh clients according to TAK protocol
 	m.SetVersion(1)
 
@@ -239,12 +239,14 @@ func (h *UDPFeed) handleWrite() {
 
 	for msg := range h.sendChan {
 		h.logger.Debug("UDPFeed handleWrite")
+		h.conn, _ = net.DialUDP("udp", nil, h.Addr)
 		if _, err := h.conn.Write(msg); err != nil {
 			h.logger.Debug(fmt.Sprintf("UDPFeed client %s write error %v", h.Addr, err))
 			h.stopHandle()
 
 			break
 		}
+		h.conn.Close()
 	}
 }
 
