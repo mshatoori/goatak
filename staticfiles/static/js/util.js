@@ -69,9 +69,9 @@ function getMilIcon(item, withText) {
         return "";
     }
 
-    if (item.team && item.role) {
-        opts["uniqueDesignation"] = item.uid
-    }
+    // if (item.team && item.role) {
+    //     opts["uniqueDesignation"] = item.uid
+    // }
 
     if (withText) {
         // opts['uniqueDesignation'] = item.callsign;
