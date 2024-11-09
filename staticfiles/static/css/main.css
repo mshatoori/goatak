@@ -38,3 +38,21 @@ div.info {
 .nav-item span {
     margin-inline-start: 5px;
 }
+
+.marker-contextmenu {
+    position: static;
+    display: block;
+    border-width: 0 !important;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+    right: auto;
+    left: 0;
+    padding: 8px;
+    width: auto;
+    height: auto;
+}
+
+.leaflet-popup-content {
+    margin: 0;
+}

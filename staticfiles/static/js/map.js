@@ -432,21 +432,22 @@ let app = new Vue({
                 let latlngs = u.links.map((it) => {
                     return it.split(",").map(parseFloat)
                 })
-                u.polygon = L.polygon(latlngs, {color: u.color});
+                u.marker = L.polygon(latlngs, {color: u.color});
 
                 if (!unit) {
                     this.units.set(u.uid, u);
                     unit = u;
                 } else {
-                    vm.drawnItems.removeLayer(unit.polygon);
+                    vm.drawnItems.removeLayer(unit.marker);
                     for (const k of Object.keys(u)) {
                         unit[k] = u[k];
                     }
                 }
-                u.polygon.on('click', function (e) {
+                u.marker.on('click', function (e) {
                     app.setCurrentUnitUid(u.uid, false);
                 });
-                u.polygon.addTo(vm.drawnItems);
+                u.marker.addTo(vm.drawnItems);
+                unit = u;
             } else {
                 let updateIcon = false;
 
@@ -466,7 +467,29 @@ let app = new Vue({
                     this.map.setView([unit.lat, unit.lon]);
                 }
             }
+
+            this.addContextMenuToMarker(unit)
+
             return unit;
+        },
+
+        addContextMenuToMarker: function (unit) {
+            unit.marker.on('contextmenu', (e) => {
+                if (unit.marker.contextmenu === undefined) {
+                    let menu = `
+                    <ul class="dropdown-menu marker-contextmenu">
+                      <li><h6 class="dropdown-header">${unit.callsign}</h6></li>
+                      <li><button class="dropdown-item" onclick="app.menuDeleteAction('${unit.uid}')"> حذف </button></li>
+                      <li><button class="dropdown-item" onclick="app.menuSendAction('${unit.uid}')"> ارسال... </button></li>
+                      <li><a class="dropdown-item" href="#">ارسال...</a></li>
+                    </ul>`;
+                    unit.marker.contextmenu = L.popup()
+                        .setLatLng(e.latlng)
+                        .setContent(menu);
+                    unit.marker.contextmenu.addTo(this.map)
+                }
+                unit.marker.contextmenu.openOn(this.map);
+            });
         },
 
         processMe: function (u) {
@@ -1075,6 +1098,34 @@ let app = new Vue({
                 }
             }
             return res;
+        },
+
+        menuDeleteAction: function (uid) {
+            fetch("unit/" + uid, {method: "DELETE"})
+                .then(function (response) {
+                    return response.json()
+                })
+                .then(({units}) => {
+                        this.processUnits(units)
+                    }
+                )
+            let unit = app.units.get(uid)
+            this.map.closePopup(unit.marker.contextmenu)
+            // this.removeUnit(this.current_unit_uid);
+        },
+
+        menuSendAction: function (uid) {
+            // fetch("unit/" + uid, {method: "DELETE"})
+            //     .then(function (response) {
+            //         return response.json()
+            //     })
+            //     .then(({units}) => {
+            //             this.processUnits(units)
+            //         }
+            //     )
+            let unit = app.units.get(uid)
+            this.map.closePopup(unit.marker.contextmenu)
+            // this.removeUnit(this.current_unit_uid);
         },
 
         deleteCurrentUnit: function () {
