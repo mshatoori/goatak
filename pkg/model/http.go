@@ -46,6 +46,8 @@ type WebUnit struct {
 	WebSensor      string            `json:"web_sensor"`
 	SensorData     map[string]string `json:"sensor_data"`
 	Links          []string          `json:"links"`
+	By             string            `json:"by"`
+	From           string            `json:"from"`
 	Geofence       bool              `json:"geofence"`
 	GeofenceAff    string            `json:"geofence_aff"`
 }
@@ -88,6 +90,11 @@ type SensorModel struct {
 	Type string `json:"type"`
 
 	Interval int `json:"interval"`
+}
+
+type SendItemDest struct {
+	Addr string `json:"addr"`
+	URN  string `json:"urn"`
 }
 
 func (i *Item) ToWeb() *WebUnit {
@@ -147,7 +154,7 @@ func (i *Item) ToWeb() *WebUnit {
 		URN:            evt.GetDetail().GetContact().GetClientInfo().GetUrn(),
 		WebSensor:      webSensor,
 		SensorData:     allSensorData,
-		Geofence:       msg.GetGeofence(),
+		Geofence:       msg.IsGeofenceActive(),
 		GeofenceAff:    msg.GetGeofenceAff(),
 	}
 
@@ -159,6 +166,12 @@ func (i *Item) ToWeb() *WebUnit {
 			point := link.GetAttr("point")
 			if len(point) > 0 {
 				linksList = append(linksList, point)
+			}
+			if link.GetAttr("relation") == "t-p-b" {
+				w.By = link.GetAttr("uid")
+			}
+			if link.GetAttr("relation") == "t-p-f" {
+				w.From = link.GetAttr("uid")
 			}
 		}
 		println(linksList)

@@ -66,6 +66,13 @@ func (n *Node) AddPpLink(uid, typ, callsign string) {
 	n.AddChild("link", params, "")
 }
 
+func (n *Node) AddLink(uid, relation string) {
+	params := make(map[string]string)
+	params["uid"] = uid
+	params["relation"] = relation
+	n.AddChild("link", params, "")
+}
+
 func (n *Node) AsXMLString() string {
 	b := bytes.Buffer{}
 	_ = xml.NewEncoder(&b).Encode(n)

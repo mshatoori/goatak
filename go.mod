@@ -3,6 +3,7 @@ module github.com/kdudkov/goatak
 go 1.22.2
 
 require (
+	github.com/adrianmo/go-nmea v1.10.0
 	github.com/air-gases/authenticator v0.11.0
 	github.com/aofei/air v0.22.0
 	github.com/fsnotify/fsnotify v1.7.0
@@ -10,6 +11,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jroimartin/gocui v0.5.0
 	github.com/kdudkov/goutils v0.0.0-20240523090608-c589e6c759b7
+	github.com/peterstace/simplefeatures v0.52.0
 	github.com/prometheus/client_golang v1.19.0
 	github.com/rabbitmq/amqp091-go v1.10.0
 	github.com/spf13/viper v1.18.2
@@ -20,7 +22,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/gorm v1.25.9
 	software.sslmate.com/src/go-pkcs12 v0.4.0
-	github.com/adrianmo/go-nmea v1.10.0
 )
 
 require (

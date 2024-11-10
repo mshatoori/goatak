@@ -3,3 +3,4 @@ Dockerfile
 Dockerfile.webclient
 docker-compose.yaml
 .env
+dist

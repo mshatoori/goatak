@@ -474,22 +474,23 @@ let app = new Vue({
         },
 
         addContextMenuToMarker: function (unit) {
-            unit.marker.on('contextmenu', (e) => {
-                if (unit.marker.contextmenu === undefined) {
-                    let menu = `
+            if (unit.marker) {
+                unit.marker.on('contextmenu', (e) => {
+                    if (unit.marker.contextmenu === undefined) {
+                        let menu = `
                     <ul class="dropdown-menu marker-contextmenu">
                       <li><h6 class="dropdown-header">${unit.callsign}</h6></li>
                       <li><button class="dropdown-item" onclick="app.menuDeleteAction('${unit.uid}')"> حذف </button></li>
                       <li><button class="dropdown-item" onclick="app.menuSendAction('${unit.uid}')"> ارسال... </button></li>
-                      <li><a class="dropdown-item" href="#">ارسال...</a></li>
                     </ul>`;
-                    unit.marker.contextmenu = L.popup()
-                        .setLatLng(e.latlng)
-                        .setContent(menu);
-                    unit.marker.contextmenu.addTo(this.map)
-                }
-                unit.marker.contextmenu.openOn(this.map);
-            });
+                        unit.marker.contextmenu = L.popup()
+                            .setLatLng(e.latlng)
+                            .setContent(menu);
+                        unit.marker.contextmenu.addTo(this.map)
+                    }
+                    unit.marker.contextmenu.openOn(this.map);
+                });
+            }
         },
 
         processMe: function (u) {
@@ -1115,17 +1116,10 @@ let app = new Vue({
         },
 
         menuSendAction: function (uid) {
-            // fetch("unit/" + uid, {method: "DELETE"})
-            //     .then(function (response) {
-            //         return response.json()
-            //     })
-            //     .then(({units}) => {
-            //             this.processUnits(units)
-            //         }
-            //     )
             let unit = app.units.get(uid)
+            this.sharedState.unitToSend = unit
+            new bootstrap.Modal(document.querySelector("#send-modal")).show()
             this.map.closePopup(unit.marker.contextmenu)
-            // this.removeUnit(this.current_unit_uid);
         },
 
         deleteCurrentUnit: function () {

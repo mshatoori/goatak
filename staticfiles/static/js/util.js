@@ -132,6 +132,7 @@ var store = {
     state: {
         sensors: [],
         feeds: [],
+        unitToSend: {},
     },
 
     createSensor(sensorData) {

@@ -33,6 +33,8 @@ type RabbitFeedConfig struct {
 	SendQueue string
 	RecvQueue string
 	Title     string
+	DestIP    string
+	DestURN   string
 }
 
 type RabbitFeed struct {

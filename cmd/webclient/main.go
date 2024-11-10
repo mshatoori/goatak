@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
+	"github.com/peterstace/simplefeatures/geom"
 	"log/slog"
 	"math/rand"
 	"net"
@@ -227,6 +228,8 @@ func (app *App) Init() {
 		}))
 		app.logger.Info("Incoming feed added", "addr", fmt.Sprintf("%s:%d", feedConfig.Addr, feedConfig.Port))
 	}
+
+	app.changeCb.Subscribe(app.checkGeofences)
 }
 
 func (app *App) sensorCallback(data any) {
@@ -528,6 +531,56 @@ func (app *App) getTLSConfig() *tls.Config {
 	}
 
 	return conf
+}
+
+func (app *App) checkGeofences(changedItem *model.Item) bool {
+	app.logger.Info("Checking Geofences")
+	if changedItem.GetClass() != model.UNIT && changedItem.GetClass() != model.CONTACT {
+		app.logger.Info("Not Unit")
+		return true
+	}
+
+	app.items.ForEach(func(item *model.Item) bool {
+		app.logger.Info(" Checking item: " + item.GetUID())
+		if item.GetClass() == model.DRAWING && item.GetMsg().IsGeofenceActive() {
+			app.logger.Info("  HAS GEOFENCE")
+			if links := item.GetMsg().Detail.GetAll("link"); len(links) > 0 {
+				linksList := make([]string, 0)
+				for _, link := range links {
+					point := link.GetAttr("point")
+					if len(point) > 0 {
+						linksList = append(linksList, strings.ReplaceAll(point, ",", " "))
+					}
+				}
+				linksList = append(linksList, linksList[0])
+				wkt := "POLYGON((" + strings.Join(linksList, ", ") + "))"
+				app.logger.Info("  WKT: " + wkt)
+				polygon, _ := geom.UnmarshalWKT(wkt)
+				app.logger.Info("  Geofence Aff: " + item.GetMsg().GetGeofenceAff() + " Unit type: " + changedItem.GetType())
+				if item.GetMsg().GetGeofenceAff() == "All" || (item.GetMsg().GetGeofenceAff() == "Friendly" && changedItem.GetMsg().Is(cot.FRIENDLY)) || (item.GetMsg().GetGeofenceAff() == "Hostile" && changedItem.GetMsg().Is(cot.HOSTILE)) {
+					app.logger.Info("  Compatible! => Checking...")
+					lat, lng := changedItem.GetLanLon()
+					app.logger.Info("  LATLNG", "lat", lat, "lng", lng)
+					app.logger.Info("  POLYGON: " + polygon.String() + " POINT: " + geom.NewPointXY(lat, lng).AsText())
+					contains, err := geom.Contains(polygon, geom.NewPointXY(lat, lng).AsGeometry())
+					app.logger.Info("  CONTAINS? ", "contains", contains, "err", err)
+					if contains {
+						alarmMsg := cot.MakeAlarmMsg(changedItem.GetUID(), item.GetUID())
+						alarmItem := model.FromMsg(cot.LocalCotMessage(alarmMsg))
+						app.logger.Info("  *** ALARM ***  " + alarmItem.String())
+						app.items.Store(alarmItem)
+						app.changeCb.AddMessage(alarmItem)
+					}
+				}
+			} else {
+				app.logger.Info("  !!! NO LINKS !!!  ")
+				return true
+			}
+		}
+		return true
+	})
+
+	return true
 }
 
 func main() {

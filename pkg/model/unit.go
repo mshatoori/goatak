@@ -11,6 +11,7 @@ import (
 
 const (
 	StaleContactDelete = time.Hour * 12
+	ALARM              = "alarm"
 	POINT              = "point"
 	UNIT               = "unit"
 	CONTACT            = "contact"
@@ -151,6 +152,8 @@ func GetClass(msg *cot.CotMessage) string {
 		} else {
 			return UNIT
 		}
+	case cot.MatchAnyPattern(t, "b-a-"):
+		return ALARM
 	case cot.MatchAnyPattern(t, "b-"):
 		return POINT
 	case cot.MatchAnyPattern(t, "u-d-"):

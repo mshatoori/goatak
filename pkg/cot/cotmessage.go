@@ -279,7 +279,7 @@ func (m *CotMessage) GetFirstLink(relation string) *Node {
 	return nil
 }
 
-func (m *CotMessage) GetGeofence() bool {
+func (m *CotMessage) IsGeofenceActive() bool {
 	if m.GetDetail().GetFirst("__geofence") != nil {
 		return m.GetDetail().GetFirst("__geofence").GetAttr("tracking") == "true"
 	}
@@ -296,4 +296,8 @@ func TimeFromMillis(ms uint64) time.Time {
 
 func TimeToMillis(t time.Time) uint64 {
 	return uint64(t.UnixMilli())
+}
+
+func (m *CotMessage) Is(pattern string) bool {
+	return MatchAnyPattern(m.GetType(), pattern)
 }

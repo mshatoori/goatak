@@ -47,6 +47,7 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.GET("/message", getMessagesHandler(app))
 	srv.POST("/message", addMessageHandler(app))
 	srv.DELETE("/unit/:uid", deleteItemHandler(app))
+	srv.POST("/unit/:uid/send/", sendItemHandler(app))
 
 	srv.GET("/feeds", getFeedsHandler(app))
 	srv.POST("/feeds", addFeedHandler(app))
@@ -262,11 +263,13 @@ func addItemHandler(app *App) air.Handler {
 				u.Update(msg)
 				u.SetSend(wu.Send)
 				app.items.Store(u)
+				app.changeCb.AddMessage(u)
 			} else {
 				u = model.FromMsg(msg)
 				u.SetLocal(true)
 				u.SetSend(wu.Send)
 				app.items.Store(u)
+				app.changeCb.AddMessage(u)
 			}
 		}
 
@@ -320,6 +323,44 @@ func deleteItemHandler(app *App) air.Handler {
 		r["messages"] = app.chatMessages
 
 		return res.WriteJSON(r)
+	}
+}
+
+func sendItemHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		dest := new(model.SendItemDest)
+
+		if req.Body == nil {
+			return nil
+		}
+
+		if err := json.NewDecoder(req.Body).Decode(dest); err != nil {
+			return err
+		}
+
+		rabbitmq := client.NewRabbitFeed(&client.RabbitFeedConfig{
+			MessageCb: nil,
+			Addr:      "127.0.0.1:5672",
+			Direction: client.OUTGOING,
+			SendQueue: "SendCommand", // TODO:
+			RecvQueue: "",
+			Title:     "TEMP",
+			DestIP:    dest.Addr,
+			DestURN:   dest.URN,
+		})
+
+		uid := getStringParam(req, "uid")
+		item := app.items.Get(uid)
+		if item == nil {
+			return nil
+		}
+
+		err := rabbitmq.SendCot(item.GetMsg().GetTakMessage())
+		if err != nil {
+			return err
+		}
+
+		return res.WriteJSON("OK")
 	}
 }
 
