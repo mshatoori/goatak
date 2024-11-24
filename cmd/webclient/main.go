@@ -14,6 +14,7 @@ import (
 	"net"
 	"os"
 	"os/signal"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -68,6 +69,8 @@ type App struct {
 
 	feeds   []client.CoTFeed
 	sensors []sensors.BaseSensor
+
+	alarms []string
 
 	selfPosEventMutators sync.Map
 
@@ -184,6 +187,7 @@ func NewApp(uid string, callsign string, connectStr string, webPort int, mapServ
 		feeds:           make([]client.CoTFeed, 0),
 
 		selfPosEventMutators: sync.Map{},
+		alarms:               make([]string, 0),
 	}
 }
 
@@ -230,6 +234,7 @@ func (app *App) Init() {
 	}
 
 	app.changeCb.Subscribe(app.checkGeofences)
+	app.deleteCb.Subscribe(app.updateGeofencesAfterDelete)
 }
 
 func (app *App) sensorCallback(data any) {
@@ -458,6 +463,9 @@ func (app *App) MakeMe() *cotproto.TakMessage {
 
 	app.MutateSelfPosMessage(ev.CotEvent)
 
+	// TODO: Refactor this and make it configurable...
+	app.MakeFenceAroundMe()
+
 	return ev
 }
 
@@ -533,6 +541,24 @@ func (app *App) getTLSConfig() *tls.Config {
 	return conf
 }
 
+func (app *App) updateGeofencesAfterDelete(uid string) bool {
+	if !strings.HasPrefix(uid, "ALARM.") && len(uid) > 8 {
+		toDelete := make([]string, 0)
+		app.items.ForEach(func(item *model.Item) bool {
+			if item.GetClass() == model.ALARM && strings.Contains(item.GetUID(), uid[:8]) {
+				toDelete = append(toDelete, item.GetUID())
+			}
+			return true
+		})
+		for _, uid := range toDelete {
+			// TODO remove from app.alarms!!
+			app.items.Remove(uid)
+			app.deleteCb.AddMessage(uid)
+		}
+	}
+	return true
+}
+
 func (app *App) checkGeofences(changedItem *model.Item) bool {
 	app.logger.Info("Checking Geofences")
 	if changedItem.GetClass() != model.UNIT && changedItem.GetClass() != model.CONTACT {
@@ -567,9 +593,12 @@ func (app *App) checkGeofences(changedItem *model.Item) bool {
 					if contains {
 						alarmMsg := cot.MakeAlarmMsg(changedItem.GetUID(), item.GetUID())
 						alarmItem := model.FromMsg(cot.LocalCotMessage(alarmMsg))
-						app.logger.Info("  *** ALARM ***  " + alarmItem.String())
-						app.items.Store(alarmItem)
-						app.changeCb.AddMessage(alarmItem)
+						if !slices.Contains(app.alarms, alarmItem.GetUID()) {
+							app.logger.Info("  *** ALARM ***  " + alarmItem.String())
+							fmt.Printf("%c\n", 7)
+							app.items.Store(alarmItem)
+							app.changeCb.AddMessage(alarmItem)
+						}
 					}
 				}
 			} else {
@@ -581,6 +610,16 @@ func (app *App) checkGeofences(changedItem *model.Item) bool {
 	})
 
 	return true
+}
+
+func (app *App) MakeFenceAroundMe() {
+	var u *model.Item
+	pos := app.pos.Load()
+	app.items.Remove(app.uid + "-fence")
+	fenceMsg := cot.MakeFenceMsg(app.uid+"-fence", pos.Lat, pos.Lon, 0.01)
+	u = model.FromMsg(cot.LocalCotMessage(fenceMsg))
+	app.items.Store(u)
+	app.changeCb.AddMessage(u)
 }
 
 func main() {

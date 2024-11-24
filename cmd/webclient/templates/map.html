@@ -10,6 +10,13 @@
             <div class="NOT-collapse NOT-navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav mb-2 mb-md-0">
                     <li class="nav-item">
+                        <a class="nav-link" href="#" id="navbarAlarmsMenuLink" role="button"
+                           v-on:click="openAlarms()">
+                            <i :class="{'alarm-active': countByCategory('alarm') > 0 }" class="bi bi-exclamation-diamond-fill"></i>
+                                {{ countByCategory('alarm') }}
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#" id="navbarSensorsMenuLink" role="button"
                             v-on:click="openSensors()">
                             سنسورها<span class="badge rounded-pill bg-success">{{ sensorsCount() }}</span>
@@ -270,6 +277,7 @@
     </div>
 
     <feeds-modal></feeds-modal>
+    <alarms-modal></alarms-modal>
     <send-modal></send-modal>
     <sensors-modal></sensors-modal>
     <drawing-edit-modal :unit="form_unit" :cancel-edit-form="cancelEditForm" :save-edit-form="saveEditForm"></drawing-edit-modal>

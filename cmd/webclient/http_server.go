@@ -317,6 +317,7 @@ func deleteItemHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
 		uid := getStringParam(req, "uid")
 		app.items.Remove(uid)
+		app.updateGeofencesAfterDelete(uid)
 
 		r := make(map[string]any, 0)
 		r["units"] = getUnits(app)
@@ -455,13 +456,11 @@ func getLayers(mapServer string) []map[string]any {
 	}
 
 	if len(mapServer) > 0 {
-		layers = append([]map[string]any{
-			{
-				"name":    "Local Server",
-				"url":     fmt.Sprintf("http://%s/{z}/{x}/{y}.png", mapServer),
-				"maxZoom": 13,
-			},
-		}, layers...)
+		layers = append(layers, map[string]any{
+			"name":    "Local Server",
+			"url":     fmt.Sprintf("http://%s/{z}/{x}/{y}.png", mapServer),
+			"maxZoom": 13,
+		})
 	}
 
 	return layers

@@ -179,7 +179,7 @@ let app = new Vue({
                 })
 
                 u.lat = latSum / layer.editing.latlngs[0][0].length
-                u.lng = lngSum / layer.editing.latlngs[0][0].length
+                u.lon = lngSum / layer.editing.latlngs[0][0].length
 
                 u.color = "white"
                 u.geofence = false
@@ -432,7 +432,8 @@ let app = new Vue({
                 let latlngs = u.links.map((it) => {
                     return it.split(",").map(parseFloat)
                 })
-                u.marker = L.polygon(latlngs, {color: u.color});
+
+                u.marker = L.polygon(latlngs, {color: u.color, interactive: !u.uid.endsWith('-fence')});
 
                 if (!unit) {
                     this.units.set(u.uid, u);
@@ -443,9 +444,11 @@ let app = new Vue({
                         unit[k] = u[k];
                     }
                 }
-                u.marker.on('click', function (e) {
-                    app.setCurrentUnitUid(u.uid, false);
-                });
+                if (!u.uid.endsWith("-fence")) {
+                    u.marker.on('click', function (e) {
+                        app.setCurrentUnitUid(u.uid, false);
+                    });
+                }
                 u.marker.addTo(vm.drawnItems);
                 unit = u;
             } else {
@@ -474,6 +477,9 @@ let app = new Vue({
         },
 
         addContextMenuToMarker: function (unit) {
+            if (unit.uid.endsWith("-fence"))
+                return
+
             if (unit.marker) {
                 unit.marker.on('contextmenu', (e) => {
                     if (unit.marker.contextmenu === undefined) {
@@ -1023,6 +1029,9 @@ let app = new Vue({
 
         openSensors: function () {
             new bootstrap.Modal(document.getElementById('sensors-modal')).show();
+        },
+        openAlarms: function () {
+            new bootstrap.Modal(document.getElementById('alarms-modal')).show();
         },
 
         getStatus: function (uid) {

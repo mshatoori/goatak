@@ -1,6 +1,7 @@
 package cot
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -68,11 +69,37 @@ func MakeDpMsg(uid string, typ string, name string, lat float64, lon float64) *c
 }
 
 func MakeAlarmMsg(unitUid string, drawingUid string) *cotproto.TakMessage {
-	msg := BasicMsg("b-a-g", unitUid[:8]+"."+drawingUid[:8], time.Hour)
+	msg := BasicMsg("b-a-g", "ALARM."+unitUid[:8]+"."+drawingUid[:8], time.Hour)
 
 	xd := NewXMLDetails()
 	xd.AddLink(unitUid, "t-p-b")
 	xd.AddLink(drawingUid, "t-p-f")
+	msg.CotEvent.Detail = &cotproto.Detail{
+		XmlDetail: xd.AsXMLString(),
+	}
+
+	return msg
+}
+
+func MakeFenceMsg(uid string, centerLat, centerLon, radius float64) *cotproto.TakMessage {
+	msg := BasicMsg("u-d-f", uid, time.Hour*24)
+
+	msg.CotEvent.Lat = centerLat
+	msg.CotEvent.Lon = centerLon
+
+	xd := NewXMLDetails()
+	xd.AddChild("link", map[string]string{"point": fmt.Sprintf("%f,%f", centerLat-radius, centerLon-radius)}, "")
+	xd.AddChild("link", map[string]string{"point": fmt.Sprintf("%f,%f", centerLat+radius, centerLon-radius)}, "")
+	xd.AddChild("link", map[string]string{"point": fmt.Sprintf("%f,%f", centerLat+radius, centerLon+radius)}, "")
+	xd.AddChild("link", map[string]string{"point": fmt.Sprintf("%f,%f", centerLat-radius, centerLon+radius)}, "")
+	xd.AddChild("link", map[string]string{"point": fmt.Sprintf("%f,%f", centerLat-radius, centerLon-radius)}, "")
+
+	xd.AddChild("__geofence", map[string]string{
+		"trigger":  "Entry",
+		"monitor":  "Hostile",
+		"tracking": "true",
+	}, "")
+
 	msg.CotEvent.Detail = &cotproto.Detail{
 		XmlDetail: xd.AsXMLString(),
 	}

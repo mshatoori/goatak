@@ -1,26 +1,20 @@
 # TODO
 
 ## Incomplete tasks
-1. ~~Fix user info form (submit get 500)~~
-2. ~~Implement sensors logic (using interfaces)~~
-3. ~~Fix feed counter in navbar~~
-4. ~~Better font~~
-5. ~~Fix delete point~~
-6. ~~Add radar to sensors (up-to-date enemy positions :-?)~~
-7. ~~All entities should have names~~
-8. ~~Add polygon to map and send~~
-9. Remove & Edit (side bar) polygon
-11. Work on running the server and adding it to UI (+ login)
-12. ~~Show other nodes as MilSymbol~~
-13. Show Farsi name instead of a-f-G-E-V-A-T-H and put it in infomarker
-9. Feed refactor in configs (include rabbit && change how we handle directions)
-10. Handle rabbit write wrap and read unwrap
-12. Make UI simpler and more user friendly (names, ...) => What else???
-13. We could also make connections persistent (in db)
-14. Add config to disable mesh handler
-15. Add SensorConnectionRecord in UI ~~(has timer interval)~~ :-?
-16. Add active field to feeds
-17. Clear Modal 
+1. Fence Alarm
+2. Deactivate alarm
+3. Fence around self
+4. Remove & Edit (side bar) polygon
+5. Work on running the server and adding it to UI (+ login)
+6. Show Farsi name instead of a-f-G-E-V-A-T-H and put it in infomarker
+7. Feed refactor in configs (include rabbit && change how we handle directions)
+8. Handle rabbit write wrap and read unwrap
+9. Make UI simpler and more user friendly (names, ...) => What else???
+10. We could also make connections persistent (in db)
+11. Add config to disable mesh handler
+12. Add SensorConnectionRecord in UI ~~(has timer interval)~~ :-?
+13. Add active field to feeds
+14. Clear Modal 
 
 ## Notes:
 1. Keep data size under 1k (100bit is preferred)
@@ -29,7 +23,29 @@
 ## Idea:
 1. Show received messages in UI (like logs)
 
+## Next Weeks
+1. Make compatible with WinTAK
+1. Work on better UI (Like WinTAK)
+2. Overlay Manager (WinTAK) -> Category + Show/Hide
+2. Routes
+3. Track -> Keep locations in DB, Show in UI
+3. Emergency
+4. CASEVAC
+1. Share with (e.g. Air support) -> Send lat/lng
+
+
 
 ## Documentation
-1. **پیوست فنی شامل توضیحات پروتکل‌های NMEA و AIS و ...**
-2. **به نسبت سری قبل باید پروپیمون‌تر باشه**
+
+## DONE:
+1. ~~Fix user info form (submit get 500)~~
+2. ~~Implement sensors logic (using interfaces)~~
+3. ~~Fix feed counter in navbar~~
+4. ~~Better font~~
+5. ~~Fix delete point~~
+6. ~~Add radar to sensors (up-to-date enemy positions :-?)~~
+7. ~~All entities should have names~~
+8. ~~Add polygon to map and send~~
+9. ~~Show other nodes as MilSymbol~~
+10. ~~**پیوست فنی شامل توضیحات پروتکل‌های NMEA و AIS و ...**~~
+11. ~~**به نسبت سری قبل باید پروپیمون‌تر باشه**~~
