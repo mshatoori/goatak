@@ -25,13 +25,17 @@
 
 ## Next Weeks
 1. Make compatible with WinTAK
-1. Work on better UI (Like WinTAK)
-2. Overlay Manager (WinTAK) -> Category + Show/Hide
-2. Routes
-3. Track -> Keep locations in DB, Show in UI
-3. Emergency
-4. CASEVAC
-1. Share with (e.g. Air support) -> Send lat/lng
+   1. What's wrong?
+2. Work on better UI (Like WinTAK)
+   1. What's the plan?
+3. Overlay Manager (WinTAK) -> Category + Show/Hide
+   1. What's the plan?
+4. Routes: As an object...
+5. Track -> Keep locations in DB, Show in UI
+   6. This is hard probably :-?
+6. Emergency
+7. CASEVAC
+8. Share with (e.g. Air support) -> Send lat/lng
 
 
 

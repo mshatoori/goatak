@@ -362,13 +362,11 @@ let app = new Vue({
         },
 
         fetchAllUnits: function () {
-            let vm = this;
-
-            fetch('/unit')
-                .then(function (response) {
-                    return response.json()
-                })
-                .then(vm.processUnits);
+            store.fetchItems().then(
+                results => {
+                    this.processUnits(results)
+                }
+            )
         },
 
         fetchMessages: function () {
@@ -404,76 +402,80 @@ let app = new Vue({
         },
 
 
-        processUnits: function (data) {
-            let keys = new Set();
+        _processRemoval: function (item) {
+            if (item.marker) {
+                this.map.removeLayer(item.marker);
+                item.marker.remove();
 
-            console.log("units:")
-            console.log(data)
-
-            for (let u of data) {
-                keys.add(this.processUnit(u)?.uid);
-            }
-
-            for (const k of this.units.keys()) {
-                if (!keys.has(k)) {
-                    this.removeUnit(k);
+                if (item.infoMarker) {
+                    this.map.removeLayer(item.infoMarker)
+                    item.infoMarker.remove()
                 }
             }
 
-            this.ts += 1;
+            if (this.current_unit_uid === item.uid) {
+                this.setCurrentUnitUid(null, false);
+            }
         },
 
-        processUnit: function (u, forceUpdate) {
-            if (!u) return;
-            let unit = this.units.get(u.uid);
-
-            if (u.category === "drawing") {
+        _processAddition: function (item) {
+            if (item.category === "drawing") {
                 // TODO: Handle things other than polygon!
-                let latlngs = u.links.map((it) => {
+                let latlngs = item.links.map((it) => {
                     return it.split(",").map(parseFloat)
                 })
 
-                u.marker = L.polygon(latlngs, {color: u.color, interactive: !u.uid.endsWith('-fence')});
+                item.marker = L.polygon(latlngs, {
+                    color: item.color,
+                    interactive: !item.uid.endsWith('-fence')
+                });
 
-                if (!unit) {
-                    this.units.set(u.uid, u);
-                    unit = u;
-                } else {
-                    vm.drawnItems.removeLayer(unit.marker);
-                    for (const k of Object.keys(u)) {
-                        unit[k] = u[k];
-                    }
-                }
-                if (!u.uid.endsWith("-fence")) {
-                    u.marker.on('click', function (e) {
-                        app.setCurrentUnitUid(u.uid, false);
+                if (!item.uid.endsWith("-fence")) {
+                    item.marker.on('click', function (e) {
+                        this.setCurrentUnitUid(item.uid, false);
                     });
                 }
-                u.marker.addTo(vm.drawnItems);
-                unit = u;
+
+                item.marker.addTo(this.drawnItems);
             } else {
-                let updateIcon = false;
+                this.updateUnitMarker(item, false, true);
+            }
 
-                if (!unit) {
-                    this.units.set(u.uid, u);
-                    unit = u;
-                    updateIcon = true;
-                } else {
-                    updateIcon = forceUpdate || needIconUpdate(unit, u);
-                    for (const k of Object.keys(u)) {
-                        unit[k] = u[k];
-                    }
+            this.addContextMenuToMarker(item)
+        },
+
+        _processUpdate: function (item) {
+            if (item.category === "drawing") {
+                // TODO: Handle things other than polygon!
+                let latlngs = item.links.map((it) => {
+                    return it.split(",").map(parseFloat)
+                })
+
+                this.drawnItems.removeLayer(item.marker);
+                item.marker = L.polygon(latlngs, {color: item.color, interactive: !item.uid.endsWith('-fence')});
+                item.marker.addTo(this.drawnItems);
+                if (!item.uid.endsWith("-fence")) {
+                    item.marker.on('click', function (e) {
+                        this.setCurrentUnitUid(item.uid, false);
+                    });
                 }
-                this.updateUnitMarker(unit, false, updateIcon);
+            } else {
+                this.updateUnitMarker(item, false, true);
 
-                if (this.locked_unit_uid === unit.uid) {
-                    this.map.setView([unit.lat, unit.lon]);
+                if (this.locked_unit_uid === item.uid) {
+                    this.map.setView([item.lat, item.lon]);
                 }
             }
 
-            this.addContextMenuToMarker(unit)
+            vm.addContextMenuToMarker(item)
+        },
 
-            return unit;
+        processUnits: function (results) {
+            console.log("RESULTS:", results)
+
+            results["removed"].forEach(item => this._processRemoval(item))
+            results["added"].forEach(item => this._processAddition(item))
+            results["updated"].forEach(item => this._processUpdate(item))
         },
 
         addContextMenuToMarker: function (unit) {
@@ -515,7 +517,7 @@ let app = new Vue({
                 if (u.unit.uid === this.config.uid)
                     this.processMe(u.unit);
                 else
-                    this.processUnit(u.unit);
+                    this.processUnits(store.handleWSMessage(u.unit));
             }
 
             if (u.type === "delete") {
@@ -603,9 +605,9 @@ let app = new Vue({
         },
 
         setCurrentUnitUid: function (uid, follow) {
-            if (uid && this.units.has(uid)) {
+            if (uid && this.sharedState.items.has(uid)) {
                 this.current_unit_uid = uid;
-                let u = this.units.get(uid);
+                let u = this.sharedState.items.get(uid);
                 if (follow) this.mapToUnit(u);
                 this.formFromUnit(u);
             } else {
@@ -615,12 +617,12 @@ let app = new Vue({
         },
 
         getCurrentUnit: function () {
-            if (!this.current_unit_uid || !this.units.has(this.current_unit_uid)) return null;
-            return this.units.get(this.current_unit_uid);
+            if (!this.current_unit_uid || !this.sharedState.items.has(this.current_unit_uid)) return null;
+            return this.sharedState.items.get(this.current_unit_uid);
         },
 
         byCategory: function (s) {
-            let arr = Array.from(this.units.values()).filter(function (u) {
+            let arr = Array.from(this.sharedState.items.values()).filter(function (u) {
                 return u.category === s
             });
             arr.sort(function (a, b) {
@@ -743,22 +745,11 @@ let app = new Vue({
 
         sendUnit: function (u, cb) {
             console.log("Sending:", this.cleanUnit(u))
-            const requestOptions = {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify(this.cleanUnit(u))
-            };
-            let vm = this;
-            fetch("/unit", requestOptions)
-                .then(function (response) {
-                    return response.json()
-                })
-                .then(function (data) {
-                    vm.processUnit(data, true);
-                    if (cb) {
-                        cb()
-                    }
-                });
+            store.createItem(this.cleanUnit(u)).then(results => {
+                this.processUnits(results)
+                if (cb)
+                    cb()
+            })
         },
 
         formFromUnit: function (u) {
@@ -960,7 +951,7 @@ let app = new Vue({
         contactsNum: function () {
             let online = 0;
             let total = 0;
-            this.units.forEach(function (u) {
+            this.sharedState.items.forEach(function (u) {
                 if (u.category === "contact") {
                     if (u.status === "Online") online += 1;
                     if (u.status !== "") total += 1;
@@ -982,7 +973,7 @@ let app = new Vue({
 
         countByCategory: function (s) {
             let total = 0;
-            this.units.forEach(function (u) {
+            this.sharedState.items.forEach(function (u) {
                 if (u.category === s) total += 1;
             })
 
@@ -1035,7 +1026,7 @@ let app = new Vue({
         },
 
         getStatus: function (uid) {
-            return this.ts && this.units.get(uid)?.status;
+            return this.ts && this.sharedState.items.get(uid)?.status;
         },
 
         getMessages: function () {
@@ -1111,21 +1102,15 @@ let app = new Vue({
         },
 
         menuDeleteAction: function (uid) {
-            fetch("unit/" + uid, {method: "DELETE"})
-                .then(function (response) {
-                    return response.json()
-                })
-                .then(({units}) => {
-                        this.processUnits(units)
-                    }
-                )
-            let unit = app.units.get(uid)
+            let unit = this.sharedState.items.get(uid)
+            store.removeItem(uid)
+                .then(units => this.processUnits(units))
             this.map.closePopup(unit.marker.contextmenu)
             // this.removeUnit(this.current_unit_uid);
         },
 
         menuSendAction: function (uid) {
-            let unit = app.units.get(uid)
+            let unit = this.sharedState.items.get(uid)
             this.sharedState.unitToSend = unit
             new bootstrap.Modal(document.querySelector("#send-modal")).show()
             this.map.closePopup(unit.marker.contextmenu)
@@ -1133,16 +1118,8 @@ let app = new Vue({
 
         deleteCurrentUnit: function () {
             if (!this.current_unit_uid) return;
-            fetch("unit/" + this.current_unit_uid, {method: "DELETE"})
-                .then(function (response) {
-                    return response.json()
-                })
-                .then(({units}) => {
-                        this.processUnits(units)
-                    }
-                )
-            ;
-            // this.removeUnit(this.current_unit_uid);
+            store.removeItem(this.current_unit_uid)
+                .then(units => this.processUnits(units))
         },
 
         sendMessage: function () {

@@ -130,11 +130,93 @@ function uuidv4() {
 var store = {
     debug: true,
     state: {
+        items: new Map(),
+        ts: 0,
         sensors: [],
         feeds: [],
         unitToSend: {},
     },
 
+    // Items
+    createItem: function (item) {
+        const requestOptions = {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(item)
+        };
+
+        return fetch("/unit", requestOptions)
+            .then(response => response.json())
+            .then(response => this._processItems([response], true))
+    },
+
+    fetchItems: function () {
+        return fetch('/unit')
+            .then(response => response.json())
+            .then(response => this._processItems(response))
+    },
+
+    removeItem: function (uid) {
+        return fetch("unit/" + uid, {method: "DELETE"})
+            .then(function (response) {
+                return response.json()
+            })
+            .then(({units}) => this._processItems(units))
+            ;
+    },
+
+    handleWSMessage: function (item, is_delete = false) {
+        if (is_delete) {
+            this.state.items.delete(item.uid)
+            return {
+                removed: [item]
+            }
+        }
+        return this._processItems([item], true)
+    },
+
+    _processItems(response, partial = false) {
+        let results = {
+            removed: [],
+            added: [],
+            updated: [],
+        };
+        let keys = new Set();
+
+        console.log("units:")
+        console.log(response)
+
+        for (let u of response) {
+            let item = this.state.items.get(u.uid);
+            keys.add(u.uid)
+
+            if (!item) {
+                this.state.items.set(u.uid, u)
+                results["added"].push(u)
+            } else {
+                for (const k of Object.keys(u)) {
+                    item[k] = u[k];
+                }
+                results["updated"].push(u)
+            }
+        }
+
+        if (!partial) {
+            for (const k of this.state.items.keys()) {
+                if (!keys.has(k)) {
+                    console.log("REMOVED: ", k, this.state.items.get(k))
+                    results["removed"].push(this.state.items.get(k))
+                    this.state.items.delete(k);
+                }
+            }
+        }
+
+        this.state.ts += 1;
+
+        return results;
+    },
+
+    // Sensors
     createSensor(sensorData) {
         const sensorJson = {
             uid: uuidv4(), ...sensorData,
@@ -164,6 +246,7 @@ var store = {
             .then(response => this.state.sensors = response);
     },
 
+    // Feeds
     createFeed(feedData) {
         const feedJson = {
             uid: uuidv4(), ...feedData,
