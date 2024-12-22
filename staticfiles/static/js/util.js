@@ -139,10 +139,13 @@ var store = {
 
     // Items
     createItem: function (item) {
+        this.state.items.set(item.uid, item)
+        this.state.ts += 1
+
         const requestOptions = {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(item)
+            body: JSON.stringify(app.cleanUnit(item))
         };
 
         return fetch("/unit", requestOptions)
@@ -168,6 +171,7 @@ var store = {
     handleWSMessage: function (item, is_delete = false) {
         if (is_delete) {
             this.state.items.delete(item.uid)
+            this.state.ts += 1
             return {
                 removed: [item]
             }
@@ -197,7 +201,7 @@ var store = {
                 for (const k of Object.keys(u)) {
                     item[k] = u[k];
                 }
-                results["updated"].push(u)
+                results["updated"].push(item)
             }
         }
 

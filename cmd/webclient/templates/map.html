@@ -91,6 +91,7 @@
             <div id="map" class="col-9 h-100" style="cursor:crosshair;">
             </div>
             <div class="col-3 accordion" id="accordion">
+                <overlays-list :toggle-overlay="toggleOverlay"></overlays-list>
                 <user-info :config="config" :coords="coords" :config-updated="configUpdated"></user-info>
                 <div class="accordion-item mb-1">
                     <div class="accordion-header">
@@ -166,12 +167,12 @@
                             </span>
                             <span class="pull-right" v-if="current_unit.category !== 'contact'">
                                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                        v-if="current_unit.category !== 'drawing'"
+                                        v-if="current_unit.category !== 'drawing' && current_unit.category !== 'route'"
                                         data-bs-target="#edit">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
                                 <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                        v-if="current_unit.category === 'drawing'"
+                                        v-if="current_unit.category === 'drawing'||current_unit.category === 'route'"
                                         data-bs-target="#drawing-edit">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>

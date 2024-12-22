@@ -8,6 +8,9 @@ Vue.component('DrawingEditModal', {
     computed: {
         is_geofence_active: function () {
             return this.unit.geofence;
+        },
+        isPolygon() {
+            return this.unit.type === 'u-d-f';
         }
     },
     props: ["unit", "cancelEditForm", "saveEditForm"],
@@ -33,20 +36,20 @@ Vue.component('DrawingEditModal', {
                             </div>
                             <div class="form-group row my-2 mx-2">
                                 <div class="col-12">
-                                    <label class="my-1 mr-2 col-6" for="drawing-ed-aff">طرف</label>
+                                    <label class="my-1 mr-2 col-6" for="drawing-ed-aff">رنگ</label>
                                     <select class="form-select my-1 mr-sm-2" id="drawing-ed-aff"
                                             v-model="unit.color">
-                                        <option value="red">دشمن</option>
-                                        <option value="blue">خودی</option>
-                                        <option value="white">خنثی</option>
-                                        <option value="gray">نامعلوم</option>
-                                        <option value="orange">مشکوک</option>
+                                        <option value="red">قرمز</option>
+                                        <option value="blue">آبی</option>
+                                        <option value="white">سفید</option>
+                                        <option value="gray">خاکستری</option>
+                                        <option value="orange">نارنجی</option>
                                     </select>
                                 </div>
                             </div>
                             
                             <hr>
-                            <div class="form-group row my-2 mr-sm-2">
+                            <div class="form-group row my-2 mr-sm-2" v-if="isPolygon">
                                 <div class="form-check col-6">
                                     <input type="checkbox" id="drawing-ed-geofence" v-model="unit.geofence"/>
                                     <label for="drawing-ed-geofence">ژئوفنس</label>

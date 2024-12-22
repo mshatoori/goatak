@@ -44,6 +44,7 @@ let app = new Vue({
     data: {
         map: null,
         layers: null,
+        overlays: null,
         conn: null,
         units: new Map(),
         outgoing_feeds: new Map(),
@@ -97,12 +98,27 @@ let app = new Vue({
         this.inDrawMode = false;
 
         this.drawnItems = new L.FeatureGroup();
-        this.map.addLayer(this.drawnItems);
+        this.routeItems = new L.FeatureGroup();
+        this.overlays = {
+            contact: L.layerGroup(),
+            unit: L.layerGroup(),
+            alarm: L.layerGroup(),
+            point: L.layerGroup(),
+            drawing: L.layerGroup(),
+            route: L.layerGroup(),
+        };
+
+        for (const overlay of Object.values(this.overlays)) {
+            overlay.addTo(this.map);
+        }
+
+        this.overlays.drawing.addLayer(this.drawnItems);
+        this.overlays.route.addLayer(this.routeItems);
 
         this.drawControl = new L.Control.Draw({
             edit: {
                 featureGroup: this.drawnItems,
-                poly: {
+                polygon: {
                     allowIntersection: false
                 }
             },
@@ -193,6 +209,64 @@ let app = new Vue({
                     vm.setCurrentUnitUid(u.uid, true);
                     new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
                 });
+            } else if (event.layerType === "polyline") {
+                let uid = uuidv4();
+                let now = new Date();
+                let stale = new Date(now);
+                stale.setDate(stale.getDate() + 365);
+                let u = {
+                    uid: uid,
+                    category: "route",
+                    callsign: "مسیر",
+                    sidc: "",
+                    start_time: now,
+                    last_seen: now,
+                    stale_time: stale,
+                    type: "b-m-r",
+                    lat: 0,
+                    lon: 0,
+                    hae: 0,
+                    speed: 0,
+                    course: 0,
+                    status: "",
+                    text: "",
+                    parent_uid: "",
+                    parent_callsign: "",
+                    local: true,
+                    send: true,
+                    web_sensor: "",
+                    links: []
+                }
+                if (vm.config && vm.config.uid) {
+                    u.parent_uid = vm.config.uid;
+                    u.parent_callsign = vm.config.callsign;
+                }
+
+                let latSum = 0
+                let lngSum = 0
+
+                layer.editing.latlngs[0].forEach((latlng) => {
+                    console.log(latlng)
+                    latSum += latlng.lat
+                    lngSum += latlng.lng
+                    u.links.push(latlng.lat + "," + latlng.lng)
+                })
+
+                u.lat = latSum / layer.editing.latlngs[0].length
+                u.lon = lngSum / layer.editing.latlngs[0].length
+
+                u.color = "white"
+                // u.geofence = false
+                // u.geofence_aff = "All"
+                // u.geofence_send = false
+
+
+                console.log("TrySending:", u)
+
+                vm.sendUnit(u, function () {
+                    vm.setCurrentUnitUid(u.uid, true);
+                    new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
+                });
             }
 
             // vm.drawnItems.addLayer(layer);
@@ -230,6 +304,9 @@ let app = new Vue({
     },
 
     methods: {
+        getItemOverlay(item) {
+            return this.overlays[item.category];
+        },
         configUpdated: function () {
             console.log("config updated")
             const markerInfo = L.divIcon(
@@ -404,11 +481,11 @@ let app = new Vue({
 
         _processRemoval: function (item) {
             if (item.marker) {
-                this.map.removeLayer(item.marker);
+                this.getItemOverlay(item).removeLayer(item.marker);
                 item.marker.remove();
 
                 if (item.infoMarker) {
-                    this.map.removeLayer(item.infoMarker)
+                    this.getItemOverlay(item).removeLayer(item.infoMarker)
                     item.infoMarker.remove()
                 }
             }
@@ -418,25 +495,32 @@ let app = new Vue({
             }
         },
 
-        _processAddition: function (item) {
-            if (item.category === "drawing") {
-                // TODO: Handle things other than polygon!
-                let latlngs = item.links.map((it) => {
-                    return it.split(",").map(parseFloat)
-                })
+        _processDrawing(item) {
+            let latlngs = item.links.map((it) => {
+                return it.split(",").map(parseFloat)
+            })
 
+            if (item.category === "drawing") {
                 item.marker = L.polygon(latlngs, {
                     color: item.color,
                     interactive: !item.uid.endsWith('-fence')
-                });
-
+                })
                 if (!item.uid.endsWith("-fence")) {
                     item.marker.on('click', function (e) {
                         this.setCurrentUnitUid(item.uid, false);
                     });
                 }
-
                 item.marker.addTo(this.drawnItems);
+            } else if (item.category === "route") {
+                item.marker = L.polyline(latlngs, {
+                    color: item.color,
+                })
+                item.marker.addTo(this.routeItems);
+            }
+        },
+        _processAddition: function (item) {
+            if (item.category === "drawing" || item.category === "route") {
+                this._processDrawing(item);
             } else {
                 this.updateUnitMarker(item, false, true);
             }
@@ -445,28 +529,18 @@ let app = new Vue({
         },
 
         _processUpdate: function (item) {
-            if (item.category === "drawing") {
+            if (item.category === "drawing" || item.category === "route") {
                 // TODO: Handle things other than polygon!
-                let latlngs = item.links.map((it) => {
-                    return it.split(",").map(parseFloat)
-                })
-
-                this.drawnItems.removeLayer(item.marker);
-                item.marker = L.polygon(latlngs, {color: item.color, interactive: !item.uid.endsWith('-fence')});
-                item.marker.addTo(this.drawnItems);
-                if (!item.uid.endsWith("-fence")) {
-                    item.marker.on('click', function (e) {
-                        this.setCurrentUnitUid(item.uid, false);
-                    });
-                }
+                this.drawnItems.removeLayer(item.marker)
+                this.routeItems.removeLayer(item.marker)
+                this._processDrawing(item)
             } else {
-                this.updateUnitMarker(item, false, true);
+                this.updateUnitMarker(item, false, true)
 
                 if (this.locked_unit_uid === item.uid) {
                     this.map.setView([item.lat, item.lon]);
                 }
             }
-
             vm.addContextMenuToMarker(item)
         },
 
@@ -494,9 +568,9 @@ let app = new Vue({
                         unit.marker.contextmenu = L.popup()
                             .setLatLng(e.latlng)
                             .setContent(menu);
-                        unit.marker.contextmenu.addTo(this.map)
+                        unit.marker.contextmenu.addTo(this.getItemOverlay(unit))
                     }
-                    unit.marker.contextmenu.openOn(this.map);
+                    unit.marker.contextmenu.openOn(this.getItemOverlay(unit));
                 });
             }
         },
@@ -529,36 +603,42 @@ let app = new Vue({
                 this.fetchMessages();
             }
         },
-
+        removeFromAllOverlays(obj) {
+            console.log("=== removeFromAllOverlays", Object.values(this.overlays));
+            for (const overlay of Object.values(this.overlays)) {
+                console.log("removeFromAllOverlays", obj, overlay);
+                obj.removeFrom(overlay)
+            }
+        },
         updateUnitMarker: function (unit, draggable, updateIcon) {
             if (unit.lon === 0 && unit.lat === 0) {
                 if (unit.marker) {
-                    this.map.removeLayer(unit.marker);
+                    this.getItemOverlay(item).removeLayer(unit.marker);
                     unit.marker = null;
                 }
                 return
             }
 
-            // console.log(unit);
-
+            console.log("updateUnitMarker", unit, unit.marker, unit.infoMarker);
             if (unit.marker) {
-                if (updateIcon) {
-                    unit.marker.setIcon(getIcon(unit, true));
-                }
-            } else {
-                unit.marker = L.marker([unit.lat, unit.lon], {draggable: draggable});
-                unit.marker.on('click', function (e) {
-                    app.setCurrentUnitUid(unit.uid, false);
-                });
-                if (draggable) {
-                    unit.marker.on('dragend', function (e) {
-                        unit.lat = marker.getLatLng().lat;
-                        unit.lon = marker.getLatLng().lng;
-                    });
-                }
-                unit.marker.setIcon(getIcon(unit, true));
-                unit.marker.addTo(this.map);
+                this.removeFromAllOverlays(unit.marker);
             }
+            if (unit.infoMarker) {
+                this.removeFromAllOverlays(unit.infoMarker);
+            }
+
+            unit.marker = L.marker([unit.lat, unit.lon], {draggable: draggable});
+            unit.marker.on('click', function (e) {
+                app.setCurrentUnitUid(unit.uid, false);
+            });
+            if (draggable) {
+                unit.marker.on('dragend', function (e) {
+                    unit.lat = marker.getLatLng().lat;
+                    unit.lon = marker.getLatLng().lng;
+                });
+            }
+            unit.marker.setIcon(getIcon(unit, true));
+            unit.marker.addTo(this.getItemOverlay(unit));
 
             let markerHtml = '<div>' + unit.callsign;
             if (unit.ip_address)
@@ -574,10 +654,10 @@ let app = new Vue({
                     iconSize: null
                 });
 
-            if (!unit.infoMarker) {
-                unit.infoMarker = L.marker([unit.lat, unit.lon], {icon: markerInfo});
-                unit.infoMarker.addTo(this.map);
-            }
+
+            unit.infoMarker = L.marker([unit.lat, unit.lon], {icon: markerInfo});
+            unit.infoMarker.addTo(this.getItemOverlay(unit));
+
 
             unit.infoMarker.setLatLng([unit.lat, unit.lon]);
             unit.infoMarker.setIcon(markerInfo);
@@ -591,10 +671,10 @@ let app = new Vue({
 
             let item = this.units.get(uid);
             if (item.marker) {
-                this.map.removeLayer(item.marker);
+                this.getItemOverlay(item).removeLayer(item.marker);
                 item.marker.remove();
                 if (item.infoMarker) {
-                    this.map.removeLayer(item.infoMarker)
+                    this.getItemOverlay(item).removeLayer(item.infoMarker)
                     item.infoMarker.remove()
                 }
             }
@@ -745,7 +825,7 @@ let app = new Vue({
 
         sendUnit: function (u, cb) {
             console.log("Sending:", this.cleanUnit(u))
-            store.createItem(this.cleanUnit(u)).then(results => {
+            store.createItem(u).then(results => {
                 this.processUnits(results)
                 if (cb)
                     cb()
@@ -778,7 +858,7 @@ let app = new Vue({
                     web_sensor: u.web_sensor,
                 };
 
-                if (u.type.startsWith('u-')) {
+                if (u.type.startsWith('u-') || u.type.startsWith('b-m-r')) {
                     // drawing
                     this.form_unit.color = u.color;
 
@@ -1147,6 +1227,12 @@ let app = new Vue({
                 });
 
         },
+        toggleOverlay: function (overlayName, overlayActive) {
+            console.log("toggleOverlay", overlayName, overlayActive);
+            if (!overlayActive)
+                this.overlays[overlayName].removeFrom(this.map)
+            else this.overlays[overlayName].addTo(this.map)
+        }
     },
 });
 
