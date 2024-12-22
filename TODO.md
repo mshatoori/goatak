@@ -23,18 +23,22 @@
 ## Idea:
 1. Show received messages in UI (like logs)
 
+3. Overlay Manager (WinTAK) -> Category + Show/Hide
+4. Routes: As an object...
+
 ## Next Weeks
-1. Make compatible with WinTAK
-   1. What's wrong?
+1. Emergency
+2. CASEVAC
+3. Selecting who to send to.
+4. One-page doc of features that we have + we will have (from WinTAK) 
+
+3. Make compatible with WinTAK
+1. What's wrong?
 2. Work on better UI (Like WinTAK)
    1. What's the plan?
-3. Overlay Manager (WinTAK) -> Category + Show/Hide
-   1. What's the plan?
-4. Routes: As an object...
-5. Track -> Keep locations in DB, Show in UI
+
+6. Track -> Keep locations in DB, Show in UI
    6. This is hard probably :-?
-6. Emergency
-7. CASEVAC
 8. Share with (e.g. Air support) -> Send lat/lng
 
 
