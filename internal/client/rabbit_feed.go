@@ -384,7 +384,7 @@ func (h *RabbitFeed) wrapMessage(buf []byte, _msg *cotproto.TakMessage) []byte {
 	rabbitMsg := RabbitMsg{
 		MessageId:      uuid.NewString(),
 		Fad:            1,
-		MessageNumber:  h.nextMsgNum(),
+		MessageNumber:  5,
 		MessageSubtype: nil,
 		PayLoadData:    base64.StdEncoding.EncodeToString(buf),
 		Source: model.SendItemDest{

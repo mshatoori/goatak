@@ -208,15 +208,22 @@ func addFeedHandler(app *App) air.Handler {
 			return err
 		}
 
+		// TODO: Broadcast for now
+		destinations := make([]model.SendItemDest, 1)
+		destinations[0] = model.SendItemDest{
+			Addr: "255.255.255.255",
+			URN:  16777215,
+		}
+
 		if len(f.Type) > 0 && f.Type == "Rabbit" {
 			newFeed := client.NewRabbitFeed(&client.RabbitFeedConfig{
-				MessageCb: app.ProcessEvent,
-				Addr:      f.Addr,
-				Direction: client.FeedDirection(f.Direction),
-				RecvQueue: f.RecvQueue,
-				SendQueue: f.SendQueue,
-				Title:     f.Title,
-				//Dest:      app.getContacts(),
+				MessageCb:    app.ProcessEvent,
+				Addr:         f.Addr,
+				Direction:    client.FeedDirection(f.Direction),
+				RecvQueue:    f.RecvQueue,
+				SendQueue:    f.SendQueue,
+				Title:        f.Title,
+				Destinations: destinations,
 			})
 
 			app.feeds = append(app.feeds, newFeed)
