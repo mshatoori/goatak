@@ -15,3 +15,9 @@ maps/*/
 gpsd/
 pkg/mod/
 pkg/sumdb/
+/2024-06-23.patch
+/.devcontainer/devcontainer.json
+/goatak-client.tar
+/goatak-gpsd.tar
+/goatak-maps.tar
+/make-3.81.exe

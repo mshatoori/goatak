@@ -1,7 +1,10 @@
 package client
 
 import (
+	"bytes"
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -16,6 +19,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/kdudkov/goatak/pkg/cot"
 	"github.com/kdudkov/goatak/pkg/cotproto"
+)
+
+const (
+	SEND_VMF_COMMAND           = "SendVmfCommand"
+	VMF_MESSAGE_RECEIVED_EVENT = "VmfMessageReceivedEvent"
 )
 
 type RabbitFeedConfig struct {
@@ -33,8 +41,7 @@ type RabbitFeedConfig struct {
 	SendQueue string
 	RecvQueue string
 	Title     string
-	DestIP    string
-	DestURN   string
+	Dest      model.SendItemDest
 }
 
 type RabbitFeed struct {
@@ -55,15 +62,31 @@ type RabbitFeed struct {
 	messageCb func(msg *cot.CotMessage)
 	// removeCb     func(ch ClientHandler)
 	//newContactCb func(uid, callsign string)
-	logger    *slog.Logger
-	Direction FeedDirection
-	sendQueue string
-	recvQueue string
-	Title     string
+	logger       *slog.Logger
+	Direction    FeedDirection
+	sendQueue    string
+	recvQueue    string
+	Title        string
+	msgCounter   int
+	Destinations []model.SendItemDest
 }
 
 type RabbitReader struct {
 	deliveryChannel <-chan amqp.Delivery
+}
+
+type RabbitMsg struct {
+	MessageId      string               `json:"messageId"`
+	Fad            int                  `json:"fad"`
+	MessageNumber  int                  `json:"messageNumber"`
+	MessageSubtype *string              `json:"messageSubtype"`
+	PayLoadData    string               `json:"payLoadData"` // Encoded in Base64
+	Source         model.SendItemDest   `json:"source"`
+	Destinations   []model.SendItemDest `json:"destinations"`
+	CommandId      string               `json:"commandId"`
+	CreationDate   string               `json:"creationDate"` // datetime?
+	Version        string               `json:"version"`
+	Type           string               `json:"type"`
 }
 
 func (r *RabbitReader) Read(b []byte) (n int, err error) {
@@ -74,23 +97,28 @@ func (r *RabbitReader) Read(b []byte) (n int, err error) {
 }
 
 func NewRabbitFeed(config *RabbitFeedConfig) *RabbitFeed {
+	destinations := make([]model.SendItemDest, 1)
+	destinations[0] = config.Dest
+
 	m := &RabbitFeed{
-		active:    1,
-		logger:    slog.Default(),
-		sendChan:  make(chan []byte, 10),
-		Addr:      config.Addr,
-		Direction: config.Direction,
-		UID:       uuid.NewString(),
-		sendQueue: config.SendQueue,
-		recvQueue: config.RecvQueue,
-		Title:     config.Title,
+		active:       1,
+		logger:       slog.Default(),
+		sendChan:     make(chan []byte, 10),
+		Addr:         config.Addr,
+		Direction:    config.Direction,
+		UID:          uuid.NewString(),
+		sendQueue:    config.SendQueue,
+		recvQueue:    config.RecvQueue,
+		Title:        config.Title,
+		msgCounter:   0,
+		Destinations: destinations,
 	}
 
 	var err error = nil
 	m.conn, err = amqp.Dial(config.Addr)
 
 	if err != nil {
-		m.logger.Error("RabbitFeed connection failed")
+		m.logger.Error("RabbitFeed connection failed!", "error", err)
 		m.active = 0
 		return m
 	}
@@ -288,10 +316,10 @@ func (h *RabbitFeed) stopHandle() {
 }
 
 func (h *RabbitFeed) SendCot(msg *cotproto.TakMessage) error {
-	h.logger.Debug("RabbitFeed SendCot")
+	h.logger.Debug(fmt.Sprintf("RabbitFeed SendCot version: %d", h.GetVersion()))
 	switch h.GetVersion() {
 	case 0:
-		h.logger.Debug("RabbitFeed SendCot v0")
+		//h.logger.Debug("RabbitFeed SendCot v0")
 		buf, err := xml.Marshal(cot.ProtoToEvent(msg))
 		if err != nil {
 			return err
@@ -301,7 +329,7 @@ func (h *RabbitFeed) SendCot(msg *cotproto.TakMessage) error {
 			return nil
 		}
 	case 1:
-		h.logger.Debug("RabbitFeed SendCot v1")
+		//h.logger.Debug("RabbitFeed SendCot v1")
 		buf, err := cot.MakeProtoPacket(msg)
 		if err != nil {
 			return err
@@ -329,5 +357,39 @@ func (h *RabbitFeed) tryAddPacket(msg []byte) bool {
 }
 
 func (h *RabbitFeed) wrapMessage(buf []byte, _msg *cotproto.TakMessage) []byte {
-	return buf // TODO: wrap
+	var newBuffer bytes.Buffer
+	clientInfo := _msg.GetCotEvent().GetDetail().GetContact().GetClientInfo()
+
+	rabbitMsg := RabbitMsg{
+		MessageId:      uuid.NewString(),
+		Fad:            1,
+		MessageNumber:  h.nextMsgNum(),
+		MessageSubtype: nil,
+		PayLoadData:    base64.StdEncoding.EncodeToString(buf),
+		Source: model.SendItemDest{
+			URN:  int(clientInfo.GetUrn()),
+			Addr: clientInfo.GetIpAddress(),
+		},
+		Destinations: h.Destinations,
+		CommandId:    "00000000-0000-0000-0000-000000000001",
+		CreationDate: "2023-06-11T14:27:43.7958539+03:30",
+		Version:      "1.0",
+		Type:         SEND_VMF_COMMAND,
+	}
+
+	err := json.NewEncoder(&newBuffer).Encode(rabbitMsg)
+	if err != nil {
+		return nil
+	}
+
+	h.logger.Debug("RabbitFeed wrapMessage", "msg", rabbitMsg, "result", newBuffer.Bytes())
+
+	return newBuffer.Bytes()
+}
+
+func (h *RabbitFeed) nextMsgNum() int {
+	defer func() {
+		h.msgCounter += 1
+	}()
+	return h.msgCounter
 }

@@ -93,8 +93,8 @@ type SensorModel struct {
 }
 
 type SendItemDest struct {
-	Addr string `json:"addr"`
-	URN  string `json:"urn"`
+	Addr string `json:"ipAddress"`
+	URN  int    `json:"urn"`
 }
 
 func (i *Item) ToWeb() *WebUnit {

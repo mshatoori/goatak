@@ -90,7 +90,7 @@ func (sensor *GpsdSensor) sendLoop(cb func(data any)) {
 	for {
 		select {
 		case <-ticker.C:
-			sensor.Logger.Warn(fmt.Sprintf("GPS sensor [%s] tick", sensor.UID))
+			//sensor.Logger.Warn(fmt.Sprintf("GPS sensor [%s] tick", sensor.UID))
 			sensor.mu.Lock()
 			if sensor.latestEvent != nil {
 				sensor.Logger.Warn("GPS sensor sending data")

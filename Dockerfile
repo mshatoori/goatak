@@ -8,7 +8,7 @@ COPY ./go.mod .
 COPY ./go.sum .
 # RUN go mod download
 COPY --exclude=*.js . .
-RUN --mount=type=cache,target=/go/pkg/mod go build -o dist/ -ldflags "-s -X main.gitRevision=$commit -X main.gitBranch=$branch" ./cmd/...
+RUN --mount=type=cache,target=/go/pkg/mod go build -o dist/ -ldflags "-X main.gitRevision=$commit -X main.gitBranch=$branch" ./cmd/webclient/...
 FROM docker.arvancloud.ir/alpine
 
 EXPOSE 8080/tcp

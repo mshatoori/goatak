@@ -346,8 +346,7 @@ func sendItemHandler(app *App) air.Handler {
 			SendQueue: "SendCommand", // TODO:
 			RecvQueue: "",
 			Title:     "TEMP",
-			DestIP:    dest.Addr,
-			DestURN:   dest.URN,
+			Dest:      *dest,
 		})
 
 		uid := getStringParam(req, "uid")
