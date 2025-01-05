@@ -562,14 +562,14 @@ func (app *App) updateGeofencesAfterDelete(uid string) bool {
 func (app *App) checkGeofences(changedItem *model.Item) bool {
 	app.logger.Info("Checking Geofences")
 	if changedItem.GetClass() != model.UNIT && changedItem.GetClass() != model.CONTACT {
-		app.logger.Info("Not Unit")
+		//app.logger.Info("Not Unit")
 		return true
 	}
 
 	app.items.ForEach(func(item *model.Item) bool {
-		app.logger.Info(" Checking item: " + item.GetUID())
+		//app.logger.Info(" Checking item: " + item.GetUID())
 		if item.GetClass() == model.DRAWING && item.GetMsg().IsGeofenceActive() {
-			app.logger.Info("  HAS GEOFENCE")
+			//app.logger.Info("  HAS GEOFENCE")
 			if links := item.GetMsg().Detail.GetAll("link"); len(links) > 0 {
 				linksList := make([]string, 0)
 				for _, link := range links {
@@ -580,21 +580,21 @@ func (app *App) checkGeofences(changedItem *model.Item) bool {
 				}
 				linksList = append(linksList, linksList[0])
 				wkt := "POLYGON((" + strings.Join(linksList, ", ") + "))"
-				app.logger.Info("  WKT: " + wkt)
+				//app.logger.Info("  WKT: " + wkt)
 				polygon, _ := geom.UnmarshalWKT(wkt)
-				app.logger.Info("  Geofence Aff: " + item.GetMsg().GetGeofenceAff() + " Unit type: " + changedItem.GetType())
+				//app.logger.Info("  Geofence Aff: " + item.GetMsg().GetGeofenceAff() + " Unit type: " + changedItem.GetType())
 				if item.GetMsg().GetGeofenceAff() == "All" || (item.GetMsg().GetGeofenceAff() == "Friendly" && changedItem.GetMsg().Is(cot.FRIENDLY)) || (item.GetMsg().GetGeofenceAff() == "Hostile" && changedItem.GetMsg().Is(cot.HOSTILE)) {
-					app.logger.Info("  Compatible! => Checking...")
+					//app.logger.Info("  Compatible! => Checking...")
 					lat, lng := changedItem.GetLanLon()
-					app.logger.Info("  LATLNG", "lat", lat, "lng", lng)
-					app.logger.Info("  POLYGON: " + polygon.String() + " POINT: " + geom.NewPointXY(lat, lng).AsText())
-					contains, err := geom.Contains(polygon, geom.NewPointXY(lat, lng).AsGeometry())
-					app.logger.Info("  CONTAINS? ", "contains", contains, "err", err)
+					//app.logger.Info("  LATLNG", "lat", lat, "lng", lng)
+					//app.logger.Info("  POLYGON: " + polygon.String() + " POINT: " + geom.NewPointXY(lat, lng).AsText())
+					contains, _ := geom.Contains(polygon, geom.NewPointXY(lat, lng).AsGeometry())
+					//app.logger.Info("  CONTAINS? ", "contains", contains, "err", err)
 					if contains {
 						alarmMsg := cot.MakeAlarmMsg(changedItem.GetUID(), item.GetUID())
 						alarmItem := model.FromMsg(cot.LocalCotMessage(alarmMsg))
 						if !slices.Contains(app.alarms, alarmItem.GetUID()) {
-							app.logger.Info("  *** ALARM ***  " + alarmItem.String())
+							//app.logger.Info("  *** ALARM ***  " + alarmItem.String())
 							fmt.Printf("%c\n", 7)
 							app.items.Store(alarmItem)
 							app.changeCb.AddMessage(alarmItem)
@@ -602,7 +602,7 @@ func (app *App) checkGeofences(changedItem *model.Item) bool {
 					}
 				}
 			} else {
-				app.logger.Info("  !!! NO LINKS !!!  ")
+				//app.logger.Info("  !!! NO LINKS !!!  ")
 				return true
 			}
 		}

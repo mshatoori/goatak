@@ -26,6 +26,33 @@ services:
     # network_mode: host
     volumes:
       - .:/workspace:cached
+  webclient2:
+    build:
+      dockerfile: Dockerfile.webclient
+      context: .
+      # args:
+      #   https_proxy: http://127.0.0.1:8889
+      network: host
+    image: ghcr.io/mshatoori/goatak-client:latest
+    ports:
+      - "8082:8080"
+      - "6971:6969"
+      - "6971:6969/udp"
+      - "1201:1100"
+      - "1201:1100/udp"
+    environment:
+      - ME_UID=SOLDIER
+      - CALLSIGN=سرباز
+      - MAP_SERVER=127.0.0.1:8000
+      - GPSD=
+      - SERVER_ADDRESS=host.docker.internal:8999:tcp
+      - BROADCAST=host.docker.internal:6970
+      - URN=2
+      - LAT=27.086388
+      - LON=56.107422
+    # network_mode: host
+    volumes:
+      - .:/workspace:cached
   map:
     # build:
     #   dockerfile: ./Dockerfile

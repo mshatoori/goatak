@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -90,9 +91,21 @@ type RabbitMsg struct {
 }
 
 func (r *RabbitReader) Read(b []byte) (n int, err error) {
+	println("RABBIT READER REEEEADING")
 	d := <-r.deliveryChannel
+	println("RABBIT READER REEEEAD:" + d.MessageId)
+	var newBuffer bytes.Buffer
+	newBuffer.Write(d.Body)
+	var rabbitMsg RabbitMsg
+	err = json.NewDecoder(&newBuffer).Decode(&rabbitMsg)
+	n = 0
+	if err != nil {
+		println("RABBIT READER ERROR:" + err.Error())
+		return
+	}
 
-	n = copy(b, d.Body)
+	n, err = base64.StdEncoding.Decode(b, []byte(rabbitMsg.PayLoadData))
+	println("RABBIT READER RETURNS: " + strconv.Itoa(n))
 	return
 }
 
@@ -203,8 +216,9 @@ func (h *RabbitFeed) handleRead(ctx context.Context) {
 	for ctx.Err() == nil {
 		var msg *cot.CotMessage
 		var err error
+		h.logger.Debug("RabbitFeed Reading Message...")
 		msg, err = h.processProtoRead(pr)
-
+		h.logger.Debug("RabbitFeed Read Message")
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				h.logger.Info("EOF")
@@ -222,6 +236,12 @@ func (h *RabbitFeed) handleRead(ctx context.Context) {
 		h.messageCb(msg)
 	}
 }
+
+//func NewRabbitReader(msgs <-chan amqp.Delivery) io.Reader {
+//	bufio.NewReader(r)
+//	rabbitReader := &RabbitReader{deliveryChannel: msgs}
+//
+//}
 
 func (h *RabbitFeed) processXMLRead(r *cot.TagReader) (*cot.CotMessage, error) {
 	return nil, nil
@@ -314,6 +334,10 @@ func (h *RabbitFeed) stopHandle() {
 
 func (h *RabbitFeed) SendCot(msg *cotproto.TakMessage) error {
 	h.logger.Debug(fmt.Sprintf("RabbitFeed SendCot version: %d", h.GetVersion()))
+	if h.Direction&OUTGOING == 0 {
+		h.logger.Debug("RabbitFeed Ignoring write")
+		return nil
+	}
 	switch h.GetVersion() {
 	case 0:
 		//h.logger.Debug("RabbitFeed SendCot v0")
