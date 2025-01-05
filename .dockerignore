@@ -4,3 +4,4 @@ Dockerfile.webclient
 docker-compose.yaml
 .env
 dist
+*.tar

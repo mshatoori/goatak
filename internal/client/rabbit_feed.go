@@ -190,7 +190,7 @@ func (h *RabbitFeed) handleRead(ctx context.Context) {
 
 	q, err := h.ch.QueueDeclare(
 		h.recvQueue, // name
-		false,       // durable
+		true,       // durable
 		false,       // delete when unused
 		false,       // exclusive
 		false,       // no-wait
@@ -283,7 +283,7 @@ func (h *RabbitFeed) handleWrite(ctx context.Context) {
 
 	q, err := h.ch.QueueDeclare(
 		h.sendQueue,
-		false,
+		true,
 		false,
 		false,
 		false,
@@ -300,8 +300,8 @@ func (h *RabbitFeed) handleWrite(ctx context.Context) {
 			false,
 			false,
 			amqp.Publishing{
-				ContentType: "text/plain", // TODO: check
-				Body:        msg,          // TODO: prepare msg
+				ContentType: "application/json",
+				Body:        msg,
 			})
 
 		if err != nil {

@@ -18,6 +18,7 @@ L.Marker.RotatedMarker = L.Marker.extend({
 
         if (this.options.iconAngle) {
             this._icon.style.WebkitTransform = this._icon.style.WebkitTransform + ' rotate(' + this.options.iconAngle + 'deg)';
+            this._icon.style.TransformOrigin = 'center'
         }
 
         this._icon.style.zIndex = pos.y;

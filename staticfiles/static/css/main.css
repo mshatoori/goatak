@@ -60,3 +60,7 @@ div.info {
 .alarm-active {
     color: red;
 }
+
+.leaflet-marker-icon{
+    transform-origin: center !important;
+}

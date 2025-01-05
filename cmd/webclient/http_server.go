@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/kdudkov/goatak/pkg/cot"
+	"github.com/kdudkov/goatak/pkg/cotproto"
 	"github.com/kdudkov/goatak/pkg/model"
 	"github.com/kdudkov/goatak/staticfiles"
 )
@@ -350,15 +351,25 @@ func sendItemHandler(app *App) air.Handler {
 		destinations := make([]model.SendItemDest, 1)
 		destinations[0] = *dest
 
-		rabbitmq := client.NewRabbitFeed(&client.RabbitFeedConfig{
-			MessageCb:    nil,
-			Addr:         "127.0.0.1:5672",
-			Direction:    client.OUTGOING,
-			SendQueue:    "SendCommand", // TODO:
-			RecvQueue:    "",
-			Title:        "TEMP",
-			Destinations: destinations,
-		})
+		var rabbitmq *client.RabbitFeed
+
+		for _, feed := range app.feeds {
+			if feed.GetType() == "Rabbit" {
+				rabbitmq = feed.(*client.RabbitFeed)
+			}
+		}
+
+		prevDest := rabbitmq.Destinations
+		rabbitmq.Destinations = destinations
+		// rabbitmq := client.NewRabbitFeed(&client.RabbitFeedConfig{
+		// 	MessageCb:    nil,
+		// 	Addr:         "127.0.0.1:5672",
+		// 	Direction:    client.OUTGOING,
+		// 	SendQueue:    "SendCommand", // TODO:
+		// 	RecvQueue:    "",
+		// 	Title:        "TEMP",
+		// 	Destinations: destinations,
+		// })
 
 		uid := getStringParam(req, "uid")
 		item := app.items.Get(uid)
@@ -366,10 +377,21 @@ func sendItemHandler(app *App) air.Handler {
 			return nil
 		}
 
+		item.GetMsg().GetTakMessage().CotEvent.Detail.Contact = &cotproto.Contact{
+			Endpoint: "*:-1:stcp",
+			Callsign: app.callsign,
+			ClientInfo: &cotproto.ClientInfo{
+				IpAddress: app.ipAddress,
+				Urn:       app.urn,
+			},
+		}
+
 		err := rabbitmq.SendCot(item.GetMsg().GetTakMessage())
 		if err != nil {
 			return err
 		}
+
+		rabbitmq.Destinations = prevDest
 
 		return res.WriteJSON("OK")
 	}

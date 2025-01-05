@@ -15,7 +15,7 @@ Vue.component('SendModal', {
             fetch("unit/" + this.sharedState.unitToSend.uid + "/send/", {
                 headers: {"Content-Type": "application/json"},
                 method: "POST",
-                body: JSON.stringify(this.dest)
+                body: JSON.stringify({ipAddress: this.dest.addr, urn: parseInt(this.dest.urn)})
             }).then((response) => {
                 // return response.json()
                 if (response.status === 200) {
