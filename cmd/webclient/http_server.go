@@ -216,6 +216,7 @@ func addFeedHandler(app *App) air.Handler {
 				RecvQueue: f.RecvQueue,
 				SendQueue: f.SendQueue,
 				Title:     f.Title,
+				//Dest:      app.getContacts(),
 			})
 
 			app.feeds = append(app.feeds, newFeed)
@@ -339,14 +340,17 @@ func sendItemHandler(app *App) air.Handler {
 			return err
 		}
 
+		destinations := make([]model.SendItemDest, 1)
+		destinations[0] = *dest
+
 		rabbitmq := client.NewRabbitFeed(&client.RabbitFeedConfig{
-			MessageCb: nil,
-			Addr:      "127.0.0.1:5672",
-			Direction: client.OUTGOING,
-			SendQueue: "SendCommand", // TODO:
-			RecvQueue: "",
-			Title:     "TEMP",
-			Dest:      *dest,
+			MessageCb:    nil,
+			Addr:         "127.0.0.1:5672",
+			Direction:    client.OUTGOING,
+			SendQueue:    "SendCommand", // TODO:
+			RecvQueue:    "",
+			Title:        "TEMP",
+			Destinations: destinations,
 		})
 
 		uid := getStringParam(req, "uid")

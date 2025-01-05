@@ -36,12 +36,12 @@ type RabbitFeedConfig struct {
 	// NewContactCb func(uid, callsign string)
 	// RoutePings   bool
 	// Logger       *slog.Logger
-	Addr      string
-	Direction FeedDirection
-	SendQueue string
-	RecvQueue string
-	Title     string
-	Dest      model.SendItemDest
+	Addr         string
+	Direction    FeedDirection
+	SendQueue    string
+	RecvQueue    string
+	Title        string
+	Destinations []model.SendItemDest
 }
 
 type RabbitFeed struct {
@@ -97,9 +97,6 @@ func (r *RabbitReader) Read(b []byte) (n int, err error) {
 }
 
 func NewRabbitFeed(config *RabbitFeedConfig) *RabbitFeed {
-	destinations := make([]model.SendItemDest, 1)
-	destinations[0] = config.Dest
-
 	m := &RabbitFeed{
 		active:       1,
 		logger:       slog.Default(),
@@ -111,7 +108,7 @@ func NewRabbitFeed(config *RabbitFeedConfig) *RabbitFeed {
 		recvQueue:    config.RecvQueue,
 		Title:        config.Title,
 		msgCounter:   0,
-		Destinations: destinations,
+		Destinations: config.Destinations,
 	}
 
 	var err error = nil

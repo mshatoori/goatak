@@ -41,13 +41,13 @@ services:
     command:
       - "-D2"
       - "udp://0.0.0.0:5577"
-  # rabbitmqserver:
-  #   image: rabbitmq:3.11.2-management
-  #   hostname: rabbitmqserver
-  #   restart: unless-stopped
-  #   ports:
-  #     - "5673:5672"
-  #     - "15673:15672"
-  #   environment:
-  #     RABBITMQ_DEFAULT_USER: guest
-  #     RABBITMQ_DEFAULT_PASS: guest
+  rabbitmqserver:
+     image: rabbitmq:3.11.2-management
+     hostname: rabbitmqserver
+     restart: unless-stopped
+     ports:
+       - "5673:5672"
+       - "15673:15672"
+     environment:
+       RABBITMQ_DEFAULT_USER: guest
+       RABBITMQ_DEFAULT_PASS: guest
