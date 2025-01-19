@@ -12,7 +12,7 @@ Vue.component('CotLog', {
     computed: {
         
     },
-    template: html`
+    template: `
     <div class="accordion-item mb-1">
       <div class="accordion-header">
       <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCotLog" aria-expanded="true" aria-controls="collapseCotLog">

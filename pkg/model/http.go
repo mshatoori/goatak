@@ -254,6 +254,20 @@ func (w *WebUnit) ToMsg() *cot.CotMessage {
 		}, "")
 	}
 
+	if w.Category == ALARM {
+		if cot.MatchPattern(w.Type, cot.EMERGENCY_ALERT) {
+			if w.Type == "b-a-o-can" {
+				xd.AddChild("emergency", map[string]string{
+					"cancel": "true",
+				}, strings.TrimSuffix(w.Callsign, "-Alert"))
+			} else {
+				xd.AddChild("emergency", map[string]string{
+					"type": GetEmergencyTypeFromType(w.Type),
+				}, strings.TrimSuffix(w.Callsign, "-Alert"))
+			}
+		}
+	}
+
 	msg.GetCotEvent().Detail.XmlDetail = xd.AsXMLString()
 
 	zero := time.Unix(0, 0)
@@ -289,6 +303,16 @@ func (w *WebUnit) ToMsg() *cot.CotMessage {
 		TakMessage: msg,
 		Detail:     xd,
 	}
+}
+
+func GetEmergencyTypeFromType(msgType string) string {
+	typeMap := map[string]string{
+		"b-a-o-can": "Cancel",
+		"b-a-o-opn": "InContact",
+		"b-a-o-pan": "Ring The Bell",
+		"b-a-o-tbl": "911",
+	}
+	return typeMap[msgType]
 }
 
 //nolint:gomnd

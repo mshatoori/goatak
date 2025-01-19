@@ -84,7 +84,12 @@ let app = new Vue({
             ip: '',
             port: '',
             type: '',
-        }
+        },
+
+        emergency_type: "b-a-o-tbl",
+        emergency_switch1: false,
+        emergency_switch2: false,
+        beacon_active: false,
     },
     provide: function () {
         return {
@@ -92,6 +97,14 @@ let app = new Vue({
             printCoords: this.printCoords,
             distBea: this.distBea,
             latlng: this.latlng,
+        }
+    },
+    watch: {
+        emergency_switch1(val) {
+            this.checkEmergency();
+        },
+        emergency_switch2(val) {
+            this.checkEmergency();
         }
     },
     mounted() {
@@ -481,6 +494,7 @@ let app = new Vue({
 
 
         _processRemoval: function (item) {
+            console.log("processRemoval", item);
             if (item.marker) {
                 this.getItemOverlay(item).removeLayer(item.marker);
                 item.marker.remove();
@@ -596,7 +610,7 @@ let app = new Vue({
             }
 
             if (u.type === "delete") {
-                this.removeUnit(u.uid);
+                this.processUnits(store.handleWSMessage(u.unit, true));
             }
 
             if (u.type === "chat") {
@@ -821,6 +835,34 @@ let app = new Vue({
                     body: JSON.stringify({lat: e.latlng.lat, lon: e.latlng.lng})
                 };
                 fetch("/pos", requestOptions);
+            }
+        },
+
+        checkEmergency: function () {
+            if (this.emergency_switch1 && this.emergency_switch2) {
+                this.activateEmergencyBeacon();
+            } else {
+                this.deactivateEmergencyBeacon();
+            }
+        },
+
+        activateEmergencyBeacon: function () {
+            this.beacon_active = true;
+            const alert = this.createEmergencyAlert(this.emergency_type)
+            this.sendUnit(alert)
+        },
+
+        deactivateEmergencyBeacon: function () {
+            if (this.beacon_active) {
+                this.beacon_active = false;
+                let alert = this.sharedState.items.get(this.config.uid + "-9-1-1")
+                if (alert) {
+                    alert.type = "b-a-o-can"
+                }
+                else {
+                    alert = this.createEmergencyAlert("b-a-o-can")
+                }
+                this.sendUnit(alert)
             }
         },
 
@@ -1233,7 +1275,40 @@ let app = new Vue({
             if (!overlayActive)
                 this.overlays[overlayName].removeFrom(this.map)
             else this.overlays[overlayName].addTo(this.map)
-        }
+        },
+
+        createEmergencyAlert: function (emergencyType) {
+            let uid = uuidv4();
+            let now = new Date();
+            let stale = new Date(now);
+
+            stale.setDate(stale.getDate() + 365);
+            let u = {
+                uid: this.config.uid + "-9-1-1",
+                category: "alarm",
+                callsign: this.config.callsign + "-Alert",
+                sidc: "",
+                start_time: now,
+                last_seen: now,
+                stale_time: stale,
+                type: emergencyType,
+                lat: this.config.lat,
+                lon: this.config.lon,
+                hae: 0,
+                speed: 0,
+                course: 0,
+                status: "",
+                text: "",
+                parent_uid: this.config.uid,
+                parent_callsign: this.config.callsign,
+                local: true,
+                send: true,
+                web_sensor: "",
+                links: []
+            }
+
+            return u
+        },
     },
 });
 

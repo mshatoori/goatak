@@ -41,6 +41,9 @@ function getIconUri(item, withText) {
     if (item.type === "b") {
         return {uri: "/static/icons/b.png", x: 16, y: 16}
     }
+    if (item.type.startsWith("b-a-o-")) {
+        return {uri: "/static/icons/" + item.type +".png", x: 16, y: 16}
+    }
     if (item.type === "b-m-p-w-GOTO") {
         return {uri: "/static/icons/green_flag.png", x: 6, y: 30}
     }
@@ -193,6 +196,16 @@ var store = {
         for (let u of response) {
             let item = this.state.items.get(u.uid);
             keys.add(u.uid)
+
+            // Special Case: Canceling of an alarm
+            if (u.type === "b-a-o-can") {
+                if (item) {
+                    console.log("REMOVED: ", u.uid, this.state.items.get(u.uid))
+                    results["removed"].push(item)
+                    this.state.items.delete(u.uid);
+                }
+                continue;
+            }
 
             if (!item) {
                 this.state.items.set(u.uid, u)

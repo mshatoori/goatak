@@ -1,6 +1,7 @@
 // const html = String.raw;
 Vue.component('AlarmsModal', {
     data: function () {
+        return {}
     },
     methods: {
         silentAlarm: function () {
@@ -19,7 +20,7 @@ Vue.component('AlarmsModal', {
             return res;
         }
     },
-    template: html`
+    template: `
     <div class="modal fade" id="alarms-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
