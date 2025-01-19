@@ -537,6 +537,11 @@ let app = new Vue({
             if (item.category === "drawing" || item.category === "route") {
                 this._processDrawing(item);
             } else {
+                if (item.type.startsWith("b-a-o") && !item.type.endsWith("-can")) {
+                    this.beacon_active = true;
+                    this.emergency_switch1 = true;
+                    this.emergency_switch2 = true;
+                }
                 this.updateUnitMarker(item, false, true);
             }
 
@@ -670,13 +675,14 @@ let app = new Vue({
                 });
 
 
-            unit.infoMarker = L.marker([unit.lat, unit.lon], {icon: markerInfo});
-            unit.infoMarker.addTo(this.getItemOverlay(unit));
+            if (!unit.type.startsWith("b-a-o")) {
+                unit.infoMarker = L.marker([unit.lat, unit.lon], {icon: markerInfo});
+                unit.infoMarker.addTo(this.getItemOverlay(unit));
 
 
-            unit.infoMarker.setLatLng([unit.lat, unit.lon]);
-            unit.infoMarker.setIcon(markerInfo);
-
+                unit.infoMarker.setLatLng([unit.lat, unit.lon]);
+                unit.infoMarker.setIcon(markerInfo);
+            }
             unit.marker.setLatLng([unit.lat, unit.lon]);
             unit.marker.bindTooltip(popup(unit));
         },
@@ -847,9 +853,11 @@ let app = new Vue({
         },
 
         activateEmergencyBeacon: function () {
-            this.beacon_active = true;
-            const alert = this.createEmergencyAlert(this.emergency_type)
-            this.sendUnit(alert)
+            if (!this.beacon_active) {
+                this.beacon_active = true;
+                const alert = this.createEmergencyAlert(this.emergency_type)
+                this.sendUnit(alert)
+            }
         },
 
         deactivateEmergencyBeacon: function () {
