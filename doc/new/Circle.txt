@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-16" standalone="yes"?>
+<event version="2.0" uid="bca82078-cb6d-4874-a000-73eb54e4dfc2" type="u-d-c-c" time="2025-01-17T16:25:54.04Z" start="2025-01-17T16:25:54.04Z" stale="2025-01-24T16:25:54.04Z" how="h-g-i-g-o">
+    <point lat="54.7678649222074" lon="59.2794558320082" hae="9999999" ce="9999999" le="9999999" />
+    <detail>
+        <contact callsign="Circle 1" />
+        <shape>
+            <ellipse minor="75382.2652447498" angle="360" major="75382.2652447498" />
+            <link relation="p-c" uid="bca82078-cb6d-4874-a000-73eb54e4dfc2.style" type="b-x-KmlStyle">
+                <Style>
+                    <LineStyle>
+                        <color>FFFFFFFF</color>
+                        <width>3</width>
+                        <alpha>0</alpha>
+                    </LineStyle>
+                    <PolyStyle>
+                        <color>00FFFFFF</color>
+                    </PolyStyle>
+                </Style>
+            </link>
+        </shape>
+        <remarks />
+        <color argb="-1" />
+        <height>0.00</height>
+        <height_unit>4</height_unit>
+        <precisionlocation altsrc="???" />
+        <archive />
+    </detail>
+</event>

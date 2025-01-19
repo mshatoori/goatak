@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-16" standalone="yes"?>
+<event version="2.0" uid="S-1-5-21-2673138965-3093045940-499191391-1001-9-1-1" type="b-a-o-opn" time="2025-01-17T16:19:04Z" start="2025-01-17T16:19:04Z" stale="2025-01-17T16:29:04Z" how="h-e">
+    <point lat="53.7644009" lon="57.0253736" hae="9999999" ce="9999999" le="9999999" />
+    <detail>
+        <link type="a-f-G-U-C-I" uid="S-1-5-21-2673138965-3093045940-499191391-1001" relation="p-p" />
+        <contact callsign="KIPPY-Alert" />
+        <emergency type="In Contact">KIPPY</emergency>
+    </detail>
+</event>
