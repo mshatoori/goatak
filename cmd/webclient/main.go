@@ -639,7 +639,7 @@ func (app *App) createDefaultRabbitFeed() {
 		MessageCb:    app.ProcessEvent,
 		Addr:         fmt.Sprintf("amqp://rabbitmqserver:5672/%d", app.urn),
 		Direction:    client.BOTH,
-		RecvQueue:    "VmfMessageReceivedEvent",
+		RecvQueue:    "SituationalAwarenessReceiveQueue",
 		SendQueue:    "SendVmfCommand",
 		Title:        "DataLink",
 		Destinations: destinations,
