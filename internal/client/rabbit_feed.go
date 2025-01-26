@@ -201,7 +201,7 @@ func (h *RabbitFeed) handleRead(ctx context.Context) {
 	)
 	h.failOnError(err, "Failed to declare a queue")
 
-	err = h.ch.QueueBind(q.Name, "#", h.recvQueue, false, nil)
+	err = h.ch.QueueBind(q.Name, "#", "EventBus.Messages.Events:VmfMessageReceivedEvent", false, nil)
 	h.failOnError(err, "Failed to bind a queue")
 
 	msgs, err := h.ch.Consume(

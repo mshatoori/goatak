@@ -650,9 +650,6 @@ func (app *App) createDefaultRabbitFeed() {
 	})
 
 	app.feeds = append(app.feeds, newFeed)
-	if newFeed.IsActive() {
-		newFeed.Start()
-	}
 }
 
 func main() {

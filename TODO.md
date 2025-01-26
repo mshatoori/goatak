@@ -19,7 +19,6 @@
 ## Notes:
 1. Keep data size under 1k (100bit is preferred)
 2. Be ready to deploy on a new network
-3. U-blox7: https://bir-robotic.ir/product/%D9%85%D8%A7%DA%98%D9%88%D9%84-%D9%85%D9%88%D9%82%D8%B9%DB%8C%D8%AA-%DB%8C%D8%A7%D8%A8-%D9%85%D8%A7%D9%87%D9%88%D8%A7%D8%B1%D9%87%E2%80%8C%D8%A7%DB%8C-gps-receiver-usb/
 
 ## Idea:
 1. Show received messages in UI (like logs)
@@ -42,6 +41,8 @@
    6. This is hard probably :-?
 8. Share with (e.g. Air support) -> Send lat/lng
 
+## NEW
+- create config for send interval
 
 
 ## Documentation
