@@ -15,13 +15,13 @@ services:
       - ME_UID=NODE6
       - ME_IP=192.168.11.6
       - URN=6
-      - CALLSIGN=ناو فرماندهی
+      - CALLSIGN=نیروی ششم
       - MAP_SERVER=127.0.0.1:8000
       - GPSD=gpsd:2947
       - SERVER_ADDRESS=host.docker.internal:8999:tcp
       - BROADCAST=host.docker.internal:6970
-      - LAT=26.086388
-      - LON=55.107422
+      - LAT=28.086388
+      - LON=59.107422
     volumes:
       - .:/workspace:cached
     networks:

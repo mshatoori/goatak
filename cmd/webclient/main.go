@@ -237,6 +237,8 @@ func (app *App) Init() {
 		app.logger.Info("Incoming feed added", "addr", fmt.Sprintf("%s:%d", feedConfig.Addr, feedConfig.Port))
 	}
 
+	app.createDefaultRabbitFeed()
+
 	app.changeCb.Subscribe(app.checkGeofences)
 	app.deleteCb.Subscribe(app.updateGeofencesAfterDelete)
 }
@@ -624,6 +626,33 @@ func (app *App) MakeFenceAroundMe() {
 	u = model.FromMsg(cot.LocalCotMessage(fenceMsg))
 	app.items.Store(u)
 	app.changeCb.AddMessage(u)
+}
+
+func (app *App) createDefaultRabbitFeed() {
+	destinations := make([]model.SendItemDest, 1)
+	destinations[0] = model.SendItemDest{
+		Addr: "255.255.255.255",
+		URN:  16777215,
+	}
+
+	newFeed := client.NewRabbitFeed(&client.RabbitFeedConfig{
+		MessageCb:    app.ProcessEvent,
+		Addr:         fmt.Sprintf("amqp://rabbitmqserver:5672/%d", app.urn),
+		Direction:    client.BOTH,
+		RecvQueue:    "VmfMessageReceivedEvent",
+		SendQueue:    "SendVmfCommand",
+		Title:        "DataLink",
+		Destinations: destinations,
+		ClientInfo: &cotproto.ClientInfo{
+			IpAddress: app.ipAddress,
+			Urn:       app.urn,
+		},
+	})
+
+	app.feeds = append(app.feeds, newFeed)
+	if newFeed.IsActive() {
+		newFeed.Start()
+	}
 }
 
 func main() {
