@@ -631,8 +631,8 @@ func (app *App) MakeFenceAroundMe() {
 func (app *App) createDefaultRabbitFeed() {
 	destinations := make([]model.SendItemDest, 1)
 	destinations[0] = model.SendItemDest{
-		Addr: "255.255.255.255",
-		URN:  16777215,
+		Addr: viper.GetString("default_dest_ip"),
+		URN:  viper.GetInt("default_dest_urn"),
 	}
 
 	newFeed := client.NewRabbitFeed(&client.RabbitFeedConfig{
@@ -644,8 +644,8 @@ func (app *App) createDefaultRabbitFeed() {
 		Title:        "DataLink",
 		Destinations: destinations,
 		ClientInfo: &cotproto.ClientInfo{
-			IpAddress: viper.GetString("default_dest_ip"),
-			Urn:       viper.GetInt32("default_dest_urn"),
+			IpAddress: app.ipAddress,
+			Urn:       app.urn,
 		},
 	})
 
