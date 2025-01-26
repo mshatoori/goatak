@@ -43,6 +43,7 @@ type RabbitFeedConfig struct {
 	RecvQueue    string
 	Title        string
 	Destinations []model.SendItemDest
+	ClientInfo   *cotproto.ClientInfo
 }
 
 type RabbitFeed struct {
@@ -70,6 +71,7 @@ type RabbitFeed struct {
 	Title        string
 	msgCounter   int
 	Destinations []model.SendItemDest
+	ClientInfo   *cotproto.ClientInfo
 }
 
 type RabbitReader struct {
@@ -122,6 +124,7 @@ func NewRabbitFeed(config *RabbitFeedConfig) *RabbitFeed {
 		Title:        config.Title,
 		msgCounter:   0,
 		Destinations: config.Destinations,
+		ClientInfo:   config.ClientInfo,
 	}
 
 	var err error = nil
@@ -190,7 +193,7 @@ func (h *RabbitFeed) handleRead(ctx context.Context) {
 
 	q, err := h.ch.QueueDeclare(
 		h.recvQueue, // name
-		true,       // durable
+		true,        // durable
 		false,       // delete when unused
 		false,       // exclusive
 		false,       // no-wait
@@ -379,7 +382,7 @@ func (h *RabbitFeed) tryAddPacket(msg []byte) bool {
 
 func (h *RabbitFeed) wrapMessage(buf []byte, _msg *cotproto.TakMessage) []byte {
 	var newBuffer bytes.Buffer
-	clientInfo := _msg.GetCotEvent().GetDetail().GetContact().GetClientInfo()
+	clientInfo := h.ClientInfo
 
 	rabbitMsg := RabbitMsg{
 		MessageId:      uuid.NewString(),

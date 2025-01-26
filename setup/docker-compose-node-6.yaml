@@ -1,0 +1,48 @@
+services:
+  webclient:
+    build:
+      dockerfile: Dockerfile.webclient
+      context: ..
+      network: host
+    image: ghcr.io/mshatoori/goatak-client:latest
+    ports:
+     - "8081:8080"
+     - "6970:6969"
+     - "6970:6969/udp"
+     - "1200:1100"
+     - "1200:1100/udp"
+    environment:
+      - ME_UID=NODE6
+      - ME_IP=192.168.11.6
+      - URN=6
+      - CALLSIGN=ناو فرماندهی
+      - MAP_SERVER=127.0.0.1:8000
+      - GPSD=gpsd:2947
+      - SERVER_ADDRESS=host.docker.internal:8999:tcp
+      - BROADCAST=host.docker.internal:6970
+      - LAT=26.086388
+      - LON=55.107422
+    volumes:
+      - .:/workspace:cached
+    networks:
+      - mmhs
+  map:
+    image: ghcr.io/mshatoori/goatak-maps:latest
+    ports:
+      - "8000:8000"
+    networks:
+        - mmhs
+  gpsd:
+    image: ghcr.io/mshatoori/docker-gpsd:latest
+    ports:
+      - "2948:2947"
+      - "5577:5577/udp"
+    command:
+      - "-D2"
+      - "udp://0.0.0.0:5577"
+    networks:
+        - mmhs
+networks:
+  mmhs:
+    name: mmhs-network
+    external: true

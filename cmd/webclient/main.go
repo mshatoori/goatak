@@ -114,8 +114,12 @@ func (m *CoTEventMutator) mutate(event *cotproto.CotEvent) bool {
 }
 
 type FeedConfig struct {
-	Addr string `mapstructure:"address"`
-	Port int    `mapstructure:"port"`
+	Title     string `mapstructure:"title,omitempty"`
+	Addr      string `mapstructure:"address"`
+	Port      int    `mapstructure:"port"`
+	Type      string `mapstructure:"type,omitempty"`
+	SendQueue string `mapstructure:"sendQueue,omitempty"`
+	RecvQueue string `mapstructure:"recvQueue,omitempty"`
 }
 
 // type FeedsConfig struct {
@@ -142,7 +146,7 @@ func getOutboundIP() net.IP {
 	return localAddr.IP
 }
 
-func NewApp(uid string, callsign string, connectStr string, webPort int, mapServer string, urn int32) *App {
+func NewApp(uid string, callsign string, connectStr string, webPort int, mapServer string, urn int32, ipAddress string) *App {
 	logger := slog.Default()
 	parts := strings.Split(connectStr, ":")
 
@@ -182,7 +186,7 @@ func NewApp(uid string, callsign string, connectStr string, webPort int, mapServ
 		eventProcessors: make([]*EventProcessor, 0),
 		pos:             atomic.Pointer[model.Pos]{},
 		mapServer:       mapServer,
-		ipAddress:       getOutboundIP().String(),
+		ipAddress:       ipAddress,
 		urn:             urn,
 		feeds:           make([]client.CoTFeed, 0),
 
@@ -673,6 +677,7 @@ func main() {
 	viper.BindEnv("ssl.cert", "SSL_CERT")
 
 	viper.BindEnv("me.urn", "URN")
+	viper.BindEnv("me.ip", "ME_IP")
 
 	err := viper.ReadInConfig()
 	if err != nil {
@@ -700,6 +705,7 @@ func main() {
 		viper.GetInt("web_port"),
 		viper.GetString("map_server"),
 		viper.GetInt32("me.urn"),
+		viper.GetString("me.ip"),
 	)
 
 	app.saveFile = *saveFile

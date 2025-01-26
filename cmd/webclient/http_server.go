@@ -225,6 +225,10 @@ func addFeedHandler(app *App) air.Handler {
 				SendQueue:    f.SendQueue,
 				Title:        f.Title,
 				Destinations: destinations,
+				ClientInfo: &cotproto.ClientInfo{
+					IpAddress: app.ipAddress,
+					Urn:       app.urn,
+				},
 			})
 
 			app.feeds = append(app.feeds, newFeed)
