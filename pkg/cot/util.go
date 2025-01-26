@@ -69,7 +69,17 @@ func MakeDpMsg(uid string, typ string, name string, lat float64, lon float64) *c
 }
 
 func MakeAlarmMsg(unitUid string, drawingUid string) *cotproto.TakMessage {
-	msg := BasicMsg("b-a-g", "ALARM."+unitUid[:8]+"."+drawingUid[:8], time.Hour)
+	unitUidPart := unitUid
+	if len(unitUidPart) > 8 {
+		unitUidPart = unitUidPart[:8]
+	}
+
+	drawingUidPart := drawingUid
+	if len(drawingUidPart) > 8 {
+		drawingUidPart = drawingUidPart[:8]
+	}
+
+	msg := BasicMsg("b-a-g", "ALARM."+unitUidPart+"."+drawingUidPart, time.Hour)
 
 	xd := NewXMLDetails()
 	xd.AddLink(unitUid, "t-p-b")

@@ -42,7 +42,8 @@
 8. Share with (e.g. Air support) -> Send lat/lng
 
 ## NEW
-- create config for send interval
+- maybe aggregate data before sending :-?
+- Download map 16z for tehran
 
 
 ## Documentation

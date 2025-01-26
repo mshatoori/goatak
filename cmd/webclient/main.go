@@ -292,7 +292,7 @@ func (app *App) Run(ctx context.Context) {
 			Reader:   nil,
 			Type:     "GPS",
 			UID:      uuid.New().String(),
-			Interval: time.Duration(2) * time.Second,
+			Interval: time.Duration(15) * time.Second,
 			Ctx:      ctx,
 			Title:    "مکان‌یاب",
 		}
@@ -370,7 +370,7 @@ func makeUID(callsign string) string {
 func (app *App) myPosSender(ctx context.Context) {
 	app.SendMsg(app.MakeMe())
 
-	ticker := time.NewTicker(selfPosSendPeriod)
+	ticker := time.NewTicker(time.Second * time.Duration(viper.GetInt("me.interval")))
 	defer ticker.Stop()
 
 	for ctx.Err() == nil {
@@ -551,7 +551,11 @@ func (app *App) updateGeofencesAfterDelete(uid string) bool {
 	if !strings.HasPrefix(uid, "ALARM.") && len(uid) > 8 {
 		toDelete := make([]string, 0)
 		app.items.ForEach(func(item *model.Item) bool {
-			if item.GetClass() == model.ALARM && strings.Contains(item.GetUID(), uid[:8]) {
+			uidPart := uid
+			if len(uidPart) > 8 {
+				uidPart = uidPart[:8]
+			}
+			if item.GetClass() == model.ALARM && strings.Contains(item.GetUID(), uidPart) {
 				toDelete = append(toDelete, item.GetUID())
 			}
 			return true
@@ -704,6 +708,8 @@ func main() {
 
 	viper.BindEnv("me.urn", "URN")
 	viper.BindEnv("me.ip", "ME_IP")
+
+	viper.SetDefault("me.interval", 15)
 
 	viper.BindEnv("default_dest_ip", "DEFAULT_DEST_IP")
 	viper.BindEnv("default_dest_urn", "DEFAULT_DEST_URN")
