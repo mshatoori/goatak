@@ -22,6 +22,8 @@ services:
       - BROADCAST=host.docker.internal:6970
       - LAT=28.086388
       - LON=59.107422
+      - DEFAULT_DEST_IP=192.168.11.1
+      - DEFAULT_DEST_URN=1
     volumes:
       - .:/workspace:cached
     networks:

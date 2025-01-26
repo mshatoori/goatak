@@ -644,8 +644,8 @@ func (app *App) createDefaultRabbitFeed() {
 		Title:        "DataLink",
 		Destinations: destinations,
 		ClientInfo: &cotproto.ClientInfo{
-			IpAddress: app.ipAddress,
-			Urn:       app.urn,
+			IpAddress: viper.GetString("default_dest_ip"),
+			Urn:       viper.GetInt32("default_dest_urn"),
 		},
 	})
 
@@ -707,6 +707,11 @@ func main() {
 
 	viper.BindEnv("me.urn", "URN")
 	viper.BindEnv("me.ip", "ME_IP")
+
+	viper.BindEnv("default_dest_ip", "DEFAULT_DEST_IP")
+	viper.BindEnv("default_dest_urn", "DEFAULT_DEST_URN")
+	viper.SetDefault("default_dest_ip", "255.255.255.255")
+	viper.SetDefault("default_dest_urn", 16777215)
 
 	err := viper.ReadInConfig()
 	if err != nil {
