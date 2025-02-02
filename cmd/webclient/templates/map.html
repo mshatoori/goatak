@@ -91,181 +91,182 @@
         <div class="row h-100">
             <div id="map" class="col-9 h-100" style="cursor:crosshair;">
             </div>
-            <div class="col-3 accordion" id="accordion">
-                <overlays-list :toggle-overlay="toggleOverlay"></overlays-list>
-                <user-info :config="config" :coords="coords" :config-updated="configUpdated"></user-info>
-                <div class="accordion-item mb-1">
-                    <div class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapseTools" aria-expanded="false" aria-controls="collapseTools">
-                            ابزارها
-                        </button>
-                    </div>
-                    <div id="collapseTools" class="accordion-collapse collapse" data-bs-parent="#accordion">
-                        <div class="accordion-body">
-                            <div class="btn-group" role="group" aria-label="Tools">
-                                <input type="radio" class="btn-check" name="btnradio" id="select" autocomplete="off"
-                                       checked>
-                                <label class="btn btn-outline-primary btn-sm" for="select">انتخاب</label>
+<!--            <div class="col-3 accordion" id="accordion">-->
+<!--                <overlays-list :toggle-overlay="toggleOverlay"></overlays-list>-->
+<!--                <user-info :config="config" :coords="coords" :config-updated="configUpdated"></user-info>-->
+<!--                <div class="accordion-item mb-1">-->
+<!--                    <div class="accordion-header">-->
+<!--                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"-->
+<!--                                data-bs-target="#collapseTools" aria-expanded="false" aria-controls="collapseTools">-->
+<!--                            ابزارها-->
+<!--                        </button>-->
+<!--                    </div>-->
+<!--                    <div id="collapseTools" class="accordion-collapse collapse" data-bs-parent="#accordion">-->
+<!--                        <div class="accordion-body">-->
+<!--                            <div class="btn-group" role="group" aria-label="Tools">-->
+<!--                                <input type="radio" class="btn-check" name="btnradio" id="select" autocomplete="off"-->
+<!--                                       checked>-->
+<!--                                <label class="btn btn-outline-primary btn-sm" for="select">انتخاب</label>-->
 
-                                <input type="radio" class="btn-check" name="btnradio" id="redx" autocomplete="off">
-                                <label class="btn btn-outline-primary btn-sm" for="redx">نشان</label>
+<!--                                <input type="radio" class="btn-check" name="btnradio" id="redx" autocomplete="off">-->
+<!--                                <label class="btn btn-outline-primary btn-sm" for="redx">نشان</label>-->
 
-                                <!--                            <input type="radio" class="btn-check" name="btnradio" id="dp1" autocomplete="off">-->
-                                <!--                            <label class="btn btn-outline-primary btn-sm" for="dp1">DP</label>-->
+<!--                                &lt;!&ndash;                            <input type="radio" class="btn-check" name="btnradio" id="dp1" autocomplete="off">&ndash;&gt;-->
+<!--                                &lt;!&ndash;                            <label class="btn btn-outline-primary btn-sm" for="dp1">DP</label>&ndash;&gt;-->
 
-                                <input type="radio" class="btn-check" name="btnradio" id="point" autocomplete="off">
-                                <label class="btn btn-outline-primary btn-sm" for="point">ایجاد نقطه</label>
+<!--                                <input type="radio" class="btn-check" name="btnradio" id="point" autocomplete="off">-->
+<!--                                <label class="btn btn-outline-primary btn-sm" for="point">ایجاد نقطه</label>-->
 
-                                <input v-if="config && config.callsign" type="radio" class="btn-check" name="btnradio"
-                                       id="me" autocomplete="off">
-                                <label v-if="config && config.callsign" class="btn btn-outline-primary btn-sm"
-                                       for="me">من</label>
-                            </div>
-                            <div v-if="getTool('redx')" class="mt-1">
-                                <span class="badge bg-danger">نشان</span>: {{ printCoordsll(getTool('redx').getLatLng())
-                                }}
-                                <span class="badge rounded-pill bg-success" style="cursor:default;"
-                                      v-on:click="map.setView(getTool('redx').getLatLng())"><i
-                                        class="bi bi-geo"></i></span>
-                                <span class="badge rounded-pill bg-danger" style="cursor:default;"
-                                      v-on:click="removeTool('redx')">X</span>
-                            </div>
-                            <!--                        <div v-if="getTool('dp1')" class="mt-1">-->
-                            <!--                            <span class="badge bg-success">DP1</span>: {{ printCoordsll(getTool('dp1').getLatLng()) }}-->
-                            <!--                            <span class="badge rounded-pill bg-success" style="cursor:default;"-->
-                            <!--                                  v-on:click="map.setView(getTool('dp1').getLatLng())"><i class="bi bi-geo"></i></span>-->
-                            <!--                            <span class="badge rounded-pill bg-danger" style="cursor:default;"-->
-                            <!--                                  v-on:click="removeTool('dp1')">X</span>-->
-                            <!--                        </div>-->
-                            <div v-if="coords" class="mt-1">
-                                <span class="badge bg-secondary">نشانگر</span>: {{ printCoordsll(coords) }} <span
-                                    v-if="getTool('redx')">({{ distBea(getTool('redx').getLatLng(), coords) }} از
-                                    نشانگر)</span>
-                            </div>
-                            <div class="d-flex mt-1">
-                                <div class="d-inline-block">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="emergSwitch1" v-model="emergency_switch1">
-                                        <!--                                    <label class="form-check-label" for="emergSwitch1">خطر</label>-->
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="emergSwitch2" v-model="emergency_switch2">
-                                        <!--                                    <label class="form-check-label" for="emergSwitch2">خطر</label>-->
-                                    </div>
-                                </div>
-                                <!--                                <div class="form-check form-check-inline">-->
-                                <div class="flex-fill"></div>
-                                <select class="form-select form-select-sm d-inline-block" v-model="emergency_type">
-                                    <option selected value="b-a-o-tbl">هشدار</option>
-                                    <option value="b-a-o-opn">مواجهه با دشمن</option>
-                                    <option value="b-a-o-pan">تلفات</option>
-                                </select>
-                                <!--                                </div>-->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="accordion-item" v-if="current_unit">
-                    <div class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapseCurrentUnit" aria-expanded="true"
-                                aria-controls="collapseCurrentUnit">
-                            <span class="pull-left fw-bold" v-on:click="mapToUnit(current_unit)">
-                                <img :src="milImg(current_unit)"/> {{ getUnitName(current_unit) }} <span
-                                    v-if="current_unit.status"> ({{ current_unit.status }})</span>
-                                <img height="24" src="/static/icons/coord_unlock.png"
-                                     v-if="current_unit.category !== 'point' && locked_unit_uid != current_unit.uid"
-                                     v-on:click="locked_unit_uid=current_unit.uid"/>
-                                <img height="24" src="/static/icons/coord_lock.png"
-                                     v-if="locked_unit_uid == current_unit.uid" v-on:click="locked_unit_uid=''"/>
-                            </span>
-                            <span class="pull-right" v-if="current_unit.category === 'contact'">
-                                <button type="button" class="btn btn-sm btn-primary"
-                                        v-if="current_unit.category === 'contact'"
-                                        v-on:click="openChat(current_unit.uid, current_unit.callsign);"><i
-                                        class="bi bi-chat-text-fill"></i></button>
-                            </span>
-                            <span class="pull-right" v-if="current_unit.category !== 'contact'">
-                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                        v-if="current_unit.category !== 'drawing' && current_unit.category !== 'route'"
-                                        data-bs-target="#edit">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"
-                                        v-if="current_unit.category === 'drawing'||current_unit.category === 'route'"
-                                        data-bs-target="#drawing-edit">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-danger" v-on:click="deleteCurrentUnit">
-                                    <i class="bi bi-trash3-fill"></i>
-                                </button>
-                            </span>
-                        </button>
-                    </div>
-                    <div id="collapseCurrentUnit" class="accordion-collapse collapse show" data-bs-parent="#accordion">
-                        <div class="accordion-body">
-                            <dl>
-                                <dt>UID</dt>
-                                <dd>{{ current_unit.uid }}</dd>
-                                <template v-if="current_unit.team">
-                                    <dt>تیم</dt>
-                                    <dd>{{ current_unit.team }}</dd>
-                                    <dt>نقش</dt>
-                                    <dd>{{ current_unit.role }}</dd>
-                                </template>
-                                <dt>نوع</dt>
-                                <dd>{{ current_unit.type }}</dd>
-                                <dt>SIDC</dt>
-                                <dd>{{ current_unit.sidc }}</dd>
+<!--                                <input v-if="config && config.callsign" type="radio" class="btn-check" name="btnradio"-->
+<!--                                       id="me" autocomplete="off">-->
+<!--                                <label v-if="config && config.callsign" class="btn btn-outline-primary btn-sm"-->
+<!--                                       for="me">من</label>-->
+<!--                            </div>-->
+<!--                            <div v-if="getTool('redx')" class="mt-1">-->
+<!--                                <span class="badge bg-danger">نشان</span>: {{ printCoordsll(getTool('redx').getLatLng())-->
+<!--                                }}-->
+<!--                                <span class="badge rounded-pill bg-success" style="cursor:default;"-->
+<!--                                      v-on:click="map.setView(getTool('redx').getLatLng())"><i-->
+<!--                                        class="bi bi-geo"></i></span>-->
+<!--                                <span class="badge rounded-pill bg-danger" style="cursor:default;"-->
+<!--                                      v-on:click="removeTool('redx')">X</span>-->
+<!--                            </div>-->
+<!--                            &lt;!&ndash;                        <div v-if="getTool('dp1')" class="mt-1">&ndash;&gt;-->
+<!--                            &lt;!&ndash;                            <span class="badge bg-success">DP1</span>: {{ printCoordsll(getTool('dp1').getLatLng()) }}&ndash;&gt;-->
+<!--                            &lt;!&ndash;                            <span class="badge rounded-pill bg-success" style="cursor:default;"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                  v-on:click="map.setView(getTool('dp1').getLatLng())"><i class="bi bi-geo"></i></span>&ndash;&gt;-->
+<!--                            &lt;!&ndash;                            <span class="badge rounded-pill bg-danger" style="cursor:default;"&ndash;&gt;-->
+<!--                            &lt;!&ndash;                                  v-on:click="removeTool('dp1')">X</span>&ndash;&gt;-->
+<!--                            &lt;!&ndash;                        </div>&ndash;&gt;-->
+<!--                            <div v-if="coords" class="mt-1">-->
+<!--                                <span class="badge bg-secondary">نشانگر</span>: {{ printCoordsll(coords) }} <span-->
+<!--                                    v-if="getTool('redx')">({{ distBea(getTool('redx').getLatLng(), coords) }} از-->
+<!--                                    نشانگر)</span>-->
+<!--                            </div>-->
+<!--                            <div class="d-flex mt-1">-->
+<!--                                <div class="d-inline-block">-->
+<!--                                    <div class="form-check form-switch">-->
+<!--                                        <input class="form-check-input" type="checkbox" role="switch" id="emergSwitch1" v-model="emergency_switch1">-->
+<!--                                        &lt;!&ndash;                                    <label class="form-check-label" for="emergSwitch1">خطر</label>&ndash;&gt;-->
+<!--                                    </div>-->
+<!--                                    <div class="form-check form-switch">-->
+<!--                                        <input class="form-check-input" type="checkbox" role="switch" id="emergSwitch2" v-model="emergency_switch2">-->
+<!--                                        &lt;!&ndash;                                    <label class="form-check-label" for="emergSwitch2">خطر</label>&ndash;&gt;-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                &lt;!&ndash;                                <div class="form-check form-check-inline">&ndash;&gt;-->
+<!--                                <div class="flex-fill"></div>-->
+<!--                                <select class="form-select form-select-sm d-inline-block" v-model="emergency_type">-->
+<!--                                    <option selected value="b-a-o-tbl">هشدار</option>-->
+<!--                                    <option value="b-a-o-opn">مواجهه با دشمن</option>-->
+<!--                                    <option value="b-a-o-pan">تلفات</option>-->
+<!--                                </select>-->
+<!--                                &lt;!&ndash;                                </div>&ndash;&gt;-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <div class="accordion-item" v-if="current_unit">-->
+<!--                    <div class="accordion-header">-->
+<!--                        <button class="accordion-button" type="button" data-bs-toggle="collapse"-->
+<!--                                data-bs-target="#collapseCurrentUnit" aria-expanded="true"-->
+<!--                                aria-controls="collapseCurrentUnit">-->
+<!--                            <span class="pull-left fw-bold" v-on:click="mapToUnit(current_unit)">-->
+<!--                                <img :src="milImg(current_unit)"/> {{ getUnitName(current_unit) }} <span-->
+<!--                                    v-if="current_unit.status"> ({{ current_unit.status }})</span>-->
+<!--                                <img height="24" src="/static/icons/coord_unlock.png"-->
+<!--                                     v-if="current_unit.category !== 'point' && locked_unit_uid != current_unit.uid"-->
+<!--                                     v-on:click="locked_unit_uid=current_unit.uid"/>-->
+<!--                                <img height="24" src="/static/icons/coord_lock.png"-->
+<!--                                     v-if="locked_unit_uid == current_unit.uid" v-on:click="locked_unit_uid=''"/>-->
+<!--                            </span>-->
+<!--                            <span class="pull-right" v-if="current_unit.category === 'contact'">-->
+<!--                                <button type="button" class="btn btn-sm btn-primary"-->
+<!--                                        v-if="current_unit.category === 'contact'"-->
+<!--                                        v-on:click="openChat(current_unit.uid, current_unit.callsign);"><i-->
+<!--                                        class="bi bi-chat-text-fill"></i></button>-->
+<!--                            </span>-->
+<!--                            <span class="pull-right" v-if="current_unit.category !== 'contact'">-->
+<!--                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"-->
+<!--                                        v-if="current_unit.category !== 'drawing' && current_unit.category !== 'route'"-->
+<!--                                        data-bs-target="#edit">-->
+<!--                                    <i class="bi bi-pencil-square"></i>-->
+<!--                                </button>-->
+<!--                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal"-->
+<!--                                        v-if="current_unit.category === 'drawing'||current_unit.category === 'route'"-->
+<!--                                        data-bs-target="#drawing-edit">-->
+<!--                                    <i class="bi bi-pencil-square"></i>-->
+<!--                                </button>-->
+<!--                                <button type="button" class="btn btn-sm btn-danger" v-on:click="deleteCurrentUnit">-->
+<!--                                    <i class="bi bi-trash3-fill"></i>-->
+<!--                                </button>-->
+<!--                            </span>-->
+<!--                        </button>-->
+<!--                    </div>-->
+<!--                    <div id="collapseCurrentUnit" class="accordion-collapse collapse show" data-bs-parent="#accordion">-->
+<!--                        <div class="accordion-body">-->
+<!--                            <dl>-->
+<!--                                <dt>UID</dt>-->
+<!--                                <dd>{{ current_unit.uid }}</dd>-->
+<!--                                <template v-if="current_unit.team">-->
+<!--                                    <dt>تیم</dt>-->
+<!--                                    <dd>{{ current_unit.team }}</dd>-->
+<!--                                    <dt>نقش</dt>-->
+<!--                                    <dd>{{ current_unit.role }}</dd>-->
+<!--                                </template>-->
+<!--                                <dt>نوع</dt>-->
+<!--                                <dd>{{ current_unit.type }}</dd>-->
+<!--                                <dt>SIDC</dt>-->
+<!--                                <dd>{{ current_unit.sidc }}</dd>-->
 
-                                <dt>مختصات</dt>
-                                <dd>{{ printCoords(current_unit.lat, current_unit.lon) }}
-                                    <span class="badge rounded-pill bg-success" style="cursor:default;"
-                                          v-on:click="map.setView([current_unit.lat, current_unit.lon])"><i
-                                            class="bi bi-geo"></i></span>
-                                    <span v-if="coords">({{ distBea(latlng(current_unit.lat, current_unit.lon), coords)
-                                        }}
-                                        تا نشانگر)</span>
-                                </dd>
-                                <dt>سرعت</dt>
-                                <dd>{{ sp(current_unit.speed) }} km/h</dd>
-                                <dt>ارتفاع</dt>
-                                <dd>{{ current_unit.hae.toFixed(1) }}</dd>
-                                <!--                            <div v-if="current_unit.tak_version">-->
-                                <!--                                <b>ver:</b> {{ current_unit.tak_version }}<br/>{{ current_unit.device }}-->
-                                <!--                            </div>-->
-                                <div v-if="current_unit.parent_uid">
-                                    <dt>سازنده</dt>
-                                    <dd>{{ current_unit.parent_uid }}<span v-if="current_unit.parent_callsign">({{
-                                            current_unit.parent_callsign }})</span></dd>
-                                </div>
-                                <dt>زمان</dt>
-                                <dd>{{ dt(current_unit.start_time) }}</dd>
-                                <!--                                <dt>ارسال</dt>-->
-                                <!--                                <dd>{{ dt(current_unit.send_time) }}</dd>-->
-                                <!--                                <dt>انقضا</dt>-->
-                                <!--                                <dd>{{ dt(current_unit.stale_time) }}</dd>-->
-                                <!--                                <dt>آخرین زمان دیده شدن</dt>-->
-                                <!--                                <dd>{{ dt(current_unit.last_seen) }}</dd>-->
-                            </dl>
-                            <div v-if="Object.keys(current_unit.sensor_data).length > 0">
-                                <h6>آخرین داده‌های سنسور</h6>
-                                <table class="table" style="table-layout: fixed">
-                                    <tr v-for="(value, key) in current_unit.sensor_data">
-                                        <td class="col-3">{{key}}</td>
-                                        <td class="col-9"
-                                            style="text-overflow: ellipsis;white-space: nowrap;overflow: hidden;"
-                                            :title="value">{{value}}
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                            {{ current_unit.text }}
-                        </div>
-                    </div>
-                </div>
-            </div>
+<!--                                <dt>مختصات</dt>-->
+<!--                                <dd>{{ printCoords(current_unit.lat, current_unit.lon) }}-->
+<!--                                    <span class="badge rounded-pill bg-success" style="cursor:default;"-->
+<!--                                          v-on:click="map.setView([current_unit.lat, current_unit.lon])"><i-->
+<!--                                            class="bi bi-geo"></i></span>-->
+<!--                                    <span v-if="coords">({{ distBea(latlng(current_unit.lat, current_unit.lon), coords)-->
+<!--                                        }}-->
+<!--                                        تا نشانگر)</span>-->
+<!--                                </dd>-->
+<!--                                <dt>سرعت</dt>-->
+<!--                                <dd>{{ sp(current_unit.speed) }} km/h</dd>-->
+<!--                                <dt>ارتفاع</dt>-->
+<!--                                <dd>{{ current_unit.hae.toFixed(1) }}</dd>-->
+<!--                                &lt;!&ndash;                            <div v-if="current_unit.tak_version">&ndash;&gt;-->
+<!--                                &lt;!&ndash;                                <b>ver:</b> {{ current_unit.tak_version }}<br/>{{ current_unit.device }}&ndash;&gt;-->
+<!--                                &lt;!&ndash;                            </div>&ndash;&gt;-->
+<!--                                <div v-if="current_unit.parent_uid">-->
+<!--                                    <dt>سازنده</dt>-->
+<!--                                    <dd>{{ current_unit.parent_uid }}<span v-if="current_unit.parent_callsign">({{-->
+<!--                                            current_unit.parent_callsign }})</span></dd>-->
+<!--                                </div>-->
+<!--                                <dt>زمان</dt>-->
+<!--                                <dd>{{ dt(current_unit.start_time) }}</dd>-->
+<!--                                &lt;!&ndash;                                <dt>ارسال</dt>&ndash;&gt;-->
+<!--                                &lt;!&ndash;                                <dd>{{ dt(current_unit.send_time) }}</dd>&ndash;&gt;-->
+<!--                                &lt;!&ndash;                                <dt>انقضا</dt>&ndash;&gt;-->
+<!--                                &lt;!&ndash;                                <dd>{{ dt(current_unit.stale_time) }}</dd>&ndash;&gt;-->
+<!--                                &lt;!&ndash;                                <dt>آخرین زمان دیده شدن</dt>&ndash;&gt;-->
+<!--                                &lt;!&ndash;                                <dd>{{ dt(current_unit.last_seen) }}</dd>&ndash;&gt;-->
+<!--                            </dl>-->
+<!--                            <div v-if="Object.keys(current_unit.sensor_data).length > 0">-->
+<!--                                <h6>آخرین داده‌های سنسور</h6>-->
+<!--                                <table class="table" style="table-layout: fixed">-->
+<!--                                    <tr v-for="(value, key) in current_unit.sensor_data">-->
+<!--                                        <td class="col-3">{{key}}</td>-->
+<!--                                        <td class="col-9"-->
+<!--                                            style="text-overflow: ellipsis;white-space: nowrap;overflow: hidden;"-->
+<!--                                            :title="value">{{value}}-->
+<!--                                        </td>-->
+<!--                                    </tr>-->
+<!--                                </table>-->
+<!--                            </div>-->
+<!--                            {{ current_unit.text }}-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+            <sidebar></sidebar>
         </div>
     </div>
 
