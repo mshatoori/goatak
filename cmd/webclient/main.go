@@ -470,7 +470,7 @@ func (app *App) MakeMe() *cotproto.TakMessage {
 	app.MutateSelfPosMessage(ev.CotEvent)
 
 	// TODO: Refactor this and make it configurable...
-	app.MakeFenceAroundMe()
+	//app.MakeFenceAroundMe()
 
 	return ev
 }
@@ -654,6 +654,14 @@ func (app *App) createDefaultRabbitFeed() {
 	})
 
 	app.feeds = append(app.feeds, newFeed)
+}
+
+func (app *App) forceLocationUpdate() {
+	for _, sensor := range app.sensors {
+		if sensor.GetType() == "GPS" {
+			sensor.(*sensors.GpsdSensor).ForceUpdate()
+		}
+	}
 }
 
 func main() {

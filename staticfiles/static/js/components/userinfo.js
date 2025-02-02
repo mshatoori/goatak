@@ -39,7 +39,7 @@ Vue.component("UserInfo", {
           <button
             type="button"
             class="btn btn-sm btn-primary"
-            @click="toggleEdit"
+            @click.stop.prevent="toggleEdit"
           >
             <i class="bi bi-pencil-square" v-if="!editing"></i>
             <i class="bi bi-floppy" v-else></i>

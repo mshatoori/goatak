@@ -68,6 +68,7 @@ type GpsdSensor struct {
 	UID         string
 	Interval    time.Duration
 	Ctx         context.Context
+	forceSend   chan any
 	latestEvent *cotproto.CotEvent
 
 	mu         sync.Mutex
@@ -82,6 +83,7 @@ func (sensor *GpsdSensor) Stop() {
 
 func (sensor *GpsdSensor) Initialize() bool {
 	sensor.Ctx, sensor.cancelFunc = context.WithCancel(sensor.Ctx)
+	sensor.forceSend = make(chan any)
 	return true
 }
 
@@ -90,18 +92,23 @@ func (sensor *GpsdSensor) sendLoop(cb func(data any)) {
 	for {
 		select {
 		case <-ticker.C:
-			//sensor.Logger.Warn(fmt.Sprintf("GPS sensor [%s] tick", sensor.UID))
-			sensor.mu.Lock()
-			if sensor.latestEvent != nil {
-				sensor.Logger.Warn("GPS sensor sending data")
-				cb(sensor.latestEvent)
-				sensor.latestEvent = nil
-			}
-			sensor.mu.Unlock()
+			sensor.trySend(cb)
+		case <-sensor.forceSend:
+			sensor.trySend(cb)
 		case <-sensor.Ctx.Done():
 			return
 		}
 	}
+}
+
+func (sensor *GpsdSensor) trySend(cb func(data any)) {
+	sensor.mu.Lock()
+	if sensor.latestEvent != nil {
+		sensor.Logger.Warn("GPS sensor sending data")
+		cb(sensor.latestEvent)
+		sensor.latestEvent = nil
+	}
+	sensor.mu.Unlock()
 }
 
 func (sensor *GpsdSensor) Start(cb func(data any)) {
@@ -250,4 +257,8 @@ func (sensor *GpsdSensor) ToSensorModel() *model.SensorModel {
 
 func (sensor *GpsdSensor) GetUID() string {
 	return sensor.UID
+}
+
+func (sensor *GpsdSensor) ForceUpdate() {
+	sensor.forceSend <- 0
 }

@@ -73,3 +73,7 @@ div.info {
 /*    border-radius: 2em;*/
 /*    transition: background-position .15s ease-in-out;*/
 /*}*/
+
+#map-locate-btn {
+    font-size: 22px;
+}

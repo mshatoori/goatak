@@ -39,7 +39,8 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.PATCH("/config", changeConfigHandler(app))
 	srv.GET("/types", getTypes)
 	srv.POST("/dp", getDpHandler(app))
-	srv.POST("/pos", getPosHandler(app))
+	srv.GET("/pos", getPosHandler(app))
+	srv.POST("/pos", changePosHandler(app))
 
 	srv.GET("/ws", getWsHandler(app))
 
@@ -172,6 +173,21 @@ func getDpHandler(app *App) air.Handler {
 }
 
 func getPosHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		m := make(map[string]any, 0)
+
+		app.forceLocationUpdate()
+
+		// TODO: Is location updated here?
+		lat, lon := app.pos.Load().GetCoord()
+		m["lat"] = lat
+		m["lon"] = lon
+
+		return res.WriteJSON(m)
+	}
+}
+
+func changePosHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
 		pos := make(map[string]float64)
 

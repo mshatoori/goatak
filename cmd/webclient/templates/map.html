@@ -171,19 +171,19 @@
                         <button class="accordion-button" type="button" data-bs-toggle="collapse"
                                 data-bs-target="#collapseCurrentUnit" aria-expanded="true"
                                 aria-controls="collapseCurrentUnit">
-                            <span class="pull-left fw-bold" v-on:click="mapToUnit(current_unit)">
+                            <span class="pull-left fw-bold" v-on:click.stop="mapToUnit(current_unit)">
                                 <img :src="milImg(current_unit)"/> {{ getUnitName(current_unit) }} <span
                                     v-if="current_unit.status"> ({{ current_unit.status }})</span>
                                 <img height="24" src="/static/icons/coord_unlock.png"
                                      v-if="current_unit.category !== 'point' && locked_unit_uid != current_unit.uid"
-                                     v-on:click="locked_unit_uid=current_unit.uid"/>
+                                     v-on:click.stop="locked_unit_uid=current_unit.uid"/>
                                 <img height="24" src="/static/icons/coord_lock.png"
-                                     v-if="locked_unit_uid == current_unit.uid" v-on:click="locked_unit_uid=''"/>
+                                     v-if="locked_unit_uid == current_unit.uid" v-on:click.stop="locked_unit_uid=''"/>
                             </span>
                             <span class="pull-right" v-if="current_unit.category === 'contact'">
                                 <button type="button" class="btn btn-sm btn-primary"
                                         v-if="current_unit.category === 'contact'"
-                                        v-on:click="openChat(current_unit.uid, current_unit.callsign);"><i
+                                        v-on:click.stop="openChat(current_unit.uid, current_unit.callsign);"><i
                                         class="bi bi-chat-text-fill"></i></button>
                             </span>
                             <span class="pull-right" v-if="current_unit.category !== 'contact'">
@@ -197,7 +197,7 @@
                                         data-bs-target="#drawing-edit">
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
-                                <button type="button" class="btn btn-sm btn-danger" v-on:click="deleteCurrentUnit">
+                                <button type="button" class="btn btn-sm btn-danger" v-on:click.stop="deleteCurrentUnit">
                                     <i class="bi bi-trash3-fill"></i>
                                 </button>
                             </span>

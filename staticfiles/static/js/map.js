@@ -40,6 +40,53 @@ L.Marker.RotatedMarker = L.Marker.extend({
 
 });
 
+var LocationControl = L.Control.extend({
+    options: {
+        position: 'bottomleft',
+    },
+
+    onAdd: function (map) {
+        var controlName = 'leaflet-control-location',
+            container = L.DomUtil.create('div', controlName + ' leaflet-bar'),
+            options = this.options;
+
+        this._button = this._createButton('<i class="bi bi-crosshair" id="map-locate-btn"></i>', 'My Location',
+            controlName + '-in', container, this._locate);
+
+        return container;
+    },
+
+    onRemove: function (map) {
+    },
+
+
+    _locate: function (e) {
+        if (!this._disabled && this._map.options.locateCallback) {
+            this._map.options.locateCallback(e);
+        }
+    },
+
+    _createButton: function (html, title, className, container, fn) {
+        var link = L.DomUtil.create('a', className, container);
+        link.innerHTML = html;
+        link.href = '#';
+        link.title = title;
+
+        /*
+         * Will force screen readers like VoiceOver to read this as "Zoom in - button"
+         */
+        link.setAttribute('role', 'button');
+        link.setAttribute('aria-label', title);
+
+        L.DomEvent.disableClickPropagation(link);
+        L.DomEvent.on(link, 'click', stop);
+        L.DomEvent.on(link, 'click', fn, this);
+        L.DomEvent.on(link, 'click', this._refocusOnMap, this);
+
+        return link;
+    }
+});
+
 let app = new Vue({
     el: '#app',
     data: {
@@ -108,7 +155,10 @@ let app = new Vue({
         }
     },
     mounted() {
-        this.map = L.map('map');
+        this.map = L.map('map', {
+            attributionControl: false,
+            locateCallback: this.locateByGPS,
+        });
         this.inDrawMode = false;
 
         this.drawnItems = new L.FeatureGroup();
@@ -132,6 +182,8 @@ let app = new Vue({
         this.drawControl = new L.Control.Draw({
             edit: {
                 featureGroup: this.drawnItems,
+                edit: false,
+                remove: false,
                 polygon: {
                     allowIntersection: false
                 }
@@ -140,10 +192,17 @@ let app = new Vue({
                 polygon: {
                     allowIntersection: false,
                     showArea: true
-                }
+                },
+                rectangle: false,
+                circle: false,
+                circlemarker: false,
+                marker: false,
             }
         });
+
         this.map.addControl(this.drawControl);
+        this.map.addControl(new LocationControl());
+
         vm = this;
 
         const drawStart = function (event) {
@@ -291,7 +350,7 @@ let app = new Vue({
 
         this.map.setView([60, 30], 11);
 
-        L.control.scale({metric: true}).addTo(this.map);
+        L.control.scale({position: "bottomright", metric: true}).addTo(this.map);
 
         this.getConfig();
 
@@ -521,7 +580,7 @@ let app = new Vue({
                     interactive: !item.uid.endsWith('-fence')
                 })
                 if (!item.uid.endsWith("-fence")) {
-                    item.marker.on('click', function (e) {
+                    item.marker.on('click', (e) => {
                         this.setCurrentUnitUid(item.uid, false);
                     });
                 }
@@ -530,6 +589,9 @@ let app = new Vue({
                 item.marker = L.polyline(latlngs, {
                     color: item.color,
                 })
+                item.marker.on('click', (e) => {
+                    this.setCurrentUnitUid(item.uid, false);
+                });
                 item.marker.addTo(this.routeItems);
             }
         },
@@ -551,8 +613,10 @@ let app = new Vue({
         _processUpdate: function (item) {
             if (item.category === "drawing" || item.category === "route") {
                 // TODO: Handle things other than polygon!
-                this.drawnItems.removeLayer(item.marker)
-                this.routeItems.removeLayer(item.marker)
+                if (item.marker) {
+                    this.drawnItems.removeLayer(item.marker)
+                    this.routeItems.removeLayer(item.marker)
+                }
                 this._processDrawing(item)
             } else {
                 this.updateUnitMarker(item, false, true)
@@ -866,8 +930,7 @@ let app = new Vue({
                 let alert = this.sharedState.items.get(this.config.uid + "-9-1-1")
                 if (alert) {
                     alert.type = "b-a-o-can"
-                }
-                else {
+                } else {
                     alert = this.createEmergencyAlert("b-a-o-can")
                 }
                 this.sendUnit(alert)
@@ -1317,6 +1380,10 @@ let app = new Vue({
 
             return u
         },
+        locateByGPS: function () {
+            fetch("/pos")
+                .then(r => this.map.setView([this.config.lat, this.config.lon]))
+        }
     },
 });
 
