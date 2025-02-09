@@ -75,6 +75,11 @@ type GpsdSensor struct {
 	cancelFunc context.CancelFunc
 
 	Title string
+
+	TCPProxyAddr  string
+	TCPConnected  bool
+	TCPConnection net.Conn
+	TCPReader     *bufio.Reader
 }
 
 func (sensor *GpsdSensor) Stop() {
@@ -219,6 +224,10 @@ func (sensor *GpsdSensor) connect() bool {
 
 			_, _ = fmt.Fprintf(sensor.Conn, "?WATCH={\"enable\":true,\"json\":true}")
 
+			if sensor.TCPProxyAddr != "" {
+				go sensor.TryTCP()
+			}
+
 			return true
 		}
 
@@ -261,4 +270,80 @@ func (sensor *GpsdSensor) GetUID() string {
 
 func (sensor *GpsdSensor) ForceUpdate() {
 	sensor.forceSend <- 0
+}
+
+func (sensor *GpsdSensor) TryTCP() {
+	ticker := time.NewTicker(sensor.Interval)
+
+	for {
+		select {
+		case <-ticker.C:
+			sensor.TCPConnectAndReceive()
+		case <-sensor.forceSend:
+			sensor.TCPConnectAndReceive()
+		case <-sensor.Ctx.Done():
+			return
+		}
+	}
+}
+
+func (sensor *GpsdSensor) TCPConnectAndReceive() {
+	var _ *bufio.Reader
+
+	if sensor.TCPConnected {
+		if sensor.TCPReceive() {
+			return
+		}
+	}
+
+	// If tcp connection not connection or there was an error when reading data
+
+	if sensor.TCPConnect() {
+		sensor.TCPReceive()
+	}
+}
+
+func (sensor *GpsdSensor) TCPReceive() bool {
+	readString, err := sensor.TCPReader.ReadBytes('\n')
+	if err != nil {
+		sensor.Logger.Error("Couldn't read from GPS proxy connection", "err", err.Error())
+		return false
+	}
+
+	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:5577", strings.Split(sensor.Addr, ":")[0]))
+
+	if err != nil {
+		sensor.Logger.Error("Couldn't find UDP device for gpsd", "err", err.Error())
+		return false
+	}
+
+	udpConn, err := net.DialUDP("udp", nil, addr)
+	if err != nil {
+		sensor.Logger.Error("Couldn't connect to UDP device for gpsd", "err", err.Error())
+		return false
+	}
+
+	_, err = udpConn.Write(readString)
+	if err != nil {
+		sensor.Logger.Error("Couldn't write to UDP device for gpsd", "err", err.Error())
+		return false
+	}
+
+	return true
+}
+
+func (sensor *GpsdSensor) TCPConnect() bool {
+	var err error
+	sensor.TCPConnection, err = net.DialTimeout("tcp4", sensor.TCPProxyAddr, DialTimeout)
+
+	if err == nil {
+		sensor.TCPConnected = true
+		// TODO: Send Proxy Command...
+		sensor.TCPReader = bufio.NewReader(sensor.Conn)
+
+		return true
+	}
+
+	sensor.Logger.Error("GPS COM proxy dial error", "error", err)
+	return false
 }
