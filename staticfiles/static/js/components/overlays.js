@@ -1,4 +1,6 @@
-// const html = String.raw;
+if (typeof html !== 'undefined') {
+    var html = String.raw;
+}
 Vue.component("OverlaysList", {
     data: function () {
         return {
@@ -57,7 +59,7 @@ Vue.component("OverlaysList", {
     },
     props: ["toggleOverlay","config", "coords", "configUpdated"],
     inject: [],
-    template: html`
+    template: /*html*/`
         <div class="card">
             <h5 class="card-header">لایه‌ها</h5>
             <div class="card-body">

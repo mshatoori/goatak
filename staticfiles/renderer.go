@@ -110,7 +110,7 @@ func (r *Renderer) Render(m map[string]interface{}, templates ...string) (string
 	return buf.String(), nil
 }
 
-// str2html returns a `template.HTML` for the s.
+// str2html returns a `template./*html*/` for the s.
 func str2html(s string) template.HTML {
 	return template.HTML(s) //nolint:gosec
 }

@@ -1,4 +1,6 @@
-let html = String.raw;
+if (typeof html !== 'undefined') {
+    var html = String.raw;
+}
 Vue.component('FeedsModal', {
     data: function () {
         return {
@@ -46,7 +48,7 @@ Vue.component('FeedsModal', {
             return this.sharedState.feeds;
         },
     },
-    template: html`
+    template: /*html*/`
     <div class="modal fade" id="feeds-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">

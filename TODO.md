@@ -42,32 +42,36 @@
 8. Share with (e.g. Air support) -> Send lat/lng
 
 ## NEW
+- bug: After reloading page, emergency alarm is reset 
+- Change alerts from modal to sidebar??
 - maybe aggregate data before sending :-?
 - Download map 16z for tehran
 - Distance from lines
-- ~~edit polygon won't work~~
-- ~~delete polygon and units, test it!~~
-- ~~Can't even select polygon~~
-- ~~I can't focus on myself!~~
-- UI is bad. WinTAK UI is better.
 - What about mission planning and data package? Can we include some objects at least? in a file or something.
-- Re-enable personal fence
-- Implement TCP connection for GPS -> send (COM_PORT, TRANSPARENT)
+- Test GPS TCP proxy
 - Make UI more human-readable -> سخت افزار جی پی اس / سیمولاتور جی پی اس
-
-VSPE
+- Re-enable personal fence
+  VSPE???
 
 ## Documentation
 
 ## DONE:
-1. ~~Fix user info form (submit get 500)~~
-2. ~~Implement sensors logic (using interfaces)~~
-3. ~~Fix feed counter in navbar~~
-4. ~~Better font~~
-5. ~~Fix delete point~~
-6. ~~Add radar to sensors (up-to-date enemy positions :-?)~~
-7. ~~All entities should have names~~
-8. ~~Add polygon to map and send~~
-9. ~~Show other nodes as MilSymbol~~
-10. ~~**پیوست فنی شامل توضیحات پروتکل‌های NMEA و AIS و ...**~~
-11. ~~**به نسبت سری قبل باید پروپیمون‌تر باشه**~~
+- ~~Fix user info form (submit get 500)~~
+- ~~Implement sensors logic (using interfaces)~~
+- ~~Fix feed counter in navbar~~
+- ~~Better font~~
+- ~~Fix delete point~~
+- ~~Add radar to sensors (up-to-date enemy positions :-?)~~
+- ~~All entities should have names~~
+- ~~Add polygon to map and send~~
+- ~~Show other nodes as MilSymbol~~
+- ~~**پیوست فنی شامل توضیحات پروتکل‌های NMEA و AIS و ...**~~
+- ~~**به نسبت سری قبل باید پروپیمون‌تر باشه**~~
+- ~~edit polygon won't work~~
+- ~~delete polygon and units, test it!~~
+- ~~Can't even select polygon~~
+- ~~I can't focus on myself!~~
+- ~~UI is bad. WinTAK UI is better.~~
+- ~~Implement TCP connection for GPS -> send (COM_PORT, TRANSPARENT)~~
+- ~~EMERGENCY IS BROKEN~~
+- - ~~Alerts can't be seen~~

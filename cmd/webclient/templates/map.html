@@ -94,7 +94,10 @@
 
             <div class="col-3 p-0 h-100">
                 <sidebar :toggle-overlay="toggleOverlay" :config="config" :delete-current-unit="deleteCurrentUnit"
-                         :config-updated="configUpdated" :coords="coords" :current_unit="current_unit" :locked_unit_uid="locked_unit_uid"></sidebar>
+                         :check-emergency="checkEmergency "
+                         :config-updated="configUpdated" :coords="coords" :current_unit="current_unit"
+                         :locked_unit_uid="locked_unit_uid"
+                         :map="map"></sidebar>
             </div>
         </div>
     </div>
@@ -132,7 +135,7 @@
     </div>
 
     <feeds-modal></feeds-modal>
-    <alarms-modal :units="sharedState.items"></alarms-modal>
+    <alarms-modal :map="map"></alarms-modal>
     <send-modal></send-modal>
     <sensors-modal></sensors-modal>
     <drawing-edit-modal :unit="form_unit" :cancel-edit-form="cancelEditForm"

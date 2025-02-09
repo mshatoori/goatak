@@ -1,7 +1,8 @@
-maps
+maps/
 Dockerfile
 Dockerfile.webclient
 docker-compose.yaml
 .env
 dist
 *.tar
+setup/

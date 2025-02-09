@@ -44,6 +44,16 @@ services:
       - "udp://0.0.0.0:5577"
     networks:
         - mmhs
+#  osm:
+#    image: overv/openstreetmap-tile-server
+#    ports:
+#      - "8998:80"
+#    volumes:
+#      - ./iran-latest.osm.pbf:/data/region.osm.pbf
+#      - ./osm-data/:/data/database/
+#    command:
+#      - "run"
+
 networks:
   mmhs:
     name: mmhs-network

@@ -1,5 +1,5 @@
-if (html === undefined || html === null) {
-    html = String.raw;
+if (typeof html !== 'undefined') {
+    var html = String.raw;
 }
 
 Vue.component("UserInfo", {
@@ -32,9 +32,9 @@ Vue.component("UserInfo", {
         },
     },
     computed: {},
-    props: ["config", "coords", "configUpdated"],
-    inject: ["map", "printCoords", "distBea", "latlng"],
-    template: html`
+    props: ["config", "coords", "configUpdated", "map"],
+    inject: ["printCoords", "distBea", "latlng"],
+    template: /*html*/`
         <div class="card">
             <h5 class="card-header">اطلاعات من
                 <button

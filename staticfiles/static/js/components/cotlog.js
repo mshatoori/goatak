@@ -1,4 +1,4 @@
-// const html = String.raw;
+// const var html = String.raw;
 Vue.component('CotLog', {
     data: function () {
         return {
@@ -7,10 +7,10 @@ Vue.component('CotLog', {
     },
     props: ['units'],
     methods: {
-        
+
     },
     computed: {
-        
+
     },
     template: `
     <div class="accordion-item mb-1">

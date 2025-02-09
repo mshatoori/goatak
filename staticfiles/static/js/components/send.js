@@ -1,4 +1,6 @@
-// const html = String.raw;
+if (typeof html !== 'undefined') {
+    var html = String.raw;
+}
 Vue.component('SendModal', {
     data: function () {
         return {
@@ -33,7 +35,7 @@ Vue.component('SendModal', {
             })
         },
     },
-    template: html`
+    template: /*html*/`
         <div>
             <div class="modal fade" id="send-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
                  aria-labelledby="staticBackdropLabel" aria-hidden="true">

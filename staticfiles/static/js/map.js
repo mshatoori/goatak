@@ -133,9 +133,6 @@ let app = new Vue({
             type: '',
         },
 
-        emergency_type: "b-a-o-tbl",
-        emergency_switch1: false,
-        emergency_switch2: false,
         beacon_active: false,
     },
     provide: function () {
@@ -149,18 +146,7 @@ let app = new Vue({
             printCoordsll: this.printCoordsll,
             removeTool: this.removeTool,
             coords: this.coords,
-            emergency_switch1: this.emergency_switch1,
-            emergency_switch2: this.emergency_switch2,
-            emergency_type: this.emergency_type,
             current_unit: this.current_unit
-        }
-    },
-    watch: {
-        emergency_switch1(val) {
-            this.checkEmergency();
-        },
-        emergency_switch2(val) {
-            this.checkEmergency();
         }
     },
     mounted() {
@@ -608,11 +594,11 @@ let app = new Vue({
             if (item.category === "drawing" || item.category === "route") {
                 this._processDrawing(item);
             } else {
-                if (item.type.startsWith("b-a-o") && !item.type.endsWith("-can")) {
-                    this.beacon_active = true;
-                    this.emergency_switch1 = true;
-                    this.emergency_switch2 = true;
-                }
+                // if (item.type.startsWith("b-a-o") && !item.type.endsWith("-can")) {
+                //     this.beacon_active = true;
+                //     this.emergency_switch1 = true;
+                //     this.emergency_switch2 = true;
+                // }
                 this.updateUnitMarker(item, false, true);
             }
 
@@ -917,18 +903,18 @@ let app = new Vue({
             }
         },
 
-        checkEmergency: function () {
-            if (this.emergency_switch1 && this.emergency_switch2) {
-                this.activateEmergencyBeacon();
+        checkEmergency: function (emergency_switch1, emergency_switch2, emergency_type) {
+            if (emergency_switch1 && emergency_switch2) {
+                this.activateEmergencyBeacon(emergency_type);
             } else {
                 this.deactivateEmergencyBeacon();
             }
         },
 
-        activateEmergencyBeacon: function () {
+        activateEmergencyBeacon: function (emergency_type) {
             if (!this.beacon_active) {
                 this.beacon_active = true;
-                const alert = this.createEmergencyAlert(this.emergency_type)
+                const alert = this.createEmergencyAlert(emergency_type)
                 this.sendUnit(alert)
             }
         },

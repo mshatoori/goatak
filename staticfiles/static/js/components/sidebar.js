@@ -1,5 +1,5 @@
-if (html === undefined || html === null) {
-    html = String.raw;
+if (typeof html !== 'undefined') {
+    var html = String.raw;
 }
 
 Vue.component("Sidebar", {
@@ -7,6 +7,9 @@ Vue.component("Sidebar", {
         return {
             sharedState: store.state,
             editing: false,
+            emergency_type: "b-a-o-tbl",
+            emergency_switch1: false,
+            emergency_switch2: false,
         };
     },
     methods: {
@@ -71,9 +74,17 @@ Vue.component("Sidebar", {
             bootstrap.Tab.getOrCreateInstance(triggerEl).show() // Select tab by name
         }
     },
-    props: ["toggleOverlay", "config", "coords", "configUpdated", "current_unit", "locked_unit_uid", "deleteCurrentUnit"],
-    inject: ["getTool", "map", "removeTool", "emergency_switch1", "emergency_switch2", "emergency_type"],
-    template: html`
+    watch: {
+        emergency_switch1(val) {
+            this.checkEmergency(this.emergency_switch1, this.emergency_switch2, this.emergency_type);
+        },
+        emergency_switch2(val) {
+            this.checkEmergency(this.emergency_switch1, this.emergency_switch2, this.emergency_type);
+        }
+    },
+    props: ["toggleOverlay", "config", "coords", "configUpdated", "current_unit", "locked_unit_uid", "deleteCurrentUnit", "checkEmergency", "map"],
+    inject: ["getTool", "removeTool"],
+    template: /*html*/`
         <div class="d-flex align-items-start">
             <div class="tab-content flex-grow-1" id="v-pills-tabContent">
                 <div class="tab-pane fade show active" id="v-pills-overlays" role="tabpanel"
@@ -82,7 +93,7 @@ Vue.component("Sidebar", {
                 </div>
                 <div v-if="config && config.callsign" class="tab-pane fade" id="v-pills-userinfo" role="tabpanel"
                      aria-labelledby="v-pills-userinfo-tab">
-                    <user-info :config="config" :coords="coords" :config-updated="configUpdated"></user-info>
+                    <user-info :config="config" :coords="coords" :config-updated="configUpdated" :map="map"></user-info>
                 </div>
                 <div class="tab-pane fade" id="v-pills-tools" role="tabpanel" aria-labelledby="v-pills-tools-tab">
                     <div class="card">
