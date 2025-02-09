@@ -1,4 +1,7 @@
-// const html = String.raw;
+if (html === undefined || html === null) {
+    html = String.raw;
+}
+
 Vue.component("UserInfo", {
     data: function () {
         return {
@@ -31,20 +34,18 @@ Vue.component("UserInfo", {
     computed: {},
     props: ["config", "coords", "configUpdated"],
     inject: ["map", "printCoords", "distBea", "latlng"],
-    template: /*html*/`
+    template: html`
         <div class="card">
-            <div class="card-header">
-                <h5>اطلاعات Node جاری
-                    <button
-                            type="button"
-                            class="btn btn-sm btn-primary"
-                            @click.stop.prevent="toggleEdit"
-                    >
-                        <i class="bi bi-pencil-square" v-if="!editing"></i>
-                        <i class="bi bi-floppy" v-else></i>
-                    </button>
-                </h5>
-            </div>
+            <h5 class="card-header">اطلاعات من
+                <button
+                        type="button"
+                        class="btn btn-sm btn-primary"
+                        @click.stop.prevent="toggleEdit"
+                >
+                    <i class="bi bi-pencil-square" v-if="!editing"></i>
+                    <i class="bi bi-floppy" v-else></i>
+                </button>
+            </h5>
             <div class="card-body">
                 <form>
                     <div class="form-group row">

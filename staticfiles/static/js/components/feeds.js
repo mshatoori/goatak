@@ -1,4 +1,4 @@
-const html = String.raw;
+let html = String.raw;
 Vue.component('FeedsModal', {
     data: function () {
         return {

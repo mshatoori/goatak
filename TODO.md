@@ -45,13 +45,15 @@
 - maybe aggregate data before sending :-?
 - Download map 16z for tehran
 - Distance from lines
-- edit polygon won't work
-- delete polygon and units, test it!
+- ~~edit polygon won't work~~
+- ~~delete polygon and units, test it!~~
 - ~~Can't even select polygon~~
 - ~~I can't focus on myself!~~
 - UI is bad. WinTAK UI is better.
 - What about mission planning and data package? Can we include some objects at least? in a file or something.
 - Re-enable personal fence
+- Implement TCP connection for GPS -> send (COM_PORT, TRANSPARENT)
+- Make UI more human-readable -> سخت افزار جی پی اس / سیمولاتور جی پی اس
 
 VSPE
 

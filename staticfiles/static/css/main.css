@@ -77,3 +77,10 @@ div.info {
 #map-locate-btn {
     font-size: 22px;
 }
+.nav-pills .nav-link {
+    text-orientation: sideways;
+    writing-mode: sideways-lr;
+    padding: 0.5rem 0.25rem;
+    border-radius: 0 0.5rem 0.5rem 0;
+    border: 1px solid;
+}

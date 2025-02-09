@@ -1,8 +1,12 @@
-// const html = String.raw;
+if (html === undefined || html === null) {
+    html = String.raw;
+}
+
 Vue.component("Sidebar", {
     data: function () {
         return {
-            sharedState: store.state
+            sharedState: store.state,
+            editing: false,
         };
     },
     methods: {
@@ -61,9 +65,13 @@ Vue.component("Sidebar", {
         sp: function (v) {
             return (v * 3.6).toFixed(1);
         },
-
+        deleteCurrent: function () {
+            this.deleteCurrentUnit()
+            const triggerEl = document.querySelector('#v-pills-tab button[data-bs-target="#v-pills-overlays"]')
+            bootstrap.Tab.getOrCreateInstance(triggerEl).show() // Select tab by name
+        }
     },
-    props: ["toggleOverlay", "config", "coords", "configUpdated", "current_unit", "locked_unit_uid"],
+    props: ["toggleOverlay", "config", "coords", "configUpdated", "current_unit", "locked_unit_uid", "deleteCurrentUnit"],
     inject: ["getTool", "map", "removeTool", "emergency_switch1", "emergency_switch2", "emergency_type"],
     template: html`
         <div class="d-flex align-items-start">
@@ -81,8 +89,12 @@ Vue.component("Sidebar", {
                         <h5 class="card-header">ابزارها</h5>
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item">
-                                <div class="btn-group"  role="group" aria-label="Tools"><input type="radio" class="btn-check" name="btnradio" id="select" autocomplete="off"
-                                          checked>
+                                <div class="btn-group" role="group" aria-label="Tools"><input type="radio"
+                                                                                              class="btn-check"
+                                                                                              name="btnradio"
+                                                                                              id="select"
+                                                                                              autocomplete="off"
+                                                                                              checked>
                                     <label class="btn btn-outline-primary btn-sm" for="select">انتخاب</label>
 
                                     <input type="radio" class="btn-check" name="btnradio" id="redx" autocomplete="off">
@@ -139,15 +151,14 @@ Vue.component("Sidebar", {
                         </ul>
                     </div>
                 </div>
-
                 <div class="tab-pane fade" id="v-pills-current-unit" role="tabpanel"
                      aria-labelledby="v-pills-current-unit-tab">
-                    <div class="" v-if="current_unit">
-                        <div class="">
-                        
-                                            <span class="pull-left fw-bold" v-on:click.stop="mapToUnit(current_unit)">
+                    <div class="card" v-if="current_unit">
+                        <div class="card-header">
+                            <span class="pull-left fw-bold"
+                                  v-on:click.stop="mapToUnit(current_unit)">
                                                 <img :src="milImg(current_unit)"/> {{ getUnitName(current_unit) }} <span
-                                                    v-if="current_unit.status"> ({{ current_unit.status }})</span>
+                                    v-if="current_unit.status"> ({{ current_unit.status }})</span>
                                                 <img height="24" src="/static/icons/coord_unlock.png"
                                                      v-if="current_unit.category !== 'point' && locked_unit_uid != current_unit.uid"
                                                      v-on:click.stop="locked_unit_uid=current_unit.uid"/>
@@ -175,84 +186,206 @@ Vue.component("Sidebar", {
                                                     <i class="bi bi-pencil-square"></i>
                                                 </button>
                                                 <button type="button" class="btn btn-sm btn-danger"
-                                                        v-on:click.stop="deleteCurrentUnit">
+                                                        v-on:click.stop="deleteCurrent()">
                                                     <i class="bi bi-trash3-fill"></i>
                                                 </button>
                                             </span>
 
                         </div>
-                        <div id="collapseCurrentUnit">
-                            <div class="">
-                                <dl>
-                                    <dt>UID</dt>
-                                    <dd>{{ current_unit.uid }}</dd>
-                                    <template v-if="current_unit.team">
-                                        <dt>تیم</dt>
-                                        <dd>{{ current_unit.team }}</dd>
-                                        <dt>نقش</dt>
-                                        <dd>{{ current_unit.role }}</dd>
-                                    </template>
-                                    <dt>نوع</dt>
-                                    <dd>{{ current_unit.type }}</dd>
-                                    <dt>SIDC</dt>
-                                    <dd>{{ current_unit.sidc }}</dd>
+                        <div class="card-body">
 
-                                    <dt>مختصات</dt>
-                                    <dd>{{ printCoords(current_unit.lat, current_unit.lon) }}
-                                        <span class="badge rounded-pill bg-success" style="cursor:default;"
-                                              v-on:click="map.setView([current_unit.lat, current_unit.lon])"><i
-                                                class="bi bi-geo"></i></span>
-                                        <span v-if="coords">({{ distBea(latlng(current_unit.lat, current_unit.lon), coords)
-                                                        }}
-                                                        تا نشانگر)</span>
-                                    </dd>
-                                    <dt>سرعت</dt>
-                                    <dd>{{ sp(current_unit.speed) }} km/h</dd>
-                                    <dt>ارتفاع</dt>
-                                    <dd>{{ current_unit.hae.toFixed(1) }}</dd>
-                                    <!--                            <div v-if="current_unit.tak_version">-->
-                                    <!--                                <b>ver:</b> {{ current_unit.tak_version }}<br/>{{ current_unit.device }}-->
-                                    <!--                            </div>-->
-                                    <div v-if="current_unit.parent_uid">
-                                        <dt>سازنده</dt>
-                                        <dd>{{ current_unit.parent_uid }}<span v-if="current_unit.parent_callsign">({{
-                                                            current_unit.parent_callsign }})</span></dd>
+
+                            <dl>
+                                <div class="form-group row">
+                                    <label
+                                            for="input-UID"
+                                            class="col-sm-4 col-form-label font-weight-bold"
+                                    ><strong>UID</strong></label
+                                    >
+                                    <div class="col-sm-8">
+                                        <input
+                                                type="text"
+                                                class="form-control"
+                                                id="input-UID"
+                                                v-model="current_unit.uid"
+                                                v-if="editing"
+                                        />
+                                        <label class="col-form-label" v-else>{{current_unit.uid}}</label>
                                     </div>
-                                    <dt>زمان</dt>
-                                    <dd>{{ dt(current_unit.start_time) }}</dd>
-                                    <!--                                <dt>ارسال</dt>-->
-                                    <!--                                <dd>{{ dt(current_unit.send_time) }}</dd>-->
-                                    <!--                                <dt>انقضا</dt>-->
-                                    <!--                                <dd>{{ dt(current_unit.stale_time) }}</dd>-->
-                                    <!--                                <dt>آخرین زمان دیده شدن</dt>-->
-                                    <!--                                <dd>{{ dt(current_unit.last_seen) }}</dd>-->
-                                </dl>
-                                <div v-if="Object.keys(current_unit.sensor_data).length > 0">
-                                    <h6>آخرین داده‌های سنسور</h6>
-                                    <table class="table" style="table-layout: fixed">
-                                        <tr v-for="(value, key) in current_unit.sensor_data">
-                                            <td class="col-3">{{key}}</td>
-                                            <td class="col-9"
-                                                style="text-overflow: ellipsis;white-space: nowrap;overflow: hidden;"
-                                                :title="value">{{value}}
-                                            </td>
-                                        </tr>
-                                    </table>
                                 </div>
+                                <template v-if="current_unit.team">
+                                    <div class="form-group row">
+                                        <label
+                                                for="input-team"
+                                                class="col-sm-4 col-form-label font-weight-bold"
+                                        ><strong>تیم</strong></label
+                                        >
+                                        <div class="col-sm-8">
+                                            <input
+                                                    type="text"
+                                                    class="form-control"
+                                                    id="input-team"
+                                                    v-model="current_unit.team"
+                                                    v-if="editing"
+                                            />
+                                            <label class="col-form-label" v-else>{{current_unit.team}}</label>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label
+                                                for="input-role"
+                                                class="col-sm-4 col-form-label font-weight-bold"
+                                        ><strong>نقش</strong></label
+                                        >
+                                        <div class="col-sm-8">
+                                            <input
+                                                    type="text"
+                                                    class="form-control"
+                                                    id="input-role"
+                                                    v-model="current_unit.role"
+                                                    v-if="editing"
+                                            />
+                                            <label class="col-form-label" v-else>{{current_unit.role}}</label>
+                                        </div>
+                                    </div>
+                                </template>
+                                <div class="form-group row">
+                                    <label
+                                            for="input-type"
+                                            class="col-sm-4 col-form-label font-weight-bold"
+                                    ><strong>نوع</strong></label
+                                    >
+                                    <div class="col-sm-8">
+                                        <input
+                                                type="text"
+                                                class="form-control"
+                                                id="input-type"
+                                                v-model="current_unit.type"
+                                                v-if="editing"
+                                        />
+                                        <label class="col-form-label" v-else>{{current_unit.type}}</label>
+                                    </div>
+                                </div>
+<!--                                <div class="form-group row">-->
+<!--                                    <label-->
+<!--                                            for="input-sidc"-->
+<!--                                            class="col-sm-4 col-form-label font-weight-bold"-->
+<!--                                    ><strong>SIDC</strong></label-->
+<!--                                    >-->
+<!--                                    <div class="col-sm-8">-->
+<!--                                        <input-->
+<!--                                                type="text"-->
+<!--                                                class="form-control"-->
+<!--                                                id="input-sidc"-->
+<!--                                                v-model="current_unit.sidc"-->
+<!--                                                v-if="editing"-->
+<!--                                        />-->
+<!--                                        <label class="col-form-label" v-else>{{current_unit.sidc}}</label>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+                                <div class="form-group row">
+                                    <label
+                                            class="col-sm-4 col-form-label font-weight-bold"
+                                    ><strong>مختصات</strong></label
+                                    >
+                                    <div class="col-sm-8">
+                                        <label class="col-form-label">{{ printCoords(current_unit.lat, current_unit.lon)
+                                            }}
+                                            <span class="badge rounded-pill bg-success" style="cursor:default;"
+                                                  v-on:click="map.setView([current_unit.lat, current_unit.lon])"><i
+                                                    class="bi bi-geo"></i></span>
+                                            <span v-if="coords">({{ distBea(latlng(current_unit.lat, current_unit.lon), coords)
+                                                        }}
+                                                        تا نشانگر)</span></label>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label
+                                            class="col-sm-4 col-form-label font-weight-bold"
+                                    ><strong>سرعت</strong></label
+                                    >
+                                    <div class="col-sm-8">
+                                        <label class="col-form-label">{{sp(current_unit.speed)}} KM/H</label>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label
+                                            class="col-sm-4 col-form-label font-weight-bold"
+                                    ><strong>ارتفاع</strong></label
+                                    >
+                                    <div class="col-sm-8">
+                                        <label class="col-form-label">{{current_unit.hae.toFixed(1)}}</label>
+                                    </div>
+                                </div>
+
+                                <div v-if="current_unit.parent_uid">
+                                    <div class="form-group row">
+                                        <label
+                                                class="col-sm-4 col-form-label font-weight-bold"
+                                        ><strong>سازنده</strong></label
+                                        >
+                                        <div class="col-sm-8">
+                                            <label class="col-form-label">{{ current_unit.parent_uid }}<span
+                                                    v-if="current_unit.parent_callsign">({{
+                                                            current_unit.parent_callsign }})</span></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label
+                                            class="col-sm-4 col-form-label font-weight-bold"
+                                    ><strong>زمان ایجاد</strong></label
+                                    >
+                                    <div class="col-sm-8">
+                                        <label class="col-form-label">{{ dt(current_unit.start_time) }}</label>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label
+                                            class="col-sm-4 col-form-label font-weight-bold"
+                                    ><strong>زمان ارسال</strong></label
+                                    >
+                                    <div class="col-sm-8">
+                                        <label class="col-form-label">{{ dt(current_unit.send_time) }}</label>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label
+                                            class="col-sm-4 col-form-label font-weight-bold"
+                                    ><strong>زمان انقضا</strong></label
+                                    >
+                                    <div class="col-sm-8">
+                                        <label class="col-form-label">{{ dt(current_unit.stale_time) }}</label>
+                                    </div>
+                                </div>
+                            </dl>
+                            <div v-if="Object.keys(current_unit.sensor_data).length > 0">
+                                <h6>آخرین داده‌های سنسور</h6>
+                                <table class="table" style="table-layout: fixed">
+                                    <tr v-for="(value, key) in current_unit.sensor_data">
+                                        <td class="col-3">{{key}}</td>
+                                        <td class="col-9"
+                                            style="text-overflow: ellipsis;white-space: nowrap;overflow: hidden;"
+                                            :title="value">{{value}}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="form-group row">
                                 {{ current_unit.text }}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="nav flex-column nav-pills ms-1" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+            <div class="nav flex-column nav-pills ms-2" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                 <button class="nav-link active" id="v-pills-overlays-tab" data-bs-toggle="pill"
                         data-bs-target="#v-pills-overlays" type="button" role="tab" aria-controls="v-pills-overlays"
                         aria-selected="true">لایه‌ها
                 </button>
                 <button class="nav-link" id="v-pills-userinfo-tab" data-bs-toggle="pill"
                         data-bs-target="#v-pills-userinfo" type="button" role="tab" aria-controls="v-pills-userinfo"
-                        aria-selected="false" v-if="config && config.callsign">اطلاعات Node جاری
+                        aria-selected="false" v-if="config && config.callsign">اطلاعات من
                 </button>
                 <button class="nav-link" id="v-pills-tools-tab" data-bs-toggle="pill"
                         data-bs-target="#v-pills-tools" type="button" role="tab" aria-controls="v-pills-tools"
@@ -261,7 +394,7 @@ Vue.component("Sidebar", {
                 <button class="nav-link" id="v-pills-current-unit-tab" data-bs-toggle="pill"
                         data-bs-target="#v-pills-current-unit" type="button" role="tab"
                         aria-controls="v-pills-current-unit"
-                        aria-selected="false">Settings
+                        aria-selected="false" v-if="current_unit">{{ current_unit.callsign }}
                 </button>
             </div>
         </div>
