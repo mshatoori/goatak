@@ -55,28 +55,23 @@ Vue.component("OverlaysList", {
             return this.sharedState.ts && total;
         }
     },
-    props: ["toggleOverlay"],
+    props: ["toggleOverlay","config", "coords", "configUpdated"],
     inject: [],
     template: html`
-        <div class="accordion-item mb-1">
-            <div class="accordion-header">
-                <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#collapseOverlayList" aria-expanded="true" aria-controls="collapseOverlayList">
-                    لایه ها
-                </button>
-            </div>
-            <div id="collapseOverlayList" class="accordion-collapse collapse show" data-bs-parent="#accordion" style="">
-                <div class="accordion-body">
-                    <ul class="list-group">
-                        <li class="list-group-item d-flex justify-content-between align-items-center"
-                            v-for="(overlay, name, index) in overlays">
-                            <input class="form-check-input me-1" type="checkbox" v-model="overlay.active"
-                                   :id="'overlay-'+name">
-                            <label class="form-check-label" :for="'overlay-'+name">{{overlay.title}}</label>
-                            <span class="badge bg-success rounded-pill">{{countByCategory(name)}}</span>
-                        </li>
-                    </ul>
-                </div>
+        <div class="card">
+            <h5 class="card-header">لایه‌ها</h5>
+            <div class="card-body">
+<!--                <h5 class="card-title">Special title treatment</h5>-->
+                <ul class="list-group">
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                        v-for="(overlay, name, index) in overlays">
+                        <input class="form-check-input me-1" type="checkbox" v-model="overlay.active"
+                               :id="'overlay-'+name">
+                        <label class="form-check-label" :for="'overlay-'+name">{{overlay.title}}</label>
+                        <span class="badge bg-success rounded-pill">{{countByCategory(name)}}</span>
+                    </li>
+                </ul>
+<!--                <a href="#" class="btn btn-primary">Go somewhere</a>-->
             </div>
         </div>
     `,

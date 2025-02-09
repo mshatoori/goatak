@@ -178,6 +178,11 @@ func (h *RabbitFeed) Start() {
 	var ctx context.Context
 	ctx, h.cancel = context.WithCancel(context.Background())
 
+	if !h.IsActive() {
+		h.logger.Error("RabbitFeed connection failed!")
+		return
+	}
+
 	go h.handleWrite(ctx)
 	go h.handleRead(ctx)
 }

@@ -144,6 +144,15 @@ let app = new Vue({
             printCoords: this.printCoords,
             distBea: this.distBea,
             latlng: this.latlng,
+            config: this.config,
+            getTool: this.getTool,
+            printCoordsll: this.printCoordsll,
+            removeTool: this.removeTool,
+            coords: this.coords,
+            emergency_switch1: this.emergency_switch1,
+            emergency_switch2: this.emergency_switch2,
+            emergency_type: this.emergency_type,
+            current_unit: this.current_unit
         }
     },
     watch: {
