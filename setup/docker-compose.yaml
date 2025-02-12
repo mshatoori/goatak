@@ -1,9 +1,10 @@
 services:
   webclient:
-    build:
-      dockerfile: Dockerfile.webclient
-      context: ..
-      network: host
+#    build:
+#      dockerfile: Dockerfile.webclient
+#      context: ..
+#      network: host
+    pull_policy: always
     image: ghcr.io/mshatoori/goatak-client:latest
     ports:
      - "8081:8080"
