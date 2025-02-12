@@ -11,21 +11,9 @@ services:
      - "6970:6969/udp"
      - "1200:1100"
      - "1200:1100/udp"
-    environment:
-      - ME_UID=NODE6
-      - ME_IP=192.168.11.6
-      - URN=6
-      - CALLSIGN=نیروی ششم
-      - MAP_SERVER=127.0.0.1:8000
-      - GPSD=gpsd:2947
-      - SERVER_ADDRESS=host.docker.internal:8999:tcp
-      - BROADCAST=host.docker.internal:6970
-      - LAT=28.086388
-      - LON=59.107422
-#      - DEFAULT_DEST_IP=192.168.11.1
-#      - DEFAULT_DEST_URN=1
     volumes:
       - .:/workspace:cached
+      - ./goatak_client.yml:/app/goatak_client.yml
     networks:
       - mmhs
   map:
@@ -44,15 +32,6 @@ services:
       - "udp://0.0.0.0:5577"
     networks:
         - mmhs
-#  osm:
-#    image: overv/openstreetmap-tile-server
-#    ports:
-#      - "8998:80"
-#    volumes:
-#      - ./iran-latest.osm.pbf:/data/region.osm.pbf
-#      - ./osm-data/:/data/database/
-#    command:
-#      - "run"
 
 networks:
   mmhs:

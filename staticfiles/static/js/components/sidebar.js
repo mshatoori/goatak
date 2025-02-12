@@ -7,9 +7,6 @@ Vue.component("Sidebar", {
         return {
             sharedState: store.state,
             editing: false,
-            emergency_type: "b-a-o-tbl",
-            emergency_switch1: false,
-            emergency_switch2: false,
         };
     },
     methods: {
@@ -74,14 +71,6 @@ Vue.component("Sidebar", {
             bootstrap.Tab.getOrCreateInstance(triggerEl).show() // Select tab by name
         }
     },
-    watch: {
-        emergency_switch1(val) {
-            this.checkEmergency(this.emergency_switch1, this.emergency_switch2, this.emergency_type);
-        },
-        emergency_switch2(val) {
-            this.checkEmergency(this.emergency_switch1, this.emergency_switch2, this.emergency_type);
-        }
-    },
     props: ["toggleOverlay", "config", "coords", "configUpdated", "current_unit", "locked_unit_uid", "deleteCurrentUnit", "checkEmergency", "map"],
     inject: ["getTool", "removeTool"],
     template: /*html*/`
@@ -93,7 +82,7 @@ Vue.component("Sidebar", {
                 </div>
                 <div v-if="config && config.callsign" class="tab-pane fade" id="v-pills-userinfo" role="tabpanel"
                      aria-labelledby="v-pills-userinfo-tab">
-                    <user-info :config="config" :coords="coords" :config-updated="configUpdated" :map="map"></user-info>
+                    <user-info :check-emergency="checkEmergency" :config="config" :coords="coords" :config-updated="configUpdated" :map="map"></user-info>
                 </div>
                 <div class="tab-pane fade" id="v-pills-tools" role="tabpanel" aria-labelledby="v-pills-tools-tab">
                     <div class="card">
@@ -136,28 +125,6 @@ Vue.component("Sidebar", {
                                 <span class="badge bg-secondary">نشانگر</span>: {{ printCoordsll(coords) }} <span
                                     v-if="getTool('redx')">({{ distBea(getTool('redx').getLatLng(), coords) }} از
                                                         نشانگر)</span>
-                            </li>
-                            <li class="d-flex mt-1 list-group-item">
-                                <div class="d-inline-block">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="emergSwitch1"
-                                               v-model="emergency_switch1">
-                                        <!--                                    <label class="form-check-label" for="emergSwitch1">خطر</label>-->
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" role="switch" id="emergSwitch2"
-                                               v-model="emergency_switch2">
-                                        <!--                                    <label class="form-check-label" for="emergSwitch2">خطر</label>-->
-                                    </div>
-                                </div>
-                                <!--                                <div class="form-check form-check-inline">-->
-                                <div class="flex-fill"></div>
-                                <select class="form-select form-select-sm d-inline-block" v-model="emergency_type">
-                                    <option selected value="b-a-o-tbl">هشدار</option>
-                                    <option value="b-a-o-opn">مواجهه با دشمن</option>
-                                    <option value="b-a-o-pan">تلفات</option>
-                                </select>
-                                <!--                                </div>-->
                             </li>
                         </ul>
                     </div>

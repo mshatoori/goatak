@@ -594,14 +594,14 @@ let app = new Vue({
             if (item.category === "drawing" || item.category === "route") {
                 this._processDrawing(item);
             } else {
-                // if (item.type.startsWith("b-a-o") && !item.type.endsWith("-can")) {
-                //     this.beacon_active = true;
-                //     this.emergency_switch1 = true;
-                //     this.emergency_switch2 = true;
-                // }
+                if (item.type.startsWith("b-a-o") && !item.type.endsWith("-can") && item.uid.startsWith(this.config.uid)) {
+                    this.beacon_active = true;
+                    this.sharedState.emergency.switch1 = true;
+                    this.sharedState.emergency.switch2 = true;
+                    this.sharedState.emergency.type = item.type;
+                }
                 this.updateUnitMarker(item, false, true);
             }
-
             this.addContextMenuToMarker(item)
         },
 

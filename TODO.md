@@ -1,13 +1,10 @@
 # TODO
 
 ## Incomplete tasks
-1. Fence Alarm
+1. ~~Fence Alarm~~
 2. Deactivate alarm
 3. Fence around self
-4. Remove & Edit (side bar) polygon
 5. Work on running the server and adding it to UI (+ login)
-6. Show Farsi name instead of a-f-G-E-V-A-T-H and put it in infomarker
-7. Feed refactor in configs (include rabbit && change how we handle directions)
 8. Handle rabbit write wrap and read unwrap
 9. Make UI simpler and more user friendly (names, ...) => What else???
 10. We could also make connections persistent (in db)
@@ -22,7 +19,6 @@
 
 ## Idea:
 1. Show received messages in UI (like logs)
-
 3. Overlay Manager (WinTAK) -> Category + Show/Hide
 4. Routes: As an object...
 
@@ -31,27 +27,24 @@
 2. CASEVAC
 3. Selecting who to send to.
 4. One-page doc of features that we have + we will have (from WinTAK) 
-
-3. Make compatible with WinTAK
-1. What's wrong?
-2. Work on better UI (Like WinTAK)
-   1. What's the plan?
-
+5. Make compatible with WinTAK
+   1. What's wrong?
+2. ~~Work on better UI (Like WinTAK)~~
+   1. ~~ What's the plan?~~
 6. Track -> Keep locations in DB, Show in UI
    6. This is hard probably :-?
 8. Share with (e.g. Air support) -> Send lat/lng
 
 ## NEW
-- bug: After reloading page, emergency alarm is reset 
-- Change alerts from modal to sidebar??
+
 - maybe aggregate data before sending :-?
-- Download map 16z for tehran
-- Distance from lines
 - What about mission planning and data package? Can we include some objects at least? in a file or something.
 - Test GPS TCP proxy
 - Make UI more human-readable -> سخت افزار جی پی اس / سیمولاتور جی پی اس
 - Re-enable personal fence
   VSPE???
+
+
 
 ## Documentation
 
@@ -75,3 +68,22 @@
 - ~~Implement TCP connection for GPS -> send (COM_PORT, TRANSPARENT)~~
 - ~~EMERGENCY IS BROKEN~~
 - - ~~Alerts can't be seen~~
+
+# Setup
+## TODO
+- Setup on others...
+  - TEST!
+- Download map 16z for tehran
+- Change tools buttons to buttons on map!
+- Show Farsi name instead of a-f-G-E-V-A-T-H and put it in infomarker
+- Different icons for emergency types 
+
+## Test!
+- bug: After reloading page, emergency alarm is reset
+
+## Nice To Have
+- Maybe? Feed refactor in configs (include rabbit && change how we handle directions)
+- Timer to send? Relay others?
+- Distance from lines
+- Change alerts from modal to sidebar??
+- Remove & Edit (side bar) polygon

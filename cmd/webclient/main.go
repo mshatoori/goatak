@@ -673,7 +673,7 @@ func main() {
 
 	viper.SetConfigFile(*conf)
 
-	viper.SetDefault("server_address", "204.48.30.216:8087:tcp")
+	viper.SetDefault("server_address", "127.0.0.1:8087:tcp")
 	viper.BindEnv("server_address")
 
 	viper.SetDefault("web_port", 8080)
@@ -707,7 +707,9 @@ func main() {
 	viper.SetDefault("map_server", "127.0.0.1:8000")
 	viper.BindEnv("map_server", "MAP_SERVER")
 
+	viper.SetDefault("gpsd", "gpsd:2947")
 	viper.BindEnv("gpsd", "GPSD")
+
 	viper.BindEnv("me.uid", "ME_UID")
 	viper.BindEnv("me.OS", "OS")
 	viper.BindEnv("ssl.enroll_user", "SSL_ENROLL_USER")

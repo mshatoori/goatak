@@ -1,0 +1,44 @@
+---
+# gpsd address, usually localhost:2947
+gpsd: "127.0.0.1:2947"
+
+me:
+  # Your callsign
+  callsign: نود ششم
+
+  # Your uid
+  uid: NODE6
+
+  # Your unit type. Should be: "a-f-" + <TYPE>. All of <Type> can be found in the file: `pkg/cot/types`
+  type: a-f-G-I-B  # Building (a-f-G-I-B) / Armored Vehicle (a-h-G-U-C-A)
+
+  # Your location on map when program starts, before any GPS data received.
+  lat: 0
+  lon: 0
+
+  # Your network addresses
+  ip: "192.168.11.6"
+  urn: 6
+
+# Default Destination for sending data over datalink
+default_dest_ip: "255.255.255.255"
+default_dest_urn: 16777215
+
+dns_addr: localhost:8050
+
+# Uncomment following lines for direct UDP communication between nodes
+#feeds:
+# outgoing:
+# - address: 192.168.2.44
+#   port: 6970
+# - address: 192.168.2.54
+#   port: 6970
+# - address: 192.168.2.64
+#   port: 6970
+# - address: 192.168.2.74
+#   port: 6970
+# - address: 192.168.2.84
+#   port: 6970
+# incoming:
+# - address: 0.0.0.0
+#   port: 6969

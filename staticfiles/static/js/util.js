@@ -138,6 +138,11 @@ var store = {
         sensors: [],
         feeds: [],
         unitToSend: {},
+        emergency: {
+            type: "b-a-o-tbl",
+            switch1: false,
+            switch2: false,
+        }
     },
 
     // Items

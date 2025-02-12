@@ -31,8 +31,16 @@ Vue.component("UserInfo", {
             });
         },
     },
+    watch: {
+        'sharedState.emergency.switch1'(val) {
+            this.checkEmergency(this.sharedState.emergency.switch1, this.sharedState.emergency.switch2, this.sharedState.emergency.type);
+        },
+        'sharedState.emergency.switch2'(val) {
+            this.checkEmergency(this.sharedState.emergency.switch1, this.sharedState.emergency.switch2, this.sharedState.emergency.type);
+        }
+    },
     computed: {},
-    props: ["config", "coords", "configUpdated", "map"],
+    props: ["config", "coords", "configUpdated", "map", "checkEmergency"],
     inject: ["printCoords", "distBea", "latlng"],
     template: /*html*/`
         <div class="card">
@@ -140,6 +148,30 @@ Vue.component("UserInfo", {
                         </div>
                     </div>
                 </form>
+            </div>
+            <div class="card-footer">
+                <li class="d-flex mt-1 list-group-item">
+                    <div class="d-inline-block">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="emergSwitch1"
+                                   v-model="sharedState.emergency.switch1">
+                            <!--                                    <label class="form-check-label" for="emergSwitch1">خطر</label>-->
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" role="switch" id="emergSwitch2"
+                                   v-model="sharedState.emergency.switch2">
+                            <!--                                    <label class="form-check-label" for="emergSwitch2">خطر</label>-->
+                        </div>
+                    </div>
+                    <!--                                <div class="form-check form-check-inline">-->
+                    <div class="flex-fill"></div>
+                    <select class="form-select form-select-sm d-inline-block" v-model="sharedState.emergency.type">
+                        <option selected value="b-a-o-tbl">هشدار</option>
+                        <option value="b-a-o-opn">مواجهه با دشمن</option>
+                        <option value="b-a-o-pan">تلفات</option>
+                    </select>
+                    <!--                                </div>-->
+                </li>
             </div>
         </div>
     `,
