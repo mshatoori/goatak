@@ -1,4 +1,4 @@
-FROM docker.arvancloud.ir/python:3-alpine
+FROM ghcr.io/mshatoori/goatak-maps:latest
 
 EXPOSE 8000/tcp
 

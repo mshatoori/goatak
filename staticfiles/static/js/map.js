@@ -449,8 +449,12 @@ let app = new Vue({
                         var lz = null
 
                         if (first) {
+                            opts["bounds"] = L.latLngBounds(L.latLng(35.59702, 51.13174), L.latLng(35.85121, 51.68381));
+                            lz1 = L.tileLayer(i.url, opts);
+                            opts = JSON.parse(JSON.stringify(opts));
+                            opts["maxNativeZoom"] = 11;
                             opts["bounds"] = L.latLngBounds(L.latLng(25, 43), L.latLng(40, 63));
-                            lz = L.tileLayer(i.url, opts);
+                            lz2 = L.tileLayer(i.url, opts);
                             opts = JSON.parse(JSON.stringify(opts));
                             opts["bounds"] = undefined;
                             opts["minZoom"] = i.minZoom ?? 1;
@@ -464,7 +468,8 @@ let app = new Vue({
                         if (first) {
                             first = false;
                             l.addTo(vm.map);
-                            lz.addTo(vm.map);
+                            lz2.addTo(vm.map);
+                            lz1.addTo(vm.map);
                         }
                     });
                 });

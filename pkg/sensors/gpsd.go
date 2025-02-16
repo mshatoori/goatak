@@ -2,6 +2,7 @@ package sensors
 
 import (
 	"bufio"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -80,6 +81,7 @@ type GpsdSensor struct {
 	TCPConnected  bool
 	TCPConnection net.Conn
 	TCPReader     *bufio.Reader
+	SerialPort    string
 }
 
 func (sensor *GpsdSensor) Stop() {
@@ -224,7 +226,7 @@ func (sensor *GpsdSensor) connect() bool {
 
 			_, _ = fmt.Fprintf(sensor.Conn, "?WATCH={\"enable\":true,\"json\":true}")
 
-			if sensor.TCPProxyAddr != "" {
+			if sensor.SerialPort != "" {
 				go sensor.TryTCP()
 			}
 
@@ -273,7 +275,7 @@ func (sensor *GpsdSensor) ForceUpdate() {
 }
 
 func (sensor *GpsdSensor) TryTCP() {
-	ticker := time.NewTicker(sensor.Interval)
+	ticker := time.NewTicker(time.Millisecond * 10)
 
 	for {
 		select {
@@ -329,6 +331,8 @@ func (sensor *GpsdSensor) TCPReceive() bool {
 		return false
 	}
 
+	sensor.Logger.Info("sent data:", "data", string(readString))
+
 	return true
 }
 
@@ -338,8 +342,36 @@ func (sensor *GpsdSensor) TCPConnect() bool {
 
 	if err == nil {
 		sensor.TCPConnected = true
-		// TODO: Send Proxy Command...
-		sensor.TCPReader = bufio.NewReader(sensor.Conn)
+
+		var bodyBuf bytes.Buffer
+		n, err := fmt.Fprintf(&bodyBuf, "%c%c%s", 3, 0, sensor.SerialPort)
+		if err != nil {
+			return false
+		}
+
+		sensor.Logger.Info("GPS COM PORT", "port", sensor.SerialPort)
+		//sensor.Logger.Error("GPS COM BodyLen", "len", n)
+
+		var msgBuf bytes.Buffer
+		msg := bytes.Clone(bodyBuf.Bytes())
+		_, err = fmt.Fprintf(&msgBuf, "%c%s", n-1, msg)
+		//sensor.Logger.Error("GPS COM Body", "COM", msg)
+		msg2 := bytes.Clone(msgBuf.Bytes())
+		//sensor.Logger.Error("GPS COM msg", "COM", msg2)
+		if err != nil {
+			return false
+		}
+
+		sensor.Logger.Warn("Sending COM Command:")
+		sensor.Logger.Warn(fmt.Sprintf("% x", msg2))
+
+		_, err = sensor.TCPConnection.Write(msg2)
+		if err != nil {
+			sensor.Logger.Error("GPS COM write error", "error", err)
+			return false
+		}
+
+		sensor.TCPReader = bufio.NewReader(sensor.TCPConnection)
 
 		return true
 	}

@@ -18,6 +18,9 @@ services:
     networks:
       - mmhs
   map:
+    build:
+      context: ../maps
+      dockerfile: ../maps/Dockerfile
     image: ghcr.io/mshatoori/goatak-maps:latest
     ports:
       - "8000:8000"

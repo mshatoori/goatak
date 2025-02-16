@@ -1,3 +1,3 @@
-- 4 Cars
-- 1 C&C
+برای اجرا از این دستور استفاده کنید:
 
+`docker-compose pull && docker-compose up`

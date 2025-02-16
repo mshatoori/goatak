@@ -1,6 +1,9 @@
 ---
-# gpsd address, usually localhost:2947
-gpsd: "127.0.0.1:2947"
+# gpsd service address
+gpsd: "gpsd:2947"
+
+# GPS device serial port
+gps_port: "COM4"
 
 me:
   # Your callsign

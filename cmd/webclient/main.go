@@ -286,15 +286,17 @@ func (app *App) Run(ctx context.Context) {
 
 	if addr := viper.GetString("gpsd"); addr != "" {
 		var gpsdSensor = &sensors.GpsdSensor{
-			Addr:     addr,
-			Conn:     nil,
-			Logger:   app.logger.With("logger", "gpsd"),
-			Reader:   nil,
-			Type:     "GPS",
-			UID:      uuid.New().String(),
-			Interval: time.Duration(15) * time.Second,
-			Ctx:      ctx,
-			Title:    "مکان‌یاب",
+			Addr:         addr,
+			Conn:         nil,
+			Logger:       app.logger.With("logger", "gpsd"),
+			Reader:       nil,
+			Type:         "GPS",
+			UID:          uuid.New().String(),
+			Interval:     time.Duration(15) * time.Second,
+			Ctx:          ctx,
+			Title:        "مکان‌یاب",
+			SerialPort:   viper.GetString("gps_port"),
+			TCPProxyAddr: "host.docker.internal:4040",
 		}
 		app.sensors = append(app.sensors, gpsdSensor)
 

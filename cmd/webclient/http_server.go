@@ -483,37 +483,36 @@ func getTypes(_ *air.Request, res *air.Response) error {
 func getLayers(mapServer string) []map[string]any {
 	layers := []map[string]any{
 		{
-			"name":    "Google Hybrid",
-			"url":     "http://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&s=Galileo",
-			"maxZoom": 20,
-			"parts":   []string{"0", "1", "2", "3"},
-		},
-		{
-			"name":    "OSM",
-			"url":     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-			"maxZoom": 19,
-			"parts":   []string{"a", "b", "c"},
-		},
-		{
-			"name":    "Opentopo.cz",
-			"url":     "https://tile-{s}.opentopomap.cz/{z}/{x}/{y}.png",
-			"maxZoom": 18,
-			"parts":   []string{"a", "b", "c"},
-		},
-		{
-			"name":    "Yandex maps",
-			"url":     "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&scale=1&lang=ru_RU&projection=web_mercator",
-			"maxZoom": 20,
-		},
-	}
-
-	if len(mapServer) > 0 {
-		layers = append(layers, map[string]any{
 			"name":    "Local Server",
 			"url":     fmt.Sprintf("http://%s/{z}/{x}/{y}.png", mapServer),
-			"maxZoom": 13,
-		})
+			"maxZoom": 16,
+		},
+		//{
+		//	"name":    "Google Hybrid",
+		//	"url":     "http://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&s=Galileo",
+		//	"maxZoom": 20,
+		//	"parts":   []string{"0", "1", "2", "3"},
+		//},
+		//{
+		//	"name":    "OSM",
+		//	"url":     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+		//	"maxZoom": 19,
+		//	"parts":   []string{"a", "b", "c"},
+		//},
+		//{
+		//	"name":    "Opentopo.cz",
+		//	"url":     "https://tile-{s}.opentopomap.cz/{z}/{x}/{y}.png",
+		//	"maxZoom": 18,
+		//	"parts":   []string{"a", "b", "c"},
+		//},
+		//{
+		//	"name":    "Yandex maps",
+		//	"url":     "https://core-renderer-tiles.maps.yandex.net/tiles?l=map&x={x}&y={y}&z={z}&scale=1&lang=ru_RU&projection=web_mercator",
+		//	"maxZoom": 20,
+		//},
 	}
+
+	//layers = append(layers, map[string]any)
 
 	return layers
 }
