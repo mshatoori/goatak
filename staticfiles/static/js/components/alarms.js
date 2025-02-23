@@ -19,10 +19,17 @@ Vue.component('AlarmsModal', {
         },
         readableType: function (alarmType) {
             return {
+                "b-a-g": "ورود به ژئوفنس",
                 "b-a-o-tbl": "هشدار",
                 "b-a-o-opn": "مواجهه با دشمن",
                 "b-a-o-pan": "تلفات",
             }[alarmType];
+        },
+        focus: function (alarm) {
+            this.map.setView([alarm.lat, alarm.lon], 12);
+            var myModalEl = document.getElementById('alarms-modal');
+            var modal = bootstrap.Modal.getInstance(myModalEl)
+            modal.hide();
         }
     },
     props: ['map'], // TODO: Change this to only alarms
@@ -66,7 +73,7 @@ Vue.component('AlarmsModal', {
                                         style="color: darkred">({{ readableType(alarm.type) }})</small>
                                 </div>
                                 <p class="mb-1">موقعیت: {{ alarm.lat }}, {{ alarm.lon }} <span class="badge rounded-pill bg-success" style="cursor:default;"
-                                  v-on:click="map.setView([alarm.lat, alarm.lon])"><i
+                                  v-on:click="focus(alarm)"><i
                                     class="bi bi-geo"></i></span></p>
 <!--                                <p class="mb-1">وضعیت: {{ alarm.status }}</p>-->
                                 <p class="mb-1">{{ alarm.text }}</p>

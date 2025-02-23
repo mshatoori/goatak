@@ -398,7 +398,7 @@ let app = new Vue({
 
         this.map.setView([60, 30], 11);
 
-        L.control.scale({position: "bottomright", metric: true}).addTo(this.map);
+        L.control.scale({ position: "bottomright", metric: true }).addTo(this.map);
 
         this.getConfig();
 
@@ -469,7 +469,7 @@ let app = new Vue({
                             });
 
                         if (!vm.myInfoMarker) {
-                            vm.myInfoMarker = L.marker([data.lat, data.lon], {icon: markerInfo});
+                            vm.myInfoMarker = L.marker([data.lat, data.lon], { icon: markerInfo });
                             vm.myInfoMarker.addTo(vm.map);
                         }
 
@@ -485,7 +485,7 @@ let app = new Vue({
                             });
                     }
 
-                    layers = L.control.layers({}, null, {hideSingleBase: true});
+                    layers = L.control.layers({}, null, { hideSingleBase: true });
                     layers.addTo(vm.map);
 
                     let first = true;
@@ -597,8 +597,8 @@ let app = new Vue({
 
                 const requestOptions = {
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({lat: p.lat, lon: p.lng, name: "DP1"})
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ lat: p.lat, lon: p.lng, name: "DP1" })
                 };
                 fetch("/dp", requestOptions);
             }
@@ -658,6 +658,8 @@ let app = new Vue({
                     this.sharedState.emergency.switch2 = true;
                     this.sharedState.emergency.type = item.type;
                 }
+                if (item.type === "b-a-g")
+                    return;
                 this.updateUnitMarker(item, false, true);
             }
             this.addContextMenuToMarker(item)
@@ -764,7 +766,7 @@ let app = new Vue({
                 this.removeFromAllOverlays(unit.infoMarker);
             }
 
-            unit.marker = L.marker([unit.lat, unit.lon], {draggable: draggable});
+            unit.marker = L.marker([unit.lat, unit.lon], { draggable: draggable });
             unit.marker.on('click', function (e) {
                 app.setCurrentUnitUid(unit.uid, false);
             });
@@ -793,7 +795,7 @@ let app = new Vue({
 
 
             if (!unit.type.startsWith("b-a-o")) {
-                unit.infoMarker = L.marker([unit.lat, unit.lon], {icon: markerInfo});
+                unit.infoMarker = L.marker([unit.lat, unit.lon], { icon: markerInfo });
                 unit.infoMarker.addTo(this.getItemOverlay(unit));
 
 
@@ -986,7 +988,7 @@ let app = new Vue({
                     });
 
                 if (!this.myInfoMarker) {
-                    this.myInfoMarker = L.marker([e.latlng.lat, e.latlng.lon], {icon: markerInfo});
+                    this.myInfoMarker = L.marker([e.latlng.lat, e.latlng.lon], { icon: markerInfo });
                     this.myInfoMarker.addTo(this.map);
                 }
 
@@ -994,8 +996,8 @@ let app = new Vue({
                 this.myInfoMarker.setIcon(markerInfo);
                 const requestOptions = {
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({lat: e.latlng.lat, lon: e.latlng.lng})
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ lat: e.latlng.lat, lon: e.latlng.lng })
                 };
                 fetch("/pos", requestOptions);
             }
@@ -1067,9 +1069,12 @@ let app = new Vue({
                     send: u.send,
                     root_sidc: this.types,
                     web_sensor: u.web_sensor,
-                    lat: u.lat,
-                    lon: u.lon,
                 };
+
+                if (u.uid === "__NEW__") {
+                    this.form_unit.lat = u.lat;
+                    this.form_unit.lon = u.lon;
+                }
 
                 if (u.type.startsWith('u-') || u.type.startsWith('b-m-r')) {
                     // drawing
@@ -1090,15 +1095,21 @@ let app = new Vue({
         },
 
         saveEditForm: function () {
-            let u = this.getCurrentUnit();
-            if (!u) {
-                if (this.form_unit.uid !== "__NEW__")
-                    return;
+            u = {};
+
+            if (this.form_unit.uid === "__NEW__") {
                 u = {
                     uid: uuidv4(),
                     lat: this.form_unit.lat,
                     lon: this.form_unit.lon,
+                    ...u
                 };
+            }
+            else {
+                u = this.getCurrentUnit();
+                if (!u) {
+                    return;
+                }
             }
 
             u.callsign = this.form_unit.callsign;
@@ -1435,7 +1446,7 @@ let app = new Vue({
 
             const requestOptions = {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(msg)
             };
             let vm = this;

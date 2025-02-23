@@ -606,6 +606,8 @@ func (app *App) checkGeofences(changedItem *model.Item) bool {
 					//app.logger.Info("  CONTAINS? ", "contains", contains, "err", err)
 					if contains {
 						alarmMsg := cot.MakeAlarmMsg(changedItem.GetUID(), item.GetUID())
+						alarmMsg.CotEvent.Lat = lat
+						alarmMsg.CotEvent.Lon = lng
 						alarmItem := model.FromMsg(cot.LocalCotMessage(alarmMsg))
 						if !slices.Contains(app.alarms, alarmItem.GetUID()) {
 							//app.logger.Info("  *** ALARM ***  " + alarmItem.String())
@@ -691,7 +693,7 @@ func main() {
 	viper.BindEnv("me.lat", "LAT")
 	viper.SetDefault("me.lon", 0.0)
 	viper.BindEnv("me.lon", "LON")
-	viper.SetDefault("me.zoom", 5)
+	viper.SetDefault("me.zoom", 12)
 	viper.BindEnv("me.zoom", "ZOOM")
 	viper.SetDefault("me.type", "a-f-G-U-C")
 	viper.BindEnv("me.type", "TYPE")

@@ -275,7 +275,7 @@ func (sensor *GpsdSensor) ForceUpdate() {
 }
 
 func (sensor *GpsdSensor) TryTCP() {
-	ticker := time.NewTicker(time.Millisecond * 10)
+	ticker := time.NewTicker(time.Second * 10)
 
 	for {
 		select {
