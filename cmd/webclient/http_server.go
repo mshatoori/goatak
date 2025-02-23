@@ -149,6 +149,11 @@ func changeConfigHandler(app *App) air.Handler {
 		newUrn, _ := strconv.ParseInt(wu["urn"], 10, 32)
 		app.urn = int32(newUrn)
 
+		if app.defaultRabbitFeed != nil {
+			app.defaultRabbitFeed.ClientInfo.IpAddress = wu["ip_address"]
+			app.defaultRabbitFeed.ClientInfo.Urn = int32(newUrn)
+		}
+
 		return res.WriteString("Ok")
 	}
 }
@@ -487,18 +492,18 @@ func getLayers(mapServer string) []map[string]any {
 			"url":     fmt.Sprintf("http://%s/{z}/{x}/{y}.png", mapServer),
 			"maxZoom": 16,
 		},
-		//{
-		//	"name":    "Google Hybrid",
-		//	"url":     "http://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&s=Galileo",
-		//	"maxZoom": 20,
-		//	"parts":   []string{"0", "1", "2", "3"},
-		//},
-		//{
-		//	"name":    "OSM",
-		//	"url":     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-		//	"maxZoom": 19,
-		//	"parts":   []string{"a", "b", "c"},
-		//},
+		{
+			"name":    "Google Hybrid",
+			"url":     "http://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}&s=Galileo",
+			"maxZoom": 16,
+			"parts":   []string{"0", "1", "2", "3"},
+		},
+		{
+			"name":    "OSM",
+			"url":     "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+			"maxZoom": 16,
+			"parts":   []string{"a", "b", "c"},
+		},
 		//{
 		//	"name":    "Opentopo.cz",
 		//	"url":     "https://tile-{s}.opentopomap.cz/{z}/{x}/{y}.png",

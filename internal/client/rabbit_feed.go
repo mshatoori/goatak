@@ -414,7 +414,7 @@ func (h *RabbitFeed) wrapMessage(buf []byte, _msg *cotproto.TakMessage) []byte {
 		return nil
 	}
 
-	h.logger.Debug("RabbitFeed wrapMessage", "msg", rabbitMsg, "result", newBuffer.Bytes())
+	h.logger.Debug("RabbitFeed wrapMessage", "msg", rabbitMsg, "from", clientInfo.GetIpAddress(), "result", newBuffer.Bytes())
 
 	return newBuffer.Bytes()
 }

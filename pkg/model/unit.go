@@ -11,6 +11,7 @@ import (
 
 const (
 	StaleContactDelete = time.Hour * 12
+	ResendObject       = time.Minute * 10
 	ALARM              = "alarm"
 	POINT              = "point"
 	UNIT               = "unit"
@@ -30,6 +31,7 @@ type Item struct {
 	send     bool
 	track    []*Pos
 	msg      *cot.CotMessage
+	lastSent time.Time
 }
 
 func (i *Item) String() string {
@@ -139,6 +141,22 @@ func (i *Item) IsSend() bool {
 	return i.send
 }
 
+func (i *Item) ShouldSend() bool {
+	i.mx.RLock()
+	defer i.mx.RUnlock()
+
+	recentlySent := time.Since(i.lastSent) < ResendObject
+
+	return i.send && !recentlySent
+}
+
+func (i *Item) SetLastSent() {
+	i.mx.RLock()
+	defer i.mx.RUnlock()
+
+	i.lastSent = time.Now()
+}
+
 func GetClass(msg *cot.CotMessage) string {
 	if msg == nil {
 		return ""
@@ -222,6 +240,7 @@ func (i *Item) Update(msg *cot.CotMessage) {
 	defer i.mx.Unlock()
 
 	i.lastSeen = time.Now()
+	i.lastSent = time.Time{}
 	i.class = GetClass(msg)
 	i.msg = msg
 

@@ -67,8 +67,9 @@ type App struct {
 	connected       uint32
 	mapServer       string
 
-	feeds   []client.CoTFeed
-	sensors []sensors.BaseSensor
+	feeds             []client.CoTFeed
+	sensors           []sensors.BaseSensor
+	defaultRabbitFeed *client.RabbitFeed
 
 	alarms []string
 
@@ -527,8 +528,9 @@ func (app *App) cleanOldUnits() {
 
 func (app *App) sendMyPoints() {
 	app.items.ForEach(func(item *model.Item) bool {
-		if item.IsSend() {
+		if item.ShouldSend() {
 			app.SendMsg(item.GetMsg().GetTakMessage())
+			item.SetLastSent()
 		}
 
 		return true
@@ -655,6 +657,7 @@ func (app *App) createDefaultRabbitFeed() {
 		},
 	})
 
+	app.defaultRabbitFeed = newFeed
 	app.feeds = append(app.feeds, newFeed)
 }
 

@@ -71,15 +71,18 @@
 
 # Setup
 ## TODO
-- Setup on others...
-  - TEST!
-- Download map 16z for tehran
+- ~~Setup on others...~~
+  ~~- TEST!~~
+- ~~Download map 16z for tehran~~
+- ~~CAN'T CHANGE ADDRESS!~~
+- Different icons for emergency types
 - Change tools buttons to buttons on map!
 - Show Farsi name instead of a-f-G-E-V-A-T-H and put it in infomarker
-- Different icons for emergency types 
+
+
 
 ## Test!
-- bug: After reloading page, emergency alarm is reset
+- ~~bug: After reloading page, emergency alarm is reset~~
 
 ## Nice To Have
 - Maybe? Feed refactor in configs (include rabbit && change how we handle directions)
