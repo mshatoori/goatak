@@ -510,8 +510,12 @@ let app = new Vue({
             // console.log(unit);
 
             if (unit.marker) {
-                if (updateIcon) {
-                    unit.marker.setIcon(getIcon(unit, true));
+                if (updateIcon) {    
+                    if (unit.type != "a-n-S-X-M") {
+                        unit.marker.setIcon(getIcon(unit, true));
+                    } else {
+                        unit.marker.setIcon(getSmallIcon(unit, true));
+                    }
                 }
             } else {
                 unit.marker = L.marker([unit.lat, unit.lon], {draggable: draggable});
@@ -524,7 +528,11 @@ let app = new Vue({
                         unit.lon = marker.getLatLng().lng;
                     });
                 }
-                unit.marker.setIcon(getIcon(unit, true));
+                if (unit.type != "a-n-S-X-M") {
+                    unit.marker.setIcon(getIcon(unit, true));
+                } else {
+                    unit.marker.setIcon(getSmallIcon(unit, true));
+                }
                 unit.marker.addTo(this.map);
             }
 
@@ -542,13 +550,17 @@ let app = new Vue({
                     iconSize: null
                 });
 
-            if (!unit.infoMarker) {
-                unit.infoMarker = L.marker([unit.lat, unit.lon], {icon: markerInfo});
+            if (unit.type != "a-n-S-X-M") {
+              if (!unit.infoMarker) {
+                unit.infoMarker = L.marker([unit.lat, unit.lon], {
+                  icon: markerInfo,
+                });
                 unit.infoMarker.addTo(this.map);
-            }
+              }
 
-            unit.infoMarker.setLatLng([unit.lat, unit.lon]);
-            unit.infoMarker.setIcon(markerInfo);
+              unit.infoMarker.setLatLng([unit.lat, unit.lon]);
+              unit.infoMarker.setIcon(markerInfo);
+            }
 
             unit.marker.setLatLng([unit.lat, unit.lon]);
             unit.marker.bindTooltip(popup(unit));

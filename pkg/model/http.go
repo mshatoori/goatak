@@ -151,8 +151,6 @@ func (i *Item) ToWeb() *WebUnit {
 		GeofenceAff:    msg.GetGeofenceAff(),
 	}
 
-	println(i.msg.Detail.String())
-
 	if links := i.msg.Detail.GetAll("link"); len(links) > 0 {
 		linksList := make([]string, 0)
 		for _, link := range links {

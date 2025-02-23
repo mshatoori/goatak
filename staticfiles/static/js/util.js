@@ -62,6 +62,32 @@ function getIconUri(item, withText) {
     return getMilIcon(item, withText);
 }
 
+function getSmallMilIcon(item, withText) {
+    let opts = {size: 12};
+
+    if (!item.sidc) {
+        return "";
+    }
+
+    // if (item.team && item.role) {
+    //     opts["uniqueDesignation"] = item.uid
+    // }
+
+    if (withText) {
+        // opts['uniqueDesignation'] = item.callsign;
+        if (item.speed > 0) {
+            opts['speed'] = (item.speed * 3.6).toFixed(1) + " km/h";
+            opts['direction'] = item.course;
+        }
+        if (item.sidc.charAt(2) === 'A') {
+            opts['altitudeDepth'] = item.hae.toFixed(0) + " m";
+        }
+    }
+
+    let symb = new ms.Symbol(item.sidc, opts);
+    return {uri: symb.toDataURL(), x: symb.getAnchor().x, y: symb.getAnchor().y}
+}
+
 function getMilIcon(item, withText) {
     let opts = {size: 24};
 
@@ -90,6 +116,15 @@ function getMilIcon(item, withText) {
 
 function getIcon(item, withText) {
     let img = getIconUri(item, withText);
+
+    return L.icon({
+        iconUrl: img.uri,
+        iconAnchor: [img.x, img.y],
+    })
+}
+
+function getSmallIcon(item, withText) {
+    let img = getSmallMilIcon(item, withText);
 
     return L.icon({
         iconUrl: img.uri,

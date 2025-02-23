@@ -47,6 +47,7 @@ type UDPFeedConfig struct {
 	Port      int
 	Direction FeedDirection
 	Title     string
+	Version   int32
 }
 
 type UDPFeed struct {
@@ -87,7 +88,7 @@ func NewUDPFeed(config *UDPFeedConfig) *UDPFeed {
 	}
 
 	// TODO: set version using all mesh clients according to TAK protocol
-	m.SetVersion(1)
+	m.SetVersion(config.Version)
 
 	if config != nil && config.Direction&INCOMING != 0 {
 		m.messageCb = config.MessageCb
@@ -170,7 +171,7 @@ func (h *UDPFeed) handleRead(ctx context.Context) {
 
 			h.logger.Warn("error", "error", err.Error())
 
-			break
+			continue
 		}
 
 		if msg == nil {
@@ -206,7 +207,31 @@ func (h *UDPFeed) handleRead(ctx context.Context) {
 }
 
 func (h *UDPFeed) processXMLRead(r *cot.TagReader) (*cot.CotMessage, error) {
-	return nil, nil
+	tag, dat, err := r.ReadTag()
+	if err != nil {
+		return nil, err
+	}
+
+	if tag == "?xml" {
+		return nil, nil
+	}
+
+	if tag == "auth" {
+		// <auth><cot username=\"test\" password=\"111111\" uid=\"ANDROID-xxxx\ callsign=\"zzz\""/></auth>
+		return nil, nil
+	}
+
+	if tag != "event" {
+		return nil, fmt.Errorf("bad tag: %s", dat)
+	}
+
+	ev := new(cot.Event)
+	if err := xml.Unmarshal(dat, ev); err != nil {
+		return nil, fmt.Errorf("xml decode error: %w, client: %s", err, string(dat))
+	}
+
+	h.logger.Debug("xml event: " + string(dat))
+	return cot.EventToProto(ev)
 }
 
 func (h *UDPFeed) processProtoRead(r *cot.ProtoReader) (*cot.CotMessage, error) {

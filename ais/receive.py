@@ -29,7 +29,7 @@ async def connect_ais_stream():
 
             if message_type == "ShipStaticData":
                 ais_message = message['Message']['ShipStaticData']
-                ship_static_data[ais_message['UserID']] = f"{ais_message["Name"].strip()} ({ais_message["CallSign"]}) TO {ais_message["Destination"]}"
+                ship_static_data[ais_message['UserID']] = f"{ais_message["Name"].strip()} ({ais_message["CallSign"].strip()}) TO {ais_message["Destination"].strip()}"
                 print(f"Found ship {ais_message["CallSign"]}: {ais_message}")
                 
 
@@ -41,7 +41,8 @@ async def connect_ais_stream():
                 # print(takproto.functions.xml2proto(send_ship_data(ais_message=ais_message)))
                 if ais_message["UserID"] in ship_static_data:
                     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) # UDP
-                    sock.sendto(takproto.functions.xml2proto(send_ship_data(ais_message=ais_message)), ("127.0.0.1", 8999))
+                    sock.sendto(send_ship_data(ais_message=ais_message), ("192.168.2.44", 6868))
+                    # sock.sendto(takproto.functions.xml2proto(send_ship_data(ais_message=ais_message)), ("192.168.2.44", 6970))
 
 def send_ship_data(ais_message):
     root = ET.Element("event")
@@ -65,6 +66,11 @@ def send_ship_data(ais_message):
         contact = ET.Element("contact")
         contact.set("callsign", ship_static_data[ais_message['UserID']])
         detail.append(contact)
+        track = ET.Element("track")
+        track.set("speed", str(ais_message['Sog']))
+        track.set("course", str(ais_message['Cog']))
+        detail.append(track)
+        #  track:{speed:27.266  course:138.793}
         root.append(detail)
     return ET.tostring(root)
 

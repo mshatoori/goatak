@@ -209,6 +209,7 @@ func (app *App) Init() {
 			Addr:      feedConfig.Addr,
 			Port:      feedConfig.Port,
 			Direction: client.OUTGOING,
+			Version:   1,
 		}))
 		app.logger.Info("Outgoing feed added", "addr", fmt.Sprintf("%s:%d", feedConfig.Addr, feedConfig.Port))
 	}
@@ -217,6 +218,14 @@ func (app *App) Init() {
 		panic(err)
 	}
 
+	app.feeds = append(app.feeds, client.NewUDPFeed(&client.UDPFeedConfig{
+		MessageCb: app.ProcessEvent,
+		Addr:      "0.0.0.0",
+		Port:      6868,
+		Direction: client.INCOMING,
+		Version:   0,
+	}))
+
 	// TODO: rabbit
 	for _, feedConfig := range incomingFeedConfigs {
 		app.feeds = append(app.feeds, client.NewUDPFeed(&client.UDPFeedConfig{
@@ -224,6 +233,7 @@ func (app *App) Init() {
 			Addr:      feedConfig.Addr,
 			Port:      feedConfig.Port,
 			Direction: client.INCOMING,
+			Version:   1,
 		}))
 		app.logger.Info("Incoming feed added", "addr", fmt.Sprintf("%s:%d", feedConfig.Addr, feedConfig.Port))
 	}

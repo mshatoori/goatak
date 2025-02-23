@@ -228,6 +228,7 @@ func addFeedHandler(app *App) air.Handler {
 				Port:      f.Port,
 				Direction: client.FeedDirection(f.Direction),
 				Title:     f.Title,
+				Version:   1,
 			})
 
 			app.feeds = append(app.feeds, newFeed)
