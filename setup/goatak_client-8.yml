@@ -3,25 +3,25 @@
 gpsd: "gpsd:2947"
 
 # GPS device serial port
-gps_port: "COM4"
+gps_port: "COM9"
 
 me:
   # Your callsign
-  callsign: نود ششم
+  callsign: نود هشتم
 
   # Your uid
-  uid: NODE6
+  uid: NODE8
 
   # Your unit type. Should be: "a-f-" + <TYPE>. All of <Type> can be found in the file: `pkg/cot/types`
-  type: a-f-G-I-B  # Building (a-f-G-I-B) / Armored Vehicle (a-f-G-U-C-A)
+  type: a-f-G-U-C-A  # Building (a-f-G-I-B) / Armored Vehicle (a-f-G-U-C-A)
 
   # Your location on map when program starts, before any GPS data received.
-  lat: 35.777088
-  lon: 51.471548
+  lat: 35.797088
+  lon: 51.491548
 
   # Your network addresses
-  ip: "192.168.11.6"
-  urn: 6
+  ip: "192.168.12.8"
+  urn: 8
 
 # Default Destination for sending data over datalink
 default_dest_ip: "255.255.255.255"
