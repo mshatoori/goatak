@@ -1,3 +1,9 @@
+ابتدا فایل کانفیگ زیر را ادیت کنید:
+`goatak_client.yml`
+
+در صورت دسترسی به اینترنت و نیاز به آپدیت برنامه از این دستور استفاده کنید:
+`docker-compose pull`
+
 برای اجرا از این دستور استفاده کنید:
 
-`docker-compose pull && docker-compose up`
+`docker-compose up`
