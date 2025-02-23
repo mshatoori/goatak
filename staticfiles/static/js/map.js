@@ -87,6 +87,55 @@ var LocationControl = L.Control.extend({
     }
 });
 
+var ToolsControl = L.Control.extend({
+    options: {
+        position: 'topleft',
+    },
+
+    onAdd: function (map) {
+        var controlName = 'leaflet-control-tools',
+            container = L.DomUtil.create('div', controlName + ' leaflet-bar'),
+            options = this.options;
+
+        this._unitButton = this._createButton('<i class="bi bi-plus-circle-fill" id="map-add-unit-btn"></i>', 'افزودن نیرو به نقشه',
+            controlName + '-in', container, this._addUnit);
+        // this._pointButton = this._createButton('<i class="bi bi-crosshair" id="map-add-point-btn"></i>', 'افزودن نقطه به نقشه',
+        //     controlName + '-in', container, this._locate);
+
+        return container;
+    },
+
+    onRemove: function (map) {
+    },
+
+
+    _addUnit: function (e) {
+        if (!this._disabled && this._map.options.changeMode) {
+            this._map.options.changeMode("add_unit");
+        }
+    },
+
+    _createButton: function (html, title, className, container, fn) {
+        var link = L.DomUtil.create('a', className, container);
+        link.innerHTML = html;
+        link.href = '#';
+        link.title = title;
+
+        /*
+         * Will force screen readers like VoiceOver to read this as "Zoom in - button"
+         */
+        link.setAttribute('role', 'button');
+        link.setAttribute('aria-label', title);
+
+        L.DomEvent.disableClickPropagation(link);
+        L.DomEvent.on(link, 'click', stop);
+        L.DomEvent.on(link, 'click', fn, this);
+        L.DomEvent.on(link, 'click', this._refocusOnMap, this);
+
+        return link;
+    }
+});
+
 let app = new Vue({
     el: '#app',
     data: {
@@ -108,6 +157,7 @@ let app = new Vue({
         me: null,
         coords: null,
         point_num: 1,
+        unit_num: 1,
         coord_format: "d",
         form_unit: {},
         types: null,
@@ -153,8 +203,10 @@ let app = new Vue({
         this.map = L.map('map', {
             attributionControl: false,
             locateCallback: this.locateByGPS,
+            changeMode: this.changeMode,
         });
         this.inDrawMode = false;
+        this.mode = 'map';
 
         this.drawnItems = new L.FeatureGroup();
         this.routeItems = new L.FeatureGroup();
@@ -197,6 +249,7 @@ let app = new Vue({
 
         this.map.addControl(this.drawControl);
         this.map.addControl(new LocationControl());
+        this.map.addControl(new ToolsControl());
 
         vm = this;
 
@@ -831,8 +884,48 @@ let app = new Vue({
             this.coords = e.latlng;
         },
 
+        mapClickAddUnit: function (e) {
+            let now = new Date();
+            let stale = new Date(now);
+            stale.setDate(stale.getDate() + 365);
+            let u = {
+                uid: "__NEW__",
+                category: "unit",
+                callsign: "unit-" + this.point_num++,
+                sidc: "",
+                start_time: now,
+                last_seen: now,
+                stale_time: stale,
+                type: "a-h-G",
+                lat: e.latlng.lat,
+                lon: e.latlng.lng,
+                hae: 0,
+                speed: 0,
+                course: 0,
+                status: "",
+                text: "",
+                parent_uid: "",
+                parent_callsign: "",
+                local: true,
+                send: true,
+                web_sensor: "",
+            }
+            if (this.config && this.config.uid) {
+                u.parent_uid = this.config.uid;
+                u.parent_callsign = this.config.callsign;
+            }
+
+            const vm = this
+            this.formFromUnit(u);
+            new bootstrap.Modal(document.querySelector("#edit")).show();
+        },
         mapClick: function (e) {
             if (this.inDrawMode) {
+                return;
+            }
+            if (this.mode === "add_unit") {
+                this.mapClickAddUnit(e)
+                this.mode = "map"
                 return;
             }
             if (this.modeIs("redx")) {
@@ -949,6 +1042,7 @@ let app = new Vue({
         formFromUnit: function (u) {
             if (!u) {
                 this.form_unit = {
+                    uid: "",
                     callsign: "",
                     category: "",
                     type: "",
@@ -958,9 +1052,12 @@ let app = new Vue({
                     send: false,
                     root_sidc: null,
                     web_sensor: "",
+                    lat: 0,
+                    lon: 0,
                 };
             } else {
                 this.form_unit = {
+                    uid: u.uid,
                     callsign: u.callsign,
                     category: u.category,
                     type: u.type,
@@ -970,6 +1067,8 @@ let app = new Vue({
                     send: u.send,
                     root_sidc: this.types,
                     web_sensor: u.web_sensor,
+                    lat: u.lat,
+                    lon: u.lon,
                 };
 
                 if (u.type.startsWith('u-') || u.type.startsWith('b-m-r')) {
@@ -992,7 +1091,14 @@ let app = new Vue({
 
         saveEditForm: function () {
             let u = this.getCurrentUnit();
-            if (!u) return;
+            if (!u) {
+                if (this.form_unit.uid !== "__NEW__")
+                    return;
+                u = {uid: uuidv4(),
+                lat: this.form_unit.lat,
+                lon: this.form_unit.lon,
+                };
+            }
 
             u.callsign = this.form_unit.callsign;
             u.category = this.form_unit.category;
@@ -1383,6 +1489,9 @@ let app = new Vue({
         locateByGPS: function () {
             fetch("/pos")
                 .then(r => this.map.setView([this.config.lat, this.config.lon]))
+        },
+        changeMode: function (newMode) {
+            this.mode = newMode
         }
     },
 });
