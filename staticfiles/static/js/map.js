@@ -1094,9 +1094,10 @@ let app = new Vue({
             if (!u) {
                 if (this.form_unit.uid !== "__NEW__")
                     return;
-                u = {uid: uuidv4(),
-                lat: this.form_unit.lat,
-                lon: this.form_unit.lon,
+                u = {
+                    uid: uuidv4(),
+                    lat: this.form_unit.lat,
+                    lon: this.form_unit.lon,
                 };
             }
 

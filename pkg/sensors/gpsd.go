@@ -365,11 +365,13 @@ func (sensor *GpsdSensor) TCPConnect() bool {
 		sensor.Logger.Warn("Sending COM Command:")
 		sensor.Logger.Warn(fmt.Sprintf("% x", msg2))
 
-		_, err = sensor.TCPConnection.Write(msg2)
+		n, err = sensor.TCPConnection.Write(msg2)
 		if err != nil {
 			sensor.Logger.Error("GPS COM write error", "error", err)
 			return false
 		}
+
+		sensor.Logger.Warn("GPS COM write done", "len", n)
 
 		sensor.TCPReader = bufio.NewReader(sensor.TCPConnection)
 

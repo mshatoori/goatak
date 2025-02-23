@@ -26,22 +26,3 @@ me:
 # Default Destination for sending data over datalink
 default_dest_ip: "255.255.255.255"
 default_dest_urn: 16777215
-
-dns_addr: localhost:8050
-
-# Uncomment following lines for direct UDP communication between nodes
-#feeds:
-# outgoing:
-# - address: 192.168.2.44
-#   port: 6970
-# - address: 192.168.2.54
-#   port: 6970
-# - address: 192.168.2.64
-#   port: 6970
-# - address: 192.168.2.74
-#   port: 6970
-# - address: 192.168.2.84
-#   port: 6970
-# incoming:
-# - address: 0.0.0.0
-#   port: 6969
