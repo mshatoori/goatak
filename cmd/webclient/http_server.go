@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"runtime/pprof"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/kdudkov/goatak/internal/client"
@@ -122,7 +123,9 @@ func getConfigHandler(app *App) air.Handler {
 		m["team"] = app.team
 		m["role"] = app.role
 
-		m["layers"] = getLayers(app.mapServer)
+		parts := strings.Split(req.Authority, ":")
+
+		m["layers"] = getLayers(parts[0] + ":8000")
 
 		m["ip_address"] = app.ipAddress
 		m["urn"] = app.urn
