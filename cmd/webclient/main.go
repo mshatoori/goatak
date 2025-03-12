@@ -297,7 +297,7 @@ func (app *App) Run(ctx context.Context) {
 			Ctx:          ctx,
 			Title:        "مکان‌یاب",
 			SerialPort:   viper.GetString("gps_port"),
-			TCPProxyAddr: "host.docker.internal:4040",
+			TCPProxyAddr: "", // Disable TCP Proxy
 		}
 		app.sensors = append(app.sensors, gpsdSensor)
 
