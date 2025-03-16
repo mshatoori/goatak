@@ -23,7 +23,7 @@
 4. Routes: As an object...
 
 ## Next Weeks
-1. Emergency
+1. ~~Emergency~~
 2. CASEVAC
 3. Selecting who to send to.
 4. One-page doc of features that we have + we will have (from WinTAK) 
@@ -90,3 +90,25 @@
 - Distance from lines
 - Change alerts from modal to sidebar??
 - Remove & Edit (side bar) polygon
+
+
+
+# New Year TODOs
+- Ability to save configs & objects -> DB or Data Package
+- Features:
+   - Track -> Keep locations in DB, Show in UI
+   - Routes -> dist, ...
+   - CASEVAC
+   - Emergency Icons
+   - Stale time for objects -> Are there levels of stale? for example: L1: live L2: show transparent L3: Remove
+   - List contacts in send modal
+   - Send logs to Seq
+- Versioning for docker
+
+- UI is not responsive
+- Documents for how android devices can run SA apps & communicate with Radio
+- sqlite map (vector)
+- !!! Important !!! -> Hierarchy 
+= GCSS-Army
+= DCGS-A
+= JBC-P
