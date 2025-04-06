@@ -94,21 +94,22 @@
 
 
 # New Year TODOs
-- Ability to save configs & objects -> DB or Data Package
+- Ability to save configs & objects -> DB or Data Package (3 pts)
 - Features:
-   - Track -> Keep locations in DB, Show in UI
-   - Routes -> dist, ...
-   - CASEVAC
-   - Emergency Icons
-   - Stale time for objects -> Are there levels of stale? for example: L1: live L2: show transparent L3: Remove
-   - List contacts in send modal
-   - Send logs to Seq
-- Versioning for docker
+   - Track -> Keep locations in DB, Show in UI (3 pts)
+   - Routes -> dist, ... (3 pts)
+   - CASEVAC (2 pts)
+   - Emergency Icons (0 pts)
+   - Stale time for objects -> Are there levels of stale? for example: L1: live L2: show transparent L3: Remove (2 pts)
+   - List contacts in send modal (2 pts)
+   - Send logs to Seq (1 pts)
+- Versioning for docker (1 pts)
 
-- UI is not responsive
-- Documents for how android devices can run SA apps & communicate with Radio
-- sqlite map (vector)
-- !!! Important !!! -> Hierarchy 
+- UI is not responsive (8 pts)
+- Documents for how android devices can run SA apps & communicate with Radio (8 pts)
+- sqlite map (vector) (5 pts)
+- !!! Important !!! -> Hierarchy (8 pts)
+- Better config management (3 pts)
 = GCSS-Army
 = DCGS-A
 = JBC-P
