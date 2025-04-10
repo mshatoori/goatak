@@ -21,5 +21,6 @@ pkg/sumdb/
 /goatak-gpsd.tar
 /goatak-maps.tar
 /make-3.81.exe
+/front/.vite/
 /front/node_modules/
 /front/dist/

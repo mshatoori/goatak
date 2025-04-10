@@ -34,6 +34,7 @@
             :check-emergency="checkEmergency"
             :config-updated="configUpdated"
             :coords="coords"
+            :user-coords="userCoords"
             :current-unit="currentUnit"
             :locked-unit-uid="lockedUnitUid"
             :map="map"
@@ -297,6 +298,12 @@ provide('openEditUnitModal', openEditUnitModal)
 provide('startDistanceMeasure', activateDistanceMeasure)
 provide('startAddPointMode', activateAddPointMode)
 provide('getStatus', getStatus);
+
+// Computed property for self coordinates based on config
+const userCoords = computed(() => ({
+  lat: config.value?.lat ?? 0,
+  lng: config.value?.lon ?? 0
+}))
 
 // Lifecycles
 onMounted(async () => {

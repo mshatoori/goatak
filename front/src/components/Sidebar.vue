@@ -20,7 +20,7 @@
         <UserInfo
           :check-emergency="props.checkEmergency"
           :config="props.config"
-          :coords="props.coords"
+          :coords="props.userCoords"
           :config-updated="props.configUpdated"
           :map="props.map"
         />
@@ -163,7 +163,8 @@ const props = defineProps({
   lockedUnitUid: String, // Keep prop, but logic needs state in App.vue
   deleteCurrentUnit: Function,
   checkEmergency: Function,
-  map: Object
+  map: Object,
+  userCoords: Object // Define the new prop
 });
 
 // Inject functions needed from App.vue if not passed as props
