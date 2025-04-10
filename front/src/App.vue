@@ -98,7 +98,8 @@ import EditUnitModal from './components/EditUnitModal.vue'
 import SensorsModal from './components/SensorsModal.vue'
 import { store } from './store.js'
 import { generateUUID } from './utils'
-import { fetchUnits, createUnit, deleteUnit, fetchSensors, fetchFeeds } from './apiService.js'
+import { fetchUnits, createUnit, deleteUnit, fetchSensors, fetchFeeds, fetchConfig as fetchConfigApi } from './apiService.js'
+import { Item } from './models/Item.js'
 import { useMapInitialization } from './composables/useMapInitialization.js'
 import { useWebSocket } from './composables/useWebSocket.js'
 import { useMarkerManager } from './composables/useMarkerManager.js'
@@ -141,19 +142,20 @@ const handleMessageAction = (unit) => {
 };
 const handleEditAction = (unit) => {
     const fullUnitData = store.state.items.get(unit.uid); 
-    if (fullUnitData) {
-        openEditUnitModal(fullUnitData); 
+    if (fullUnitData instanceof Item) {
+        openEditUnitModal(fullUnitData);
     } else {
-        console.error("Could not find full unit data in store for edit action:", unit.uid);
+        console.error("Could not find Item instance in store for edit action:", unit.uid);
+        if (fullUnitData) openEditUnitModal(new Item(fullUnitData)); 
     }
 };
 const handleDeleteAction = (unit) => {
-    const fullUnitData = store.state.items.get(unit.uid); 
-    if (fullUnitData) {
-        currentUnit.value = fullUnitData; 
+    const fullUnitData = store.state.items.get(unit.uid);
+    if (fullUnitData instanceof Item) {
+        currentUnit.value = fullUnitData;
         deleteCurrentUnit();
     } else {
-         console.error("Could not find full unit data in store for delete action:", unit.uid);
+         console.error("Could not find Item instance in store for delete action:", unit.uid);
     }
 };
 
@@ -173,57 +175,62 @@ const {
 );
 
 // === Instantiate Drawing Tools Composable ===
-const handleDrawingCreated = (drawingUnitData) => {
-    console.log("App.vue: Drawing created, opening modal:", drawingUnitData);
-    selectedDrawing.value = drawingUnitData;
+const handleDrawingCreated = (drawingData) => {
+    console.log("App.vue: Drawing created (raw data):", drawingData);
+    const newDrawingItem = new Item({
+        ...drawingData,
+        category: 'drawing',
+    });
+    console.log("App.vue: Converted drawing to Item:", newDrawingItem);
+    selectedDrawing.value = newDrawingItem;
     showEditDrawingModal.value = true;
 };
 
 const handleDrawingEdited = async (editedLayersInfo) => {
-    console.log("App.vue: Drawings edited:", editedLayersInfo);
+    console.log("App.vue: Drawings edited (raw data):", editedLayersInfo);
     for (const editInfo of editedLayersInfo) {
         const existingDrawing = store.state.items.get(editInfo.uid);
-        if (!existingDrawing || existingDrawing.category !== 'drawing') {
-            console.warn("Could not find original drawing data in store for edit:", editInfo.uid);
+        if (!existingDrawing || !(existingDrawing instanceof Item) || existingDrawing.category !== 'drawing') {
+            console.warn("Could not find original drawing Item in store for edit:", editInfo.uid);
             continue;
         }
-        const updatedDrawing = {
+        const updatedDrawing = new Item({
             ...existingDrawing,
             lat: editInfo.newLat,
             lon: editInfo.newLon,
             points: editInfo.newCoords,
-            timestamp: new Date().toISOString()
-        };
-        console.log("Updating drawing store/backend:", updatedDrawing);
+            time: new Date().toISOString()
+        });
+        console.log("Updating drawing store/backend with Item:", updatedDrawing);
         store.processItems([updatedDrawing], true);
         try {
             await createUnit(updatedDrawing);
-            console.log("Backend updated for edited drawing:", editInfo.uid);
+            console.log("Backend updated for edited drawing Item:", editInfo.uid);
         } catch (error) {
-            console.error("Error updating edited drawing on backend:", error);
+            console.error("Error updating edited drawing Item on backend:", error);
         }
     }
 };
 
 const handleDrawingDeleted = async (deletedInfo) => {
-    console.log("App.vue: Drawings deleted:", deletedInfo.uids);
+    console.log("App.vue: Drawings deleted UIDs:", deletedInfo.uids);
     for (const uid of deletedInfo.uids) {
         console.log("Processing deleted drawing:", uid);
+        const itemToDelete = store.state.items.get(uid);
         try {
             await deleteUnit(uid);
-            console.log("Backend deleted drawing:", uid);
+            console.log("Backend deleted drawing/item:", uid);
         } catch (error) {
-            console.error("Error deleting drawing from backend:", error);
+            console.error("Error deleting drawing/item from backend:", error);
         }
-        if (store.state.items.has(uid)) {
-            store.state.items.delete(uid);
-            console.log("Removed drawing from local store:", uid);
-            store.state.timestamp++;
-            updateCounts();
+        if (itemToDelete) {
+             store.processItems([{ uid: uid, _delete: true }], true);
+            console.log("Triggered removal of drawing/item from local store:", uid);
         } else {
-            console.warn("Drawing to delete not found in local store:", uid);
+            console.warn("Drawing/Item to delete not found in local store:", uid);
         }
     }
+     updateCounts();
 };
 
 const {
@@ -345,8 +352,11 @@ function setupEventListeners() {
 
 // WebSocket message handler
 function handleWebSocketMessage(data) {
-  switch (data.type) {
+  switch (data.category) {
     case 'unit':
+    case 'point':
+    case 'drawing':
+    case 'emergency':
       handleUnitUpdate(data)
       break
     case 'alarm':
@@ -361,22 +371,28 @@ function handleWebSocketMessage(data) {
     case 'message':
       handleMessageUpdate(data)
       break
+    default:
+        if (data.type?.startsWith('a-') || data.type?.startsWith('b-')) {
+             handleUnitUpdate(data);
+        } else {
+             console.warn("Received WebSocket message with unknown category/type:", data);
+        }
   }
 }
 
 // Unit handling
-function handleUnitUpdate(unit) {
-  if (config.value && unit.uid === config.value.uid) {
-    console.warn("Ignoring self unit update via WebSocket, handled separately by configUpdated/fetchConfig.");
-    store.processItems([unit], true);
+function handleUnitUpdate(itemData) {
+  if (config.value && itemData.uid === config.value.uid) {
+    console.warn("Ignoring self item update via WebSocket, handled separately by configUpdated/fetchConfig.");
+    store.processItems([itemData], true);
     return;
   }
 
-  const results = store.processItems([unit], true)
+  const results = store.processItems([itemData], true)
   
-  results.added.forEach(u => updateMarkerForUnit(u))
-  results.updated.forEach(u => updateMarkerForUnit(u))
-  results.removed.forEach(u => removeMarkerForUnit(u))
+  results.added.forEach(item => updateMarkerForUnit(item))
+  results.updated.forEach(item => updateMarkerForUnit(item))
+  results.removed.forEach(item => removeMarkerForUnit(item))
   
   updateCounts()
 }
@@ -459,41 +475,41 @@ async function handleMapClick(e) {
 
   if (currentToolMode.value === 'addPoint') {
     console.log("Map click in Add Point mode");
-    const newPoint = {
-        uid: generateUUID(),
+    const newPointItem = new Item({
         category: 'point',
-        callsign: '', 
+        callsign: 'New Point',
         lat,
         lon: lng,
-        type: 'b-m-p-s-m', 
-        affiliation: 'f', 
-        sidc: 'SFGPE---------', 
-        timestamp: new Date().toISOString(),
+        type: 'b-m-p-s-m',
+        affiliation: 'f',
+        sidc: 'SFGPE---------A',
+        time: new Date().toISOString(),
         send: true
-    };
-    openEditUnitModal(newPoint);
+    });
+    console.log("Opening edit modal for new Point Item:", newPointItem);
+    openEditUnitModal(newPointItem);
     cancelDrawingToolMode();
   } else {
-    console.log("Default map click: Creating new unit placeholder.");
-    const newUnit = {
-      uid: generateUUID(),
+    console.log("Default map click: Creating new unit placeholder Item.");
+    const newUnitItem = new Item({
       category: 'unit', 
-      callsign: '', 
+      callsign: 'New Unit',
       lat,
       lon: lng,
       team: config.value?.team || '',
       role: config.value?.role || '',
-      affiliation: 'f', 
-      sidc: 'SFGPU----------', 
-      type: 'unknown', 
+      affiliation: 'f',
+      sidc: 'SFGPU----------',
+      type: 'a-h-G-U-C-F',
       speed: 0,
-      altitude: 0,
-      parent_uid: config.value?.uid,
-      parent_callsign: config.value?.callsign,
-      timestamp: new Date().toISOString(),
-      send: true 
-    };
-    openEditUnitModal(newUnit);
+      hae: 0,
+      parent_uid: config.value?.uid || '',
+      parent_callsign: config.value?.callsign || '',
+      time: new Date().toISOString(),
+      send: true
+    });
+    console.log("Opening edit modal for new Unit Item:", newUnitItem);
+    openEditUnitModal(newUnitItem);
   }
 }
 
@@ -503,7 +519,7 @@ function handleMouseMove(e) {
 }
 
 function getUnitName(unit) {
-  return unit.callsign || unit.uid
+  return unit?.callsign || unit?.uid || 'Unknown';
 }
 
 function updateCounts() {
@@ -542,8 +558,12 @@ function closeAlarmsModal() {
   showAlarmsModal.value = false
 }
 
-function openEditDrawingModal(drawing) {
-  selectedDrawing.value = drawing
+function openEditDrawingModal(drawingItem) {
+  if (!(drawingItem instanceof Item)) {
+      console.error("openEditDrawingModal expects an Item instance.");
+      drawingItem = new Item(drawingItem || {}); 
+  }
+  selectedDrawing.value = drawingItem
   showEditDrawingModal.value = true
 }
 
@@ -552,9 +572,14 @@ function closeEditDrawingModal() {
   selectedDrawing.value = null
 }
 
-function openEditUnitModal(unitData) {
-  console.log("Opening Edit Unit Modal for:", unitData);
-  unitToEdit.value = unitData;
+function openEditUnitModal(unitItem) {
+  if (!(unitItem instanceof Item)) {
+      console.error("openEditUnitModal expects an Item instance. Received:", unitItem);
+      unitItem = new Item(unitItem || {}); 
+      console.warn("Attempted conversion to Item instance.");
+  }
+  console.log("Opening Edit Unit Modal for Item:", unitItem);
+  unitToEdit.value = unitItem;
   showEditUnitModal.value = true;
 }
 
@@ -564,42 +589,75 @@ function closeEditUnitModal() {
 }
 
 async function saveUnitEdit(editedUnitData) {
-  console.log("Saving edited unit:", editedUnitData);
+  console.log("Saving edited unit data from modal:", editedUnitData);
 
-  const results = store.processItems([editedUnitData], true);
+  if (!unitToEdit.value || !(unitToEdit.value instanceof Item)) {
+    console.error("Cannot save unit edit: Original Item instance (unitToEdit) is missing or invalid.");
+    closeEditUnitModal();
+    return;
+  }
+
+  const finalUnitItem = new Item({
+    ...unitToEdit.value,
+    ...editedUnitData,
+    uid: unitToEdit.value.uid,
+    time: new Date().toISOString(),
+    send: true 
+  });
+
+  console.log("Final Item instance being saved:", finalUnitItem);
+
+  const results = store.processItems([finalUnitItem], true);
   console.log("Store update results:", results);
 
   try {
-    const response = await createUnit(editedUnitData);
+    const response = await createUnit(finalUnitItem); 
     console.log("Backend save/update response:", response);
 
-    updateMarkerForUnit(editedUnitData);
+    updateMarkerForUnit(finalUnitItem);
 
   } catch (error) {
-    console.error("Error saving unit edit to backend:", error);
+    console.error("Error saving unit edit Item to backend:", error);
   }
 
   closeEditUnitModal();
 }
 
 async function saveDrawing(drawingData) {
-  console.log("App.vue: Saving drawing data from modal:", drawingData);
+    console.log("App.vue: Saving drawing data from modal:", drawingData);
+  
+  if (!selectedDrawing.value || !(selectedDrawing.value instanceof Item)) {
+      console.error("Cannot save drawing: Original drawing Item is missing.");
+      closeEditDrawingModal();
+      return;
+  }
 
-  const results = store.processItems([drawingData], true);
+  const finalDrawingItem = new Item({
+      ...selectedDrawing.value,
+      ...drawingData,
+      uid: selectedDrawing.value.uid,
+      time: new Date().toISOString(),
+      category: 'drawing'
+  });
+
+  console.log("Final drawing Item being saved:", finalDrawingItem);
+
+  const results = store.processItems([finalDrawingItem], true);
   console.log("Store update results for drawing:", results);
 
   try {
-    const response = await createUnit(drawingData); 
+    const response = await createUnit(finalDrawingItem); 
     console.log("Backend save/update response for drawing:", response);
-  } catch (error) {
-    console.error("Error saving drawing to backend:", error);
-  }
 
-  const layer = findLayerByUnitUid(drawingData.uid);
-  if (layer) {
-    if (layer.setStyle && drawingData.color) {
-      layer.setStyle({ color: drawingData.color });
+    const layer = findLayerByUnitUid(finalDrawingItem.uid);
+    if (layer) {
+        if (layer.setStyle && finalDrawingItem.color) {
+            layer.setStyle({ color: finalDrawingItem.color });
+        }
     }
+
+  } catch (error) {
+    console.error("Error saving drawing Item to backend:", error);
   }
 
   closeEditDrawingModal();
@@ -647,18 +705,18 @@ function locateByGps() {
 }
 
 function setCurrentUnitUid(uid, panTo = false) {
-  const unit = store.state.items.get(uid);
-  if (unit) {
-    currentUnit.value = unit;
-    console.log("Current unit set:", unit);
+  const item = store.state.items.get(uid);
+  if (item instanceof Item) {
+    currentUnit.value = item;
+    console.log("Current item set:", item);
     lockedUnitUid.value = uid;
 
-    if (panTo && map.value && unit.lat != null && unit.lon != null && (unit.lat !== 0 || unit.lon !== 0)) {
+    if (panTo && map.value && item.lat != null && item.lon != null && (item.lat !== 0 || item.lon !== 0)) {
       const zoomLevel = map.value.getZoom() < 15 ? 15 : map.value.getZoom();
-      map.value.flyTo([unit.lat, unit.lon], zoomLevel);
+      map.value.flyTo([item.lat, item.lon], zoomLevel);
     }
   } else {
-    console.warn("setCurrentUnitUid: Unit not found for UID:", uid);
+    console.warn("setCurrentUnitUid: Item not found in store for UID:", uid);
     currentUnit.value = null;
     lockedUnitUid.value = null;
   }
@@ -684,52 +742,54 @@ function toggleOverlay(category, isActive) {
 }
 
 async function deleteCurrentUnit() {
-  if (!currentUnit.value) {
-    console.warn("deleteCurrentUnit called but no currentUnit selected. (Should be set by context menu callback)");
+  if (!currentUnit.value || !(currentUnit.value instanceof Item)) {
+    console.warn("deleteCurrentUnit called but no current Item selected.");
     return;
   }
-  const unitToDelete = currentUnit.value;
-  console.log("Attempting to delete unit set by context menu:", unitToDelete.uid);
-  const unitUidToDelete = unitToDelete.uid;
+  const itemToDelete = currentUnit.value;
+  console.log("Attempting to delete item:", itemToDelete.uid);
+  const itemUidToDelete = itemToDelete.uid;
+  
   currentUnit.value = null;
   lockedUnitUid.value = null;
+
   try {
-    await deleteUnit(unitUidToDelete); 
-    console.log("Backend delete request sent for unit:", unitUidToDelete);
+    await deleteUnit(itemUidToDelete); 
+    console.log("Backend delete request sent for item:", itemUidToDelete);
   } catch (error) {
-    console.error("Error deleting unit from backend:", error);
+    console.error("Error deleting item from backend:", error);
   }
 }
 
 async function checkEmergency(emergencyData) {
-  console.log("Sending emergency check:", emergencyData);
+  console.log("Sending emergency check with data:", emergencyData);
 
   if (!config.value || !config.value.uid) {
       console.error("Cannot send emergency: User config or UID is missing.");
       return;
   }
 
-  const emergencyUnit = {
-      uid: generateUUID(),
+  const emergencyItem = new Item({
       category: 'emergency',
       type: "b-a-o-tbl",
       lat: config.value.lat || 0,
       lon: config.value.lon || 0,
       parent_uid: config.value.uid,
       parent_callsign: config.value.callsign,
-      timestamp: new Date().toISOString(),
-      emergency: {
-          switch1: emergencyData.switch1 || false,
-          switch2: emergencyData.switch2 || false,
-      },
-      callsign: `${config.value.callsign}-EMERGENCY`
-  };
+      time: new Date().toISOString(),
+      text: `Emergency Switches: 1: ${emergencyData.switch1 || false}, 2: ${emergencyData.switch2 || false}`,
+      callsign: `${config.value.callsign}-EMERGENCY`,
+      sidc: 'SFGPA----------',
+      send: true
+  });
+
+  console.log("Sending emergency Item:", emergencyItem);
 
   try {
-      await createUnit(emergencyUnit);
-      console.log("Emergency signal sent to backend.");
+      await createUnit(emergencyItem);
+      console.log("Emergency Item sent to backend.");
   } catch (error) {
-      console.error("Error sending emergency signal:", error);
+      console.error("Error sending emergency Item:", error);
   }
 }
 
@@ -796,8 +856,7 @@ function handleSensorsUpdated() {
 
 async function fetchConfig() {
   try {
-    const response = await fetch('/api/config');
-    config.value = await response.json();
+    config.value = await fetchConfigApi();
     console.log("Config loaded:", config.value);
 
     if (config.value && config.value.uid) {
@@ -829,23 +888,25 @@ async function fetchInitialSensorsCount() {
 }
 
 async function fetchInitialUnits() {
-    console.log("Fetching initial units...");
+    console.log("Fetching initial units/items...");
     try {
-        const units = await fetchUnits();
-        console.log(`Fetched ${units?.length || 0} initial units.`);
-        if (units && units.length > 0) {
-            const results = store.processItems(units, false);
+        const itemsData = await fetchUnits();
+        console.log(`Fetched ${itemsData?.length || 0} initial items.`);
+        if (itemsData && itemsData.length > 0) {
+            const results = store.processItems(itemsData, false);
             
-            results.added.forEach(unit => updateMarkerForUnit(unit));
+            results.added.forEach(item => updateMarkerForUnit(item));
+            results.updated.forEach(item => updateMarkerForUnit(item));
+            results.removed.forEach(item => removeMarkerForUnit(item)); 
             
-            results.removed.forEach(unit => removeMarkerForUnit(unit)); 
-            
-            console.log(`Processed initial units via marker manager: Added/Updated ${results.added.length}, Removed ${results.removed.length}`);
+            console.log(`Processed initial items via marker manager: Added/Updated ${results.added.length + results.updated.length}, Removed ${results.removed.length}`);
             
             updateCounts();
+        } else {
+            console.log("No initial items found or received.");
         }
     } catch (error) {
-        console.error("Error fetching initial units:", error);
+        console.error("Error fetching initial items:", error);
     }
 }
 
@@ -864,8 +925,8 @@ async function fetchInitialFeeds() {
 }
 
 function getStatus(unitUid) {
-    const unit = store.state.items.get(unitUid);
-    if (unit && unit.status === 'online') {
+    const item = store.state.items.get(unitUid);
+    if (item instanceof Item && item.status === 'online') {
         return 'Online';
     } 
     return 'Offline';

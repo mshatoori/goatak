@@ -1,40 +1,15 @@
 import { reactive } from 'vue'; // Import reactive if making state reactive
+import { Item } from './models/Item'; // Import the Item class
 
-// Data cleaning function (moved here as it often prepares data for/from the store)
-export function cleanUnit(unit) {
-    // remove fields starting with _
-    // remove fields which are functions
-    // remove empty fields
-    // remove objects where lat or lon is 0
-    // remove fields where values are Infinity or Nan
-    let cleaned = {};
-    for (const [k, v] of Object.entries(unit)) {
-        if (k.startsWith('_') || 
-            typeof v === 'function' || 
-            v === null || v === '' ||
-            Number.isNaN(v) || !Number.isFinite(v)) {
-            continue
-        }
-        if (typeof v === 'object' && v !== null) {
-            // Special case: allow self coordinates to be 0,0 initially?
-            if (k !== 'self' && (v.lat === 0 || v.lon === 0)) { 
-                // This rule might be too strict, depends on use case.
-                // If 0,0 is a valid temporary state, this needs adjustment.
-                // console.warn(`Cleaning unit ${unit.uid}, removing field ${k} due to 0 lat/lon`, v);
-                // continue // Temporarily disabling this part of cleaning
-            }
-        }
-        cleaned[k] = v;
-    }
-    return cleaned
-}
+// Removed cleanUnit function as its logic is integrated into Item.toPayload()
+// or handled during Item instantiation/update.
 
 // Store management class
 export class Store {
     constructor() {
         // Use reactive() for the state object to ensure Vue components update
         this.state = reactive({
-            items: new Map(), // Maps UID to unit/item object
+            items: new Map(), // Maps UID to Item instance
             timestamp: 0, // Simple counter to trigger reactivity if needed
             // Removed sensors, feeds, unitToSend, emergency as they seem unused/managed elsewhere now
         });
@@ -48,41 +23,52 @@ export class Store {
         };
         const incomingKeys = new Set();
 
-        for (const item of items) {
-            if (!item || !item.uid) {
-                 console.warn("[Store] Skipping item with missing UID:", item);
-                 continue; 
+        for (const itemData of items) {
+            if (!itemData || !itemData.uid) {
+                console.warn("[Store] Skipping item with missing UID:", itemData);
+                continue;
             }
-            
-            const existingItem = this.state.items.get(item.uid);
-            incomingKeys.add(item.uid);
 
-            // Handle deletion messages (e.g., from CoT events)
-            if (item.type === "b-a-o-can" || item._delete === true) { // Check for explicit delete flag too
+            const existingItem = this.state.items.get(itemData.uid);
+            incomingKeys.add(itemData.uid);
+
+            // Handle deletion messages
+            if (itemData.type === "b-a-o-can" || itemData._delete === true) {
                 if (existingItem) {
-                    results.removed.push({...existingItem}); // Push a copy before deleting
-                    this.state.items.delete(item.uid);
-                    console.log(`[Store] Removed item via delete message: ${item.uid}`);
+                    results.removed.push(existingItem); // Push the Item instance
+                    this.state.items.delete(itemData.uid);
+                    console.log(`[Store] Removed item via delete message: ${itemData.uid}`);
                 }
-                continue; // Skip further processing for deletion items
+                continue;
             }
 
             // Add or Update
             if (!existingItem) {
-                // Ensure we store a reactive version if necessary, 
-                // although top-level state is already reactive.
-                // Cleaning before adding?
-                // const cleanedItem = cleanUnit(item);
-                this.state.items.set(item.uid, item); // Directly set the item
-                results.added.push(item);
-                // console.log(`[Store] Added item: ${item.uid}`);
+                // Create a new Item instance from the incoming data
+                const newItem = new Item(itemData);
+                this.state.items.set(newItem.uid, newItem);
+                results.added.push(newItem);
             } else {
-                // Merge new data into existing item
-                // Ensure cleanUnit doesn't remove essential fields accidentally during update
-                // const cleanedUpdate = cleanUnit(item);
-                Object.assign(existingItem, item); // Merge updates into the existing reactive object
+                // Merge new data into the existing Item instance
+                // Use Object.assign for reactivity, but ensure it doesn't add non-Item props
+                const updateData = {};
+                for (const key in itemData) {
+                   // Only assign keys that are defined in the Item class or are standard props
+                   // This check might be overly cautious depending on source data cleanliness
+                   if (existingItem.hasOwnProperty(key) || Item.prototype.hasOwnProperty(key)) {
+                       updateData[key] = itemData[key];
+                   } else if (key === 'timestamp') { // Handle timestamp alias
+                       updateData['time'] = itemData[key];
+                   }
+                }
+                Object.assign(existingItem, updateData);
+
+                 // Ensure essential fields are updated if they were changed
+                // This might be redundant if updateData copying is perfect
+                existingItem.time = updateData.time || existingItem.time;
+                // ... update other potentially complex fields if needed ...
+
                 results.updated.push(existingItem);
-                 // console.log(`[Store] Updated item: ${item.uid}`);
             }
         }
 
@@ -96,7 +82,7 @@ export class Store {
             }
             keysToRemove.forEach(key => {
                 const removedItem = this.state.items.get(key);
-                results.removed.push({...removedItem}); // Push a copy
+                results.removed.push(removedItem); // Push the Item instance
                 this.state.items.delete(key);
                 console.log(`[Store] Removed stale item (not in full update): ${key}`);
             });
@@ -104,9 +90,9 @@ export class Store {
 
         // Increment timestamp only if changes occurred?
         if (results.added.length > 0 || results.updated.length > 0 || results.removed.length > 0) {
-             this.state.timestamp++;
+            this.state.timestamp++;
         }
-        
+
         return results;
     }
 }

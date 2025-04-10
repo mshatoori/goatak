@@ -1,6 +1,5 @@
 import L from 'leaflet';
-// Assuming 'ms' (milsymbol) is available globally or loaded elsewhere
-// If not, it would need to be imported properly: import ms from 'milsymbol';
+import ms from 'milsymbol';
 
 // --- Constants --- //
 export const colors = new Map([
