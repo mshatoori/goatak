@@ -2,7 +2,7 @@ import L from 'leaflet';
 
 export const LocationControl = L.Control.extend({
   options: {
-    position: 'topleft' // Or any other position
+    position: 'bottomleft' // Or any other position
   },
 
   initialize: function (options, locateFunc) {
@@ -13,16 +13,18 @@ export const LocationControl = L.Control.extend({
   onAdd: function (map) {
     const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
     container.style.backgroundColor = 'white';
-    container.style.width = '30px';
-    container.style.height = '30px';
-    container.style.borderRadius = '4px';
-    container.style.cursor = 'pointer';
-    container.title = 'Locate Me';
+    // container.style.width = '30px';
+    // container.style.height = '30px';
+    container.style.fontSize = '20px';
+    // container.style.cursor = 'pointer';
+    container.title = 'مکان من';
 
     // Use Bootstrap Icons class directly if available globally or style manually
-    const icon = L.DomUtil.create('i', 'bi bi-crosshair', container);
-    icon.style.fontSize = '1.3em';
-    icon.style.lineHeight = '30px'; // Center icon vertically
+    const link = L.DomUtil.create('a', '', container);
+    link.href = '#';
+    const icon = L.DomUtil.create('i', 'bi bi-crosshair', link);
+    // icon.style.fontSize = '1.3em';
+    // icon.style.lineHeight = '30px'; // Center icon vertically
     icon.style.textAlign = 'center'; // Center icon horizontally
     icon.style.display = 'block';
 

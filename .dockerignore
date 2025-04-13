@@ -6,3 +6,4 @@ docker-compose.yaml
 dist
 *.tar
 setup/
+front/

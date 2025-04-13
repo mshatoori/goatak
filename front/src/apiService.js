@@ -228,4 +228,25 @@ export async function createFeed(feedData) {
         console.error('Error creating feed:', error);
         throw error;
     }
+}
+
+// --- Position API --- //
+export async function fetchUserPosition() {
+    try {
+        const response = await fetch('/pos');
+        if (!response.ok) {
+            let errorMsg = `HTTP error! status: ${response.status}`;
+            try {
+                 const errorData = await response.json();
+                 errorMsg = errorData.message || errorData.error || errorMsg;
+            } catch (e) { /* Ignore if body isn't JSON */ }
+            throw new Error(errorMsg);
+        }
+        // The /pos endpoint likely doesn't return JSON, it just triggers an action.
+        // If it did return data, you'd parse it here (e.g., return response.json())
+        return true; // Indicate success
+    } catch (error) {
+        console.error('Error fetching user position:', error);
+        throw error;
+    }
 } 
