@@ -24,7 +24,10 @@ Vue.component('AlarmsModal', AlarmsModal);
 Vue.component('MessagesModal', MessagesModal);
 Vue.component('EditDrawingModal', EditDrawingModal);
 
+// Register global mixin
+Vue.mixin(responsiveMixin);
+
 // Create Vue instance
 new Vue({
   render: h => h(App)
-}).$mount('#app'); 
+}).$mount('#app');

@@ -1,95 +1,112 @@
 <template>
   <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">سامانه آگاهی وضعیتی تاکتیکی</a>
-      <span class="badge rounded-pill bg-primary"
+      <a class="navbar-brand" href="#">
+        <span class="d-none d-sm-inline">سامانه آگاهی وضعیتی تاکتیکی</span>
+      </a>
+      <span class="badge rounded-pill connection-badge"
             :class="{ 'bg-success': connectionStatus, 'bg-secondary': !connectionStatus }">.</span>
-      <span class="flex-grow-1"></span>
-      <div class="NOT-collapse NOT-navbar-collapse" id="navbarCollapse">
-        <ul class="navbar-nav mb-2 mb-md-0">
-          <li class="nav-item">
-            <a class="nav-link" href="#" id="navbarAlarmsMenuLink" role="button"
-               @click="$emit('open-alarms')"> <!-- Emit event -->
+      
+      <!-- Hamburger toggle button for mobile -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+              data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" 
+              aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      
+      <!-- Collapsible navbar content -->
+      <div class="collapse navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav">
+          <li class="nav-item nav-item-mobile">
+            <a class="nav-link d-flex align-items-center" href="#" id="navbarAlarmsMenuLink" role="button"
+               @click="$emit('open-alarms')">
               <i :class="{'alarm-active': alarmsCount > 0 }"
-                 class="bi bi-exclamation-diamond-fill"></i>
-              {{ alarmsCount }}
+                 class="bi bi-exclamation-diamond-fill me-2"></i>
+              <span class="badge rounded-pill bg-danger ms-2" v-if="alarmsCount > 0">{{ alarmsCount }}</span>
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#" id="navbarSensorsMenuLink" role="button"
-               @click="$emit('open-sensors')"> <!-- Emit event -->
-              سنسورها<span class="badge rounded-pill bg-success">{{ sensorsCount }}</span>
+          <li class="nav-item nav-item-mobile">
+            <a class="nav-link d-flex align-items-center" href="#" id="navbarSensorsMenuLink" role="button"
+               @click="$emit('open-sensors')">
+              <i class="bi bi-broadcast-pin me-2"></i>
+              <span class="menu-label">سنسورها</span>
+              <span class="badge rounded-pill bg-success ms-2">{{ sensorsCount }}</span>
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#" id="navbarFeedsMenuLink" role="button" @click="$emit('open-feeds')"> <!-- Emit event -->
-              ارتباطات <span class="badge rounded-pill bg-success">{{ feedsCount }}</span>
+          <li class="nav-item nav-item-mobile">
+            <a class="nav-link d-flex align-items-center" href="#" id="navbarFeedsMenuLink" role="button" @click="$emit('open-feeds')">
+              <i class="bi bi-wifi me-2"></i>
+              <span class="menu-label">ارتباطات</span>
+              <span class="badge rounded-pill bg-success ms-2">{{ feedsCount }}</span>
             </a>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button"
+          <li class="nav-item dropdown nav-item-mobile">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDarkDropdownMenuLink" role="button"
                data-bs-toggle="dropdown" aria-expanded="false">
-              مخاطبین <span class="badge rounded-pill bg-success">{{ contactsCount }}</span>
+              <i class="bi bi-people me-2"></i>
+              <span class="menu-label">مخاطبین</span>
+              <span class="badge rounded-pill bg-success ms-2">{{ contactsCount }}</span>
             </a>
-            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
-               <!-- Use contacts prop -->
+            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="navbarDarkDropdownMenuLink">
               <li v-if="!contacts || contacts.length === 0"><span class="dropdown-item text-muted">هیچ مخاطبی یافت نشد</span></li>
               <li v-for="u in contacts" :key="u.uid">
-                <a class="dropdown-item" href="#" @click="$emit('set-unit', u.uid, true)"> <!-- Emit event -->
+                <a class="dropdown-item" href="#" @click="$emit('set-unit', u.uid, true)">
                   <span v-if="u.lat === 0 && u.lon === 0">* </span>{{ u.callsign }}<span
                       v-if="u.status"> ({{ u.status }})</span>
                 </a>
               </li>
             </ul>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink2" role="button"
+          <li class="nav-item dropdown nav-item-mobile">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDarkDropdownMenuLink2" role="button"
                data-bs-toggle="dropdown" aria-expanded="false">
-              نیروها <span class="badge rounded-pill bg-success">{{ unitsCount }}</span>
+              <i class="bi bi-person-badge me-2"></i>
+              <span class="menu-label">نیروها</span>
+              <span class="badge rounded-pill bg-success ms-2">{{ unitsCount }}</span>
             </a>
-            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink2">
-               <!-- Use units prop -->
+            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="navbarDarkDropdownMenuLink2">
               <li v-if="!units || units.length === 0"><span class="dropdown-item text-muted">هیچ نیرویی یافت نشد</span></li>
               <li v-for="u in units" :key="u.uid">
-                <a class="dropdown-item" href="#" @click="$emit('set-unit', u.uid, true)"> <!-- Emit event -->
-                  {{ u.callsign || u.uid }} <!-- Simplified name display -->
+                <a class="dropdown-item" href="#" @click="$emit('set-unit', u.uid, true)">
+                  {{ u.callsign || u.uid }}
                 </a>
               </li>
             </ul>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink3" role="button"
+          <li class="nav-item dropdown nav-item-mobile">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDarkDropdownMenuLink3" role="button"
                data-bs-toggle="dropdown" aria-expanded="false">
-              نقاط <span class="badge rounded-pill bg-success">{{ pointsCount }}</span>
+              <i class="bi bi-geo-alt me-2"></i>
+              <span class="menu-label">نقاط</span>
+              <span class="badge rounded-pill bg-success ms-2">{{ pointsCount }}</span>
             </a>
-            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink3">
-               <!-- Use points prop -->
+            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="navbarDarkDropdownMenuLink3">
               <li v-if="!points || points.length === 0"><span class="dropdown-item text-muted">هیچ نقطه‌ای یافت نشد</span></li>
               <li v-for="u in points" :key="u.uid">
-                <a class="dropdown-item" href="#" @click="$emit('set-unit', u.uid, true)"> <!-- Emit event -->
-                  {{ u.callsign || u.uid }} <!-- Simplified name display -->
+                <a class="dropdown-item" href="#" @click="$emit('set-unit', u.uid, true)">
+                  {{ u.callsign || u.uid }}
                 </a>
               </li>
             </ul>
           </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink4" role="button"
+          <li class="nav-item dropdown nav-item-mobile">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDarkDropdownMenuLink4" role="button"
                data-bs-toggle="dropdown" aria-expanded="false">
-              پیام‌ها 
-               <span v-if="totalUnseenMessages > 0" class="badge rounded-pill bg-danger">{{ totalUnseenMessages }}</span>
-               <span v-else class="badge rounded-pill bg-secondary">{{ chatsCount }}</span> <!-- Use chatsCount prop -->
+              <i class="bi bi-chat-text me-2"></i>
+              <span class="menu-label">پیام‌ها</span>
+              <span v-if="totalUnseenMessages > 0" class="badge rounded-pill bg-danger ms-2">{{ totalUnseenMessages }}</span>
+              <span v-else class="badge rounded-pill bg-secondary ms-2">{{ chatsCount }}</span>
             </a>
-            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink4">
-               <!-- Use chats prop -->
-               <li v-if="!chats || chats.length === 0">
-                   <span class="dropdown-item text-muted">هیچ چتی فعال نیست</span>
-               </li>
-               <li v-for="chat in chats" :key="chat.uid">
-                 <a class="dropdown-item d-flex justify-content-between align-items-center" href="#" @click="$emit('open-messages', chat.partnerUnit)"> <!-- Emit event -->
-                   {{ chat.partnerCallsign }}
-                   <span v-if="chat.unseenCount > 0" class="badge rounded-pill bg-danger ms-2">{{ chat.unseenCount }}</span>
-                 </a>
-               </li>
+            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end" aria-labelledby="navbarDarkDropdownMenuLink4">
+              <li v-if="!chats || chats.length === 0">
+                <span class="dropdown-item text-muted">هیچ چتی فعال نیست</span>
+              </li>
+              <li v-for="chat in chats" :key="chat.uid">
+                <a class="dropdown-item d-flex justify-content-between align-items-center" href="#" @click="$emit('open-messages', chat.partnerUnit)">
+                  {{ chat.partnerCallsign }}
+                  <span v-if="chat.unseenCount > 0" class="badge rounded-pill bg-danger ms-2">{{ chat.unseenCount }}</span>
+                </a>
+              </li>
             </ul>
           </li>
         </ul>
@@ -99,7 +116,37 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, onMounted, onBeforeUnmount } from 'vue';
+
+const handleResize = () => {
+  console.log("handleResize");
+  const navbar = document.querySelector('.navbar-nav');
+  const menuItems = navbar.querySelectorAll('.nav-item');
+  const availableWidth = navbar.offsetWidth;
+  let totalWidth = 0;
+
+  menuItems.forEach(item => {
+    console.log("item offsetWidth", item.offsetWidth);
+    totalWidth += item.offsetWidth;
+  });
+  console.log("totalWidth", totalWidth);
+  console.log("availableWidth", availableWidth);
+  if (totalWidth > availableWidth) {
+    navbar.classList.add('hide-text');
+  } else {
+    navbar.classList.remove('hide-text');
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+  handleResize(); // Call it initially to set the correct state
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', handleResize);
+});
+
 
 // Define Props required by the template
 const props = defineProps({
@@ -181,12 +228,87 @@ const emit = defineEmits([
 </script>
 
 <style scoped>
-/* Add any navbar specific styles here if needed */
+/* Navbar specific styles */
 .alarm-active {
-  color: #ffc107; /* Example active color */
+  color: #ffc107;
 }
+
+.connection-badge {
+  margin-right: 5px;
+}
+
 .dropdown-menu {
-    max-height: 300px; /* Example max height for dropdowns */
-    overflow-y: auto;
+  max-height: 300px;
+  overflow-y: auto;
 }
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+  .navbar-brand {
+    font-size: 1rem;
+    max-width: 60%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .nav-item-mobile {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.25rem 0;
+  }
+  
+  .nav-item-mobile:last-child {
+    border-bottom: none;
+  }
+  
+  .nav-link {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+  }
+  
+  .navbar-collapse {
+    max-height: calc(100vh - 56px);
+    overflow-y: auto;
+  }
+  
+  .dropdown-menu {
+    position: static !important;
+    width: 100%;
+    margin-top: 0;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: none;
+    box-shadow: none;
+    max-height: 200px;
+  }
+  
+  .dropdown-item {
+    padding: 0.5rem 2rem;
+  }
+}
+
+/* Fix RTL dropdown alignment for Bootstrap */
+.dropdown-menu-end {
+  left: 0 !important;
+  right: auto !important;
+}
+
+/* Make navigation buttons more touch-friendly */
+.nav-link {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-nav.hide-text .menu-label {
+  display: none;
+}
+
+.navbar-collapse {
+  overflow-x: hidden;
+}
+
+.navbar-nav {
+  width: 100%;
+}
+
 </style> 

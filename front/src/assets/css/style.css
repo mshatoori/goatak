@@ -116,14 +116,177 @@ body {
   background: #555;
 }
 
-/* Responsive Styles */
+/* Responsive Utility Classes */
+.d-sm-none {
+  display: none !important;
+}
+
+.d-md-none {
+  display: none !important;
+}
+
+.d-lg-none {
+  display: none !important;
+}
+
+@media (min-width: 576px) {
+  .d-sm-block {
+    display: block !important;
+  }
+  
+  .d-sm-none {
+    display: none !important;
+  }
+  
+  .d-sm-flex {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .d-md-block {
+    display: block !important;
+  }
+  
+  .d-md-none {
+    display: none !important;
+  }
+  
+  .d-md-flex {
+    display: flex !important;
+  }
+}
+
+@media (min-width: 992px) {
+  .d-lg-block {
+    display: block !important;
+  }
+  
+  .d-lg-none {
+    display: none !important;
+  }
+  
+  .d-lg-flex {
+    display: flex !important;
+  }
+}
+
+/* Responsive Spacing */
+@media (max-width: 576px) {
+  .container, .container-fluid {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  
+  .row {
+    margin-left: -5px;
+    margin-right: -5px;
+  }
+  
+  .col, [class*="col-"] {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+}
+
+/* Responsive Font Sizes */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.8rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+  }
+  
+  h3 {
+    font-size: 1.3rem;
+  }
+  
+  .btn {
+    padding: 0.375rem 0.6rem;
+  }
+}
+
+/* Responsive Layout */
 @media (max-width: 768px) {
   .sidebar {
     height: auto;
     max-height: 50vh;
+    width: 100%;
+    position: relative;
+    border-left: none;
+    border-top: 1px solid #dee2e6;
   }
   
   #map {
     height: 50vh;
+  }
+  
+  .modal-dialog {
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+  }
+  
+  .table-responsive {
+    border: 0;
+  }
+}
+
+/* Extra Small Devices */
+@media (max-width: 575.98px) {
+  .container {
+    padding: 0.5rem;
+  }
+  
+  .hidden-xs {
+    display: none !important;
+  }
+  
+  .form-group {
+    margin-bottom: 0.5rem;
+  }
+  
+  .card-body {
+    padding: 0.8rem;
+  }
+  
+  .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+  
+  .form-control {
+    font-size: 0.875rem;
+    height: calc(1.5em + 0.5rem + 2px);
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* Small to Medium Devices */
+@media (min-width: 576px) and (max-width: 991.98px) {
+  .hidden-sm {
+    display: none !important;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+/* Touch-friendly sizing */
+@media (max-width: 991.98px) {
+  .btn, 
+  .nav-link, 
+  .dropdown-item {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  
+  input[type="checkbox"], 
+  input[type="radio"] {
+    min-width: 20px;
+    min-height: 20px;
   }
 } 

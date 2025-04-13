@@ -206,26 +206,64 @@ export async function fetchFeeds() {
 }
 
 export async function createFeed(feedData) {
+    const feedJson = {
+        uid: feedData.uid || generateUUID(),
+        title: feedData.title,
+        type: feedData.type || "UDP",
+        addr: feedData.addr,
+        port: parseInt(feedData.port, 10),
+        direction: parseInt(feedData.direction, 10),
+        recvQueue: feedData.recvQueue,
+        sendQueue: feedData.sendQueue
+    };
+
+    if (isNaN(feedJson.direction)) {
+        const error = new Error("Invalid direction provided for feed.");
+        console.error(error.message, feedData);
+        throw error;
+    }
+
     try {
         const response = await fetch('/api/feeds', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(feedData) // Assume feedData is already structured correctly
+            body: JSON.stringify(feedJson)
         });
-         if (!response.ok) {
-             let errorMsg = `HTTP error! status: ${response.status}`;
-             try {
-                  const errorData = await response.json();
-                  errorMsg = errorData.message || errorData.error || errorMsg;
-             } catch (e) { /* Ignore if body isn't JSON */ }
-             throw new Error(errorMsg);
+        if (!response.ok) {
+            let errorMsg = `HTTP error! status: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                errorMsg = errorData.message || errorData.error || errorMsg;
+            } catch (e) { /* Ignore */ }
+            throw new Error(errorMsg);
         }
-         if (response.status === 204) { 
-            return null; 
+        if (response.status === 204) {
+            return null;
         }
         return response.json();
     } catch (error) {
         console.error('Error creating feed:', error);
+        throw error;
+    }
+}
+
+export async function deleteFeed(uid) {
+    try {
+        const response = await fetch(`/api/feeds/${uid}`, { method: 'DELETE' });
+        if (!response.ok) {
+            let errorMessage = `Failed to delete feed (status: ${response.status})`;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || errorData.error || errorMessage;
+            } catch (e) { /* Ignore if response is not JSON */ }
+            throw new Error(errorMessage);
+        }
+        if (response.status === 204) {
+            return null;
+        }
+        return response.json();
+    } catch (error) {
+        console.error('Error deleting feed:', error);
         throw error;
     }
 }
