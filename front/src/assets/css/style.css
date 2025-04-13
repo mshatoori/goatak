@@ -1,6 +1,10 @@
+@import url('./Vazirmatn-font-face.css');
+
 /* General Styles */
 body {
-  font-family: 'Vazir', sans-serif;
+  font-family: 'Vazirmatn', sans-serif;
+  --bs-font-sans-serif: 'Vazirmatn', sans-serif;
+  --bs-navbar-nav-link-padding-x: 0.1rem;
   direction: rtl;
   text-align: right;
 }
