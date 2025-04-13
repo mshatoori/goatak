@@ -114,9 +114,9 @@ export async function fetchSensors() {
 export async function createSensor(sensorData) {
     const sensorJson = {
         uid: sensorData.uid || generateUUID(),
-        name: sensorData.name,
+        title: sensorData.title,
         type: sensorData.type,
-        host: sensorData.host,
+        addr: sensorData.addr,
         port: parseInt(sensorData.port, 10),
         interval: parseInt(sensorData.interval, 10)
     };

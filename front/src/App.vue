@@ -38,6 +38,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, provide, getCurrentInstance } from 'vue'
 import 'bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/css/bootstrap.rtl.min.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import AppNavbar from './components/AppNavbar.vue'
 import Sidebar from './components/Sidebar.vue'

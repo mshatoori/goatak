@@ -90,13 +90,13 @@ body {
 }
 
 /* RTL Specific Styles */
-[dir="rtl"] .btn-close {
+/* [dir="rtl"] .btn-close {
   margin: -.5rem auto -.5rem -.5rem;
 }
 
 [dir="rtl"] .modal-header .btn-close {
   margin: -.5rem -.5rem -.5rem auto;
-}
+} */
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
