@@ -6,7 +6,7 @@
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="contact" v-model="overlays.contact.active" @change="toggleOverlay('contact')">
           <label class="form-check-label" for="contact">
-            تماس‌ها
+            مخاطبین
             <span class="badge bg-secondary">{{ countByCategory('contact') }}</span>
           </label>
         </div>
@@ -15,7 +15,7 @@
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="unit" v-model="overlays.unit.active" @change="toggleOverlay('unit')">
           <label class="form-check-label" for="unit">
-            واحدها
+            نیروها
             <span class="badge bg-secondary">{{ countByCategory('unit') }}</span>
           </label>
         </div>
@@ -42,7 +42,7 @@
         <div class="form-check">
           <input class="form-check-input" type="checkbox" id="drawing" v-model="overlays.drawing.active" @change="toggleOverlay('drawing')">
           <label class="form-check-label" for="drawing">
-            ترسیمات
+            ناحیه‌ها
             <span class="badge bg-secondary">{{ countByCategory('drawing') }}</span>
           </label>
         </div>

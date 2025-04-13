@@ -73,7 +73,7 @@ Vue.component("Sidebar", {
     },
     props: ["toggleOverlay", "config", "coords", "configUpdated", "current_unit", "locked_unit_uid", "deleteCurrentUnit", "checkEmergency", "map"],
     inject: ["getTool", "removeTool"],
-    template: /*html*/`
+    template: html`
         <div class="d-flex align-items-start">
             <div class="tab-content flex-grow-1" id="v-pills-tabContent">
                 <div class="tab-pane fade show active" id="v-pills-overlays" role="tabpanel"

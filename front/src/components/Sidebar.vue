@@ -1,7 +1,7 @@
 <template>
-  <div class="d-flex flex-column h-100 bg-light border-end">
+  <div class="d-flex flex-row-reverse h-100 bg-light border-end">
     <!-- Vertical Pills Navigation -->
-    <div class="nav flex-column nav-pills p-2" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+    <div class="nav flex-column nav-pills p-0" id="v-pills-tab" role="tablist" aria-orientation="vertical">
       <button class="nav-link active" id="v-pills-overlays-tab" data-bs-toggle="pill" data-bs-target="#v-pills-overlays" type="button" role="tab" aria-controls="v-pills-overlays" aria-selected="true">لایه‌ها</button>
       <button class="nav-link" id="v-pills-userinfo-tab" data-bs-toggle="pill" data-bs-target="#v-pills-userinfo" type="button" role="tab" aria-controls="v-pills-userinfo" aria-selected="false" v-if="props.config?.callsign">اطلاعات من</button>
       <button class="nav-link" id="v-pills-tools-tab" data-bs-toggle="pill" data-bs-target="#v-pills-tools" type="button" role="tab" aria-controls="v-pills-tools" aria-selected="false">ابزارها</button>
@@ -247,7 +247,11 @@ function requestDeleteCurrentUnit() {
   overflow-y: auto;
 }
 .nav-pills .nav-link {
-    white-space: nowrap;
+    text-orientation: sideways;
+    writing-mode: sideways-lr;
+    padding: 0.5rem 0.25rem;
+    border-radius: 0 0.5rem 0.5rem 0;
+    border: 1px solid;
 }
 
 /* Add specific styles as needed */
