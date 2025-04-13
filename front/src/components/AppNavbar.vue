@@ -349,7 +349,7 @@ const emit = defineEmits([
 }
 
 .navbar-nav.small-navbar .menu-label {
-  display: none;
+  /* display: none; */
 }
 
 .navbar-collapse {
