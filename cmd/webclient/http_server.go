@@ -52,9 +52,9 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.DELETE("/unit/:uid", deleteItemHandler(app))
 	srv.POST("/unit/:uid/send/", sendItemHandler(app))
 
-	srv.GET("/feeds", getFeedsHandler(app))
-	srv.POST("/feeds", addFeedHandler(app))
-	// srv.DELETE("/feeds/:uid", deleteFeedHandler(app))  // TODO
+	srv.GET("/flows", getFlowsHandler(app))
+	srv.POST("/flows", addFlowHandler(app))
+	// srv.DELETE("/flows/:uid", deleteFlowHandler(app))  // TODO
 
 	srv.GET("/sensors", getSensorsHandler(app))
 	srv.POST("/sensors", addSensorHandler(app))
@@ -97,9 +97,9 @@ func getUnitsHandler(app *App) air.Handler {
 	}
 }
 
-func getFeedsHandler(app *App) air.Handler {
+func getFlowsHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
-		return res.WriteJSON(getFeeds(app))
+		return res.WriteJSON(getFlows(app))
 	}
 }
 
@@ -152,9 +152,9 @@ func changeConfigHandler(app *App) air.Handler {
 		newUrn, _ := strconv.ParseInt(wu["urn"], 10, 32)
 		app.urn = int32(newUrn)
 
-		if app.defaultRabbitFeed != nil {
-			app.defaultRabbitFeed.ClientInfo.IpAddress = wu["ip_address"]
-			app.defaultRabbitFeed.ClientInfo.Urn = int32(newUrn)
+		if app.defaultRabbitFlow != nil {
+			app.defaultRabbitFlow.ClientInfo.IpAddress = wu["ip_address"]
+			app.defaultRabbitFlow.ClientInfo.Urn = int32(newUrn)
 		}
 
 		return res.WriteString("Ok")
@@ -221,9 +221,9 @@ func changePosHandler(app *App) air.Handler {
 	}
 }
 
-func addFeedHandler(app *App) air.Handler {
+func addFlowHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
-		f := new(model.CoTFeed)
+		f := new(model.CoTFlow)
 
 		if req.Body == nil {
 			return nil
@@ -241,10 +241,10 @@ func addFeedHandler(app *App) air.Handler {
 		}
 
 		if len(f.Type) > 0 && f.Type == "Rabbit" {
-			newFeed := client.NewRabbitFeed(&client.RabbitFeedConfig{
+			newFlow := client.NewRabbitFlow(&client.RabbitFlowConfig{
 				MessageCb:    app.ProcessEvent,
 				Addr:         f.Addr,
-				Direction:    client.FeedDirection(f.Direction),
+				Direction:    client.FlowDirection(f.Direction),
 				RecvQueue:    f.RecvQueue,
 				SendQueue:    f.SendQueue,
 				Title:        f.Title,
@@ -255,24 +255,24 @@ func addFeedHandler(app *App) air.Handler {
 				},
 			})
 
-			app.feeds = append(app.feeds, newFeed)
-			if newFeed.IsActive() {
-				newFeed.Start()
+			app.flows = append(app.flows, newFlow)
+			if newFlow.IsActive() {
+				newFlow.Start()
 			}
 		} else if len(f.Type) == 0 || f.Type == "UDP" {
-			newFeed := client.NewUDPFeed(&client.UDPFeedConfig{
+			newFlow := client.NewUDPFlow(&client.UDPFlowConfig{
 				MessageCb: app.ProcessEvent,
 				Addr:      f.Addr,
 				Port:      f.Port,
-				Direction: client.FeedDirection(f.Direction),
+				Direction: client.FlowDirection(f.Direction),
 				Title:     f.Title,
 			})
 
-			app.feeds = append(app.feeds, newFeed)
-			newFeed.Start()
+			app.flows = append(app.flows, newFlow)
+			newFlow.Start()
 		}
 
-		return res.WriteJSON(getFeeds(app))
+		return res.WriteJSON(getFlows(app))
 	}
 }
 
@@ -379,17 +379,17 @@ func sendItemHandler(app *App) air.Handler {
 		destinations := make([]model.SendItemDest, 1)
 		destinations[0] = *dest
 
-		var rabbitmq *client.RabbitFeed
+		var rabbitmq *client.RabbitFlow
 
-		for _, feed := range app.feeds {
-			if feed.GetType() == "Rabbit" {
-				rabbitmq = feed.(*client.RabbitFeed)
+		for _, flow := range app.flows {
+			if flow.GetType() == "Rabbit" {
+				rabbitmq = flow.(*client.RabbitFlow)
 			}
 		}
 
 		prevDest := rabbitmq.Destinations
 		rabbitmq.Destinations = destinations
-		// rabbitmq := client.NewRabbitFeed(&client.RabbitFeedConfig{
+		// rabbitmq := client.NewRabbitFlow(&client.RabbitFlowConfig{
 		// 	MessageCb:    nil,
 		// 	Addr:         "127.0.0.1:5672",
 		// 	Direction:    client.OUTGOING,
@@ -465,14 +465,14 @@ func getUnits(app *App) []*model.WebUnit {
 	return units
 }
 
-func getFeeds(app *App) []*model.CoTFeed {
-	cotFeeds := make([]*model.CoTFeed, 0)
+func getFlows(app *App) []*model.CoTFlow {
+	cotFlows := make([]*model.CoTFlow, 0)
 
-	for _, feed := range app.feeds {
-		cotFeeds = append(cotFeeds, feed.ToCoTFeedModel())
+	for _, flow := range app.flows {
+		cotFlows = append(cotFlows, flow.ToCoTFlowModel())
 	}
 
-	return cotFeeds
+	return cotFlows
 }
 
 func getStringParam(req *air.Request, name string) string {

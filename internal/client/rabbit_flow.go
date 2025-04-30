@@ -27,7 +27,7 @@ const (
 	VMF_MESSAGE_RECEIVED_EVENT = "VmfMessageReceivedEvent"
 )
 
-type RabbitFeedConfig struct {
+type RabbitFlowConfig struct {
 	// User         *model.User
 	// Serial       string
 	// UID          string
@@ -38,7 +38,7 @@ type RabbitFeedConfig struct {
 	// RoutePings   bool
 	// Logger       *slog.Logger
 	Addr         string
-	Direction    FeedDirection
+	Direction    FlowDirection
 	SendQueue    string
 	RecvQueue    string
 	Title        string
@@ -46,7 +46,7 @@ type RabbitFeedConfig struct {
 	ClientInfo   *cotproto.ClientInfo
 }
 
-type RabbitFeed struct {
+type RabbitFlow struct {
 	cancel context.CancelFunc
 	conn   *amqp.Connection
 	ch     *amqp.Channel
@@ -65,7 +65,7 @@ type RabbitFeed struct {
 	// removeCb     func(ch ClientHandler)
 	//newContactCb func(uid, callsign string)
 	logger       *slog.Logger
-	Direction    FeedDirection
+	Direction    FlowDirection
 	sendQueue    string
 	recvQueue    string
 	Title        string
@@ -111,8 +111,8 @@ func (r *RabbitReader) Read(b []byte) (n int, err error) {
 	return
 }
 
-func NewRabbitFeed(config *RabbitFeedConfig) *RabbitFeed {
-	m := &RabbitFeed{
+func NewRabbitFlow(config *RabbitFlowConfig) *RabbitFlow {
+	m := &RabbitFlow{
 		active:       1,
 		logger:       slog.Default(),
 		sendChan:     make(chan []byte, 10),
@@ -131,7 +131,7 @@ func NewRabbitFeed(config *RabbitFeedConfig) *RabbitFeed {
 	m.conn, err = amqp.Dial(config.Addr)
 
 	if err != nil {
-		m.logger.Error("RabbitFeed connection failed!", "error", err)
+		m.logger.Error("RabbitFlow connection failed!", "error", err)
 		m.active = 0
 		return m
 	}
@@ -139,7 +139,7 @@ func NewRabbitFeed(config *RabbitFeedConfig) *RabbitFeed {
 	m.ch, err = m.conn.Channel()
 
 	if err != nil {
-		m.logger.Error("RabbitFeed channel failed")
+		m.logger.Error("RabbitFlow channel failed")
 		m.active = 0
 		return m
 	}
@@ -153,15 +153,15 @@ func NewRabbitFeed(config *RabbitFeedConfig) *RabbitFeed {
 	return m
 }
 
-func (h *RabbitFeed) IsActive() bool {
+func (h *RabbitFlow) IsActive() bool {
 	return atomic.LoadInt32(&h.active) == 1
 }
-func (h *RabbitFeed) GetType() string {
+func (h *RabbitFlow) GetType() string {
 	return "Rabbit"
 }
 
-func (h *RabbitFeed) ToCoTFeedModel() *model.CoTFeed {
-	return &model.CoTFeed{
+func (h *RabbitFlow) ToCoTFlowModel() *model.CoTFlow {
+	return &model.CoTFlow{
 		UID:       h.UID,
 		Addr:      h.Addr,
 		Direction: int(h.Direction),
@@ -172,14 +172,14 @@ func (h *RabbitFeed) ToCoTFeedModel() *model.CoTFeed {
 	}
 }
 
-func (h *RabbitFeed) Start() {
-	h.logger.Info("RabbitFeed starting")
+func (h *RabbitFlow) Start() {
+	h.logger.Info("RabbitFlow starting")
 
 	var ctx context.Context
 	ctx, h.cancel = context.WithCancel(context.Background())
 
 	if !h.IsActive() {
-		h.logger.Error("RabbitFeed connection failed!")
+		h.logger.Error("RabbitFlow connection failed!")
 		return
 	}
 
@@ -187,13 +187,13 @@ func (h *RabbitFeed) Start() {
 	go h.handleRead(ctx)
 }
 
-func (h *RabbitFeed) handleRead(ctx context.Context) {
+func (h *RabbitFlow) handleRead(ctx context.Context) {
 	if h.Direction&INCOMING == 0 {
-		h.logger.Debug("RabbitFeed Ignoring read")
+		h.logger.Debug("RabbitFlow Ignoring read")
 		return
 	}
 
-	h.logger.Debug("RabbitFeed Handling read")
+	h.logger.Debug("RabbitFlow Handling read")
 	defer h.stopHandle()
 
 	q, err := h.ch.QueueDeclare(
@@ -227,9 +227,9 @@ func (h *RabbitFeed) handleRead(ctx context.Context) {
 	for ctx.Err() == nil {
 		var msg *cot.CotMessage
 		var err error
-		h.logger.Debug("RabbitFeed Reading Message...")
+		h.logger.Debug("RabbitFlow Reading Message...")
 		msg, err = h.processProtoRead(pr)
-		h.logger.Debug("RabbitFeed Read Message")
+		h.logger.Debug("RabbitFlow Read Message")
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				h.logger.Info("EOF")
@@ -254,11 +254,11 @@ func (h *RabbitFeed) handleRead(ctx context.Context) {
 //
 //}
 
-func (h *RabbitFeed) processXMLRead(r *cot.TagReader) (*cot.CotMessage, error) {
+func (h *RabbitFlow) processXMLRead(r *cot.TagReader) (*cot.CotMessage, error) {
 	return nil, nil
 }
 
-func (h *RabbitFeed) processProtoRead(r *cot.ProtoReader) (*cot.CotMessage, error) {
+func (h *RabbitFlow) processProtoRead(r *cot.ProtoReader) (*cot.CotMessage, error) {
 	msg, err := r.ReadProtoBuf()
 	if err != nil {
 		return nil, err
@@ -272,23 +272,23 @@ func (h *RabbitFeed) processProtoRead(r *cot.ProtoReader) (*cot.CotMessage, erro
 	return &cot.CotMessage{TakMessage: msg, Detail: d}, err
 }
 
-func (h *RabbitFeed) SetVersion(n int32) {
+func (h *RabbitFlow) SetVersion(n int32) {
 	atomic.StoreInt32(&h.ver, n)
 }
 
-func (h *RabbitFeed) GetVersion() int32 {
+func (h *RabbitFlow) GetVersion() int32 {
 	return atomic.LoadInt32(&h.ver)
 }
 
-func (h *RabbitFeed) failOnError(err error, msg string) {
+func (h *RabbitFlow) failOnError(err error, msg string) {
 	if err != nil {
 		h.logger.Error("%s: %s", msg, err)
 	}
 }
 
-func (h *RabbitFeed) handleWrite(ctx context.Context) {
+func (h *RabbitFlow) handleWrite(ctx context.Context) {
 	if h.Direction&OUTGOING == 0 {
-		h.logger.Debug("RabbitFeed Ignoring write")
+		h.logger.Debug("RabbitFlow Ignoring write")
 		return
 	}
 
@@ -303,7 +303,7 @@ func (h *RabbitFeed) handleWrite(ctx context.Context) {
 	h.failOnError(err, "Failed to declare a queue")
 
 	for msg := range h.sendChan {
-		h.logger.Debug("RabbitFeed handleWrite")
+		h.logger.Debug("RabbitFlow handleWrite")
 
 		err = h.ch.PublishWithContext(ctx,
 			"", // TODO: check
@@ -316,7 +316,7 @@ func (h *RabbitFeed) handleWrite(ctx context.Context) {
 			})
 
 		if err != nil {
-			h.logger.Debug(fmt.Sprintf("RabbitFeed client %s write error %v", h.Addr, err))
+			h.logger.Debug(fmt.Sprintf("RabbitFlow client %s write error %v", h.Addr, err))
 			h.stopHandle()
 
 			break
@@ -324,7 +324,7 @@ func (h *RabbitFeed) handleWrite(ctx context.Context) {
 	}
 }
 
-func (h *RabbitFeed) stopHandle() {
+func (h *RabbitFlow) stopHandle() {
 	if atomic.CompareAndSwapInt32(&h.active, 1, 0) {
 		h.logger.Info("stopping")
 		h.cancel()
@@ -343,15 +343,15 @@ func (h *RabbitFeed) stopHandle() {
 	}
 }
 
-func (h *RabbitFeed) SendCot(msg *cotproto.TakMessage) error {
-	h.logger.Debug(fmt.Sprintf("RabbitFeed SendCot version: %d", h.GetVersion()))
+func (h *RabbitFlow) SendCot(msg *cotproto.TakMessage) error {
+	h.logger.Debug(fmt.Sprintf("RabbitFlow SendCot version: %d", h.GetVersion()))
 	if h.Direction&OUTGOING == 0 {
-		h.logger.Debug("RabbitFeed Ignoring write")
+		h.logger.Debug("RabbitFlow Ignoring write")
 		return nil
 	}
 	switch h.GetVersion() {
 	case 0:
-		//h.logger.Debug("RabbitFeed SendCot v0")
+		//h.logger.Debug("RabbitFlow SendCot v0")
 		buf, err := xml.Marshal(cot.ProtoToEvent(msg))
 		if err != nil {
 			return err
@@ -361,7 +361,7 @@ func (h *RabbitFeed) SendCot(msg *cotproto.TakMessage) error {
 			return nil
 		}
 	case 1:
-		//h.logger.Debug("RabbitFeed SendCot v1")
+		//h.logger.Debug("RabbitFlow SendCot v1")
 		buf, err := cot.MakeProtoPacket(msg)
 		if err != nil {
 			return err
@@ -375,8 +375,8 @@ func (h *RabbitFeed) SendCot(msg *cotproto.TakMessage) error {
 	return fmt.Errorf("client is off")
 }
 
-func (h *RabbitFeed) tryAddPacket(msg []byte) bool {
-	h.logger.Debug("RabbitFeed tryAddPacket", "active", h.IsActive())
+func (h *RabbitFlow) tryAddPacket(msg []byte) bool {
+	h.logger.Debug("RabbitFlow tryAddPacket", "active", h.IsActive())
 	if !h.IsActive() {
 		return false
 	}
@@ -388,7 +388,7 @@ func (h *RabbitFeed) tryAddPacket(msg []byte) bool {
 	return true
 }
 
-func (h *RabbitFeed) wrapMessage(buf []byte, _msg *cotproto.TakMessage) []byte {
+func (h *RabbitFlow) wrapMessage(buf []byte, _msg *cotproto.TakMessage) []byte {
 	var newBuffer bytes.Buffer
 	clientInfo := h.ClientInfo
 
@@ -414,12 +414,12 @@ func (h *RabbitFeed) wrapMessage(buf []byte, _msg *cotproto.TakMessage) []byte {
 		return nil
 	}
 
-	h.logger.Debug("RabbitFeed wrapMessage", "msg", rabbitMsg, "from", clientInfo.GetIpAddress(), "result", newBuffer.Bytes())
+	h.logger.Debug("RabbitFlow wrapMessage", "msg", rabbitMsg, "from", clientInfo.GetIpAddress(), "result", newBuffer.Bytes())
 
 	return newBuffer.Bytes()
 }
 
-func (h *RabbitFeed) nextMsgNum() int {
+func (h *RabbitFlow) nextMsgNum() int {
 	defer func() {
 		h.msgCounter += 1
 	}()

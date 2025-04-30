@@ -68,7 +68,7 @@ type DigitalPointer struct {
 	Name string  `json:"name"`
 }
 
-type CoTFeed struct {
+type CoTFlow struct {
 	Title string `json:"title"`
 	Addr  string `json:"addr"`
 	Port  int    `json:"port,omitempty"`

@@ -144,8 +144,8 @@ let app = new Vue({
         overlays: null,
         conn: null,
         units: new Map(),
-        outgoing_feeds: new Map(),
-        incoming_feeds: new Map(),
+        outgoing_flows: new Map(),
+        incoming_flows: new Map(),
         sensors: new Map(),
         messages: [],
         seenMessages: new Set(),
@@ -167,12 +167,12 @@ let app = new Vue({
 
         sharedState: store.state,
 
-        new_out_feed: {
+        new_out_flow: {
             ip: '',
             port: '',
             outgoing: true,
         },
-        new_in_feed: {
+        new_in_flow: {
             ip: '',
             port: '',
             outgoing: false,
@@ -535,7 +535,7 @@ let app = new Vue({
             this.fetchAllUnits();
             this.fetchMessages();
             store.fetchSensors()
-            store.fetchFeeds()
+            store.fetchFlows()
 
             this.conn = new WebSocket(url);
 
@@ -1273,10 +1273,10 @@ let app = new Vue({
             return online + "/" + total;
         },
 
-        feedsCount: function () {
-            return "↓" + this.sharedState.feeds.filter(it => it.direction == 1).length.toLocaleString('fa-ir') +
-                " / ↑" + this.sharedState.feeds.filter(it => it.direction == 2).length.toLocaleString('fa-ir') +
-                " / ↕" + this.sharedState.feeds.filter(it => it.direction == 3).length.toLocaleString('fa-ir');
+        flowsCount: function () {
+            return "↓" + this.sharedState.flows.filter(it => it.direction == 1).length.toLocaleString('fa-ir') +
+                " / ↑" + this.sharedState.flows.filter(it => it.direction == 2).length.toLocaleString('fa-ir') +
+                " / ↕" + this.sharedState.flows.filter(it => it.direction == 3).length.toLocaleString('fa-ir');
         },
 
         sensorsCount: function () {
@@ -1326,8 +1326,8 @@ let app = new Vue({
             }
         },
 
-        openFeeds: function () {
-            new bootstrap.Modal(document.getElementById('feeds-modal')).show();
+        openFlows: function () {
+            new bootstrap.Modal(document.getElementById('flows-modal')).show();
         },
 
         openSensors: function () {

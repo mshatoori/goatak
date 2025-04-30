@@ -10,7 +10,7 @@
 10. We could also make connections persistent (in db)
 11. Add config to disable mesh handler
 12. Add SensorConnectionRecord in UI ~~(has timer interval)~~ :-?
-13. Add active field to feeds
+13. Add active field to flows
 14. Clear Modal 
 
 ## Notes:
@@ -51,7 +51,7 @@
 ## DONE:
 - ~~Fix user info form (submit get 500)~~
 - ~~Implement sensors logic (using interfaces)~~
-- ~~Fix feed counter in navbar~~
+- ~~Fix flow counter in navbar~~
 - ~~Better font~~
 - ~~Fix delete point~~
 - ~~Add radar to sensors (up-to-date enemy positions :-?)~~
@@ -85,7 +85,7 @@
 - ~~bug: After reloading page, emergency alarm is reset~~
 
 ## Nice To Have
-- Maybe? Feed refactor in configs (include rabbit && change how we handle directions)
+- Maybe? flow refactor in configs (include rabbit && change how we handle directions)
 - Timer to send? Relay others?
 - Distance from lines
 - Change alerts from modal to sidebar??

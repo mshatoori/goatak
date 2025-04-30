@@ -18,22 +18,22 @@ import (
 	"github.com/kdudkov/goatak/pkg/cotproto"
 )
 
-type FeedDirection int
+type FlowDirection int
 
 const (
-	INCOMING FeedDirection = 1 << iota // 1
-	OUTGOING FeedDirection = 1 << iota // 2
-	BOTH     FeedDirection = INCOMING | OUTGOING
+	INCOMING FlowDirection = 1 << iota // 1
+	OUTGOING FlowDirection = 1 << iota // 2
+	BOTH     FlowDirection = INCOMING | OUTGOING
 )
 
-type CoTFeed interface {
+type CoTFlow interface {
 	Start()
 	SendCot(msg *cotproto.TakMessage) error
 	GetType() string
-	ToCoTFeedModel() *model.CoTFeed
+	ToCoTFlowModel() *model.CoTFlow
 }
 
-type UDPFeedConfig struct {
+type UDPFlowConfig struct {
 	// User         *model.User
 	// Serial       string
 	// UID          string
@@ -45,11 +45,11 @@ type UDPFeedConfig struct {
 	// Logger       *slog.Logger
 	Addr      string
 	Port      int
-	Direction FeedDirection
+	Direction FlowDirection
 	Title     string
 }
 
-type UDPFeed struct {
+type UDPFlow struct {
 	cancel context.CancelFunc
 	conn   *net.UDPConn
 	Addr   *net.UDPAddr
@@ -67,16 +67,16 @@ type UDPFeed struct {
 	// removeCb     func(ch ClientHandler)
 	//newContactCb func(uid, callsign string)
 	logger    *slog.Logger
-	Direction FeedDirection
+	Direction FlowDirection
 	Title     string
 }
 
-func NewUDPFeed(config *UDPFeedConfig) *UDPFeed {
+func NewUDPFlow(config *UDPFlowConfig) *UDPFlow {
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", config.Addr, config.Port))
 	if err != nil {
 		return nil
 	}
-	m := &UDPFeed{
+	m := &UDPFlow{
 		active:    1,
 		logger:    slog.Default(),
 		sendChan:  make(chan []byte, 10),
@@ -96,15 +96,15 @@ func NewUDPFeed(config *UDPFeedConfig) *UDPFeed {
 	return m
 }
 
-func (h *UDPFeed) IsActive() bool {
+func (h *UDPFlow) IsActive() bool {
 	return atomic.LoadInt32(&h.active) == 1
 }
-func (h *UDPFeed) GetType() string {
+func (h *UDPFlow) GetType() string {
 	return "UDP"
 }
 
-func (h *UDPFeed) ToCoTFeedModel() *model.CoTFeed {
-	return &model.CoTFeed{
+func (h *UDPFlow) ToCoTFlowModel() *model.CoTFlow {
+	return &model.CoTFlow{
 		UID:       h.UID,
 		Addr:      h.Addr.IP.String(),
 		Port:      h.Addr.Port,
@@ -114,8 +114,8 @@ func (h *UDPFeed) ToCoTFeedModel() *model.CoTFeed {
 	}
 }
 
-func (h *UDPFeed) Start() {
-	h.logger.Info("UDPFeed starting")
+func (h *UDPFlow) Start() {
+	h.logger.Info("UDPFlow starting")
 
 	var ctx context.Context
 	ctx, h.cancel = context.WithCancel(context.Background())
@@ -124,24 +124,24 @@ func (h *UDPFeed) Start() {
 	go h.handleRead(ctx)
 }
 
-func (h *UDPFeed) handleRead(ctx context.Context) {
+func (h *UDPFlow) handleRead(ctx context.Context) {
 	if h.Direction&INCOMING == 0 {
-		h.logger.Debug("UDPFeed Ignoring read")
+		h.logger.Debug("UDPFlow Ignoring read")
 		return
 	}
 
-	h.logger.Debug("UDPFeed Handling read")
+	h.logger.Debug("UDPFlow Handling read")
 	defer h.stopHandle()
 
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", h.Addr.Port))
 	if err != nil {
-		h.logger.Debug("UDPFeed can't resolve")
+		h.logger.Debug("UDPFlow can't resolve")
 		return
 	}
 
 	readConn, err := net.ListenUDP("udp", addr)
 	if err != nil {
-		h.logger.Debug("UDPFeed can't listen", "error", err.Error())
+		h.logger.Debug("UDPFlow can't listen", "error", err.Error())
 		return
 	}
 
@@ -205,11 +205,11 @@ func (h *UDPFeed) handleRead(ctx context.Context) {
 	}
 }
 
-func (h *UDPFeed) processXMLRead(r *cot.TagReader) (*cot.CotMessage, error) {
+func (h *UDPFlow) processXMLRead(r *cot.TagReader) (*cot.CotMessage, error) {
 	return nil, nil
 }
 
-func (h *UDPFeed) processProtoRead(r *cot.ProtoReader) (*cot.CotMessage, error) {
+func (h *UDPFlow) processProtoRead(r *cot.ProtoReader) (*cot.CotMessage, error) {
 	msg, err := r.ReadProtoBuf()
 	if err != nil {
 		return nil, err
@@ -223,25 +223,25 @@ func (h *UDPFeed) processProtoRead(r *cot.ProtoReader) (*cot.CotMessage, error) 
 	return &cot.CotMessage{TakMessage: msg, Detail: d}, err
 }
 
-func (h *UDPFeed) SetVersion(n int32) {
+func (h *UDPFlow) SetVersion(n int32) {
 	atomic.StoreInt32(&h.ver, n)
 }
 
-func (h *UDPFeed) GetVersion() int32 {
+func (h *UDPFlow) GetVersion() int32 {
 	return atomic.LoadInt32(&h.ver)
 }
 
-func (h *UDPFeed) handleWrite() {
+func (h *UDPFlow) handleWrite() {
 	if h.Direction&OUTGOING == 0 {
-		h.logger.Debug("UDPFeed Ignoring write")
+		h.logger.Debug("UDPFlow Ignoring write")
 		return
 	}
 
 	for msg := range h.sendChan {
-		h.logger.Debug("UDPFeed handleWrite")
+		h.logger.Debug("UDPFlow handleWrite")
 		h.conn, _ = net.DialUDP("udp", nil, h.Addr)
 		if _, err := h.conn.Write(msg); err != nil {
-			h.logger.Debug(fmt.Sprintf("UDPFeed client %s write error %v", h.Addr, err))
+			h.logger.Debug(fmt.Sprintf("UDPFlow client %s write error %v", h.Addr, err))
 			h.stopHandle()
 
 			break
@@ -250,7 +250,7 @@ func (h *UDPFeed) handleWrite() {
 	}
 }
 
-func (h *UDPFeed) stopHandle() {
+func (h *UDPFlow) stopHandle() {
 	if atomic.CompareAndSwapInt32(&h.active, 1, 0) {
 		h.logger.Info("stopping")
 		h.cancel()
@@ -269,11 +269,11 @@ func (h *UDPFeed) stopHandle() {
 	}
 }
 
-func (h *UDPFeed) SendCot(msg *cotproto.TakMessage) error {
-	h.logger.Debug("UDPFeed SendCot")
+func (h *UDPFlow) SendCot(msg *cotproto.TakMessage) error {
+	h.logger.Debug("UDPFlow SendCot")
 	switch h.GetVersion() {
 	case 0:
-		h.logger.Debug("UDPFeed SendCot v0")
+		h.logger.Debug("UDPFlow SendCot v0")
 		buf, err := xml.Marshal(cot.ProtoToEvent(msg))
 		if err != nil {
 			return err
@@ -283,7 +283,7 @@ func (h *UDPFeed) SendCot(msg *cotproto.TakMessage) error {
 			return nil
 		}
 	case 1:
-		h.logger.Debug("UDPFeed SendCot v1")
+		h.logger.Debug("UDPFlow SendCot v1")
 		buf, err := cot.MakeProtoPacket(msg)
 		if err != nil {
 			return err
@@ -297,8 +297,8 @@ func (h *UDPFeed) SendCot(msg *cotproto.TakMessage) error {
 	return fmt.Errorf("client is off")
 }
 
-func (h *UDPFeed) tryAddPacket(msg []byte) bool {
-	h.logger.Debug("UDPFeed tryAddPacket", "active", h.IsActive())
+func (h *UDPFlow) tryAddPacket(msg []byte) bool {
+	h.logger.Debug("UDPFlow tryAddPacket", "active", h.IsActive())
 	if !h.IsActive() {
 		return false
 	}

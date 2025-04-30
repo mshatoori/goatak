@@ -1,10 +1,10 @@
 if (typeof html !== 'undefined') {
     var html = String.raw;
 }
-Vue.component('FeedsModal', {
+Vue.component('FlowsModal', {
     data: function () {
         return {
-            newFeed: {
+            newFlow: {
                 type: "UDP",
                 title: "",
                 addr: "",
@@ -17,14 +17,14 @@ Vue.component('FeedsModal', {
         }
     },
     methods: {
-        createFeed: function () {
-            console.log("Creating Feed:", this.newFeed);
-            store.createFeed({...this.newFeed});
+        createFlow: function () {
+            console.log("Creating Flow:", this.newFlow);
+            store.createFlow({...this.newFlow});
         },
-        removeFeed: function () {
+        removeFlow: function () {
             // TODO:
         },
-        feedDirectionText: function (direction) {
+        flowDirectionText: function (direction) {
             switch (direction) {
                 case 1:
                     return "ورودی"
@@ -34,7 +34,7 @@ Vue.component('FeedsModal', {
                     return "دوطرفه"
             }
         },
-        feedTypeText: function (type) {
+        flowTypeText: function (type) {
             switch (type) {
                 case "UDP":
                     return "UDP"
@@ -44,12 +44,12 @@ Vue.component('FeedsModal', {
         }
     },
     computed: {
-        allFeeds: function () {
-            return this.sharedState.feeds;
+        allFlows: function () {
+            return this.sharedState.flows;
         },
     },
     template: /*html*/`
-    <div class="modal fade" id="feeds-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    <div class="modal fade" id="flows-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
         aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
             <div class="modal-content">
@@ -58,62 +58,62 @@ Vue.component('FeedsModal', {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="feeds-list" class="list-group">
-                        <div class="list-group-item" v-for="(feed, idx) in allFeeds">
-                            <div class="d-flex w-100 justify-content-between" v-if="feed.type === 'UDP'">
+                    <div id="flows-list" class="list-group">
+                        <div class="list-group-item" v-for="(flow, idx) in allFlows">
+                            <div class="d-flex w-100 justify-content-between" v-if="flow.type === 'UDP'">
                               <div>
-                                <h5 class="mb-1">نام: {{ feed.title }}</h5>
-                                <div>آدرس: {{ feed.addr }}</div>
-                                <div>پورت: {{ feed.port }}</div>
+                                <h5 class="mb-1">نام: {{ flow.title }}</h5>
+                                <div>آدرس: {{ flow.addr }}</div>
+                                <div>پورت: {{ flow.port }}</div>
                               </div>
                               <div>
-                                <span class="badge rounded-pill bg-primary">{{ feedTypeText(feed.type) }}</span>
-                                <span class="badge rounded-pill bg-success">{{ feedDirectionText(feed.direction) }}</span>
+                                <span class="badge rounded-pill bg-primary">{{ flowTypeText(flow.type) }}</span>
+                                <span class="badge rounded-pill bg-success">{{ flowDirectionText(flow.direction) }}</span>
                               </div>
                             </div>
-                            <div class="d-flex w-100 justify-content-between" v-if="feed.type === 'Rabbit'">
+                            <div class="d-flex w-100 justify-content-between" v-if="flow.type === 'Rabbit'">
                               <div>
-                                  <h5 class="mb-1">شناسه: {{ feed.uid }}</h5>
-                                  <div>آدرس: {{ feed.addr }}</div>
-                                  <div v-if="feed.direction == 1 || feed.direction == 3">صف دریافت: {{ feed.recvQueue }}</div>
-                                  <div v-if="feed.direction == 2 || feed.direction == 3">صف ارسال: {{ feed.sendQueue }}</div>
+                                  <h5 class="mb-1">شناسه: {{ flow.uid }}</h5>
+                                  <div>آدرس: {{ flow.addr }}</div>
+                                  <div v-if="flow.direction == 1 || flow.direction == 3">صف دریافت: {{ flow.recvQueue }}</div>
+                                  <div v-if="flow.direction == 2 || flow.direction == 3">صف ارسال: {{ flow.sendQueue }}</div>
                               </div>
                               <div>
-                                <span class="badge rounded-pill bg-primary">{{ feedTypeText(feed.type) }}</span>
-                                <span class="badge rounded-pill bg-success">{{ feedDirectionText(feed.direction) }}</span>
+                                <span class="badge rounded-pill bg-primary">{{ flowTypeText(flow.type) }}</span>
+                                <span class="badge rounded-pill bg-success">{{ flowDirectionText(flow.direction) }}</span>
                               </div>
                             </div>
                         </div>
                     </div>
-                    <div id="new-feed" class="card mt-4">
+                    <div id="new-flow" class="card mt-4">
                         <div class="card-body">
                             <div class="d-flex mb-3 w-100 justify-content-between">
                                 <h5>ایجاد ارتباط جدید:</h5>
                                 <div>
                                     <div class="btn-group">
-                                        <input type="radio" value="UDP" class="btn-check" name="new-feed-type" id="udp-radio" v-model="newFeed.type">
+                                        <input type="radio" value="UDP" class="btn-check" name="new-flow-type" id="udp-radio" v-model="newFlow.type">
                                         <label class="btn btn-outline-primary" for="udp-radio">UDP</label>
                                         
-                                        <input type="radio" value="Rabbit" class="btn-check" name="new-feed-type" id="rabbit-radio" v-model="newFeed.type">
+                                        <input type="radio" value="Rabbit" class="btn-check" name="new-flow-type" id="rabbit-radio" v-model="newFlow.type">
                                         <label class="btn btn-outline-primary" for="rabbit-radio">RabbitMQ</label>
                                     </div>
                                     <div class="btn-group">
-                                        <input type="radio" value="1" class="btn-check" name="new-feed-dir" id="incoming-radio" v-model="newFeed.direction">
+                                        <input type="radio" value="1" class="btn-check" name="new-flow-dir" id="incoming-radio" v-model="newFlow.direction">
                                         <label class="btn btn-outline-success" for="incoming-radio">ورودی</label>
                                         
-                                        <input type="radio" value="2" class="btn-check" name="new-feed-dir" id="outgoing-radio" v-model="newFeed.direction">
+                                        <input type="radio" value="2" class="btn-check" name="new-flow-dir" id="outgoing-radio" v-model="newFlow.direction">
                                         <label class="btn btn-outline-success" for="outgoing-radio">خروجی</label>
 
-                                        <input type="radio" value="3" class="btn-check" name="new-feed-dir" id="both-radio" v-model="newFeed.direction">
+                                        <input type="radio" value="3" class="btn-check" name="new-flow-dir" id="both-radio" v-model="newFlow.direction">
                                         <label class="btn btn-outline-success" for="both-radio">دوطرفه</label>
                                     </div>
                                 </div>
                                 
                             </div>
-                            <div class="form" v-if="newFeed.type === 'UDP'">
+                            <div class="form" v-if="newFlow.type === 'UDP'">
                                 <div class="form-group row">
                                     <label
-                                            for="newFeedTitle"
+                                            for="newFlowTitle"
                                             class="col-sm-4 col-form-label font-weight-bold"
                                     ><strong>نام</strong></label
                                     >
@@ -121,14 +121,14 @@ Vue.component('FeedsModal', {
                                         <input
                                                 type="text"
                                                 class="form-control"
-                                                id="newFeedTitle"
-                                                v-model="newFeed.title"
+                                                id="newFlowTitle"
+                                                v-model="newFlow.title"
                                         />
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label
-                                    for="newFeedAddr"
+                                    for="newFlowAddr"
                                     class="col-sm-4 col-form-label font-weight-bold"
                                     ><strong>آدرس</strong></label
                                     >
@@ -136,14 +136,14 @@ Vue.component('FeedsModal', {
                                     <input
                                         type="text"
                                         class="form-control"
-                                        id="newFeedAddr"
-                                        v-model="newFeed.addr"
+                                        id="newFlowAddr"
+                                        v-model="newFlow.addr"
                                     />
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label
-                                    for="newFeedPort"
+                                    for="newFlowPort"
                                     class="col-sm-4 col-form-label font-weight-bold"
                                     ><strong>پورت</strong></label
                                     >
@@ -151,16 +151,16 @@ Vue.component('FeedsModal', {
                                     <input
                                         type="text"
                                         class="form-control"
-                                        id="newFeedPort"
-                                        v-model="newFeed.port"
+                                        id="newFlowPort"
+                                        v-model="newFlow.port"
                                     />
                                     </div>
                                 </div>
                             </div>
-                            <div class="form" v-if="newFeed.type === 'Rabbit'">
+                            <div class="form" v-if="newFlow.type === 'Rabbit'">
                                 <div class="form-group row">
                                     <label
-                                            for="newFeedTitle2"
+                                            for="newFlowTitle2"
                                             class="col-sm-4 col-form-label font-weight-bold"
                                     ><strong>نام</strong></label
                                     >
@@ -168,14 +168,14 @@ Vue.component('FeedsModal', {
                                         <input
                                                 type="text"
                                                 class="form-control"
-                                                id="newFeedTitle2"
-                                                v-model="newFeed.title"
+                                                id="newFlowTitle2"
+                                                v-model="newFlow.title"
                                         />
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label
-                                    for="newFeedAddr2"
+                                    for="newFlowAddr2"
                                     class="col-sm-4 col-form-label font-weight-bold"
                                     ><strong>آدرس</strong></label
                                     >
@@ -183,14 +183,14 @@ Vue.component('FeedsModal', {
                                     <input
                                         type="text"
                                         class="form-control"
-                                        id="newFeedAddr2"
-                                        v-model="newFeed.addr"
+                                        id="newFlowAddr2"
+                                        v-model="newFlow.addr"
                                     />
                                     </div>
                                 </div>
-                                <div class="form-group row" v-if="newFeed.direction == 1 || newFeed.direction == 3">
+                                <div class="form-group row" v-if="newFlow.direction == 1 || newFlow.direction == 3">
                                     <label
-                                    for="newFeedRecvQueue"
+                                    for="newFlowRecvQueue"
                                     class="col-sm-4 col-form-label font-weight-bold"
                                     ><strong>صف دریافت</strong></label
                                     >
@@ -198,14 +198,14 @@ Vue.component('FeedsModal', {
                                     <input
                                         type="text"
                                         class="form-control"
-                                        id="newFeedRecvQueue"
-                                        v-model="newFeed.recvQueue"
+                                        id="newFlowRecvQueue"
+                                        v-model="newFlow.recvQueue"
                                     />
                                     </div>
                                 </div>
-                                <div class="form-group row" v-if="newFeed.direction == 2 || newFeed.direction == 3">
+                                <div class="form-group row" v-if="newFlow.direction == 2 || newFlow.direction == 3">
                                     <label
-                                    for="newFeedSendQueue"
+                                    for="newFlowSendQueue"
                                     class="col-sm-4 col-form-label font-weight-bold"
                                     ><strong>صف ارسال</strong></label
                                     >
@@ -213,8 +213,8 @@ Vue.component('FeedsModal', {
                                     <input
                                         type="text"
                                         class="form-control"
-                                        id="newFeedSendQueue"
-                                        v-model="newFeed.sendQueue"
+                                        id="newFlowSendQueue"
+                                        v-model="newFlow.sendQueue"
                                     />
                                     </div>
                                 </div>
@@ -223,7 +223,7 @@ Vue.component('FeedsModal', {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" v-on:click="createFeed">ایجاد</button>
+                    <button type="button" class="btn btn-primary" v-on:click="createFlow">ایجاد</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">خروج</button>
                 </div>
             </div>

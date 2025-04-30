@@ -8,7 +8,6 @@ import (
 	"encoding/hex"
 	"flag"
 	"fmt"
-	"github.com/peterstace/simplefeatures/geom"
 	"log/slog"
 	"math/rand"
 	"net"
@@ -20,6 +19,8 @@ import (
 	"sync/atomic"
 	"syscall"
 	"time"
+
+	"github.com/peterstace/simplefeatures/geom"
 
 	"github.com/google/uuid"
 
@@ -67,9 +68,9 @@ type App struct {
 	connected       uint32
 	mapServer       string
 
-	feeds             []client.CoTFeed
+	flows             []client.CoTFlow
 	sensors           []sensors.BaseSensor
-	defaultRabbitFeed *client.RabbitFeed
+	defaultRabbitFlow *client.RabbitFlow
 
 	alarms []string
 
@@ -114,7 +115,7 @@ func (m *CoTEventMutator) mutate(event *cotproto.CotEvent) bool {
 	return false
 }
 
-type FeedConfig struct {
+type FlowConfig struct {
 	Title     string `mapstructure:"title,omitempty"`
 	Addr      string `mapstructure:"address"`
 	Port      int    `mapstructure:"port"`
@@ -122,11 +123,6 @@ type FeedConfig struct {
 	SendQueue string `mapstructure:"sendQueue,omitempty"`
 	RecvQueue string `mapstructure:"recvQueue,omitempty"`
 }
-
-// type FeedsConfig struct {
-// 	incoming []FeedConfig `mapstructure:"incoming"`
-// 	outgoing []FeedConfig `mapstructure:"outgoing"`
-// }
 
 // Get preferred outbound ip of this machine
 func getOutboundIP() net.IP {
@@ -189,7 +185,7 @@ func NewApp(uid string, callsign string, connectStr string, webPort int, mapServ
 		mapServer:       mapServer,
 		ipAddress:       ipAddress,
 		urn:             urn,
-		feeds:           make([]client.CoTFeed, 0),
+		flows:           make([]client.CoTFlow, 0),
 
 		selfPosEventMutators: sync.Map{},
 		alarms:               make([]string, 0),
@@ -206,39 +202,39 @@ func (app *App) Init() {
 	app.ch = make(chan []byte, 20)
 	app.InitMessageProcessors()
 
-	var outgoingFeedConfigs []FeedConfig
-	var incomingFeedConfigs []FeedConfig
+	var outgoingFlowConfigs []FlowConfig
+	var incomingFlowConfigs []FlowConfig
 
-	if err := viper.UnmarshalKey("feeds.outgoing", &outgoingFeedConfigs); err != nil {
+	if err := viper.UnmarshalKey("flows.outgoing", &outgoingFlowConfigs); err != nil {
 		panic(err)
 	}
 
 	// TODO: rabbit
-	for _, feedConfig := range outgoingFeedConfigs {
-		app.feeds = append(app.feeds, client.NewUDPFeed(&client.UDPFeedConfig{
-			Addr:      feedConfig.Addr,
-			Port:      feedConfig.Port,
+	for _, flowConfig := range outgoingFlowConfigs {
+		app.flows = append(app.flows, client.NewUDPFlow(&client.UDPFlowConfig{
+			Addr:      flowConfig.Addr,
+			Port:      flowConfig.Port,
 			Direction: client.OUTGOING,
 		}))
-		app.logger.Info("Outgoing feed added", "addr", fmt.Sprintf("%s:%d", feedConfig.Addr, feedConfig.Port))
+		app.logger.Info("Outgoing flow added", "addr", fmt.Sprintf("%s:%d", flowConfig.Addr, flowConfig.Port))
 	}
 
-	if err := viper.UnmarshalKey("feeds.incoming", &incomingFeedConfigs); err != nil {
+	if err := viper.UnmarshalKey("flows.incoming", &incomingFlowConfigs); err != nil {
 		panic(err)
 	}
 
 	// TODO: rabbit
-	for _, feedConfig := range incomingFeedConfigs {
-		app.feeds = append(app.feeds, client.NewUDPFeed(&client.UDPFeedConfig{
+	for _, flowConfig := range incomingFlowConfigs {
+		app.flows = append(app.flows, client.NewUDPFlow(&client.UDPFlowConfig{
 			MessageCb: app.ProcessEvent,
-			Addr:      feedConfig.Addr,
-			Port:      feedConfig.Port,
+			Addr:      flowConfig.Addr,
+			Port:      flowConfig.Port,
 			Direction: client.INCOMING,
 		}))
-		app.logger.Info("Incoming feed added", "addr", fmt.Sprintf("%s:%d", feedConfig.Addr, feedConfig.Port))
+		app.logger.Info("Incoming flow added", "addr", fmt.Sprintf("%s:%d", flowConfig.Addr, flowConfig.Port))
 	}
 
-	app.createDefaultRabbitFeed()
+	app.createDefaultRabbitFlow()
 
 	app.changeCb.Subscribe(app.checkGeofences)
 	app.deleteCb.Subscribe(app.updateGeofencesAfterDelete)
@@ -310,8 +306,8 @@ func (app *App) Run(ctx context.Context) {
 	})
 	app.mesh.Start() */
 
-	for _, feed := range app.feeds {
-		feed.Start()
+	for _, flow := range app.flows {
+		flow.Start()
 	}
 
 	go app.myPosSender(ctx)
@@ -401,9 +397,9 @@ func (app *App) SendMsg(msg *cotproto.TakMessage) {
 		}
 	}
 
-	for _, feed := range app.feeds {
-		if err := feed.SendCot(msg); err != nil {
-			app.logger.Error("feed send error", "error", err, "feed", feed)
+	for _, flow := range app.flows {
+		if err := flow.SendCot(msg); err != nil {
+			app.logger.Error("flow send error", "error", err, "flow", flow)
 		}
 	}
 }
@@ -638,14 +634,14 @@ func (app *App) MakeFenceAroundMe() {
 	app.changeCb.AddMessage(u)
 }
 
-func (app *App) createDefaultRabbitFeed() {
+func (app *App) createDefaultRabbitFlow() {
 	destinations := make([]model.SendItemDest, 1)
 	destinations[0] = model.SendItemDest{
 		Addr: viper.GetString("default_dest_ip"),
 		URN:  viper.GetInt("default_dest_urn"),
 	}
 
-	newFeed := client.NewRabbitFeed(&client.RabbitFeedConfig{
+	newFlow := client.NewRabbitFlow(&client.RabbitFlowConfig{
 		MessageCb:    app.ProcessEvent,
 		Addr:         fmt.Sprintf("amqp://rabbitmqserver:5672/%d", app.urn),
 		Direction:    client.BOTH,
@@ -659,8 +655,8 @@ func (app *App) createDefaultRabbitFeed() {
 		},
 	})
 
-	app.defaultRabbitFeed = newFeed
-	app.feeds = append(app.feeds, newFeed)
+	app.defaultRabbitFlow = newFlow
+	app.flows = append(app.flows, newFlow)
 }
 
 func (app *App) forceLocationUpdate() {

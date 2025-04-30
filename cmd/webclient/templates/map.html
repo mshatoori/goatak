@@ -24,8 +24,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#" id="navbarFeedsMenuLink" role="button" v-on:click="openFeeds()">
-                            ارتباطات <span class="badge rounded-pill bg-success">{{ feedsCount() }}</span>
+                        <a class="nav-link" href="#" id="navbarFlowsMenuLink" role="button" v-on:click="openFlows()">
+                            ارتباطات <span class="badge rounded-pill bg-success">{{ flowsCount() }}</span>
                         </a>
                     </li>
                     <li class="nav-item dropdown">
@@ -134,7 +134,7 @@
         </div>
     </div>
 
-    <feeds-modal></feeds-modal>
+    <flows-modal></flows-modal>
     <alarms-modal :map="map"></alarms-modal>
     <send-modal></send-modal>
     <sensors-modal></sensors-modal>

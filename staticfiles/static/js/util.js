@@ -136,7 +136,7 @@ var store = {
         items: new Map(),
         ts: 0,
         sensors: [],
-        feeds: [],
+        flows: [],
         unitToSend: {},
         emergency: {
             type: "b-a-o-tbl",
@@ -268,25 +268,25 @@ var store = {
             .then(response => this.state.sensors = response);
     },
 
-    // Feeds
-    createFeed(feedData) {
-        const feedJson = {
-            uid: uuidv4(), ...feedData,
-            port: parseInt(feedData.port),
-            direction: parseInt(feedData.direction)
+    // Flows
+    createFlow(flowData) {
+        const flowJson = {
+            uid: uuidv4(), ...flowData,
+            port: parseInt(flowData.port),
+            direction: parseInt(flowData.direction)
         }
-        fetch('/feeds', {headers: {"Content-Type": "application/json"}, method: "POST", body: JSON.stringify(feedJson)})
+        fetch('/flows', {headers: {"Content-Type": "application/json"}, method: "POST", body: JSON.stringify(flowJson)})
             .then(response => response.json())
-            .then(response => this.state.feeds = response);
+            .then(response => this.state.flows = response);
     },
 
-    fetchFeeds() {
-        fetch('/feeds')
+    fetchFlows() {
+        fetch('/flows')
             .then(response => response.json())
-            .then(response => this.state.feeds = response);
+            .then(response => this.state.flows = response);
     },
 
-    removeFeed: function (uid) {
+    removeFlow: function (uid) {
         // TODO
     },
 

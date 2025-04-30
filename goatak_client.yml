@@ -22,7 +22,7 @@ me:
   lon: 0
   urn: 1
 
-#feeds:
+#flows:
 # outgoing:
 # - address: 192.168.2.44
 #   port: 6970
