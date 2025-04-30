@@ -246,7 +246,7 @@ func addFlowHandler(app *App) air.Handler {
 				Addr:         f.Addr,
 				Direction:    client.FlowDirection(f.Direction),
 				RecvQueue:    f.RecvQueue,
-				SendQueue:    f.SendQueue,
+				SendExchange: f.SendExchange,
 				Title:        f.Title,
 				Destinations: destinations,
 				ClientInfo: &cotproto.ClientInfo{
@@ -389,15 +389,6 @@ func sendItemHandler(app *App) air.Handler {
 
 		prevDest := rabbitmq.Destinations
 		rabbitmq.Destinations = destinations
-		// rabbitmq := client.NewRabbitFlow(&client.RabbitFlowConfig{
-		// 	MessageCb:    nil,
-		// 	Addr:         "127.0.0.1:5672",
-		// 	Direction:    client.OUTGOING,
-		// 	SendQueue:    "SendCommand", // TODO:
-		// 	RecvQueue:    "",
-		// 	Title:        "TEMP",
-		// 	Destinations: destinations,
-		// })
 
 		uid := getStringParam(req, "uid")
 		item := app.items.Get(uid)

@@ -74,10 +74,10 @@ type CoTFlow struct {
 	Port  int    `json:"port,omitempty"`
 	UID   string `json:"uid"`
 	//Outgoing bool   `json:"outgoing"`
-	Direction int    `json:"direction"`
-	Type      string `json:"type,omitempty"`
-	SendQueue string `json:"sendQueue,omitempty"`
-	RecvQueue string `json:"recvQueue,omitempty"`
+	Direction    int    `json:"direction"`
+	Type         string `json:"type,omitempty"`
+	SendExchange string `json:"sendExchange,omitempty"`
+	RecvQueue    string `json:"recvQueue,omitempty"`
 }
 
 type SensorModel struct {

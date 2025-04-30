@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"crypto/tls"
 	"crypto/x509"
+	"database/sql"
 	"encoding/hex"
 	"flag"
 	"fmt"
@@ -19,6 +20,8 @@ import (
 	"sync/atomic"
 	"syscall"
 	"time"
+
+	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/peterstace/simplefeatures/geom"
 
@@ -116,12 +119,12 @@ func (m *CoTEventMutator) mutate(event *cotproto.CotEvent) bool {
 }
 
 type FlowConfig struct {
-	Title     string `mapstructure:"title,omitempty"`
-	Addr      string `mapstructure:"address"`
-	Port      int    `mapstructure:"port"`
-	Type      string `mapstructure:"type,omitempty"`
-	SendQueue string `mapstructure:"sendQueue,omitempty"`
-	RecvQueue string `mapstructure:"recvQueue,omitempty"`
+	Title        string `mapstructure:"title,omitempty"`
+	Addr         string `mapstructure:"address"`
+	Port         int    `mapstructure:"port"`
+	Type         string `mapstructure:"type,omitempty"`
+	SendExchange string `mapstructure:"sendExchange,omitempty"`
+	RecvQueue    string `mapstructure:"recvQueue,omitempty"`
 }
 
 // Get preferred outbound ip of this machine
@@ -202,42 +205,202 @@ func (app *App) Init() {
 	app.ch = make(chan []byte, 20)
 	app.InitMessageProcessors()
 
+	dbPath := viper.GetString("database.path")
+	if dbPath == "" {
+		app.logger.Error("database.path not set in config")
+		// Fallback to config loading if database path is not set
+		app.loadFlowsFromConfig()
+	} else {
+		dbExists := false
+		if _, err := os.Stat(dbPath); err == nil {
+			dbExists = true
+		}
+
+		db, err := sql.Open("sqlite3", dbPath)
+		if err != nil {
+			app.logger.Error("failed to open database", "error", err)
+			// Fallback to config loading if database cannot be opened
+			app.loadFlowsFromConfig()
+		} else {
+			defer db.Close()
+
+			// Create flows table if it doesn't exist
+			createTableSQL := `CREATE TABLE IF NOT EXISTS flows (
+				title TEXT,
+				addr TEXT NOT NULL,
+				port INTEGER NOT NULL,
+				type TEXT NOT NULL,
+				sendExchange TEXT,
+				recvQueue TEXT
+			);`
+			_, err = db.Exec(createTableSQL)
+			if err != nil {
+				app.logger.Error("failed to create flows table", "error", err)
+				// Fallback to config loading if table cannot be created
+				app.loadFlowsFromConfig()
+			} else {
+				if dbExists {
+					app.logger.Info("Loading flows from database")
+					// Load flows from database
+					rows, err := db.Query("SELECT title, addr, port, type, sendExchange, recvQueue FROM flows")
+					if err != nil {
+						app.logger.Error("failed to query flows from database", "error", err)
+						// Fallback to config loading if query fails
+						app.loadFlowsFromConfig()
+					} else {
+						defer rows.Close()
+						for rows.Next() {
+							var flowConfig FlowConfig
+							if err := rows.Scan(&flowConfig.Title, &flowConfig.Addr, &flowConfig.Port, &flowConfig.Type, &flowConfig.SendExchange, &flowConfig.RecvQueue); err != nil {
+								app.logger.Error("failed to scan flow row", "error", err)
+								continue
+							}
+							app.addFlow(flowConfig)
+						}
+						if err := rows.Err(); err != nil {
+							app.logger.Error("error during database rows iteration", "error", err)
+						}
+					}
+				} else {
+					app.logger.Info("Database not found, loading flows from config and saving to database")
+					// Load flows from config and save to database
+					app.loadFlowsFromConfig()
+					app.saveFlowsToDatabase(db)
+				}
+			}
+		}
+	}
+
+	// Ensure default rabbit flow is created if no rabbit flows were loaded
+	hasRabbitFlow := false
+	for _, flow := range app.flows {
+		if _, ok := flow.(*client.RabbitFlow); ok {
+			hasRabbitFlow = true
+			break
+		}
+	}
+	if !hasRabbitFlow {
+		app.createDefaultRabbitFlow()
+	}
+
+	app.changeCb.Subscribe(app.checkGeofences)
+	app.deleteCb.Subscribe(app.updateGeofencesAfterDelete)
+}
+
+func (app *App) loadFlowsFromConfig() {
 	var outgoingFlowConfigs []FlowConfig
 	var incomingFlowConfigs []FlowConfig
 
 	if err := viper.UnmarshalKey("flows.outgoing", &outgoingFlowConfigs); err != nil {
-		panic(err)
-	}
-
-	// TODO: rabbit
-	for _, flowConfig := range outgoingFlowConfigs {
-		app.flows = append(app.flows, client.NewUDPFlow(&client.UDPFlowConfig{
-			Addr:      flowConfig.Addr,
-			Port:      flowConfig.Port,
-			Direction: client.OUTGOING,
-		}))
-		app.logger.Info("Outgoing flow added", "addr", fmt.Sprintf("%s:%d", flowConfig.Addr, flowConfig.Port))
+		app.logger.Error("failed to unmarshal outgoing flows from config", "error", err)
+	} else {
+		for _, flowConfig := range outgoingFlowConfigs {
+			// Default to "udp" if type is not specified for backward compatibility
+			if flowConfig.Type == "" {
+				flowConfig.Type = "udp"
+			}
+			app.addFlow(flowConfig)
+			app.logger.Info("Outgoing flow added from config", "addr", fmt.Sprintf("%s:%d", flowConfig.Addr, flowConfig.Port), "type", flowConfig.Type)
+		}
 	}
 
 	if err := viper.UnmarshalKey("flows.incoming", &incomingFlowConfigs); err != nil {
-		panic(err)
+		app.logger.Error("failed to unmarshal incoming flows from config", "error", err)
+	} else {
+		for _, flowConfig := range incomingFlowConfigs {
+			// Default to "udp" if type is not specified for backward compatibility
+			if flowConfig.Type == "" {
+				flowConfig.Type = "udp"
+			}
+			app.addFlow(flowConfig)
+			app.logger.Info("Incoming flow added from config", "addr", fmt.Sprintf("%s:%d", flowConfig.Addr, flowConfig.Port), "type", flowConfig.Type)
+		}
+	}
+}
+
+func (app *App) saveFlowsToDatabase(db *sql.DB) {
+	app.logger.Info("Saving flows to database")
+	tx, err := db.Begin()
+	if err != nil {
+		app.logger.Error("failed to begin transaction for saving flows", "error", err)
+		return
+	}
+	defer tx.Rollback() // Rollback if not committed
+
+	stmt, err := tx.Prepare("INSERT INTO flows(title, addr, port, type, sendExchange, recvQueue) VALUES(?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		app.logger.Error("failed to prepare insert statement for flows", "error", err)
+		return
+	}
+	defer stmt.Close()
+
+	for _, flow := range app.flows {
+		var flowConfig FlowConfig
+		switch f := flow.(type) {
+		case *client.UDPFlow:
+			flowConfig = FlowConfig{
+				Title: f.Title, // Use the Title field from UDPFlow
+				Addr:  f.Addr.IP.String(),
+				Port:  f.Addr.Port,
+				Type:  "udp",
+			}
+		case *client.RabbitFlow:
+			rabbitModel := f.ToCoTFlowModel()
+			flowConfig = FlowConfig{
+				Title:        rabbitModel.Title,
+				Addr:         rabbitModel.Addr,
+				Port:         0, // RabbitMQ uses Addr as connection string, Port is not a separate field
+				Type:         "rabbit",
+				SendExchange: rabbitModel.SendExchange,
+				RecvQueue:    rabbitModel.RecvQueue,
+			}
+		default:
+			app.logger.Warn("unknown flow type, skipping save to database")
+			continue
+		}
+
+		_, err := stmt.Exec(flowConfig.Title, flowConfig.Addr, flowConfig.Port, flowConfig.Type, flowConfig.SendExchange, flowConfig.RecvQueue)
+		if err != nil {
+			app.logger.Error("failed to insert flow into database", "error", err, "flow", flowConfig)
+			return // Stop saving on first error
+		}
 	}
 
-	// TODO: rabbit
-	for _, flowConfig := range incomingFlowConfigs {
-		app.flows = append(app.flows, client.NewUDPFlow(&client.UDPFlowConfig{
-			MessageCb: app.ProcessEvent,
-			Addr:      flowConfig.Addr,
-			Port:      flowConfig.Port,
-			Direction: client.INCOMING,
-		}))
-		app.logger.Info("Incoming flow added", "addr", fmt.Sprintf("%s:%d", flowConfig.Addr, flowConfig.Port))
+	err = tx.Commit()
+	if err != nil {
+		app.logger.Error("failed to commit transaction for saving flows", "error", err)
 	}
+}
 
-	app.createDefaultRabbitFlow()
-
-	app.changeCb.Subscribe(app.checkGeofences)
-	app.deleteCb.Subscribe(app.updateGeofencesAfterDelete)
+func (app *App) addFlow(flowConfig FlowConfig) {
+	switch strings.ToLower(flowConfig.Type) {
+	case "udp":
+		udpConfig := &client.UDPFlowConfig{
+			Addr: flowConfig.Addr,
+			Port: flowConfig.Port,
+		}
+		if flowConfig.RecvQueue != "" { // Assuming RecvQueue indicates incoming for UDP
+			udpConfig.Direction = client.INCOMING
+			udpConfig.MessageCb = app.ProcessEvent
+		} else {
+			udpConfig.Direction = client.OUTGOING
+		}
+		app.flows = append(app.flows, client.NewUDPFlow(udpConfig))
+	case "rabbit":
+		rabbitConfig := &client.RabbitFlowConfig{
+			Title:        flowConfig.Title,
+			Addr:         flowConfig.Addr,
+			SendExchange: flowConfig.SendExchange,
+			RecvQueue:    flowConfig.RecvQueue,
+		}
+		// RabbitMQ flows are typically bidirectional, but we'll set MessageCb if a RecvQueue is specified
+		if flowConfig.RecvQueue != "" {
+			rabbitConfig.MessageCb = app.ProcessEvent
+		}
+		app.flows = append(app.flows, client.NewRabbitFlow(rabbitConfig))
+	default:
+		app.logger.Warn("unknown flow type in config or database", "type", flowConfig.Type)
+	}
 }
 
 func (app *App) sensorCallback(data any) {
@@ -646,7 +809,7 @@ func (app *App) createDefaultRabbitFlow() {
 		Addr:         fmt.Sprintf("amqp://rabbitmqserver:5672/%d", app.urn),
 		Direction:    client.BOTH,
 		RecvQueue:    "SituationalAwarenessReceiveQueue",
-		SendQueue:    "SendVmfCommand",
+		SendExchange: "SendVmfCommand",
 		Title:        "DataLink",
 		Destinations: destinations,
 		ClientInfo: &cotproto.ClientInfo{

@@ -11,7 +11,7 @@ Vue.component('FlowsModal', {
                 port: "",
                 direction: 1,
                 recvQueue: "",
-                sendQueue: "",
+                sendExchange: "",
             },
             sharedState: store.state,
         }
@@ -76,7 +76,7 @@ Vue.component('FlowsModal', {
                                   <h5 class="mb-1">شناسه: {{ flow.uid }}</h5>
                                   <div>آدرس: {{ flow.addr }}</div>
                                   <div v-if="flow.direction == 1 || flow.direction == 3">صف دریافت: {{ flow.recvQueue }}</div>
-                                  <div v-if="flow.direction == 2 || flow.direction == 3">صف ارسال: {{ flow.sendQueue }}</div>
+                                  <div v-if="flow.direction == 2 || flow.direction == 3">صف ارسال: {{ flow.sendExchange }}</div>
                               </div>
                               <div>
                                 <span class="badge rounded-pill bg-primary">{{ flowTypeText(flow.type) }}</span>
@@ -205,7 +205,7 @@ Vue.component('FlowsModal', {
                                 </div>
                                 <div class="form-group row" v-if="newFlow.direction == 2 || newFlow.direction == 3">
                                     <label
-                                    for="newFlowSendQueue"
+                                    for="newFlowSendExchange"
                                     class="col-sm-4 col-form-label font-weight-bold"
                                     ><strong>صف ارسال</strong></label
                                     >
@@ -213,8 +213,8 @@ Vue.component('FlowsModal', {
                                     <input
                                         type="text"
                                         class="form-control"
-                                        id="newFlowSendQueue"
-                                        v-model="newFlow.sendQueue"
+                                        id="newFlowSendExchange"
+                                        v-model="newFlow.sendExchange"
                                     />
                                     </div>
                                 </div>

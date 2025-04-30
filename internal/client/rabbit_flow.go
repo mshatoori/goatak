@@ -39,7 +39,7 @@ type RabbitFlowConfig struct {
 	// Logger       *slog.Logger
 	Addr         string
 	Direction    FlowDirection
-	SendQueue    string
+	SendExchange string
 	RecvQueue    string
 	Title        string
 	Destinations []model.SendItemDest
@@ -66,7 +66,7 @@ type RabbitFlow struct {
 	//newContactCb func(uid, callsign string)
 	logger       *slog.Logger
 	Direction    FlowDirection
-	sendQueue    string
+	sendExchange string
 	recvQueue    string
 	Title        string
 	msgCounter   int
@@ -119,7 +119,7 @@ func NewRabbitFlow(config *RabbitFlowConfig) *RabbitFlow {
 		Addr:         config.Addr,
 		Direction:    config.Direction,
 		UID:          uuid.NewString(),
-		sendQueue:    config.SendQueue,
+		sendExchange: config.SendExchange,
 		recvQueue:    config.RecvQueue,
 		Title:        config.Title,
 		msgCounter:   0,
@@ -162,13 +162,13 @@ func (h *RabbitFlow) GetType() string {
 
 func (h *RabbitFlow) ToCoTFlowModel() *model.CoTFlow {
 	return &model.CoTFlow{
-		UID:       h.UID,
-		Addr:      h.Addr,
-		Direction: int(h.Direction),
-		RecvQueue: h.recvQueue,
-		SendQueue: h.sendQueue,
-		Type:      h.GetType(),
-		Title:     h.Title,
+		UID:          h.UID,
+		Addr:         h.Addr,
+		Direction:    int(h.Direction),
+		RecvQueue:    h.recvQueue,
+		SendExchange: h.sendExchange,
+		Type:         h.GetType(),
+		Title:        h.Title,
 	}
 }
 
@@ -293,7 +293,7 @@ func (h *RabbitFlow) handleWrite(ctx context.Context) {
 	}
 
 	q, err := h.ch.QueueDeclare(
-		h.sendQueue,
+		h.sendExchange,
 		true,
 		false,
 		false,
