@@ -33,31 +33,46 @@ func addSensorHandler(app *App) air.Handler {
 			return err
 		}
 
+		if f.UID == "" {
+			f.UID = uuid.New().String()
+		}
+
+		if app.DB != nil {
+			if err := app.saveSensorToDatabase(f); err != nil {
+				app.logger.Error("failed to save sensor to database", "error", err)
+				// Continue without saving to DB? Or return error?
+				// For now, return error
+				return err
+			}
+		} else {
+			app.logger.Warn("database not available, sensor configuration not persisted")
+		}
+
+		var newSensor sensors.BaseSensor
 		// TODO: Refactor with switch case
 		if f.Type == "GPS" || f.Type == "AIS" {
 			//gpsAddr := fmt.Sprintf("%s:%d", f.Addr, f.Port)
-			var gpsdSensor = &sensors.GpsdSensor{
+			newSensor = &sensors.GpsdSensor{
 				Addr:     fmt.Sprintf("%s:%d", f.Addr, f.Port),
 				Conn:     nil,
 				Logger:   app.logger.With("logger", "gpsd"),
 				Reader:   nil,
 				Type:     f.Type,
-				UID:      uuid.New().String(),
+				UID:      f.UID,
 				Interval: time.Second * time.Duration(f.Interval),
 				Ctx:      context.Background(),
 				Title:    f.Title,
 			}
-
-			app.sensors = append(app.sensors, gpsdSensor)
-			gpsdSensor.Initialize()
-			go gpsdSensor.Start(app.sensorCallback)
 		} else if f.Type == "Radar" {
-			var radarSensor = sensors.NewRadarSensor(f, app.logger.With("logger", "radar"))
-
-			app.sensors = append(app.sensors, radarSensor)
-			radarSensor.Initialize()
-			go radarSensor.Start(app.sensorCallback)
+			newSensor = sensors.NewRadarSensor(f, app.logger.With("logger", "radar"))
+		} else {
+			res.Status = 400
+			return res.WriteString(fmt.Sprintf("unsupported sensor type: %s", f.Type))
 		}
+
+		app.sensors = append(app.sensors, newSensor)
+		newSensor.Initialize()
+		go newSensor.Start(app.sensorCallback)
 
 		return res.WriteJSON(getSensors(app))
 	}
@@ -86,6 +101,16 @@ func deleteSensorHandler(app *App) air.Handler {
 		if sensorIdx == -1 {
 			res.Status = 404
 		} else {
+			if app.DB != nil {
+				if err := app.deleteSensorFromDatabase(uid); err != nil {
+					app.logger.Error("failed to delete sensor from database", "error", err)
+					// Continue with deletion from memory even if DB deletion fails?
+					// For now, continue
+				}
+			} else {
+				app.logger.Warn("database not available, sensor configuration not deleted from persistence")
+			}
+
 			sensor := app.sensors[sensorIdx]
 			sensor.Stop()
 			app.sensors = append(app.sensors[:sensorIdx], app.sensors[sensorIdx+1:]...)

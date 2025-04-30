@@ -240,6 +240,19 @@ func (app *App) Init() {
 				// Fallback to config loading if table cannot be created
 				app.loadFlowsFromConfig()
 			} else {
+				// Create sensors table if it doesn't exist
+				if err := app.createSensorsTable(db); err != nil {
+					app.logger.Error("failed to create sensors table", "error", err)
+					// Fallback to config loading if table cannot be created
+					app.loadSensorsFromConfig()
+				} else {
+					// Load sensors from database
+					if err := app.loadSensorsFromDatabase(db); err != nil {
+						app.logger.Error("failed to load sensors from database", "error", err)
+						// Fallback to config loading if loading from database fails
+						app.loadSensorsFromConfig()
+					}
+				}
 				if dbExists {
 					app.logger.Info("Loading flows from database")
 					// Load flows from database
@@ -374,6 +387,99 @@ func (app *App) saveFlowsToDatabase(db *sql.DB) {
 	}
 }
 
+func (app *App) createSensorsTable(db *sql.DB) error {
+	createTableSQL := `CREATE TABLE IF NOT EXISTS sensors (
+		title TEXT,
+		uid TEXT PRIMARY KEY,
+		addr TEXT NOT NULL,
+		port INTEGER NOT NULL,
+		type TEXT NOT NULL,
+		interval INTEGER
+	);`
+	_, err := db.Exec(createTableSQL)
+	return err
+}
+
+func (app *App) loadSensorsFromDatabase(db *sql.DB) error {
+	app.logger.Info("Loading sensors from database")
+	rows, err := db.Query("SELECT title, uid, addr, port, type, interval FROM sensors")
+	if err != nil {
+		return fmt.Errorf("failed to query sensors from database: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var sensorConfig model.SensorModel
+		if err := rows.Scan(&sensorConfig.Title, &sensorConfig.UID, &sensorConfig.Addr, &sensorConfig.Port, &sensorConfig.Type, &sensorConfig.Interval); err != nil {
+			app.logger.Error("failed to scan sensor row", "error", err)
+			continue
+		}
+
+		sensorInstance, err := app.createSensorInstance(&sensorConfig)
+		if err != nil {
+			app.logger.Error("failed to create sensor instance from database config", "error", err, "sensor", sensorConfig)
+			continue
+		}
+
+		sensorInstance.Initialize()
+		app.sensors = append(app.sensors, sensorInstance)
+		go sensorInstance.Start(app.sensorCallback)
+	}
+
+	if err := rows.Err(); err != nil {
+		return fmt.Errorf("error during database rows iteration for sensors: %w", err)
+	}
+
+	return nil
+}
+
+func (app *App) loadSensorsFromConfig() {
+	// TODO: Implement loading sensors from config
+	app.logger.Info("Loading sensors from config (not implemented yet)")
+}
+
+func (app *App) saveSensorToDatabase(sensorConfig *model.SensorModel) error {
+	app.logger.Info("Saving sensor to database", "uid", sensorConfig.UID)
+	_, err := app.DB.Exec("INSERT OR REPLACE INTO sensors(title, uid, addr, port, type, interval) VALUES(?, ?, ?, ?, ?, ?)",
+		sensorConfig.Title, sensorConfig.UID, sensorConfig.Addr, sensorConfig.Port, sensorConfig.Type, sensorConfig.Interval)
+	if err != nil {
+		return fmt.Errorf("failed to insert or replace sensor in database: %w", err)
+	}
+	return nil
+}
+
+func (app *App) deleteSensorFromDatabase(uid string) error {
+	app.logger.Info("Deleting sensor from database", "uid", uid)
+	_, err := app.DB.Exec("DELETE FROM sensors WHERE uid = ?", uid)
+	if err != nil {
+		return fmt.Errorf("failed to delete sensor from database: %w", err)
+	}
+	return nil
+}
+
+func (app *App) createSensorInstance(sensorConfig *model.SensorModel) (sensors.BaseSensor, error) {
+	switch strings.ToLower(sensorConfig.Type) {
+	case "gps", "ais":
+		return &sensors.GpsdSensor{
+			Addr:     fmt.Sprintf("%s:%d", sensorConfig.Addr, sensorConfig.Port),
+			Conn:     nil,
+			Logger:   app.logger.With("logger", "gpsd"), // TODO: Make logger name dynamic
+			Reader:   nil,
+			Type:     sensorConfig.Type,
+			UID:      sensorConfig.UID,
+			Interval: time.Second * time.Duration(sensorConfig.Interval),
+			Ctx:      context.Background(), // TODO: Use app context
+			Title:    sensorConfig.Title,
+			// SerialPort and TCPProxyAddr are not in SensorModel yet, need to consider how to handle sensor-specific configs
+		}, nil
+	case "radar":
+		// Assuming NewRadarSensor can take SensorModel and logger
+		return sensors.NewRadarSensor(sensorConfig, app.logger.With("logger", "radar")), nil // TODO: Make logger name dynamic
+	default:
+		return nil, fmt.Errorf("unsupported sensor type: %s", sensorConfig.Type)
+	}
+}
+
 func (app *App) addFlow(flowConfig FlowConfig) {
 	switch strings.ToLower(flowConfig.Type) {
 	case "udp":
@@ -446,24 +552,36 @@ func (app *App) Run(ctx context.Context) {
 
 	app.logger.Debug("GPSD", "addr", viper.GetString("gpsd"))
 
-	if addr := viper.GetString("gpsd"); addr != "" {
-		var gpsdSensor = &sensors.GpsdSensor{
-			Addr:         addr,
-			Conn:         nil,
-			Logger:       app.logger.With("logger", "gpsd"),
-			Reader:       nil,
-			Type:         "GPS",
-			UID:          uuid.New().String(),
-			Interval:     time.Duration(15) * time.Second,
-			Ctx:          ctx,
-			Title:        "مکان‌یاب",
-			SerialPort:   viper.GetString("gps_port"),
-			TCPProxyAddr: "", // Disable TCP Proxy
+	// Check if any GPS sensors were loaded from the database
+	hasExistingGPSSensor := false
+	for _, sensor := range app.sensors {
+		if sensor.GetType() == "GPS" {
+			hasExistingGPSSensor = true
+			break
 		}
-		app.sensors = append(app.sensors, gpsdSensor)
+	}
 
-		gpsdSensor.Initialize()
-		go gpsdSensor.Start(app.sensorCallback)
+	// If no GPS sensors were loaded from the database, create the default one from config
+	if !hasExistingGPSSensor {
+		if addr := viper.GetString("gpsd"); addr != "" {
+			var gpsdSensor = &sensors.GpsdSensor{
+				Addr:         addr,
+				Conn:         nil,
+				Logger:       app.logger.With("logger", "gpsd"),
+				Reader:       nil,
+				Type:         "GPS",
+				UID:          uuid.New().String(),
+				Interval:     time.Duration(15) * time.Second,
+				Ctx:          ctx,
+				Title:        "مکان‌یاب",
+				SerialPort:   viper.GetString("gps_port"),
+				TCPProxyAddr: "", // Disable TCP Proxy
+			}
+			app.sensors = append(app.sensors, gpsdSensor)
+
+			gpsdSensor.Initialize()
+			go gpsdSensor.Start(app.sensorCallback)
+		}
 	}
 
 	/* app.mesh = client.NewMeshHandler(&client.MeshHandlerConfig{
