@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/signal"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -253,6 +254,61 @@ func (app *App) Init() {
 						app.loadSensorsFromConfig()
 					}
 				}
+				// Create config table if it doesn't exist
+				createConfigTableSQL := `CREATE TABLE IF NOT EXISTS config (
+					key TEXT PRIMARY KEY,
+					value TEXT
+				);`
+				_, err = db.Exec(createConfigTableSQL)
+				if err != nil {
+					app.logger.Error("failed to create config table", "error", err)
+					// Continue without loading/saving config to DB, but log the error
+				} else {
+					// Load config from database
+					app.logger.Info("Loading config from database")
+					rows, err := db.Query("SELECT key, value FROM config")
+					if err != nil {
+						app.logger.Error("failed to query config from database", "error", err)
+						// Continue without loading config from DB, but log the error
+					} else {
+						defer rows.Close()
+						configMap := make(map[string]string)
+						for rows.Next() {
+							var key, value string
+							if err := rows.Scan(&key, &value); err != nil {
+								app.logger.Error("failed to scan config row", "error", err)
+								continue
+							}
+							configMap[key] = value
+						}
+						if err := rows.Err(); err != nil {
+							app.logger.Error("error during database rows iteration for config", "error", err)
+						}
+
+						// Override config values from database if they exist
+						if uid, ok := configMap["app.uid"]; ok {
+							app.uid = uid
+							app.logger.Info("Loaded app.uid from database", "value", app.uid)
+						}
+						if callsign, ok := configMap["app.callsign"]; ok {
+							app.callsign = callsign
+							app.logger.Info("Loaded app.callsign from database", "value", app.callsign)
+						}
+						if ipAddress, ok := configMap["app.ipAddress"]; ok {
+							app.ipAddress = ipAddress
+							app.logger.Info("Loaded app.ipAddress from database", "value", app.ipAddress)
+						}
+						if urnStr, ok := configMap["app.urn"]; ok {
+							if urn, err := strconv.ParseInt(urnStr, 10, 32); err == nil {
+								app.urn = int32(urn)
+								app.logger.Info("Loaded app.urn from database", "value", app.urn)
+							} else {
+								app.logger.Error("failed to parse app.urn from database", "error", err, "value", urnStr)
+							}
+						}
+					}
+				}
+
 				if dbExists {
 					app.logger.Info("Loading flows from database")
 					// Load flows from database
@@ -289,8 +345,9 @@ func (app *App) Init() {
 	// Ensure default rabbit flow is created if no rabbit flows were loaded
 	hasRabbitFlow := false
 	for _, flow := range app.flows {
-		if _, ok := flow.(*client.RabbitFlow); ok {
+		if rabbitFlow, ok := flow.(*client.RabbitFlow); ok {
 			hasRabbitFlow = true
+			app.defaultRabbitFlow = rabbitFlow
 			break
 		}
 	}

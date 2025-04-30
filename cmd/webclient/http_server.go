@@ -152,6 +152,32 @@ func changeConfigHandler(app *App) air.Handler {
 		newUrn, _ := strconv.ParseInt(wu["urn"], 10, 32)
 		app.urn = int32(newUrn)
 
+		// Save updated config to database
+		if app.DB != nil {
+			stmt, err := app.DB.Prepare("INSERT OR REPLACE INTO config(key, value) VALUES(?, ?)")
+			if err != nil {
+				app.logger.Error("failed to prepare insert statement for config", "error", err)
+				// Continue without saving to DB, but log the error
+			} else {
+				defer stmt.Close()
+				configsToSave := map[string]string{
+					"app.uid":       app.uid,
+					"app.callsign":  app.callsign,
+					"app.ipAddress": app.ipAddress,
+					"app.urn":       strconv.Itoa(int(app.urn)),
+				}
+				for key, value := range configsToSave {
+					_, err := stmt.Exec(key, value)
+					if err != nil {
+						app.logger.Error("failed to insert or replace config in database", "error", err, "key", key)
+						// Continue without saving this specific key, but log the error
+					} else {
+						app.logger.Info("Config saved to database", "key", key, "value", value)
+					}
+				}
+			}
+		}
+
 		if app.defaultRabbitFlow != nil {
 			app.defaultRabbitFlow.ClientInfo.IpAddress = wu["ip_address"]
 			app.defaultRabbitFlow.ClientInfo.Urn = int32(newUrn)
