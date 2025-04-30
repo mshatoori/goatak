@@ -243,7 +243,7 @@ func (h *UDPFlow) handleWrite() {
 		h.conn, _ = net.DialUDP("udp", nil, h.Addr)
 		if _, err := h.conn.Write(msg); err != nil {
 			h.logger.Debug(fmt.Sprintf("UDPFlow client %s write error %v", h.Addr, err))
-			h.stopHandle()
+			h.Stop()
 
 			break
 		}

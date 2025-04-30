@@ -240,8 +240,10 @@ func addFlowHandler(app *App) air.Handler {
 			URN:  16777215,
 		}
 
+		var newFlow client.CoTFlow
+
 		if len(f.Type) > 0 && f.Type == "Rabbit" {
-			newFlow := client.NewRabbitFlow(&client.RabbitFlowConfig{
+			newFlow = client.NewRabbitFlow(&client.RabbitFlowConfig{
 				MessageCb:    app.ProcessEvent,
 				Addr:         f.Addr,
 				Direction:    client.FlowDirection(f.Direction),
@@ -256,11 +258,11 @@ func addFlowHandler(app *App) air.Handler {
 			})
 
 			app.flows = append(app.flows, newFlow)
-			if newFlow.IsActive() {
-				newFlow.Start()
+			if rabbitFlow, ok := newFlow.(*client.RabbitFlow); ok && rabbitFlow.IsActive() {
+				rabbitFlow.Start()
 			}
 		} else if len(f.Type) == 0 || f.Type == "UDP" {
-			newFlow := client.NewUDPFlow(&client.UDPFlowConfig{
+			newFlow = client.NewUDPFlow(&client.UDPFlowConfig{
 				MessageCb: app.ProcessEvent,
 				Addr:      f.Addr,
 				Port:      f.Port,
@@ -272,10 +274,47 @@ func addFlowHandler(app *App) air.Handler {
 			newFlow.Start()
 		}
 
+		// Save the new flow to the database
+		if app.DB != nil && newFlow != nil {
+			stmt, err := app.DB.Prepare("INSERT INTO flows(title, uid, addr, port, type, sendExchange, recvQueue) VALUES(?, ?, ?, ?, ?, ?, ?)")
+			if err != nil {
+				app.logger.Error("failed to prepare insert statement for flow", "error", err)
+				// Continue without saving to DB, but log the error
+			} else {
+				defer stmt.Close()
+				var flowConfig FlowConfig
+				switch flow := newFlow.(type) {
+				case *client.UDPFlow:
+					flowConfig = FlowConfig{
+						Title: flow.Title,
+						Addr:  flow.Addr.IP.String(),
+						Port:  flow.Addr.Port,
+						Type:  "udp",
+					}
+				case *client.RabbitFlow:
+					rabbitModel := flow.ToCoTFlowModel()
+					flowConfig = FlowConfig{
+						Title:        rabbitModel.Title,
+						Addr:         rabbitModel.Addr,
+						Port:         0,
+						Type:         "rabbit",
+						SendExchange: rabbitModel.SendExchange,
+						RecvQueue:    rabbitModel.RecvQueue,
+					}
+				}
+				_, err := stmt.Exec(flowConfig.Title, newFlow.ToCoTFlowModel().UID, flowConfig.Addr, flowConfig.Port, flowConfig.Type, flowConfig.SendExchange, flowConfig.RecvQueue)
+				if err != nil {
+					app.logger.Error("failed to insert flow into database", "error", err, "flow", flowConfig)
+					// Continue without saving to DB, but log the error
+				} else {
+					app.logger.Info("Flow saved to database", "flow", flowConfig)
+				}
+			}
+		}
+
 		return res.WriteJSON(getFlows(app))
 	}
 }
-
 func addItemHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
 		wu := new(model.WebUnit)
@@ -486,8 +525,45 @@ func deleteFlowHandler(app *App) air.Handler {
 			return res.WriteString(fmt.Sprintf("Flow with UID %s not found", uid))
 		}
 
+		// Get flow details before removing from slice
+		flowToDelete := app.flows[foundIndex]
+		var flowConfig FlowConfig
+		switch flow := flowToDelete.(type) {
+		case *client.UDPFlow:
+			flowConfig = FlowConfig{
+				Title: flow.Title,
+				Addr:  flow.Addr.IP.String(),
+				Type:  "udp",
+			}
+		case *client.RabbitFlow:
+			rabbitModel := flow.ToCoTFlowModel()
+			flowConfig = FlowConfig{
+				Title: rabbitModel.Title,
+				Addr:  rabbitModel.Addr,
+				Type:  "rabbit",
+			}
+		}
+
 		// Remove the flow from the slice
 		app.flows = append(app.flows[:foundIndex], app.flows[foundIndex+1:]...)
+
+		// Delete the flow from the database
+		if app.DB != nil {
+			stmt, err := app.DB.Prepare("DELETE FROM flows WHERE uid = ?")
+			if err != nil {
+				app.logger.Error("failed to prepare delete statement for flow", "error", err)
+				// Continue without deleting from DB, but log the error
+			} else {
+				defer stmt.Close()
+				_, err := stmt.Exec(uid)
+				if err != nil {
+					app.logger.Error("failed to delete flow from database", "error", err, "flow", flowConfig)
+					// Continue without deleting from DB, but log the error
+				} else {
+					app.logger.Info("Flow deleted from database", "flow", flowConfig)
+				}
+			}
+		}
 
 		res.Status = 200
 		return res.WriteString("Flow deleted successfully")

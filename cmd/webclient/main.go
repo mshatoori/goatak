@@ -93,6 +93,8 @@ type App struct {
 
 	ipAddress string
 	urn       int32
+
+	DB *sql.DB
 }
 
 type CoTEventMutator struct {
@@ -222,11 +224,10 @@ func (app *App) Init() {
 			// Fallback to config loading if database cannot be opened
 			app.loadFlowsFromConfig()
 		} else {
-			defer db.Close()
-
 			// Create flows table if it doesn't exist
 			createTableSQL := `CREATE TABLE IF NOT EXISTS flows (
 				title TEXT,
+				uid TEXT,
 				addr TEXT NOT NULL,
 				port INTEGER NOT NULL,
 				type TEXT NOT NULL,
@@ -269,6 +270,7 @@ func (app *App) Init() {
 				}
 			}
 		}
+		app.DB = db
 	}
 
 	// Ensure default rabbit flow is created if no rabbit flows were loaded
@@ -327,7 +329,7 @@ func (app *App) saveFlowsToDatabase(db *sql.DB) {
 	}
 	defer tx.Rollback() // Rollback if not committed
 
-	stmt, err := tx.Prepare("INSERT INTO flows(title, addr, port, type, sendExchange, recvQueue) VALUES(?, ?, ?, ?, ?, ?)")
+	stmt, err := tx.Prepare("INSERT INTO flows(title, uid, addr, port, type, sendExchange, recvQueue) VALUES(?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		app.logger.Error("failed to prepare insert statement for flows", "error", err)
 		return
@@ -359,7 +361,7 @@ func (app *App) saveFlowsToDatabase(db *sql.DB) {
 			continue
 		}
 
-		_, err := stmt.Exec(flowConfig.Title, flowConfig.Addr, flowConfig.Port, flowConfig.Type, flowConfig.SendExchange, flowConfig.RecvQueue)
+		_, err := stmt.Exec(flowConfig.Title, flow.ToCoTFlowModel().UID, flowConfig.Addr, flowConfig.Port, flowConfig.Type, flowConfig.SendExchange, flowConfig.RecvQueue)
 		if err != nil {
 			app.logger.Error("failed to insert flow into database", "error", err, "flow", flowConfig)
 			return // Stop saving on first error
