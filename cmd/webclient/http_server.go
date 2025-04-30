@@ -54,7 +54,7 @@ func NewHttp(app *App, address string) *air.Air {
 
 	srv.GET("/flows", getFlowsHandler(app))
 	srv.POST("/flows", addFlowHandler(app))
-	// srv.DELETE("/flows/:uid", deleteFlowHandler(app))  // TODO
+	srv.DELETE("/flows/:uid", deleteFlowHandler(app))
 
 	srv.GET("/sensors", getSensorsHandler(app))
 	srv.POST("/sensors", addSensorHandler(app))
@@ -464,6 +464,34 @@ func getFlows(app *App) []*model.CoTFlow {
 	}
 
 	return cotFlows
+}
+
+func deleteFlowHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		uid := getStringParam(req, "uid")
+
+		// Find and remove the flow from the slice
+		foundIndex := -1
+		for i, flow := range app.flows {
+			if flow.ToCoTFlowModel().UID == uid {
+				// Stop the flow before removing it
+				flow.Stop()
+				foundIndex = i
+				break
+			}
+		}
+
+		if foundIndex == -1 {
+			res.Status = 404
+			return res.WriteString(fmt.Sprintf("Flow with UID %s not found", uid))
+		}
+
+		// Remove the flow from the slice
+		app.flows = append(app.flows[:foundIndex], app.flows[foundIndex+1:]...)
+
+		res.Status = 200
+		return res.WriteString("Flow deleted successfully")
+	}
 }
 
 func getStringParam(req *air.Request, name string) string {

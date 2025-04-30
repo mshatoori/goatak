@@ -194,7 +194,7 @@ func (h *RabbitFlow) handleRead(ctx context.Context) {
 	}
 
 	h.logger.Debug("RabbitFlow Handling read")
-	defer h.stopHandle()
+	defer h.Stop()
 
 	q, err := h.ch.QueueDeclare(
 		h.recvQueue, // name
@@ -317,14 +317,14 @@ func (h *RabbitFlow) handleWrite(ctx context.Context) {
 
 		if err != nil {
 			h.logger.Debug(fmt.Sprintf("RabbitFlow client %s write error %v", h.Addr, err))
-			h.stopHandle()
+			h.Stop()
 
 			break
 		}
 	}
 }
 
-func (h *RabbitFlow) stopHandle() {
+func (h *RabbitFlow) Stop() {
 	if atomic.CompareAndSwapInt32(&h.active, 1, 0) {
 		h.logger.Info("stopping")
 		h.cancel()

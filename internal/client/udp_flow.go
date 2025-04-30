@@ -31,6 +31,7 @@ type CoTFlow interface {
 	SendCot(msg *cotproto.TakMessage) error
 	GetType() string
 	ToCoTFlowModel() *model.CoTFlow
+	Stop()
 }
 
 type UDPFlowConfig struct {
@@ -131,7 +132,7 @@ func (h *UDPFlow) handleRead(ctx context.Context) {
 	}
 
 	h.logger.Debug("UDPFlow Handling read")
-	defer h.stopHandle()
+	defer h.Stop()
 
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf(":%d", h.Addr.Port))
 	if err != nil {
@@ -250,7 +251,7 @@ func (h *UDPFlow) handleWrite() {
 	}
 }
 
-func (h *UDPFlow) stopHandle() {
+func (h *UDPFlow) Stop() {
 	if atomic.CompareAndSwapInt32(&h.active, 1, 0) {
 		h.logger.Info("stopping")
 		h.cancel()
