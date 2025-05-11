@@ -23,19 +23,35 @@ services:
   #     - "8000:8000"
   #   networks:
   #       - mmhs
+  # map:
+  #   image: overv/openstreetmap-tile-server
+  #   volumes:
+  #     - ./data/:/data/database/
+  #     - ./iran-latest.osm.pbf:/data/region.osm.pbf
+  #     - ./iran-latest.poly:/data/region.poly
+  #   ports:
+  #     - "8000:80"
+  #   # environment:
+  #   #   - "FLAT_NODES=enabled"
+  #   shm_size: '2gb'
+  #   command: "run"
   map:
-    image: overv/openstreetmap-tile-server
-    volumes:
-      - ./data/:/data/database/
-      - ./iran-latest.osm.pbf:/data/region.osm.pbf
-      - ./iran-latest.poly:/data/region.poly
+    # image: ghcr.io/consbio/mbtileserver:latest
+    image: maptiler/tileserver-gl
     ports:
-      - "8000:80"
+      - "8000:8080"
     # environment:
-    #   - "FLAT_NODES=enabled"
-    shm_size: '2gb'
-    command: "import"
-
+    #   TILE_DIR: "/tiles"
+    volumes:
+      # - "./tiles:/tiles"
+      - "./tiles:/data"
+      - "./config.json:/config.json"
+    command:
+      - "--verbose"
+      - "-c"
+      - "/config.json"
+      - "--file"
+      - "/data/iran.mbtiles"
   gpsd:
     image: ghcr.io/mshatoori/docker-gpsd:latest
     ports:

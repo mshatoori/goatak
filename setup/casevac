@@ -1,0 +1,16 @@
+We want to add a new item type to the service. The new item type is called "Casevac" (code="b-r-f-h-c"). It is in the category/class "Report" (prefix="b-r-").
+Use `new_item.md` for more information how to implement this. Use the other implemented items in the files mentioned to get a sense of how you should do it.
+
+This is a sample item sent by a user with callsign "KIPPY" in xml format:
+
+```
+<event version="2.0" uid="43f63871-3af9-4e35-9759-4d34b0479816" type="b-r-f-h-c" time="2025-01-17T16:12:59Z" start="2025-01-17T16:12:59Z" stale="2025-01-18T16:12:59Z" how="h-g-i-g-o">
+    <point lat="51.3365455" lon="57.2030442" hae="9999999" ce="9999999" le="9999999" />
+    <detail>
+        <link type="a-f-G-U-C-I" uid="S-1-5-21-2673138965-3093045940-499191391-1001" parent_callsign="KIPPY" relation="p-p" production_time="2025-01-17T16:10:45Z" />
+        <remarks>test</remarks>
+        <_medevac_ title="MED.17.161045" casevac="false" freq="0.0" urgent="1" priority="2" routine="3" hoist="true" ventilator="true" equipment_other="true" equipment_detail="other" litter="1" ambulatory="2" security="2" hlz_marking="2" us_military="1" us_civilian="2" nonus_military="3" nonus_civilian="4" epw="5" child="6" terrain_slope="true" terrain_rough="true" obstacles="Sloping terrain to the E&#xA;Rough terrain" terrain_slope_dir="E" medline_remarks="test" zone_prot_selection="0" zone_protected_coord="40U EB 24833 88810" zone_prot_marker="51.3500249,57.3565908,NaN,NaN,NaN,???" />
+        <contact callsign="KIPPY" />
+    </detail>
+</event>
+```
