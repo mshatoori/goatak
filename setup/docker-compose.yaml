@@ -17,12 +17,25 @@ services:
       - ./goatak_client.yml:/app/goatak_client.yml
     networks:
       - mmhs
+  # map:
+  #   image: ghcr.io/mshatoori/goatak-maps:latest
+  #   ports:
+  #     - "8000:8000"
+  #   networks:
+  #       - mmhs
   map:
-    image: ghcr.io/mshatoori/goatak-maps:latest
+    image: overv/openstreetmap-tile-server
+    volumes:
+      - ./data/:/data/database/
+      - ./iran-latest.osm.pbf:/data/region.osm.pbf
+      - ./iran-latest.poly:/data/region.poly
     ports:
-      - "8000:8000"
-    networks:
-        - mmhs
+      - "8000:80"
+    # environment:
+    #   - "FLAT_NODES=enabled"
+    shm_size: '2gb'
+    command: "import"
+
   gpsd:
     image: ghcr.io/mshatoori/docker-gpsd:latest
     ports:
@@ -38,3 +51,6 @@ networks:
   mmhs:
     name: mmhs-network
     external: true
+
+volumes:
+  osm-data:

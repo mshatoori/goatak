@@ -91,6 +91,70 @@ func MakeAlarmMsg(unitUid string, drawingUid string) *cotproto.TakMessage {
 	return msg
 }
 
+func MakeCasevacMsg(uid string, lat, lon float64, remarks string, casevac bool, freq float64, urgent, priority, routine, litter, ambulatory, security, hlzMarking, usMilitary, usCivilian, nonusMilitary, nonusCivilian, epw, child int, hoist, ventilator, equipmentOther, terrainSlope, terrainRough bool, equipmentDetail, terrainSlopeDir, medlineRemarks, zoneProtSelection, zoneProtectedCoord, zoneProtMarker string) *cotproto.TakMessage {
+	msg := BasicMsg("b-r-f-h-c", uid, time.Hour)
+	msg.CotEvent.How = "h-g-i-g-o"
+	msg.CotEvent.Lat = lat
+	msg.CotEvent.Lon = lon
+
+	xd := NewXMLDetails()
+	if remarks != "" {
+		xd.AddChild("remarks", nil, remarks)
+	}
+
+	medevacAttrs := map[string]string{
+		"casevac": fmt.Sprintf("%t", casevac),
+		"freq": fmt.Sprintf("%f", freq),
+		"urgent": fmt.Sprintf("%d", urgent),
+		"priority": fmt.Sprintf("%d", priority),
+		"routine": fmt.Sprintf("%d", routine),
+		"hoist": fmt.Sprintf("%t", hoist),
+		"ventilator": fmt.Sprintf("%t", ventilator),
+		"equipment_other": fmt.Sprintf("%t", equipmentOther),
+		"equipment_detail": equipmentDetail,
+		"litter": fmt.Sprintf("%d", litter),
+		"ambulatory": fmt.Sprintf("%d", ambulatory),
+		"security": fmt.Sprintf("%d", security),
+		"hlz_marking": fmt.Sprintf("%d", hlzMarking),
+		"us_military": fmt.Sprintf("%d", usMilitary),
+		"us_civilian": fmt.Sprintf("%d", usCivilian),
+		"nonus_military": fmt.Sprintf("%d", nonusMilitary),
+		"nonus_civilian": fmt.Sprintf("%d", nonusCivilian),
+		"epw": fmt.Sprintf("%d", epw),
+		"child": fmt.Sprintf("%d", child),
+		"terrain_slope": fmt.Sprintf("%t", terrainSlope),
+		"terrain_rough": fmt.Sprintf("%t", terrainRough),
+		"terrain_slope_dir": terrainSlopeDir,
+		"medline_remarks": medlineRemarks,
+		"zone_prot_selection": zoneProtSelection,
+		"zone_protected_coord": zoneProtectedCoord,
+		"zone_prot_marker": zoneProtMarker,
+	}
+
+	// Add title separately as it's not always present in the sample, but is in the XML tag
+	medevacAttrs["title"] = "MED." + time.Now().Format("060102.150405") // Example title format
+
+	obstacles := ""
+	if terrainSlope {
+		obstacles += "Sloping terrain to the " + terrainSlopeDir
+	}
+	if terrainRough {
+		if obstacles != "" {
+			obstacles += "\n"
+		}
+		obstacles += "Rough terrain"
+	}
+	if obstacles != "" {
+		medevacAttrs["obstacles"] = obstacles
+	}
+
+	xd.AddChild("_medevac_", medevacAttrs, "")
+
+	msg.CotEvent.Detail = &cotproto.Detail{XmlDetail: xd.AsXMLString()}
+
+	return msg
+}
+
 func MakeFenceMsg(uid string, centerLat, centerLon, radius float64) *cotproto.TakMessage {
 	msg := BasicMsg("u-d-f", uid, time.Hour*24)
 

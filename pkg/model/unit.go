@@ -18,6 +18,7 @@ const (
 	CONTACT            = "contact"
 	DRAWING            = "drawing"
 	ROUTE              = "route"
+	REPORT             = "report"
 	MaxTrackPoints     = 5000
 )
 
@@ -173,6 +174,8 @@ func GetClass(msg *cot.CotMessage) string {
 		}
 	case cot.MatchAnyPattern(t, "b-m-r"):
 		return ROUTE
+	case strings.HasPrefix(t, "b-r-"):
+		return REPORT
 	case cot.MatchAnyPattern(t, "b-a-"):
 		return ALARM
 	case cot.MatchAnyPattern(t, "b-"):

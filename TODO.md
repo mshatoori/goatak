@@ -94,6 +94,7 @@
 
 
 # New Year TODOs
+- Add sourceSystem to every message json.
 - Ability to save configs & objects -> DB or Data Package (3 pts)
 - Features:
    - Track -> Keep locations in DB, Show in UI (3 pts)
