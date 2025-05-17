@@ -1,141 +1,3 @@
-function needIconUpdate(oldUnit, newUnit) {
-    if (oldUnit.sidc !== newUnit.sidc || oldUnit.status !== newUnit.status) return true;
-    if (oldUnit.speed !== newUnit.speed || oldUnit.direction !== newUnit.direction) return true;
-    if (oldUnit.team !== newUnit.team || oldUnit.role !== newUnit.role) return true;
-
-    if (newUnit.sidc.charAt(2) === 'A' && oldUnit.hae !== newUnit.hae) return true;
-    return false;
-}
-
-L.Marker.RotatedMarker = L.Marker.extend({
-    _reset: function () {
-        var pos = this._map.latLngToLayerPoint(this._latlng).round();
-
-        L.DomUtil.setPosition(this._icon, pos);
-        if (this._shadow) {
-            L.DomUtil.setPosition(this._shadow, pos);
-        }
-
-        if (this.options.iconAngle) {
-            this._icon.style.WebkitTransform = this._icon.style.WebkitTransform + ' rotate(' + this.options.iconAngle + 'deg)';
-            this._icon.style.TransformOrigin = 'center'
-        }
-
-        this._icon.style.zIndex = pos.y;
-    },
-
-    setIconAngle: function (iconAngle) {
-
-        if (this._map) {
-            this._removeIcon();
-        }
-
-        this.options.iconAngle = iconAngle;
-
-        if (this._map) {
-            this._initIcon();
-            this._reset();
-        }
-    }
-
-});
-
-var LocationControl = L.Control.extend({
-    options: {
-        position: 'bottomleft',
-    },
-
-    onAdd: function (map) {
-        var controlName = 'leaflet-control-location',
-            container = L.DomUtil.create('div', controlName + ' leaflet-bar'),
-            options = this.options;
-
-        this._button = this._createButton('<i class="bi bi-crosshair" id="map-locate-btn"></i>', 'My Location',
-            controlName + '-in', container, this._locate);
-
-        return container;
-    },
-
-    onRemove: function (map) {
-    },
-
-
-    _locate: function (e) {
-        if (!this._disabled && this._map.options.locateCallback) {
-            this._map.options.locateCallback(e);
-        }
-    },
-
-    _createButton: function (html, title, className, container, fn) {
-        var link = L.DomUtil.create('a', className, container);
-        link.innerHTML = html;
-        link.href = '#';
-        link.title = title;
-
-        /*
-         * Will force screen readers like VoiceOver to read this as "Zoom in - button"
-         */
-        link.setAttribute('role', 'button');
-        link.setAttribute('aria-label', title);
-
-        L.DomEvent.disableClickPropagation(link);
-        L.DomEvent.on(link, 'click', stop);
-        L.DomEvent.on(link, 'click', fn, this);
-        L.DomEvent.on(link, 'click', this._refocusOnMap, this);
-
-        return link;
-    }
-});
-
-var ToolsControl = L.Control.extend({
-    options: {
-        position: 'topleft',
-    },
-
-    onAdd: function (map) {
-        var controlName = 'leaflet-control-tools',
-            container = L.DomUtil.create('div', controlName + ' leaflet-bar'),
-            options = this.options;
-
-        this._unitButton = this._createButton('<i class="bi bi-plus-circle-fill" id="map-add-unit-btn"></i>', 'افزودن نیرو به نقشه',
-            controlName + '-in', container, this._addUnit);
-        // this._pointButton = this._createButton('<i class="bi bi-crosshair" id="map-add-point-btn"></i>', 'افزودن نقطه به نقشه',
-        //     controlName + '-in', container, this._locate);
-
-        return container;
-    },
-
-    onRemove: function (map) {
-    },
-
-
-    _addUnit: function (e) {
-        if (!this._disabled && this._map.options.changeMode) {
-            this._map.options.changeMode("add_unit");
-        }
-    },
-
-    _createButton: function (html, title, className, container, fn) {
-        var link = L.DomUtil.create('a', className, container);
-        link.innerHTML = html;
-        link.href = '#';
-        link.title = title;
-
-        /*
-         * Will force screen readers like VoiceOver to read this as "Zoom in - button"
-         */
-        link.setAttribute('role', 'button');
-        link.setAttribute('aria-label', title);
-
-        L.DomEvent.disableClickPropagation(link);
-        L.DomEvent.on(link, 'click', stop);
-        L.DomEvent.on(link, 'click', fn, this);
-        L.DomEvent.on(link, 'click', this._refocusOnMap, this);
-
-        return link;
-    }
-});
-
 let app = new Vue({
     el: '#app',
     data: {
@@ -166,22 +28,6 @@ let app = new Vue({
         chat_msg: "",
 
         sharedState: store.state,
-
-        new_out_flow: {
-            ip: '',
-            port: '',
-            outgoing: true,
-        },
-        new_in_flow: {
-            ip: '',
-            port: '',
-            outgoing: false,
-        },
-        new_sensor: {
-            ip: '',
-            port: '',
-            type: '',
-        },
 
         beacon_active: false,
     },
@@ -254,11 +100,9 @@ let app = new Vue({
         vm = this;
 
         const drawStart = function (event) {
-            console.log("IN DRAW MODE")
             vm.inDrawMode = true
         }
         const drawStop = function (event) {
-            console.log("OUT OF DRAW MODE")
             vm.inDrawMode = false
         }
 
@@ -269,8 +113,6 @@ let app = new Vue({
         this.map.on(L.Draw.Event.EDITSTOP, drawStop);
         this.map.on(L.Draw.Event.CREATED, function (event) {
             var layer = event.layer;
-
-            console.log("DRAWN:", event)
 
             if (event.layerType === "polygon") {
                 let uid = uuidv4();
@@ -309,7 +151,6 @@ let app = new Vue({
                 let lngSum = 0
 
                 layer.editing.latlngs[0][0].forEach((latlng) => {
-                    console.log(latlng)
                     latSum += latlng.lat
                     lngSum += latlng.lng
                     u.links.push(latlng.lat + "," + latlng.lng)
@@ -322,9 +163,6 @@ let app = new Vue({
                 u.geofence = false
                 u.geofence_aff = "All"
                 // u.geofence_send = false
-
-
-                console.log("TrySending:", u)
 
                 vm.sendUnit(u, function () {
                     vm.setCurrentUnitUid(u.uid, true);
@@ -367,7 +205,6 @@ let app = new Vue({
                 let lngSum = 0
 
                 layer.editing.latlngs[0].forEach((latlng) => {
-                    console.log(latlng)
                     latSum += latlng.lat
                     lngSum += latlng.lng
                     u.links.push(latlng.lat + "," + latlng.lng)
@@ -377,10 +214,6 @@ let app = new Vue({
                 u.lon = lngSum / layer.editing.latlngs[0].length
 
                 u.color = "white"
-                // u.geofence = false
-                // u.geofence_aff = "All"
-                // u.geofence_send = false
-
 
                 console.log("TrySending:", u)
 
@@ -389,8 +222,6 @@ let app = new Vue({
                     new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
                 });
             }
-
-            // vm.drawnItems.addLayer(layer);
         });
         this.map.on(L.Draw.Event.DRAWVERTEX, function (event) {
             console.log("DRAW VERTEX:", event)
@@ -1507,38 +1338,3 @@ let app = new Vue({
         }
     },
 });
-
-function popup(item) {
-    let v = '<b>' + item.callsign + '</b><br/>';
-    if (item.team) v += item.team + ' ' + item.role + '<br/>';
-    if (item.speed && item.speed > 0) v += 'Speed: ' + item.speed.toFixed(0) + ' m/s<br/>';
-    if (item.sidc.charAt(2) === 'A') {
-        v += "hae: " + item.hae.toFixed(0) + " m<br/>";
-    }
-    v += '<span dir="ltr">' + latLongToIso6709(item.lat, item.lon) + '</span><br/>';
-    v += item.text.replaceAll('\n', '<br/>').replaceAll('; ', '<br/>');
-    return v;
-}
-
-function latLongToIso6709(lat, lon) {
-    const isLatNegative = lat < 0;
-    const isLonNegative = lon < 0;
-    lat = Math.abs(lat);
-    lon = Math.abs(lon);
-
-    const degreesLat = Math.floor(lat);
-    const minutesLat = Math.floor((lat - degreesLat) * 60);
-    const decimalMinutesLat = (((lat - degreesLat) * 60 - minutesLat) * 60).toFixed(2);
-
-    const degreesLon = Math.floor(lon);
-    const minutesLon = Math.floor((lon - degreesLon) * 60);
-    const decimalMinutesLon = (((lon - degreesLon) * 60 - minutesLon) * 60).toFixed(2);
-
-    const latHemisphere = isLatNegative ? "S" : "N";
-    const lonHemisphere = isLonNegative ? "W" : "E";
-
-    const isoLat = degreesLat + '°' + minutesLat + '\'' + decimalMinutesLat + '\"' + latHemisphere;
-    const isoLon = degreesLon + '°' + minutesLon + '\'' + decimalMinutesLon + '\"' + lonHemisphere;
-
-    return isoLat + ' ' + isoLon;
-}
