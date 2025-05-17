@@ -124,6 +124,8 @@ func editSensorHandler(app *App) air.Handler {
 			}
 		} else if updatedSensorModel.Type == "Radar" {
 			updatedSensor = sensors.NewRadarSensor(updatedSensorModel, app.logger.With("logger", "radar"))
+			updatedSensor.(*sensors.RadarSensor).UID = uid
+
 		} else {
 			res.Status = 400
 			return res.WriteString(fmt.Sprintf("unsupported sensor type: %s", updatedSensorModel.Type))

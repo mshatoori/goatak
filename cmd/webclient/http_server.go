@@ -72,7 +72,7 @@ func NewHttp(app *App, address string) *air.Air {
 func getIndexHandler(app *App, r *staticfiles.Renderer) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
 		data := map[string]any{
-			"js": []string{"store.js", "util.js", "components.js", "map.js"},
+			"js": []string{"store.js", "utils.js", "components.js", "map.js"},
 		}
 
 		compf, err := staticfiles.StaticFiles.ReadDir("static/js/components")

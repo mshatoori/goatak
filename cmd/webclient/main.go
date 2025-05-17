@@ -22,7 +22,7 @@ import (
 	"syscall"
 	"time"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 
 	"github.com/peterstace/simplefeatures/geom"
 
@@ -219,7 +219,7 @@ func (app *App) Init() {
 			dbExists = true
 		}
 
-		db, err := sql.Open("sqlite3", dbPath)
+		db, err := sql.Open("sqlite", dbPath)
 		if err != nil {
 			app.logger.Error("failed to open database", "error", err)
 			// Fallback to config loading if database cannot be opened
