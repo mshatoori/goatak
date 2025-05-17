@@ -69,9 +69,9 @@ Vue.component("Sidebar", {
             this.deleteCurrentUnit()
             const triggerEl = document.querySelector('#v-pills-tab button[data-bs-target="#v-pills-overlays"]')
             bootstrap.Tab.getOrCreateInstance(triggerEl).show() // Select tab by name
-        }
+        },
     },
-    props: ["toggleOverlay", "config", "coords", "configUpdated", "current_unit", "locked_unit_uid", "deleteCurrentUnit", "checkEmergency", "map"],
+    props: ["toggleOverlay", "config", "coords", "configUpdated", "current_unit", "locked_unit_uid", "deleteCurrentUnit", "checkEmergency", "map", "casevacLocation", "onDoneCasevac"],
     inject: ["getTool", "removeTool"],
     template: /*html*/`
         <div class="d-flex align-items-start">
@@ -254,7 +254,7 @@ Vue.component("Sidebar", {
                                             }}
                                             <span class="badge rounded-pill bg-success" style="cursor:default;"
                                                   v-on:click="map.setView([current_unit.lat, current_unit.lon])"><i
-                                                    class="bi bi-geo"></i></span>
+                                                      class="bi bi-geo"></i></span>
                                             <span v-if="coords">({{ distBea(latlng(current_unit.lat, current_unit.lon), coords)
                                                         }}
                                                         تا نشانگر)</span></label>
@@ -338,6 +338,10 @@ Vue.component("Sidebar", {
                         </div>
                     </div>
                 </div>
+                 <div class="tab-pane fade" id="v-pills-casevac" role="tabpanel"
+                     aria-labelledby="v-pills-casevac-tab">
+                    <casevac-form :location="casevacLocation" :on-done="onDoneCasevac"></casevac-form>
+                </div>
             </div>
             <div class="nav flex-column nav-pills ms-2" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                 <button class="nav-link active" id="v-pills-overlays-tab" data-bs-toggle="pill"
@@ -356,6 +360,11 @@ Vue.component("Sidebar", {
                         data-bs-target="#v-pills-current-unit" type="button" role="tab"
                         aria-controls="v-pills-current-unit"
                         aria-selected="false" v-if="current_unit">{{ current_unit.callsign }}
+                </button>
+                 <button class="nav-link" id="v-pills-casevac-tab" data-bs-toggle="pill"
+                        data-bs-target="#v-pills-casevac" type="button" role="tab"
+                        aria-controls="v-pills-casevac"
+                        aria-selected="false" v-if="casevacLocation">Casevac
                 </button>
             </div>
         </div>

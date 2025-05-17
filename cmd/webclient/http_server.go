@@ -361,19 +361,17 @@ func addItemHandler(app *App) air.Handler {
 		}
 
 		var u *model.Item
-		if wu.Category == "unit" || wu.Category == "point" || wu.Category == "drawing" || wu.Category == "route" || wu.Category == "alarm" || wu.Category == "report" {
-			if u = app.items.Get(msg.GetUID()); u != nil {
-				u.Update(msg)
-				u.SetSend(wu.Send)
-				app.items.Store(u)
-				app.changeCb.AddMessage(u)
-			} else {
-				u = model.FromMsg(msg)
-				u.SetLocal(true)
-				u.SetSend(wu.Send)
-				app.items.Store(u)
-				app.changeCb.AddMessage(u)
-			}
+		if u = app.items.Get(msg.GetUID()); u != nil {
+			u.Update(msg)
+			u.SetSend(wu.Send)
+			app.items.Store(u)
+			app.changeCb.AddMessage(u)
+		} else {
+			u = model.FromMsg(msg)
+			u.SetLocal(true)
+			u.SetSend(wu.Send)
+			app.items.Store(u)
+			app.changeCb.AddMessage(u)
 		}
 
 		return res.WriteJSON(u.ToWeb())

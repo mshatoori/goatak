@@ -28,6 +28,8 @@ let app = new Vue({
         chat_msg: "",
 
         sharedState: store.state,
+        casevacLocation: null,
+        casevacMarker: null,
 
         beacon_active: false,
     },
@@ -63,6 +65,7 @@ let app = new Vue({
             point: L.layerGroup(),
             drawing: L.layerGroup(),
             route: L.layerGroup(),
+            report: L.layerGroup(),
         };
 
         for (const overlay of Object.values(this.overlays)) {
@@ -761,6 +764,20 @@ let app = new Vue({
                 this.mode = "map"
                 return;
             }
+            if (this.mode === "add_casevac") {
+                this.casevacLocation = e.latlng;
+                if (this.casevacMarker) {
+                    this.map.removeLayer(this.casevacMarker);
+                }
+                const redCrossIcon = L.icon({
+                    iconUrl: "/static/icons/x.png",//'/static/icons/red-cross.png',
+                    iconSize: [32, 32],
+                    iconAnchor: [16, 16],
+                });
+                this.casevacMarker = L.marker(this.casevacLocation, { icon: redCrossIcon }).addTo(this.map);
+                this.mode = "map"
+                return
+            }
             if (this.modeIs("redx")) {
                 this.addOrMove("redx", e.latlng, "/static/icons/x.png")
                 return;
@@ -1156,6 +1173,13 @@ let app = new Vue({
                 }
             }
         },
+        onDoneCasevac: function(u) {
+            this.map.removeLayer(this.casevacMarker);
+            if (u !== null) {
+                this.sendUnit(u)
+            }
+        },
+
 
         openFlows: function () {
             new bootstrap.Modal(document.getElementById('flows-modal')).show();
@@ -1174,7 +1198,7 @@ let app = new Vue({
 
         getMessages: function () {
             if (!this.chat_uid) {
-                return [];
+                return [];  
             }
 
             let msgs = this.messages[this.chat_uid] ? this.messages[this.chat_uid].messages : [];

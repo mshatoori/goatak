@@ -62,6 +62,9 @@ function getIconUri(item, withText) {
     if (item.category === "point") {
         return { uri: toUri(circle(16, item.color ?? 'green', '#000', null)), x: 8, y: 8 }
     }
+    if (item.type === "b-r-f-h-c") {
+        return { uri: "/static/icons/aimpoint.png", x: 16, y: 16 }
+    }
     return getMilIcon(item, withText);
 }
 
@@ -264,6 +267,8 @@ var ToolsControl = L.Control.extend({
 
         this._unitButton = this._createButton('<i class="bi bi-plus-circle-fill" id="map-add-unit-btn"></i>', 'افزودن نیرو به نقشه',
             controlName + '-in', container, this._addUnit);
+        this._casevacButton = this._createButton('<i class="bi bi-bandaid-fill" id="map-add-casevac-btn"></i>', 'افزودن گزارش Casevac',
+            controlName + '-in', container, this._addCasevac);
         // this._pointButton = this._createButton('<i class="bi bi-crosshair" id="map-add-point-btn"></i>', 'افزودن نقطه به نقشه',
         //     controlName + '-in', container, this._locate);
 
@@ -280,6 +285,12 @@ var ToolsControl = L.Control.extend({
         }
     },
 
+    _addCasevac: function (e) {
+        if (!this._disabled && this._map.options.changeMode) {
+            this._map.options.changeMode("add_casevac");
+        }
+    },
+
     _createButton: function (html, title, className, container, fn) {
         var link = L.DomUtil.create('a', className, container);
         link.innerHTML = html;
@@ -293,7 +304,7 @@ var ToolsControl = L.Control.extend({
         link.setAttribute('aria-label', title);
 
         L.DomEvent.disableClickPropagation(link);
-        L.DomEvent.on(link, 'click', stop);
+        // L.DomEvent.on(link, 'click', stop);
         L.DomEvent.on(link, 'click', fn, this);
         L.DomEvent.on(link, 'click', this._refocusOnMap, this);
 
