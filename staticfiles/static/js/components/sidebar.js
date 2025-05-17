@@ -244,23 +244,6 @@ Vue.component("Sidebar", {
                                         <label class="col-form-label" v-else>{{current_unit.type}}</label>
                                     </div>
                                 </div>
-<!--                                <div class="form-group row">-->
-<!--                                    <label-->
-<!--                                            for="input-sidc"-->
-<!--                                            class="col-sm-4 col-form-label font-weight-bold"-->
-<!--                                    ><strong>SIDC</strong></label-->
-<!--                                    >-->
-<!--                                    <div class="col-sm-8">-->
-<!--                                        <input-->
-<!--                                                type="text"-->
-<!--                                                class="form-control"-->
-<!--                                                id="input-sidc"-->
-<!--                                                v-model="current_unit.sidc"-->
-<!--                                                v-if="editing"-->
-<!--                                        />-->
-<!--                                        <label class="col-form-label" v-else>{{current_unit.sidc}}</label>-->
-<!--                                    </div>-->
-<!--                                </div>-->
                                 <div class="form-group row">
                                     <label
                                             class="col-sm-4 col-form-label font-weight-bold"

@@ -2,6 +2,7 @@ package cot
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -103,36 +104,36 @@ func MakeCasevacMsg(uid string, lat, lon float64, remarks string, casevac bool, 
 	}
 
 	medevacAttrs := map[string]string{
-		"casevac": fmt.Sprintf("%t", casevac),
-		"freq": fmt.Sprintf("%f", freq),
-		"urgent": fmt.Sprintf("%d", urgent),
-		"priority": fmt.Sprintf("%d", priority),
-		"routine": fmt.Sprintf("%d", routine),
-		"hoist": fmt.Sprintf("%t", hoist),
-		"ventilator": fmt.Sprintf("%t", ventilator),
-		"equipment_other": fmt.Sprintf("%t", equipmentOther),
-		"equipment_detail": equipmentDetail,
-		"litter": fmt.Sprintf("%d", litter),
-		"ambulatory": fmt.Sprintf("%d", ambulatory),
-		"security": fmt.Sprintf("%d", security),
-		"hlz_marking": fmt.Sprintf("%d", hlzMarking),
-		"us_military": fmt.Sprintf("%d", usMilitary),
-		"us_civilian": fmt.Sprintf("%d", usCivilian),
-		"nonus_military": fmt.Sprintf("%d", nonusMilitary),
-		"nonus_civilian": fmt.Sprintf("%d", nonusCivilian),
-		"epw": fmt.Sprintf("%d", epw),
-		"child": fmt.Sprintf("%d", child),
-		"terrain_slope": fmt.Sprintf("%t", terrainSlope),
-		"terrain_rough": fmt.Sprintf("%t", terrainRough),
-		"terrain_slope_dir": terrainSlopeDir,
-		"medline_remarks": medlineRemarks,
-		"zone_prot_selection": zoneProtSelection,
+		"casevac":              fmt.Sprintf("%t", casevac),
+		"freq":                 fmt.Sprintf("%f", freq),
+		"urgent":               fmt.Sprintf("%d", urgent),
+		"priority":             fmt.Sprintf("%d", priority),
+		"routine":              fmt.Sprintf("%d", routine),
+		"hoist":                fmt.Sprintf("%t", hoist),
+		"ventilator":           fmt.Sprintf("%t", ventilator),
+		"equipment_other":      fmt.Sprintf("%t", equipmentOther),
+		"equipment_detail":     equipmentDetail,
+		"litter":               fmt.Sprintf("%d", litter),
+		"ambulatory":           fmt.Sprintf("%d", ambulatory),
+		"security":             fmt.Sprintf("%d", security),
+		"hlz_marking":          fmt.Sprintf("%d", hlzMarking),
+		"us_military":          fmt.Sprintf("%d", usMilitary),
+		"us_civilian":          fmt.Sprintf("%d", usCivilian),
+		"nonus_military":       fmt.Sprintf("%d", nonusMilitary),
+		"nonus_civilian":       fmt.Sprintf("%d", nonusCivilian),
+		"epw":                  fmt.Sprintf("%d", epw),
+		"child":                fmt.Sprintf("%d", child),
+		"terrain_slope":        fmt.Sprintf("%t", terrainSlope),
+		"terrain_rough":        fmt.Sprintf("%t", terrainRough),
+		"terrain_slope_dir":    terrainSlopeDir,
+		"medline_remarks":      medlineRemarks,
+		"zone_prot_selection":  zoneProtSelection,
 		"zone_protected_coord": zoneProtectedCoord,
-		"zone_prot_marker": zoneProtMarker,
+		"zone_prot_marker":     zoneProtMarker,
 	}
 
 	// Add title separately as it's not always present in the sample, but is in the XML tag
-	medevacAttrs["title"] = "MED." + time.Now().Format("060102.150405") // Example title format
+	medevacAttrs["title"] = "MED." + time.Now().Format("060102.150405")
 
 	obstacles := ""
 	if terrainSlope {
@@ -179,4 +180,14 @@ func MakeFenceMsg(uid string, centerLat, centerLon, radius float64) *cotproto.Ta
 	}
 
 	return msg
+}
+
+func ParseFloat(s string) float64 {
+	r, _ := strconv.ParseFloat(s, 64)
+	return r
+}
+
+func ParseInt(s string) int {
+	r, _ := strconv.ParseInt(s, 10, 64)
+	return int(r)
 }

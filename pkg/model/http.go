@@ -191,8 +191,6 @@ func (i *Item) ToWeb() *WebUnit {
 		GeofenceAff:    msg.GetGeofenceAff(),
 	}
 
-	}
-
 	if i.class == REPORT && strings.HasPrefix(i.GetType(), "b-r-f-h-c") {
 		if medevacDetail := i.msg.Detail.GetFirst("_medevac_"); medevacDetail != nil {
 			w.CasevacDetail = &CasevacDetail{

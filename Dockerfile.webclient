@@ -1,6 +1,14 @@
 # FROM docker.arvancloud.ir/golang:alpine AS builder
 FROM docker.repos.balad.ir/golang:alpine AS builder
 
+ENV CGO_ENABLED=1
+
+RUN apk add --no-cache \
+    # Important: required for go-sqlite3
+    gcc \
+    # Required for Alpine
+    musl-dev
+
 ARG branch
 ARG commit
 ARG https_proxy

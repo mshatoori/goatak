@@ -28,3 +28,6 @@ me:
 # Default Destination for sending data over datalink
 default_dest_ip: "255.255.255.255"
 default_dest_urn: 16777215
+
+database:
+  path: config.sqlite3
