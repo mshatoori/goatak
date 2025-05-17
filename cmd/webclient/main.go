@@ -996,7 +996,7 @@ func (app *App) createDefaultRabbitFlow() {
 	})
 
 	app.defaultRabbitFlow = newFlow
-	app.flows = append(app.flows, newFlow)
+	app.flows = append([]client.CoTFlow{newFlow}, app.flows...)
 }
 
 func (app *App) forceLocationUpdate() {

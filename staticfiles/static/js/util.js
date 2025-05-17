@@ -268,6 +268,21 @@ var store = {
             .then(response => this.state.sensors = response);
     },
 
+    editSensor(sensorData) {
+        const sensorJson = {
+            ...sensorData,
+            port: parseInt(sensorData.port),
+            interval: parseInt(sensorData.interval)
+        }
+        fetch(`/sensors/${sensorData.uid}`, {
+            headers: {"Content-Type": "application/json"},
+            method: "PUT",
+            body: JSON.stringify(sensorJson)
+        })
+            .then(response => response.json())
+            .then(response => this.state.sensors = response);
+    },
+
     // Flows
     createFlow(flowData) {
         const flowJson = {
