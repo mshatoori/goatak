@@ -67,7 +67,7 @@ services:
 networks:
   mmhs:
     name: mmhs-network
-    external: true
+    # external: true
 
 volumes:
   osm-data:
