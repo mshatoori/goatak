@@ -1,80 +1,87 @@
 Vue.component("CasevacForm", {
-    props: ["location", "onDone"],
-    data: function () {
-        return {
-            casevacDetails: {
-                casevac: true, // Default to true as it's a Casevac form
-                freq: 0,
-                urgent: 0,
-                priority: 0,
-                routine: 0,
-                hoist: false,
-                ventilator: false,
-                equipment_other: false,
-                equipment_detail: "",
-                litter: 0,
-                ambulatory: 0,
-                security: 0,
-                hlz_marking: 0,
-                us_military: 0,
-                us_civilian: 0,
-                nonus_military: 0,
-                nonus_civilian: 0,
-                epw: 0,
-                child: 0,
-                terrain_slope: false,
-                terrain_rough: false,
-                obstacles: "",
-                terrain_slope_dir: "",
-                medline_remarks: "",
-                zone_prot_selection: "",
-                zone_protected_coord: "",
-                zone_prot_marker: "",
-            },
-            remarks: "",
-        };
+  props: ["location", "onDone"],
+  data: function () {
+    return {
+      casevacDetails: {
+        casevac: true, // Default to true as it's a Casevac form
+        freq: 0,
+        urgent: 0,
+        priority: 0,
+        routine: 0,
+        hoist: false,
+        ventilator: false,
+        equipment_other: false,
+        equipment_detail: "",
+        litter: 0,
+        ambulatory: 0,
+        security: 0,
+        hlz_marking: 0,
+        us_military: 0,
+        us_civilian: 0,
+        nonus_military: 0,
+        nonus_civilian: 0,
+        epw: 0,
+        child: 0,
+        terrain_slope: false,
+        terrain_rough: false,
+        obstacles: "",
+        terrain_slope_dir: "",
+        medline_remarks: "",
+        zone_prot_selection: "",
+        zone_protected_coord: "",
+        zone_prot_marker: "",
+      },
+      remarks: "",
+    };
+  },
+  methods: {
+    printCoords: function (lat, lng) {
+      return lat.toFixed(6) + "," + lng.toFixed(6);
     },
-    methods: {
-        printCoords: function (lat, lng) {
-            return lat.toFixed(6) + "," + lng.toFixed(6);
-        },
-        sendCasevac: function () {
-            let now = new Date();
-            let stale = new Date(now);
-            stale.setDate(stale.getDate() + 365);
-            let u = {
-                uid: "__NEW__",
-                category: "report",
-                callsign: "MED." + now.getDay() + "." + now.getHours() + "" + now.getMinutes() + "" + now.getSeconds(),
-                sidc: "",
-                start_time: now,
-                last_seen: now,
-                stale_time: stale,
-                type: "b-r-f-h-c",
-                lat: this.location.lat,
-                lon: this.location.lng,
-                hae: 0,
-                speed: 0,
-                course: 0,
-                status: "",
-                text: "",
-                parent_uid: "",
-                parent_callsign: "",
-                local: true,
-                send: true,
-                web_sensor: "",
-                remarks: this.remarks,
-                casevac_detail: this.casevac_detail,
-            }
-            if (this.config && this.config.uid) {
-                u.parent_uid = this.config.uid;
-                u.parent_callsign = this.config.callsign;
-            }
-            this.onDone(u);
-        }
-
+    sendCasevac: function () {
+      let now = new Date();
+      let stale = new Date(now);
+      stale.setDate(stale.getDate() + 365);
+      let u = {
+        uid: "__NEW__",
+        category: "report",
+        callsign:
+          "MED." +
+          now.getDay() +
+          "." +
+          now.getHours() +
+          "" +
+          now.getMinutes() +
+          "" +
+          now.getSeconds(),
+        sidc: "",
+        start_time: now,
+        last_seen: now,
+        stale_time: stale,
+        type: "b-r-f-h-c",
+        lat: this.location.lat,
+        lon: this.location.lng,
+        hae: 0,
+        speed: 0,
+        course: 0,
+        status: "",
+        text: "",
+        parent_uid: "",
+        parent_callsign: "",
+        local: true,
+        send: true,
+        web_sensor: "",
+        remarks: this.remarks,
+        casevac_detail: this.casevac_detail,
+      };
+      if (this.config && this.config.uid) {
+        u.parent_uid = this.config.uid;
+        u.parent_callsign = this.config.callsign;
+      }
+      this.onDone(u);
     },
-    template: `
+  },
+  template: `
         <div class="card">
             <div class="card-header">
                 گزارش درخواست امداد

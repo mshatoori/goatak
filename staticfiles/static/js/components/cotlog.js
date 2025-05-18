@@ -1,18 +1,14 @@
 // const var html = String.raw;
-Vue.component('CotLog', {
-    data: function () {
-        return {
-            sharedState: store.state,
-        }
-    },
-    props: ['units'],
-    methods: {
-
-    },
-    computed: {
-
-    },
-    template: `
+Vue.component("CotLog", {
+  data: function () {
+    return {
+      sharedState: store.state,
+    };
+  },
+  props: ["units"],
+  methods: {},
+  computed: {},
+  template: `
     <div class="accordion-item mb-1">
       <div class="accordion-header">
       <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCotLog" aria-expanded="true" aria-controls="collapseCotLog">
@@ -26,5 +22,5 @@ Vue.component('CotLog', {
             </ul>
         </div>
       </div>
-    </div>`
-})
+    </div>`,
+});

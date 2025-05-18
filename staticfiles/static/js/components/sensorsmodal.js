@@ -10,7 +10,8 @@ Vue.component("SensorsModal", {
       },
       sharedState: store.state,
       editingSensorUid: null, // Add this to track the sensor being edited
-      editedSensor: { // Add this to hold the data of the sensor being edited
+      editedSensor: {
+        // Add this to hold the data of the sensor being edited
         type: "",
         title: "",
         addr: "",
@@ -25,22 +26,22 @@ Vue.component("SensorsModal", {
       store.createSensor({ ...this.newSensor });
     },
     removeSensor: function (uid) {
-      console.log("Removing Sensor: ", uid)
+      console.log("Removing Sensor: ", uid);
       store.removeSensor(uid);
     },
-    startEditing: function(sensor) {
-        this.editingSensorUid = sensor.uid;
-        this.editedSensor = { ...sensor }; // Copy sensor data to editedSensor
+    startEditing: function (sensor) {
+      this.editingSensorUid = sensor.uid;
+      this.editedSensor = { ...sensor }; // Copy sensor data to editedSensor
     },
-    cancelEditing: function() {
-        this.editingSensorUid = null;
-        this.editedSensor = {}; // Clear editedSensor data
+    cancelEditing: function () {
+      this.editingSensorUid = null;
+      this.editedSensor = {}; // Clear editedSensor data
     },
-    editSensor: function() {
-        console.log("Saving Sensor:", this.editedSensor);
-        store.editSensor({ uid: this.editingSensorUid, ...this.editedSensor });
-        this.cancelEditing(); // Exit editing mode after saving
-    }
+    editSensor: function () {
+      console.log("Saving Sensor:", this.editedSensor);
+      store.editSensor({ uid: this.editingSensorUid, ...this.editedSensor });
+      this.cancelEditing(); // Exit editing mode after saving
+    },
   },
   computed: {
     allSensors: function () {

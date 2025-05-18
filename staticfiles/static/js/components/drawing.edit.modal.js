@@ -1,20 +1,20 @@
-Vue.component('DrawingEditModal', {
-    data: function () {
-        return {
-            sharedState: store.state,
-        }
+Vue.component("DrawingEditModal", {
+  data: function () {
+    return {
+      sharedState: store.state,
+    };
+  },
+  methods: {},
+  computed: {
+    is_geofence_active: function () {
+      return this.unit.geofence;
     },
-    methods: {},
-    computed: {
-        is_geofence_active: function () {
-            return this.unit.geofence;
-        },
-        isPolygon() {
-            return this.unit.type === 'u-d-f';
-        }
+    isPolygon() {
+      return this.unit.type === "u-d-f";
     },
-    props: ["unit", "cancelEditForm", "saveEditForm"],
-    template: `
+  },
+  props: ["unit", "cancelEditForm", "saveEditForm"],
+  template: `
         <div class="modal fade" id="drawing-edit" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
@@ -91,5 +91,5 @@ Vue.component('DrawingEditModal', {
                 </div>
             </div>
         </div>
-    `
-})
+    `,
+});
