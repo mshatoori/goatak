@@ -36,12 +36,9 @@ let app = new Vue({
   provide: function () {
     return {
       map: this.map,
-      printCoords: this.printCoords,
-      distBea: this.distBea,
       latlng: this.latlng,
       config: this.config,
       getTool: this.getTool,
-      printCoordsll: this.printCoordsll,
       removeTool: this.removeTool,
       coords: this.coords,
       current_unit: this.current_unit,
@@ -803,13 +800,13 @@ let app = new Vue({
         if (this.casevacMarker) {
           this.map.removeLayer(this.casevacMarker);
         }
-        const redCrossIcon = L.icon({
-          iconUrl: "/static/icons/x.png", //'/static/icons/red-cross.png',
+        const casevacIcon = L.icon({
+          iconUrl: "/static/icons/casevac.svg",
           iconSize: [32, 32],
           iconAnchor: [16, 16],
         });
         this.casevacMarker = L.marker(this.casevacLocation, {
-          icon: redCrossIcon,
+          icon: casevacIcon,
         }).addTo(this.map);
         this.mode = "map";
         return;
@@ -1126,52 +1123,6 @@ let app = new Vue({
       this.ts++;
     },
 
-    printCoordsll: function (latlng) {
-      return this.printCoords(latlng.lat, latlng.lng);
-    },
-
-    printCoords: function (lat, lng) {
-      return lat.toFixed(6) + "," + lng.toFixed(6);
-    },
-
-    latlng: function (lat, lon) {
-      return L.latLng(lat, lon);
-    },
-
-    distBea: function (p1, p2) {
-      let toRadian = Math.PI / 180;
-      // haversine formula
-      // bearing
-      let y =
-        Math.sin((p2.lng - p1.lng) * toRadian) * Math.cos(p2.lat * toRadian);
-      let x =
-        Math.cos(p1.lat * toRadian) * Math.sin(p2.lat * toRadian) -
-        Math.sin(p1.lat * toRadian) *
-          Math.cos(p2.lat * toRadian) *
-          Math.cos((p2.lng - p1.lng) * toRadian);
-      let brng = (Math.atan2(y, x) * 180) / Math.PI;
-      brng += brng < 0 ? 360 : 0;
-      // distance
-      let R = 6371000; // meters
-      let deltaF = (p2.lat - p1.lat) * toRadian;
-      let deltaL = (p2.lng - p1.lng) * toRadian;
-      let a =
-        Math.sin(deltaF / 2) * Math.sin(deltaF / 2) +
-        Math.cos(p1.lat * toRadian) *
-          Math.cos(p2.lat * toRadian) *
-          Math.sin(deltaL / 2) *
-          Math.sin(deltaL / 2);
-      let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      let distance = R * c;
-      return (
-        (distance < 10000
-          ? distance.toFixed(0) + "m "
-          : (distance / 1000).toFixed(1) + "km ") +
-        brng.toFixed(1) +
-        "°T"
-      );
-    },
-
     contactsNum: function () {
       let online = 0;
       let total = 0;
@@ -1250,6 +1201,7 @@ let app = new Vue({
     },
     onDoneCasevac: function (u) {
       this.map.removeLayer(this.casevacMarker);
+      this.casevacLocation = null;
       if (u !== null) {
         this.sendUnit(u);
       }

@@ -71,7 +71,7 @@ function getIconUri(item, withText) {
     };
   }
   if (item.type === "b-r-f-h-c") {
-    return { uri: "/static/icons/aimpoint.png", x: 16, y: 16 };
+    return { uri: "/static/icons/casevac.svg", x: 16, y: 16 };
   }
   return getMilIcon(item, withText);
 }
@@ -114,6 +114,12 @@ function getIcon(item, withText) {
     iconAnchor: [img.x, img.y],
   });
 }
+
+Vue.prototype.Utils = {
+  getIconUri: getIconUri,
+  getMilIcon: getMilIcon,
+  getIcon: getIcon,
+};
 
 function circle(size, color, bg, text) {
   let x = Math.round(size / 2);
@@ -163,6 +169,71 @@ function dt(str) {
   );
 }
 
+function printCoordsll(latlng) {
+  return Vue.prototype.Utils.printCoords(latlng.lat, latlng.lng);
+}
+
+function printCoords(lat, lng) {
+  return lat.toFixed(6) + "," + lng.toFixed(6);
+}
+
+function latlng(lat, lon) {
+  return L.latLng(lat, lon);
+}
+
+function distBea(p1, p2) {
+  let toRadian = Math.PI / 180;
+  // haversine formula
+  // bearing
+  let y = Math.sin((p2.lng - p1.lng) * toRadian) * Math.cos(p2.lat * toRadian);
+  let x =
+    Math.cos(p1.lat * toRadian) * Math.sin(p2.lat * toRadian) -
+    Math.sin(p1.lat * toRadian) *
+      Math.cos(p2.lat * toRadian) *
+      Math.cos((p2.lng - p1.lng) * toRadian);
+  let brng = (Math.atan2(y, x) * 180) / Math.PI;
+  brng += brng < 0 ? 360 : 0;
+  // distance
+  let R = 6371000; // meters
+  let deltaF = (p2.lat - p1.lat) * toRadian;
+  let deltaL = (p2.lng - p1.lng) * toRadian;
+  let a =
+    Math.sin(deltaF / 2) * Math.sin(deltaF / 2) +
+    Math.cos(p1.lat * toRadian) *
+      Math.cos(p2.lat * toRadian) *
+      Math.sin(deltaL / 2) *
+      Math.sin(deltaL / 2);
+  let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  let distance = R * c;
+  return (
+    (distance < 10000
+      ? distance.toFixed(0) + "m "
+      : (distance / 1000).toFixed(1) + "km ") +
+    brng.toFixed(1) +
+    "°T"
+  );
+}
+
+function formatDt(str) {
+  // Renamed the second dt to formatDt
+  let d = new Date(Date.parse(str));
+  return (
+    ("0" + d.getDate()).slice(-2) +
+    "-" +
+    ("0" + (d.getMonth() + 1)).slice(-2) +
+    "-" +
+    d.getFullYear() +
+    " " +
+    ("0" + d.getHours()).slice(-2) +
+    ":" +
+    ("0" + d.getMinutes()).slice(-2)
+  );
+}
+
+function sp(v) {
+  return (v * 3.6).toFixed(1);
+}
+
 function toUri(s) {
   return encodeURI("data:image/svg+xml," + s).replaceAll("#", "%23");
 }
@@ -175,6 +246,7 @@ function uuidv4() {
     ).toString(16)
   );
 }
+
 function popup(item) {
   let v = "<b>" + item.callsign + "</b><br/>";
   if (item.team) v += item.team + " " + item.role + "<br/>";
@@ -231,6 +303,7 @@ function latLongToIso6709(lat, lon) {
 
   return isoLat + " " + isoLon;
 }
+
 function needIconUpdate(oldUnit, newUnit) {
   if (oldUnit.sidc !== newUnit.sidc || oldUnit.status !== newUnit.status)
     return true;
@@ -246,6 +319,25 @@ function needIconUpdate(oldUnit, newUnit) {
     return true;
   return false;
 }
+
+Vue.prototype.Utils = {
+  getIconUri: getIconUri,
+  getMilIcon: getMilIcon,
+  getIcon: getIcon,
+  circle: circle,
+  dt: dt,
+  printCoordsll: printCoordsll,
+  printCoords: printCoords,
+  latlng: latlng,
+  distBea: distBea,
+  dt: formatDt, // Renamed the second dt to formatDt
+  sp: sp,
+  toUri: toUri,
+  uuidv4: uuidv4,
+  popup: popup,
+  latLongToIso6709: latLongToIso6709,
+  needIconUpdate: needIconUpdate,
+};
 
 L.Marker.RotatedMarker = L.Marker.extend({
   _reset: function () {

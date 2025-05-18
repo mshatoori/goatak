@@ -1,7 +1,3 @@
-if (typeof html !== "undefined") {
-  var html = String.raw;
-}
-
 Vue.component("UserInfo", {
   data: function () {
     return {
@@ -49,7 +45,7 @@ Vue.component("UserInfo", {
   },
   computed: {},
   props: ["config", "coords", "configUpdated", "map", "checkEmergency"],
-  inject: ["printCoords", "distBea", "latlng"],
+  inject: [],
   template: html`
     <div class="card">
       <h5 class="card-header">
@@ -142,7 +138,7 @@ Vue.component("UserInfo", {
             </label>
             <div class="col-sm-8">
               <label class="col-form-label">
-                {{ printCoords(config.lat, config.lon) }}</label
+                {{ Utils.printCoords(config.lat, config.lon) }}</label
               >
               <span
                 class="badge rounded-pill bg-success"
@@ -151,8 +147,8 @@ Vue.component("UserInfo", {
                 ><i class="bi bi-geo"></i
               ></span>
               <span v-if="coords"
-                >({{ distBea(latlng(config.lat, config.lon), coords) }} تا
-                نشانگر)</span
+                >({{ Utils.distBea(Utils.latlng(config.lat, config.lon), coords)
+                }} تا نشانگر)</span
               >
             </div>
           </div>

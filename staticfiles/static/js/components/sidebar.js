@@ -6,10 +6,6 @@ Vue.component("Sidebar", {
     };
   },
   methods: {
-    getImg: function (item) {
-      return getIconUri(item, false).uri;
-    },
-
     milImg: function (item) {
       return getMilIcon(item, false).uri;
     },
@@ -24,77 +20,31 @@ Vue.component("Sidebar", {
       }
       return res;
     },
-    printCoordsll: function (latlng) {
-      return this.printCoords(latlng.lat, latlng.lng);
+
+    switchTab: function (tabName) {
+      const triggerEl = document.querySelector(`#v-pills-${tabName}-tab`);
+      if (triggerEl) {
+        bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+      }
     },
 
-    printCoords: function (lat, lng) {
-      return lat.toFixed(6) + "," + lng.toFixed(6);
-    },
-
-    latlng: function (lat, lon) {
-      return L.latLng(lat, lon);
-    },
-
-    distBea: function (p1, p2) {
-      let toRadian = Math.PI / 180;
-      // haversine formula
-      // bearing
-      let y =
-        Math.sin((p2.lng - p1.lng) * toRadian) * Math.cos(p2.lat * toRadian);
-      let x =
-        Math.cos(p1.lat * toRadian) * Math.sin(p2.lat * toRadian) -
-        Math.sin(p1.lat * toRadian) *
-          Math.cos(p2.lat * toRadian) *
-          Math.cos((p2.lng - p1.lng) * toRadian);
-      let brng = (Math.atan2(y, x) * 180) / Math.PI;
-      brng += brng < 0 ? 360 : 0;
-      // distance
-      let R = 6371000; // meters
-      let deltaF = (p2.lat - p1.lat) * toRadian;
-      let deltaL = (p2.lng - p1.lng) * toRadian;
-      let a =
-        Math.sin(deltaF / 2) * Math.sin(deltaF / 2) +
-        Math.cos(p1.lat * toRadian) *
-          Math.cos(p2.lat * toRadian) *
-          Math.sin(deltaL / 2) *
-          Math.sin(deltaL / 2);
-      let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      let distance = R * c;
-      return (
-        (distance < 10000
-          ? distance.toFixed(0) + "m "
-          : (distance / 1000).toFixed(1) + "km ") +
-        brng.toFixed(1) +
-        "°T"
-      );
-    },
-    dt: function (str) {
-      let d = new Date(Date.parse(str));
-      return (
-        ("0" + d.getDate()).slice(-2) +
-        "-" +
-        ("0" + (d.getMonth() + 1)).slice(-2) +
-        "-" +
-        d.getFullYear() +
-        " " +
-        ("0" + d.getHours()).slice(-2) +
-        ":" +
-        ("0" + d.getMinutes()).slice(-2)
-      );
-    },
-
-    sp: function (v) {
-      return (v * 3.6).toFixed(1);
-    },
     deleteCurrent: function () {
       this.deleteCurrentUnit();
-      const triggerEl = document.querySelector(
-        '#v-pills-tab button[data-bs-target="#v-pills-overlays"]'
-      );
-      bootstrap.Tab.getOrCreateInstance(triggerEl).show(); // Select tab by name
+      this.switchTab("overlays");
     },
   },
+
+  watch: {
+    casevacLocation: function (newVal) {
+      if (newVal) {
+        this.$nextTick(() => this.switchTab("casevac"));
+      }
+    },
+    current_unit: function (newVal, oldVal) {
+      this.$nextTick(() => this.switchTab("current-unit"));
+    },
+  },
+
   props: [
     "toggleOverlay",
     "config",
@@ -201,7 +151,7 @@ Vue.component("Sidebar", {
               </li>
               <li v-if="getTool('redx')" class="mt-1 list-group-item">
                 <span class="badge bg-danger">نشان</span>: {{
-                printCoordsll(getTool('redx').getLatLng()) }}
+                Utils.printCoordsll(getTool('redx').getLatLng()) }}
                 <span
                   class="badge rounded-pill bg-success"
                   style="cursor:default;"
@@ -217,9 +167,9 @@ Vue.component("Sidebar", {
               </li>
               <li v-if="coords" class="mt-1 list-group-item">
                 <span class="badge bg-secondary">نشانگر</span>: {{
-                printCoordsll(coords) }}
+                Utils.printCoordsll(coords) }}
                 <span v-if="getTool('redx')"
-                  >({{ distBea(getTool('redx').getLatLng(), coords) }} از
+                  >({{ Utils.distBea(getTool('redx').getLatLng(), coords) }} از
                   نشانگر)</span
                 >
               </li>
@@ -386,7 +336,8 @@ Vue.component("Sidebar", {
                   >
                   <div class="col-sm-8">
                     <label class="col-form-label"
-                      >{{ printCoords(current_unit.lat, current_unit.lon) }}
+                      >{{ Utils.printCoords(current_unit.lat, current_unit.lon)
+                      }}
                       <span
                         class="badge rounded-pill bg-success"
                         style="cursor:default;"
@@ -394,8 +345,8 @@ Vue.component("Sidebar", {
                         ><i class="bi bi-geo"></i
                       ></span>
                       <span v-if="coords"
-                        >({{ distBea(latlng(current_unit.lat, current_unit.lon),
-                        coords) }} تا نشانگر)</span
+                        >({{ Utils.distBea(Utils.latlng(current_unit.lat,
+                        current_unit.lon), coords) }} تا نشانگر)</span
                       ></label
                     >
                   </div>
@@ -406,7 +357,7 @@ Vue.component("Sidebar", {
                   >
                   <div class="col-sm-8">
                     <label class="col-form-label"
-                      >{{sp(current_unit.speed)}} KM/H</label
+                      >{{Utils.sp(current_unit.speed)}} KM/H</label
                     >
                   </div>
                 </div>
@@ -442,7 +393,7 @@ Vue.component("Sidebar", {
                   >
                   <div class="col-sm-8">
                     <label class="col-form-label"
-                      >{{ dt(current_unit.start_time) }}</label
+                      >{{ Utils.dt(current_unit.start_time) }}</label
                     >
                   </div>
                 </div>
@@ -452,7 +403,7 @@ Vue.component("Sidebar", {
                   >
                   <div class="col-sm-8">
                     <label class="col-form-label"
-                      >{{ dt(current_unit.send_time) }}</label
+                      >{{ Utils.dt(current_unit.send_time) }}</label
                     >
                   </div>
                 </div>
@@ -462,7 +413,7 @@ Vue.component("Sidebar", {
                   >
                   <div class="col-sm-8">
                     <label class="col-form-label"
-                      >{{ dt(current_unit.stale_time) }}</label
+                      >{{ Utils.dt(current_unit.stale_time) }}</label
                     >
                   </div>
                 </div>
@@ -491,6 +442,7 @@ Vue.component("Sidebar", {
           id="v-pills-casevac"
           role="tabpanel"
           aria-labelledby="v-pills-casevac-tab"
+          v-if="casevacLocation"
         >
           <casevac-form
             :location="casevacLocation"

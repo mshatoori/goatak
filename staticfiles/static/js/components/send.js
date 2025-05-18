@@ -1,6 +1,3 @@
-if (typeof html !== "undefined") {
-  var html = String.raw;
-}
 Vue.component("SendModal", {
   data: function () {
     return {

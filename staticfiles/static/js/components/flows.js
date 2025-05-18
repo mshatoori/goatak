@@ -1,6 +1,3 @@
-if (typeof html !== "undefined") {
-  var html = String.raw;
-}
 Vue.component("FlowsModal", {
   data: function () {
     return {

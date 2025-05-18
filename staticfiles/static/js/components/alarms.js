@@ -1,7 +1,3 @@
-if (typeof html !== "undefined") {
-  var html = String.raw;
-}
-
 Vue.component("AlarmsModal", {
   data: function () {
     return {
