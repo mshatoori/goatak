@@ -92,7 +92,7 @@ func MakeAlarmMsg(unitUid string, drawingUid string) *cotproto.TakMessage {
 	return msg
 }
 
-func MakeCasevacMsg(uid string, lat, lon float64, remarks string, casevac bool, freq float64, urgent, priority, routine, litter, ambulatory, security, hlzMarking, usMilitary, usCivilian, nonusMilitary, nonusCivilian, epw, child int, hoist, ventilator, equipmentOther, terrainSlope, terrainRough bool, equipmentDetail, terrainSlopeDir, medlineRemarks, zoneProtSelection, zoneProtectedCoord, zoneProtMarker string) *cotproto.TakMessage {
+func MakeCasevacMsg(uid string, lat, lon float64, remarks string, casevac bool, freq float64, urgent, priority, routine, litter, ambulatory, security, hlzMarking, usMilitary, usCivilian, nonusMilitary, nonusCivilian, epw, child int, hoist, extractionEquipment, ventilator, equipmentOther, terrainSlope, terrainRough bool, equipmentDetail, terrainSlopeDir, medlineRemarks, zoneProtSelection, zoneProtectedCoord, zoneProtMarker string) *cotproto.TakMessage {
 	msg := BasicMsg("b-r-f-h-c", uid, time.Hour)
 	msg.CotEvent.How = "h-g-i-g-o"
 	msg.CotEvent.Lat = lat
@@ -110,6 +110,7 @@ func MakeCasevacMsg(uid string, lat, lon float64, remarks string, casevac bool, 
 		"priority":             fmt.Sprintf("%d", priority),
 		"routine":              fmt.Sprintf("%d", routine),
 		"hoist":                fmt.Sprintf("%t", hoist),
+		"extraction_equipment": fmt.Sprintf("%t", extractionEquipment),
 		"ventilator":           fmt.Sprintf("%t", ventilator),
 		"equipment_other":      fmt.Sprintf("%t", equipmentOther),
 		"equipment_detail":     equipmentDetail,

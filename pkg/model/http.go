@@ -62,6 +62,7 @@ type CasevacDetail struct {
 	Priority int `json:"priority"`
 	Routine int `json:"routine"`
 	Hoist bool `json:"hoist"`
+	ExtractionEquipment bool `json:"extraction_equipment"`
 	Ventilator bool `json:"ventilator"`
 	EquipmentOther bool `json:"equipment_other"`
 	EquipmentDetail string `json:"equipment_detail,omitempty"`
@@ -194,34 +195,35 @@ func (i *Item) ToWeb() *WebUnit {
 	if i.class == REPORT && strings.HasPrefix(i.GetType(), "b-r-f-h-c") {
 		if medevacDetail := i.msg.Detail.GetFirst("_medevac_"); medevacDetail != nil {
 			w.CasevacDetail = &CasevacDetail{
-				Title: medevacDetail.GetAttr("title"),
-				Casevac: medevacDetail.GetAttr("casevac") == "true",
-				Freq: cot.ParseFloat(medevacDetail.GetAttr("freq")),
-				Urgent: cot.ParseInt(medevacDetail.GetAttr("urgent")),
-				Priority: cot.ParseInt(medevacDetail.GetAttr("priority")),
-				Routine: cot.ParseInt(medevacDetail.GetAttr("routine")),
-				Hoist: medevacDetail.GetAttr("hoist") == "true",
-				Ventilator: medevacDetail.GetAttr("ventilator") == "true",
-				EquipmentOther: medevacDetail.GetAttr("equipment_other") == "true",
-				EquipmentDetail: medevacDetail.GetAttr("equipment_detail"),
-				Litter: cot.ParseInt(medevacDetail.GetAttr("litter")),
-				Ambulatory: cot.ParseInt(medevacDetail.GetAttr("ambulatory")),
-				Security: cot.ParseInt(medevacDetail.GetAttr("security")),
-				HlzMarking: cot.ParseInt(medevacDetail.GetAttr("hlz_marking")),
-				UsMilitary: cot.ParseInt(medevacDetail.GetAttr("us_military")),
-				UsCivilian: cot.ParseInt(medevacDetail.GetAttr("us_civilian")),
-				NonusMilitary: cot.ParseInt(medevacDetail.GetAttr("nonus_military")),
-				NonusCivilian: cot.ParseInt(medevacDetail.GetAttr("nonus_civilian")),
-				Epw: cot.ParseInt(medevacDetail.GetAttr("epw")),
-				Child: cot.ParseInt(medevacDetail.GetAttr("child")),
-				TerrainSlope: medevacDetail.GetAttr("terrain_slope") == "true",
-				TerrainRough: medevacDetail.GetAttr("terrain_rough") == "true",
-				Obstacles: medevacDetail.GetAttr("obstacles"),
-				TerrainSlopeDir: medevacDetail.GetAttr("terrain_slope_dir"),
-				MedlineRemarks: medevacDetail.GetAttr("medline_remarks"),
-				ZoneProtSelection: medevacDetail.GetAttr("zone_prot_selection"),
-				ZoneProtectedCoord: medevacDetail.GetAttr("zone_protected_coord"),
-				ZoneProtMarker: medevacDetail.GetAttr("zone_prot_marker"),
+				Title:               medevacDetail.GetAttr("title"),
+				Casevac:             medevacDetail.GetAttr("casevac") == "true",
+				Freq:                cot.ParseFloat(medevacDetail.GetAttr("freq")),
+				Urgent:              cot.ParseInt(medevacDetail.GetAttr("urgent")),
+				Priority:            cot.ParseInt(medevacDetail.GetAttr("priority")),
+				Routine:             cot.ParseInt(medevacDetail.GetAttr("routine")),
+				Hoist:               medevacDetail.GetAttr("hoist") == "true",
+				ExtractionEquipment: medevacDetail.GetAttr("extraction_equipment") == "true",
+				Ventilator:          medevacDetail.GetAttr("ventilator") == "true",
+				EquipmentOther:      medevacDetail.GetAttr("equipment_other") == "true",
+				EquipmentDetail:     medevacDetail.GetAttr("equipment_detail"),
+				Litter:              cot.ParseInt(medevacDetail.GetAttr("litter")),
+				Ambulatory:          cot.ParseInt(medevacDetail.GetAttr("ambulatory")),
+				Security:            cot.ParseInt(medevacDetail.GetAttr("security")),
+				HlzMarking:          cot.ParseInt(medevacDetail.GetAttr("hlz_marking")),
+				UsMilitary:          cot.ParseInt(medevacDetail.GetAttr("us_military")),
+				UsCivilian:          cot.ParseInt(medevacDetail.GetAttr("us_civilian")),
+				NonusMilitary:       cot.ParseInt(medevacDetail.GetAttr("nonus_military")),
+				NonusCivilian:       cot.ParseInt(medevacDetail.GetAttr("nonus_civilian")),
+				Epw:                 cot.ParseInt(medevacDetail.GetAttr("epw")),
+				Child:               cot.ParseInt(medevacDetail.GetAttr("child")),
+				TerrainSlope:        medevacDetail.GetAttr("terrain_slope") == "true",
+				TerrainRough:        medevacDetail.GetAttr("terrain_rough") == "true",
+				Obstacles:           medevacDetail.GetAttr("obstacles"),
+				TerrainSlopeDir:     medevacDetail.GetAttr("terrain_slope_dir"),
+				MedlineRemarks:      medevacDetail.GetAttr("medline_remarks"),
+				ZoneProtSelection:   medevacDetail.GetAttr("zone_prot_selection"),
+				ZoneProtectedCoord:  medevacDetail.GetAttr("zone_protected_coord"),
+				ZoneProtMarker:      medevacDetail.GetAttr("zone_prot_marker"),
 			}
 		}
 	}
@@ -344,6 +346,7 @@ func (w *WebUnit) ToMsg() *cot.CotMessage {
 			"priority": fmt.Sprintf("%d", w.CasevacDetail.Priority),
 			"routine": fmt.Sprintf("%d", w.CasevacDetail.Routine),
 			"hoist": fmt.Sprintf("%t", w.CasevacDetail.Hoist),
+			"extraction_equipment": fmt.Sprintf("%t", w.CasevacDetail.ExtractionEquipment),
 			"ventilator": fmt.Sprintf("%t", w.CasevacDetail.Ventilator),
 			"equipment_other": fmt.Sprintf("%t", w.CasevacDetail.EquipmentOther),
 			"equipment_detail": w.CasevacDetail.EquipmentDetail,
