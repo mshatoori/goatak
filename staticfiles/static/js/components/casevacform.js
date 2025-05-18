@@ -1,5 +1,5 @@
 Vue.component("CasevacForm", {
-  props: ["location", "onDone"],
+  props: ["location", "onDone", "initialData"],
   data: function () {
     return {
       casevacDetails: {
@@ -36,10 +36,28 @@ Vue.component("CasevacForm", {
     };
   },
   methods: {
+    mounted() {
+      if (this.initialData) {
+        this.remarks = this.initialData.remarks;
+        this.casevacDetails = this.initialData.casevacDetails;
+      }
+    },
     sendCasevac: function () {
       let now = new Date();
       let stale = new Date(now);
       stale.setDate(stale.getDate() + 365);
+
+      let lat = 0;
+      let lon = 0;
+
+      if (this.location) {
+        lat = this.location.lat;
+        lon = this.location.lng;
+      } else if (this.initialData) {
+        lat = this.lat;
+        lon = this.lon;
+      }
+
       let uid =
         "MED." +
         now.getDay() +
@@ -58,8 +76,8 @@ Vue.component("CasevacForm", {
         last_seen: now,
         stale_time: stale,
         type: "b-r-f-h-c",
-        lat: this.location.lat,
-        lon: this.location.lng,
+        lat: lat,
+        lon: lon,
         hae: 0,
         speed: 0,
         course: 0,
@@ -84,7 +102,7 @@ Vue.component("CasevacForm", {
     <div class="card">
       <div class="card-header">گزارش درخواست امداد</div>
       <div class="card-body">
-        <div class="mb-3">
+        <div class="mb-3" v-if="location">
           <label for="location" class="form-label">مکان:</label>
           <input
             type="text"
@@ -185,17 +203,6 @@ Vue.component("CasevacForm", {
             <div class="row">
               <div class="col">
                 <div class="mb-3">
-                  <label for="security" class="form-label">تعداد امنیتی:</label>
-                  <input
-                    type="number"
-                    class="form-control"
-                    id="security"
-                    v-model.number="casevacDetails.security"
-                  />
-                </div>
-              </div>
-              <div class="col">
-                <div class="mb-3">
                   <label for="us_military" class="form-label"
                     >تعداد نظامی خودی:</label
                   >
@@ -274,6 +281,24 @@ Vue.component("CasevacForm", {
                   />
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
+          <div class="card-header">وضعیت امنیتی منطقه</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <select
+                class="form-select"
+                id="security"
+                v-model.number="casevacDetails.security"
+              >
+                <option value="0">عدم حضور نیروهای دشمن در منطقه</option>
+                <option value="1">احتمال حضور نیروهای دشمن در منطقه</option>
+                <option value="2">نیروهای دشمن، با احتیاط نزدیک شوید</option>
+                <option value="3">نیروهای دشمن، نیاز به اسکورت مسلح</option>
+              </select>
             </div>
           </div>
         </div>
@@ -436,10 +461,20 @@ Vue.component("CasevacForm", {
             v-model.number="casevacDetails.freq"
           />
         </div>
-        <button type="button" class="btn btn-primary" @click="sendCasevac">
+        <button
+          type="button"
+          class="btn btn-primary"
+          @click="sendCasevac"
+          v-if="initialData === null"
+        >
           درخواست امداد
         </button>
-        <button type="button" class="btn btn-secondary" @click="onDone(null)">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          @click="onDone(null)"
+          v-if="initialData === null"
+        >
           لغو
         </button>
       </div>

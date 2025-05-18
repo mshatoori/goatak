@@ -182,7 +182,16 @@ Vue.component("Sidebar", {
           role="tabpanel"
           aria-labelledby="v-pills-current-unit-tab"
         >
-          <div class="card" v-if="current_unit">
+          <casevac-form
+            :location="casevacLocation"
+            :on-done="onDoneCasevac"
+            :initialData="current_unit"
+            v-if="current_unit && current_unit.category==='report'"
+          ></casevac-form>
+          <div
+            class="card"
+            v-if="current_unit && current_unit.category!=='report'"
+          >
             <div class="card-header">
               <span
                 class="pull-left fw-bold"
@@ -447,6 +456,7 @@ Vue.component("Sidebar", {
           <casevac-form
             :location="casevacLocation"
             :on-done="onDoneCasevac"
+            :initialData="null"
           ></casevac-form>
         </div>
       </div>
