@@ -517,7 +517,7 @@ Vue.component("Sidebar", {
           aria-selected="false"
           v-if="casevacLocation"
         >
-          Casevac
+          درخواست امداد
         </button>
       </div>
     </div>
