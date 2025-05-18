@@ -141,6 +141,7 @@ let app = new Vue({
           send: true,
           web_sensor: "",
           links: [],
+          isNew: true, // Mark as a new item to trigger automatic edit mode
         };
         if (vm.config && vm.config.uid) {
           u.parent_uid = vm.config.uid;
@@ -195,6 +196,7 @@ let app = new Vue({
           send: true,
           web_sensor: "",
           links: [],
+          isNew: true, // Mark as a new item to trigger automatic edit mode
         };
         if (vm.config && vm.config.uid) {
           u.parent_uid = vm.config.uid;
@@ -776,6 +778,7 @@ let app = new Vue({
         local: true,
         send: true,
         web_sensor: "",
+        isNew: true, // Mark as a new item to trigger automatic edit mode
       };
       if (this.config && this.config.uid) {
         u.parent_uid = this.config.uid;
@@ -845,6 +848,7 @@ let app = new Vue({
           local: true,
           send: true,
           web_sensor: "",
+          isNew: true, // Mark as a new item to trigger automatic edit mode
         };
         if (this.config && this.config.uid) {
           u.parent_uid = this.config.uid;

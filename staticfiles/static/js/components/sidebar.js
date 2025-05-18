@@ -3,24 +3,10 @@ Vue.component("Sidebar", {
     return {
       sharedState: store.state,
       editing: false,
+      activeItem: null,
     };
   },
   methods: {
-    milImg: function (item) {
-      return getMilIcon(item, false).uri;
-    },
-    getUnitName: function (u) {
-      let res = u.callsign || "no name";
-      if (u.parent_uid === this.config.uid) {
-        if (u.send === true) {
-          res = "+ " + res;
-        } else {
-          res = "* " + res;
-        }
-      }
-      return res;
-    },
-
     switchTab: function (tabName) {
       const triggerEl = document.querySelector(`#v-pills-${tabName}-tab`);
       if (triggerEl) {
@@ -32,16 +18,71 @@ Vue.component("Sidebar", {
       this.deleteCurrentUnit();
       this.switchTab("overlays");
     },
+
+    getActiveItemName: function () {
+      if (this.activeItem) {
+        if (
+          this.activeItem.category === "report" &&
+          this.activeItem.type === "b-r-f-h-c"
+        ) {
+          return "درخواست امداد";
+        }
+        return this.activeItem.callsign || "آیتم";
+      }
+      return "آیتم";
+    },
   },
 
   watch: {
     casevacLocation: function (newVal) {
       if (newVal) {
-        this.$nextTick(() => this.switchTab("casevac"));
+        // Create a temporary casevac item
+        this.activeItem = {
+          category: "report",
+          type: "b-r-f-h-c",
+          lat: newVal.lat,
+          lon: newVal.lng,
+          callsign: "درخواست امداد جدید",
+          casevac_detail: {
+            casevac: true,
+            freq: 0,
+            urgent: 0,
+            priority: 0,
+            routine: 0,
+            hoist: false,
+            extraction_equipment: false,
+            ventilator: false,
+            equipment_other: false,
+            equipment_detail: "",
+            litter: 0,
+            ambulatory: 0,
+            security: 0,
+            hlz_marking: 0,
+            us_military: 0,
+            us_civilian: 0,
+            nonus_military: 0,
+            nonus_civilian: 0,
+            epw: 0,
+            child: 0,
+          },
+          remarks: "",
+          isNew: true, // Mark as a new item to trigger automatic edit mode
+        };
+        this.$nextTick(() => this.switchTab("item-details"));
       }
     },
     current_unit: function (newVal, oldVal) {
-      this.$nextTick(() => this.switchTab("current-unit"));
+      if (newVal) {
+        // Check if this is a new item being added
+        if (newVal.isNew === true) {
+          // Keep the isNew flag
+          this.activeItem = newVal;
+        } else {
+          // For existing items, don't automatically enter edit mode
+          this.activeItem = newVal;
+        }
+        this.$nextTick(() => this.switchTab("item-details"));
+      }
     },
   },
 
@@ -176,278 +217,24 @@ Vue.component("Sidebar", {
             </ul>
           </div>
         </div>
-        <div
-          class="tab-pane fade"
-          id="v-pills-current-unit"
-          role="tabpanel"
-          aria-labelledby="v-pills-current-unit-tab"
-        >
-          <div class="card" v-if="current_unit">
-            <div class="card-header">
-              <span
-                class="pull-left fw-bold"
-                v-on:click.stop="mapToUnit(current_unit)"
-              >
-                <img :src="milImg(current_unit)" /> {{ getUnitName(current_unit)
-                }}
-                <span v-if="current_unit.status">
-                  ({{ current_unit.status }})</span
-                >
-                <img
-                  height="24"
-                  src="/static/icons/coord_unlock.png"
-                  v-if="current_unit.category !== 'point' && locked_unit_uid != current_unit.uid"
-                  v-on:click.stop="locked_unit_uid=current_unit.uid"
-                />
-                <img
-                  height="24"
-                  src="/static/icons/coord_lock.png"
-                  v-if="locked_unit_uid == current_unit.uid"
-                  v-on:click.stop="locked_unit_uid=''"
-                />
-              </span>
-              <span
-                class="pull-right"
-                v-if="current_unit.category === 'contact'"
-              >
-                <button
-                  type="button"
-                  class="btn btn-sm btn-primary"
-                  v-if="current_unit.category === 'contact'"
-                  v-on:click.stop="openChat(current_unit.uid, current_unit.callsign);"
-                >
-                  <i class="bi bi-chat-text-fill"></i>
-                </button>
-              </span>
-              <span
-                class="pull-right"
-                v-if="current_unit.category !== 'contact'"
-              >
-                <button
-                  type="button"
-                  class="btn btn-sm btn-primary"
-                  data-bs-toggle="modal"
-                  v-if="current_unit.category !== 'drawing' && current_unit.category !== 'route'"
-                  data-bs-target="#edit"
-                >
-                  <i class="bi bi-pencil-square"></i>
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-primary"
-                  data-bs-toggle="modal"
-                  v-if="current_unit.category === 'drawing'||current_unit.category === 'route'"
-                  data-bs-target="#drawing-edit"
-                >
-                  <i class="bi bi-pencil-square"></i>
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-danger"
-                  v-on:click.stop="deleteCurrent()"
-                >
-                  <i class="bi bi-trash3-fill"></i>
-                </button>
-              </span>
-            </div>
-            <div class="card-body">
-              <dl>
-                <div class="form-group row">
-                  <label
-                    for="input-UID"
-                    class="col-sm-4 col-form-label font-weight-bold"
-                    ><strong>UID</strong></label
-                  >
-                  <div class="col-sm-8">
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="input-UID"
-                      v-model="current_unit.uid"
-                      v-if="editing"
-                    />
-                    <label class="col-form-label" v-else
-                      >{{current_unit.uid}}</label
-                    >
-                  </div>
-                </div>
-                <template v-if="current_unit.team">
-                  <div class="form-group row">
-                    <label
-                      for="input-team"
-                      class="col-sm-4 col-form-label font-weight-bold"
-                      ><strong>تیم</strong></label
-                    >
-                    <div class="col-sm-8">
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="input-team"
-                        v-model="current_unit.team"
-                        v-if="editing"
-                      />
-                      <label class="col-form-label" v-else
-                        >{{current_unit.team}}</label
-                      >
-                    </div>
-                  </div>
-                  <div class="form-group row">
-                    <label
-                      for="input-role"
-                      class="col-sm-4 col-form-label font-weight-bold"
-                      ><strong>نقش</strong></label
-                    >
-                    <div class="col-sm-8">
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="input-role"
-                        v-model="current_unit.role"
-                        v-if="editing"
-                      />
-                      <label class="col-form-label" v-else
-                        >{{current_unit.role}}</label
-                      >
-                    </div>
-                  </div>
-                </template>
-                <div class="form-group row">
-                  <label
-                    for="input-type"
-                    class="col-sm-4 col-form-label font-weight-bold"
-                    ><strong>نوع</strong></label
-                  >
-                  <div class="col-sm-8">
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="input-type"
-                      v-model="current_unit.type"
-                      v-if="editing"
-                    />
-                    <label class="col-form-label" v-else
-                      >{{current_unit.type}}</label
-                    >
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="col-sm-4 col-form-label font-weight-bold"
-                    ><strong>مختصات</strong></label
-                  >
-                  <div class="col-sm-8">
-                    <label class="col-form-label"
-                      >{{ Utils.printCoords(current_unit.lat, current_unit.lon)
-                      }}
-                      <span
-                        class="badge rounded-pill bg-success"
-                        style="cursor:default;"
-                        v-on:click="map.setView([current_unit.lat, current_unit.lon])"
-                        ><i class="bi bi-geo"></i
-                      ></span>
-                      <span v-if="coords"
-                        >({{ Utils.distBea(Utils.latlng(current_unit.lat,
-                        current_unit.lon), coords) }} تا نشانگر)</span
-                      ></label
-                    >
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="col-sm-4 col-form-label font-weight-bold"
-                    ><strong>سرعت</strong></label
-                  >
-                  <div class="col-sm-8">
-                    <label class="col-form-label"
-                      >{{Utils.sp(current_unit.speed)}} KM/H</label
-                    >
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="col-sm-4 col-form-label font-weight-bold"
-                    ><strong>ارتفاع</strong></label
-                  >
-                  <div class="col-sm-8">
-                    <label class="col-form-label"
-                      >{{current_unit.hae.toFixed(1)}}</label
-                    >
-                  </div>
-                </div>
 
-                <div v-if="current_unit.parent_uid">
-                  <div class="form-group row">
-                    <label class="col-sm-4 col-form-label font-weight-bold"
-                      ><strong>سازنده</strong></label
-                    >
-                    <div class="col-sm-8">
-                      <label class="col-form-label"
-                        >{{ current_unit.parent_uid }}<span
-                          v-if="current_unit.parent_callsign"
-                          >({{ current_unit.parent_callsign }})</span
-                        ></label
-                      >
-                    </div>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="col-sm-4 col-form-label font-weight-bold"
-                    ><strong>زمان ایجاد</strong></label
-                  >
-                  <div class="col-sm-8">
-                    <label class="col-form-label"
-                      >{{ Utils.dt(current_unit.start_time) }}</label
-                    >
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="col-sm-4 col-form-label font-weight-bold"
-                    ><strong>زمان ارسال</strong></label
-                  >
-                  <div class="col-sm-8">
-                    <label class="col-form-label"
-                      >{{ Utils.dt(current_unit.send_time) }}</label
-                    >
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="col-sm-4 col-form-label font-weight-bold"
-                    ><strong>زمان انقضا</strong></label
-                  >
-                  <div class="col-sm-8">
-                    <label class="col-form-label"
-                      >{{ Utils.dt(current_unit.stale_time) }}</label
-                    >
-                  </div>
-                </div>
-              </dl>
-              <div v-if="Object.keys(current_unit.sensor_data).length > 0">
-                <h6>آخرین داده‌های سنسور</h6>
-                <table class="table" style="table-layout: fixed">
-                  <tr v-for="(value, key) in current_unit.sensor_data">
-                    <td class="col-3">{{key}}</td>
-                    <td
-                      class="col-9"
-                      style="text-overflow: ellipsis;white-space: nowrap;overflow: hidden;"
-                      :title="value"
-                    >
-                      {{value}}
-                    </td>
-                  </tr>
-                </table>
-              </div>
-              <div class="form-group row">{{ current_unit.text }}</div>
-            </div>
-          </div>
-        </div>
+        <!-- New Dynamic Item Details Tab -->
         <div
           class="tab-pane fade"
-          id="v-pills-casevac"
+          id="v-pills-item-details"
           role="tabpanel"
-          aria-labelledby="v-pills-casevac-tab"
-          v-if="casevacLocation"
+          aria-labelledby="v-pills-item-details-tab"
         >
-          <casevac-form
-            :location="casevacLocation"
+          <item-details
+            v-if="activeItem"
+            :item="activeItem"
+            :coords="coords"
+            :map="map"
+            :locked_unit_uid="locked_unit_uid"
+            :delete-item="deleteCurrent"
             :on-done="onDoneCasevac"
-          ></casevac-form>
+            :config="config"
+          ></item-details>
         </div>
       </div>
       <div
@@ -495,29 +282,16 @@ Vue.component("Sidebar", {
         </button>
         <button
           class="nav-link"
-          id="v-pills-current-unit-tab"
+          id="v-pills-item-details-tab"
           data-bs-toggle="pill"
-          data-bs-target="#v-pills-current-unit"
+          data-bs-target="#v-pills-item-details"
           type="button"
           role="tab"
-          aria-controls="v-pills-current-unit"
+          aria-controls="v-pills-item-details"
           aria-selected="false"
-          v-if="current_unit"
+          v-if="activeItem"
         >
-          {{ current_unit.callsign }}
-        </button>
-        <button
-          class="nav-link"
-          id="v-pills-casevac-tab"
-          data-bs-toggle="pill"
-          data-bs-target="#v-pills-casevac"
-          type="button"
-          role="tab"
-          aria-controls="v-pills-casevac"
-          aria-selected="false"
-          v-if="casevacLocation"
-        >
-          درخواست امداد
+          {{ getActiveItemName() }}
         </button>
       </div>
     </div>
