@@ -339,6 +339,7 @@ Vue.prototype.Utils = {
   needIconUpdate: needIconUpdate,
 };
 
+
 L.Marker.RotatedMarker = L.Marker.extend({
   _reset: function () {
     var pos = this._map.latLngToLayerPoint(this._latlng).round();
@@ -374,6 +375,7 @@ L.Marker.RotatedMarker = L.Marker.extend({
   },
 });
 
+// Define LocationControl and ToolsControl before making them globally accessible
 var LocationControl = L.Control.extend({
   options: {
     position: "bottomleft",
@@ -481,12 +483,16 @@ var ToolsControl = L.Control.extend({
     link.setAttribute("aria-label", title);
 
     L.DomEvent.disableClickPropagation(link);
-    // L.DomEvent.on(link, 'click', stop);
+    L.DomEvent.on(link, "click", stop);
     L.DomEvent.on(link, "click", fn, this);
     L.DomEvent.on(link, "click", this._refocusOnMap, this);
 
     return link;
   },
 });
+
+// Make LocationControl and ToolsControl globally accessible
+window.LocationControl = LocationControl;
+window.ToolsControl = ToolsControl;
 
 const html = (strings, ...values) => String.raw({ raw: strings }, ...values);

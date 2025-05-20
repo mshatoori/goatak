@@ -754,13 +754,14 @@ let app = new Vue({
     },
 
     mapClickAddUnit: function (e) {
+      console.log("mapClickAddUnit called with event:", e);
       let now = new Date();
       let stale = new Date(now);
       stale.setDate(stale.getDate() + 365);
       let u = {
-        uid: "__NEW__",
+        uid: uuidv4(), // Generate a UUID for the new unit
         category: "unit",
-        callsign: "unit-" + this.point_num++,
+        callsign: "unit-" + this.unit_num++, // Use unit_num for units
         sidc: "",
         start_time: now,
         last_seen: now,
@@ -776,7 +777,7 @@ let app = new Vue({
         parent_uid: "",
         parent_callsign: "",
         local: true,
-        send: true,
+        send: false, // Do not send immediately
         web_sensor: "",
         isNew: true, // Mark as a new item to trigger automatic edit mode
       };
@@ -785,11 +786,14 @@ let app = new Vue({
         u.parent_callsign = this.config.callsign;
       }
 
-      const vm = this;
-      this.formFromUnit(u);
-      new bootstrap.Modal(document.querySelector("#edit")).show();
+      console.log("New unit created locally:", u);
+      store.state.items.set(u.uid, u); // Add the new unit to the store
+      store.state.ts += 1; // Increment timestamp to trigger reactivity
+      this._processAddition(u); // Manually add the marker for the new unit
+      this.setCurrentUnitUid(u.uid, true); // Set the new unit as the current unit to display in sidebar
+      // The sidebar watcher for current_unit should handle opening the sidebar and showing the form
     },
-    mapClick: function (e) {
+     mapClick: function (e) {
       if (this.inDrawMode) {
         return;
       }

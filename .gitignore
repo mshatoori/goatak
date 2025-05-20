@@ -24,3 +24,4 @@ pkg/sumdb/
 tasks/
 doc/roo/
 setup/config.sqlite3
+setup/tiles/

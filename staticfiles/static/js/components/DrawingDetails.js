@@ -76,7 +76,7 @@ Vue.component("DrawingDetails", {
       this.editingData = null;
     },
   },
-  template: html`
+  template: `
     <div class="card">
       <!-- Header -->
       <div class="card-header">

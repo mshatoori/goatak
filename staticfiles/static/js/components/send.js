@@ -35,7 +35,7 @@ Vue.component("SendModal", {
       });
     },
   },
-  template: html`
+  template: `
     <div>
       <div
         class="modal fade"

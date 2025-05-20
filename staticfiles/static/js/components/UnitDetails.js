@@ -42,6 +42,7 @@ Vue.component("UnitDetails", {
       }
     },
     startEditing: function () {
+      console.log("startEditing called for item:", this.item); // Added log
       // Use a structured deep copy to avoid circular references
       this.editingData = {
         uid: this.item.uid,
@@ -56,17 +57,25 @@ Vue.component("UnitDetails", {
         web_sensor: this.item.web_sensor || "",
         parent_uid: this.item.parent_uid || "",
         parent_callsign: this.item.parent_callsign || "",
+        isNew: this.item.isNew || false, // Include isNew flag
       };
 
-      // Copy any other specific fields that might be needed
-      if (this.item.root_sidc) {
-        this.editingData.root_sidc = this.item.root_sidc;
+      // Initialize root_sidc and subtype if not present
+      if (!this.item.root_sidc) {
+         this.editingData.root_sidc = app.getSidc(this.editingData.type || "");
+      } else {
+         this.editingData.root_sidc = this.item.root_sidc;
       }
-      if (this.item.subtype) {
+
+      if (!this.item.subtype) {
+        this.editingData.subtype = this.editingData.type || "";
+      } else {
         this.editingData.subtype = this.item.subtype;
       }
 
+
       this.editing = true;
+      console.log("editing set to:", this.editing); // Added log
     },
     cancelEditing: function () {
       this.editing = false;
@@ -77,6 +86,9 @@ Vue.component("UnitDetails", {
       for (const key in this.editingData) {
         this.item[key] = this.editingData[key];
       }
+      // Ensure the item's type is updated based on the selected subtype
+      this.item.type = this.editingData.subtype;
+
 
       // Save to server/store
       this.editing = false;
@@ -86,8 +98,13 @@ Vue.component("UnitDetails", {
       // Implement chat opening functionality
       console.log("Opening chat with", uid, callsign);
     },
+    // Method to handle navigation between subtype levels
+    setFormRootSidc: function (code) {
+      this.editingData.root_sidc = app.getSidc(code);
+      this.editingData.subtype = code;
+    },
   },
-  template: html`
+  template: `
     <div class="card">
       <!-- Header -->
       <div class="card-header">
@@ -289,14 +306,38 @@ Vue.component("UnitDetails", {
             </div>
           </div>
           <div class="form-group row mb-3">
-            <label for="edit-type" class="col-sm-4 col-form-label">نوع</label>
+            <label for="edit-aff" class="col-sm-4 col-form-label">طرف</label>
             <div class="col-sm-8">
-              <input
-                type="text"
-                class="form-control"
-                id="edit-type"
-                v-model="editingData.type"
-              />
+              <select class="form-select" id="edit-aff" v-model="editingData.aff">
+                <option value="h">دشمن</option>
+                <option value="f">خودی</option>
+                <option value="n">خنثی</option>
+                <option value="u">نامعلوم</option>
+                <option value="s">مشکوک</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group row mb-3" v-if="editingData.root_sidc">
+            <label class="col-sm-4 col-form-label" for="edit-subtype">نوع</label>
+            <div class="col-sm-8 row">
+              <div class="col-2">
+                <button type="button" class="btn btn-secondary"
+                        v-if="editingData.root_sidc.code !== ''"
+                        v-on:click="setFormRootSidc(getRootSidc(editingData.root_sidc.code).code)">
+                    <
+                </button>
+              </div>
+              <div class="col-8">
+                <select class="form-select" id="edit-subtype" v-model="editingData.subtype">
+                  <option v-for="t in editingData.root_sidc.next" :value="t.code">{{ t.name }}</option>
+                </select>
+              </div>
+              <div class="col-2">
+                <button type="button" class="btn btn-secondary"
+                        v-if="app.getSidc(editingData.subtype).next"
+                        v-on:click="setFormRootSidc(editingData.subtype)">>
+                </button>
+              </div>
             </div>
           </div>
           <div class="form-group row mb-3">
@@ -309,6 +350,19 @@ Vue.component("UnitDetails", {
                 id="edit-remarks"
                 rows="3"
                 v-model="editingData.text"
+              ></textarea>
+            </div>
+          </div>
+          <div class="form-group row mb-3">
+            <label for="edit-websensor" class="col-sm-4 col-form-label"
+              >اطلاعات اضافه</label
+            >
+            <div class="col-sm-8">
+              <textarea
+                class="form-control"
+                id="edit-websensor"
+                rows="3"
+                v-model="editingData.web_sensor"
               ></textarea>
             </div>
           </div>
@@ -336,9 +390,113 @@ Vue.component("UnitDetails", {
             >
               ذخیره
             </button>
+             <button
+              type="button"
+              class="btn btn-success ms-2"
+              v-if="editingData && editingData.isNew"
+              v-on:click="sendUnit"
+            >
+              ارسال
+            </button>
           </div>
         </form>
       </div>
     </div>
   `,
+  methods: {
+    milImg: function (item) {
+      return getMilIcon(item, false).uri;
+    },
+    getUnitName: function (u) {
+      let res = u.callsign || "no name";
+      if (u.parent_uid === this.config.uid) {
+        if (u.send === true) {
+          res = "+ " + res;
+        } else {
+          res = "* " + res;
+        }
+      }
+      return res;
+    },
+    mapToUnit: function (unit) {
+      if (unit && unit.lat && unit.lon) {
+        this.map.setView([unit.lat, unit.lon]);
+      }
+    },
+    startEditing: function () {
+      // Use a structured deep copy to avoid circular references
+      this.editingData = {
+        uid: this.item.uid,
+        category: this.item.category,
+        callsign: this.item.callsign,
+        type: this.item.type || "",
+        aff: this.item.aff || "",
+        lat: this.item.lat,
+        lon: this.item.lon,
+        text: this.item.text || "",
+        send: this.item.send || false,
+        web_sensor: this.item.web_sensor || "",
+        parent_uid: this.item.parent_uid || "",
+        parent_callsign: this.item.parent_callsign || "",
+        isNew: this.item.isNew || false, // Include isNew flag
+      };
+
+      // Initialize root_sidc and subtype if not present
+      if (!this.item.root_sidc) {
+         this.editingData.root_sidc = app.getSidc(this.editingData.type || "");
+      } else {
+         this.editingData.root_sidc = this.item.root_sidc;
+      }
+
+      if (!this.item.subtype) {
+        this.editingData.subtype = this.editingData.type || "";
+      } else {
+        this.editingData.subtype = this.item.subtype;
+      }
+
+
+      this.editing = true;
+    },
+    cancelEditing: function () {
+      this.editing = false;
+      this.editingData = null;
+      // If it was a new unsent item, remove it from the store
+      if (this.item.isNew && !this.item.send) {
+        store.removeItem(this.item.uid);
+      }
+    },
+    saveEditing: function () {
+      // Update the item with the edited data
+      for (const key in this.editingData) {
+        this.item[key] = this.editingData[key];
+      }
+      // Ensure the item's type is updated based on the selected subtype
+      this.item.type = this.editingData.subtype;
+
+
+      // Save to server/store - This will now be handled by the Send button for new items
+      this.editing = false;
+      this.editingData = null;
+    },
+    sendUnit: function() {
+      // Set send flag to true and save
+      this.editingData.send = true;
+      this.saveEditing(); // Save changes locally first
+      store.createItem(this.item).then(() => {
+        // After successful send, remove the isNew flag and switch to details view
+        delete this.item.isNew;
+        this.editing = false; // Exit editing mode
+        this.onDone(); // Signal to parent (sidebar) that editing is done
+      });
+    },
+    openChat: function (uid, callsign) {
+      // Implement chat opening functionality
+      console.log("Opening chat with", uid, callsign);
+    },
+    // Method to handle navigation between subtype levels
+    setFormRootSidc: function (code) {
+      this.editingData.root_sidc = app.getSidc(code);
+      this.editingData.subtype = code;
+    },
+  },
 });

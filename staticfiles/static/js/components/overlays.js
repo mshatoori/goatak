@@ -56,7 +56,7 @@ Vue.component("OverlaysList", {
   },
   props: ["toggleOverlay", "config", "coords", "configUpdated"],
   inject: [],
-  template: html`
+  template: `
     <div class="card">
       <h5 class="card-header">لایه‌ها</h5>
       <div class="card-body">

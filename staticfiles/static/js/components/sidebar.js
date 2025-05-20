@@ -2,7 +2,7 @@ Vue.component("Sidebar", {
   data: function () {
     return {
       sharedState: store.state,
-      editing: false,
+      editing: false, // This might not be needed here anymore as editing state is in detail components
       activeItem: null,
     };
   },
@@ -17,6 +17,7 @@ Vue.component("Sidebar", {
     deleteCurrent: function () {
       this.deleteCurrentUnit();
       this.switchTab("overlays");
+      this.activeItem = null; // Clear active item after deletion
     },
 
     getActiveItemName: function () {
@@ -27,10 +28,82 @@ Vue.component("Sidebar", {
         ) {
           return "درخواست امداد";
         }
+        if (this.activeItem.category === "point") {
+            return this.activeItem.callsign || "نقطه";
+        }
+        if (this.activeItem.category === "unit") {
+            return this.activeItem.callsign || "نیرو";
+        }
+         if (this.activeItem.category === "drawing" || this.activeItem.category === "route") {
+            return this.activeItem.callsign || (this.activeItem.category === "route" ? "مسیر" : "چندضلعی");
+        }
         return this.activeItem.callsign || "آیتم";
       }
       return "آیتم";
     },
+
+    // Methods to create new items
+    createNewPoint: function() {
+        let now = new Date();
+        let uid = "POINT." + now.getTime(); // Simple unique ID
+        this.activeItem = {
+            uid: uid,
+            category: "point",
+            callsign: "نقطه جدید",
+            type: "b-m-p-s-m", // Default point type
+            lat: this.coords ? this.coords.lat : 0,
+            lon: this.coords ? this.coords.lng : 0,
+            text: "",
+            send: true,
+            web_sensor: "",
+            isNew: true,
+        };
+        this.switchTab("item-details");
+    },
+
+    createNewUnit: function() {
+        let now = new Date();
+        let uid = "UNIT." + now.getTime(); // Simple unique ID
+         this.activeItem = {
+            uid: uid,
+            category: "unit",
+            callsign: "نیروی جدید",
+            type: "a-f-G-U-C", // Default unit type (example)
+            aff: "f", // Default affiliation (friendly)
+            lat: this.coords ? this.coords.lat : 0,
+            lon: this.coords ? this.coords.lng : 0,
+            text: "",
+            send: true,
+            web_sensor: "",
+            isNew: true,
+            root_sidc: app.getSidc("a-f-G-U-C"), // Initialize root_sidc
+            subtype: "a-f-G-U-C", // Initialize subtype
+        };
+        this.switchTab("item-details");
+    },
+
+    createNewDrawing: function(type) {
+        let now = new Date();
+        let uid = (type === 'route' ? "ROUTE." : "DRAWING.") + now.getTime(); // Simple unique ID
+         this.activeItem = {
+            uid: uid,
+            category: type === 'route' ? "route" : "drawing",
+            callsign: (type === 'route' ? "مسیر جدید" : "چندضلعی جدید"),
+            type: type === 'route' ? "u-d-r" : "u-d-f", // Default drawing type (route or polygon)
+            lat: this.coords ? this.coords.lat : 0, // May not be needed for drawings initially
+            lon: this.coords ? this.coords.lng : 0, // May not be needed for drawings initially
+            points: [], // Drawings have points
+            color: "blue", // Default color
+            text: "",
+            send: true,
+            web_sensor: "",
+            isNew: true,
+            geofence: false, // Default geofence state
+            geofence_aff: "All", // Default geofence affiliation
+        };
+        this.switchTab("item-details");
+    },
+
   },
 
   watch: {
@@ -72,16 +145,28 @@ Vue.component("Sidebar", {
       }
     },
     current_unit: function (newVal, oldVal) {
-      if (newVal) {
-        // Check if this is a new item being added
+      console.log("sidebar current_unit watcher:", { newVal, oldVal });
+      // Handle selection of existing items
+      if (newVal && (oldVal === null || newVal.uid !== oldVal.uid)) {
+        // Only update activeItem if a new item is selected or current is cleared
         if (newVal.isNew === true) {
-          // Keep the isNew flag
-          this.activeItem = newVal;
+           console.log("sidebar watcher: new item, setting activeItem and switching tab");
+           this.activeItem = newVal; // Keep isNew flag for new items
         } else {
-          // For existing items, don't automatically enter edit mode
-          this.activeItem = newVal;
+           console.log("sidebar watcher: existing item, setting activeItem and switching tab");
+           // For existing items, remove isNew flag and set activeItem
+           const existingItem = { ...newVal }; // Create a copy
+           delete existingItem.isNew;
+           this.activeItem = existingItem;
         }
-        this.$nextTick(() => this.switchTab("item-details"));
+        this.$nextTick(() => {
+          console.log("sidebar watcher: switching to item-details tab");
+          this.switchTab("item-details");
+        });
+      } else if (newVal === null && oldVal !== null) {
+          console.log("sidebar watcher: current_unit cleared, clearing activeItem");
+          // Clear active item when current_unit is cleared
+          this.activeItem = null;
       }
     },
   },
@@ -100,7 +185,7 @@ Vue.component("Sidebar", {
     "onDoneCasevac",
   ],
   inject: ["getTool", "removeTool"],
-  template: html`
+  template: `
     <div class="d-flex align-items-start">
       <div class="tab-content flex-grow-1" id="v-pills-tabContent">
         <div
@@ -167,20 +252,9 @@ Vue.component("Sidebar", {
                     type="radio"
                     class="btn-check"
                     name="btnradio"
-                    id="point"
-                    autocomplete="off"
-                  />
-                  <label class="btn btn-outline-primary btn-sm" for="point"
-                    >ایجاد نقطه</label
-                  >
-
-                  <input
-                    v-if="config && config.callsign"
-                    type="radio"
-                    class="btn-check"
-                    name="btnradio"
                     id="me"
                     autocomplete="off"
+                    v-if="config && config.callsign"
                   />
                   <label
                     v-if="config && config.callsign"
@@ -190,6 +264,22 @@ Vue.component("Sidebar", {
                   >
                 </div>
               </li>
+               <li class="list-group-item">
+                 <div class="btn-group" role="group" aria-label="Create Items">
+                    <button type="button" class="btn btn-success btn-sm" v-on:click="createNewPoint">
+                        <i class="bi bi-geo-alt-fill"></i> ایجاد نقطه
+                    </button>
+                     <button type="button" class="btn btn-success btn-sm" v-on:click="createNewUnit">
+                        <i class="bi bi-person-fill"></i> ایجاد نیرو
+                    </button>
+                     <button type="button" class="btn btn-success btn-sm" v-on:click="createNewDrawing('polygon')">
+                        <i class="bi bi-pentagon-fill"></i> ایجاد چندضلعی
+                    </button>
+                     <button type="button" class="btn btn-success btn-sm" v-on:click="createNewDrawing('route')">
+                        <i class="bi bi-bezier2"></i> ایجاد مسیر
+                    </button>
+                 </div>
+               </li>
               <li v-if="getTool('redx')" class="mt-1 list-group-item">
                 <span class="badge bg-danger">نشان</span>: {{
                 Utils.printCoordsll(getTool('redx').getLatLng()) }}

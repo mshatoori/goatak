@@ -60,7 +60,7 @@ Vue.component("PointDetails", {
       this.editingData = null;
     },
   },
-  template: html`
+  template: `
     <div class="card">
       <!-- Header -->
       <div class="card-header">
@@ -192,15 +192,17 @@ Vue.component("PointDetails", {
               />
             </div>
           </div>
+:start_line:195
+-------
           <div class="form-group row mb-3">
             <label for="edit-type" class="col-sm-4 col-form-label">نوع</label>
             <div class="col-sm-8">
-              <input
-                type="text"
-                class="form-control"
-                id="edit-type"
-                v-model="editingData.type"
-              />
+              <select class="form-select" id="edit-type" v-model="editingData.type">
+                <option value="b-m-p-s-m">Spot</option>
+                <option value="b-m-p-w-GOTO">WayPt</option>
+                <option value="b-m-p-s-p-op">OP</option>
+                <option value="b-m-p-a">Aim</option>
+              </select>
             </div>
           </div>
           <div class="form-group row mb-3">
@@ -231,6 +233,19 @@ Vue.component("PointDetails", {
                 id="edit-remarks"
                 rows="3"
                 v-model="editingData.text"
+              ></textarea>
+            </div>
+          </div>
+          <div class="form-group row mb-3">
+            <label for="edit-websensor" class="col-sm-4 col-form-label"
+              >اطلاعات اضافه</label
+            >
+            <div class="col-sm-8">
+              <textarea
+                class="form-control"
+                id="edit-websensor"
+                rows="3"
+                v-model="editingData.web_sensor"
               ></textarea>
             </div>
           </div>

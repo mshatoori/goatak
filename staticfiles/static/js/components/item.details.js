@@ -52,7 +52,7 @@ Vue.component("ItemDetails", {
       console.log("Opening chat with", uid, callsign);
     },
   },
-  template: html`
+  template: `
     <div>
       <!-- Contact Chat Button -->
       <div v-if="isContact" class="card">

@@ -15,6 +15,7 @@ var store = {
 
   // Items
   createItem: function (item) {
+    console.log("store.createItem called with:", item);
     this.state.items.set(item.uid, item);
     this.state.ts += 1;
 
@@ -26,7 +27,11 @@ var store = {
 
     return fetch("/unit", requestOptions)
       .then((response) => response.json())
-      .then((response) => this._processItems([response], true));
+      .then((response) => {
+        console.log("store.createItem fetch response:", response);
+        // Explicitly return the result of _processItems
+        return this._processItems([response], true);
+      });
   },
 
   fetchItems: function () {

@@ -80,7 +80,7 @@ Vue.component("CasevacForm", {
       this.onDone(u);
     },
   },
-  template: html`
+  template: `
     <div class="card">
       <div class="card-header">گزارش درخواست امداد</div>
       <div class="card-body">

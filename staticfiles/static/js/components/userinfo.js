@@ -46,7 +46,7 @@ Vue.component("UserInfo", {
   computed: {},
   props: ["config", "coords", "configUpdated", "map", "checkEmergency"],
   inject: [],
-  template: html`
+  template: `
     <div class="card">
       <h5 class="card-header">
         اطلاعات من
