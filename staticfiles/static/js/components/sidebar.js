@@ -3,7 +3,7 @@ Vue.component("Sidebar", {
     return {
       sharedState: store.state,
       editing: false, // This might not be needed here anymore as editing state is in detail components
-      activeItem: null,
+      // activeItem: null,
     };
   },
   methods: {
@@ -29,13 +29,19 @@ Vue.component("Sidebar", {
           return "درخواست امداد";
         }
         if (this.activeItem.category === "point") {
-            return this.activeItem.callsign || "نقطه";
+          return this.activeItem.callsign || "نقطه";
         }
         if (this.activeItem.category === "unit") {
-            return this.activeItem.callsign || "نیرو";
+          return this.activeItem.callsign || "نیرو";
         }
-         if (this.activeItem.category === "drawing" || this.activeItem.category === "route") {
-            return this.activeItem.callsign || (this.activeItem.category === "route" ? "مسیر" : "چندضلعی");
+        if (
+          this.activeItem.category === "drawing" ||
+          this.activeItem.category === "route"
+        ) {
+          return (
+            this.activeItem.callsign ||
+            (this.activeItem.category === "route" ? "مسیر" : "چندضلعی")
+          );
         }
         return this.activeItem.callsign || "آیتم";
       }
@@ -43,67 +49,66 @@ Vue.component("Sidebar", {
     },
 
     // Methods to create new items
-    createNewPoint: function() {
-        let now = new Date();
-        let uid = "POINT." + now.getTime(); // Simple unique ID
-        this.activeItem = {
-            uid: uid,
-            category: "point",
-            callsign: "نقطه جدید",
-            type: "b-m-p-s-m", // Default point type
-            lat: this.coords ? this.coords.lat : 0,
-            lon: this.coords ? this.coords.lng : 0,
-            text: "",
-            send: true,
-            web_sensor: "",
-            isNew: true,
-        };
-        this.switchTab("item-details");
+    createNewPoint: function () {
+      let now = new Date();
+      let uid = "POINT." + now.getTime(); // Simple unique ID
+      this.activeItem = {
+        uid: uid,
+        category: "point",
+        callsign: "نقطه جدید",
+        type: "b-m-p-s-m", // Default point type
+        lat: this.coords ? this.coords.lat : 0,
+        lon: this.coords ? this.coords.lng : 0,
+        text: "",
+        send: true,
+        web_sensor: "",
+        isNew: true,
+      };
+      this.switchTab("item-details");
     },
 
-    createNewUnit: function() {
-        let now = new Date();
-        let uid = "UNIT." + now.getTime(); // Simple unique ID
-         this.activeItem = {
-            uid: uid,
-            category: "unit",
-            callsign: "نیروی جدید",
-            type: "a-f-G-U-C", // Default unit type (example)
-            aff: "f", // Default affiliation (friendly)
-            lat: this.coords ? this.coords.lat : 0,
-            lon: this.coords ? this.coords.lng : 0,
-            text: "",
-            send: true,
-            web_sensor: "",
-            isNew: true,
-            root_sidc: app.getSidc("a-f-G-U-C"), // Initialize root_sidc
-            subtype: "a-f-G-U-C", // Initialize subtype
-        };
-        this.switchTab("item-details");
+    createNewUnit: function () {
+      let now = new Date();
+      let uid = "UNIT." + now.getTime(); // Simple unique ID
+      this.activeItem = {
+        uid: uid,
+        category: "unit",
+        callsign: "نیروی جدید",
+        type: "a-f-G-U-C", // Default unit type (example)
+        aff: "f", // Default affiliation (friendly)
+        lat: this.coords ? this.coords.lat : 0,
+        lon: this.coords ? this.coords.lng : 0,
+        text: "",
+        send: true,
+        web_sensor: "",
+        isNew: true,
+        root_sidc: app.getSidc("a-f-G-U-C"), // Initialize root_sidc
+        subtype: "a-f-G-U-C", // Initialize subtype
+      };
+      this.switchTab("item-details");
     },
 
-    createNewDrawing: function(type) {
-        let now = new Date();
-        let uid = (type === 'route' ? "ROUTE." : "DRAWING.") + now.getTime(); // Simple unique ID
-         this.activeItem = {
-            uid: uid,
-            category: type === 'route' ? "route" : "drawing",
-            callsign: (type === 'route' ? "مسیر جدید" : "چندضلعی جدید"),
-            type: type === 'route' ? "u-d-r" : "u-d-f", // Default drawing type (route or polygon)
-            lat: this.coords ? this.coords.lat : 0, // May not be needed for drawings initially
-            lon: this.coords ? this.coords.lng : 0, // May not be needed for drawings initially
-            points: [], // Drawings have points
-            color: "blue", // Default color
-            text: "",
-            send: true,
-            web_sensor: "",
-            isNew: true,
-            geofence: false, // Default geofence state
-            geofence_aff: "All", // Default geofence affiliation
-        };
-        this.switchTab("item-details");
+    createNewDrawing: function (type) {
+      let now = new Date();
+      let uid = (type === "route" ? "ROUTE." : "DRAWING.") + now.getTime(); // Simple unique ID
+      this.activeItem = {
+        uid: uid,
+        category: type === "route" ? "route" : "drawing",
+        callsign: type === "route" ? "مسیر جدید" : "چندضلعی جدید",
+        type: type === "route" ? "u-d-r" : "u-d-f", // Default drawing type (route or polygon)
+        lat: this.coords ? this.coords.lat : 0, // May not be needed for drawings initially
+        lon: this.coords ? this.coords.lng : 0, // May not be needed for drawings initially
+        points: [], // Drawings have points
+        color: "blue", // Default color
+        text: "",
+        send: true,
+        web_sensor: "",
+        isNew: true,
+        geofence: false, // Default geofence state
+        geofence_aff: "All", // Default geofence affiliation
+      };
+      this.switchTab("item-details");
     },
-
   },
 
   watch: {
@@ -144,29 +149,32 @@ Vue.component("Sidebar", {
         this.$nextTick(() => this.switchTab("item-details"));
       }
     },
-    current_unit: function (newVal, oldVal) {
-      console.log("sidebar current_unit watcher:", { newVal, oldVal });
+    activeItem: function (newVal, oldVal) {
+      console.log("sidebar selectedItem watcher:", { newVal, oldVal });
       // Handle selection of existing items
       if (newVal && (oldVal === null || newVal.uid !== oldVal.uid)) {
-        // Only update activeItem if a new item is selected or current is cleared
-        if (newVal.isNew === true) {
-           console.log("sidebar watcher: new item, setting activeItem and switching tab");
-           this.activeItem = newVal; // Keep isNew flag for new items
+        if (newVal.isNew) {
+          console.log(
+            "sidebar watcher: new item, setting activeItem and switching tab"
+          );
         } else {
-           console.log("sidebar watcher: existing item, setting activeItem and switching tab");
-           // For existing items, remove isNew flag and set activeItem
-           const existingItem = { ...newVal }; // Create a copy
-           delete existingItem.isNew;
-           this.activeItem = existingItem;
+          console.log(
+            "sidebar watcher: existing item, setting activeItem and switching tab"
+          );
+          // const existingItem = { ...newVal }; // Create a copy
+          // delete existingItem.isNew;
+          // this.activeItem = existingItem;
         }
         this.$nextTick(() => {
           console.log("sidebar watcher: switching to item-details tab");
           this.switchTab("item-details");
         });
       } else if (newVal === null && oldVal !== null) {
-          console.log("sidebar watcher: current_unit cleared, clearing activeItem");
-          // Clear active item when current_unit is cleared
-          this.activeItem = null;
+        console.log(
+          "sidebar watcher: selectedItem cleared, clearing activeItem"
+        );
+        // Clear active item when selectedItem is cleared
+        // this.activeItem = null;
       }
     },
   },
@@ -176,7 +184,7 @@ Vue.component("Sidebar", {
     "config",
     "coords",
     "configUpdated",
-    "current_unit",
+    "activeItem",
     "locked_unit_uid",
     "deleteCurrentUnit",
     "checkEmergency",

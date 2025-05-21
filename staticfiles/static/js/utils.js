@@ -1,3 +1,7 @@
+if (window.baseUrl === undefined) {
+  window.baseUrl = ""; // Default value
+}
+
 const colors = new Map([
   ["Clear", "white"],
   ["White", "white"],
@@ -79,6 +83,8 @@ function getIconUri(item, withText) {
 function getMilIcon(item, withText) {
   let opts = { size: 24 };
 
+  // console.log("[getMilIcon]", item);
+
   if (!item.sidc) {
     return "";
   }
@@ -108,6 +114,8 @@ function getMilIcon(item, withText) {
 
 function getIcon(item, withText) {
   let img = getIconUri(item, withText);
+
+  // console.log("[getIcon] image = ", img);
 
   return L.icon({
     iconUrl: img.uri,
@@ -339,7 +347,6 @@ Vue.prototype.Utils = {
   needIconUpdate: needIconUpdate,
 };
 
-
 L.Marker.RotatedMarker = L.Marker.extend({
   _reset: function () {
     var pos = this._map.latLngToLayerPoint(this._latlng).round();
@@ -418,7 +425,7 @@ var LocationControl = L.Control.extend({
     link.setAttribute("aria-label", title);
 
     L.DomEvent.disableClickPropagation(link);
-    L.DomEvent.on(link, "click", stop);
+    // L.DomEvent.on(link, "click", stop);
     L.DomEvent.on(link, "click", fn, this);
     L.DomEvent.on(link, "click", this._refocusOnMap, this);
 
@@ -483,7 +490,7 @@ var ToolsControl = L.Control.extend({
     link.setAttribute("aria-label", title);
 
     L.DomEvent.disableClickPropagation(link);
-    L.DomEvent.on(link, "click", stop);
+    // L.DomEvent.on(link, "click", stop);
     L.DomEvent.on(link, "click", fn, this);
     L.DomEvent.on(link, "click", this._refocusOnMap, this);
 

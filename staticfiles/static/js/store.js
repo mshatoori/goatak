@@ -5,6 +5,7 @@ var store = {
     ts: 0,
     sensors: [],
     flows: [],
+    types: null,
     unitToSend: {},
     emergency: {
       type: "b-a-o-tbl",
@@ -25,7 +26,7 @@ var store = {
       body: JSON.stringify(app.cleanUnit(item)),
     };
 
-    return fetch("/unit", requestOptions)
+    return fetch(window.baseUrl + "/unit", requestOptions)
       .then((response) => response.json())
       .then((response) => {
         console.log("store.createItem fetch response:", response);
@@ -35,13 +36,13 @@ var store = {
   },
 
   fetchItems: function () {
-    return fetch("/unit")
+    return fetch(window.baseUrl + "/unit")
       .then((response) => response.json())
       .then((response) => this._processItems(response));
   },
 
   removeItem: function (uid) {
-    return fetch("unit/" + uid, { method: "DELETE" })
+    return fetch(window.baseUrl + " unit/" + uid, { method: "DELETE" })
       .then(function (response) {
         return response.json();
       })
@@ -97,7 +98,7 @@ var store = {
 
     if (!partial) {
       for (const k of this.state.items.keys()) {
-        if (!keys.has(k)) {
+        if (!keys.has(k) && !this.state.items.get(k).isNew) {
           console.log("REMOVED: ", k, this.state.items.get(k));
           results["removed"].push(this.state.items.get(k));
           this.state.items.delete(k);
@@ -118,7 +119,7 @@ var store = {
       port: parseInt(sensorData.port),
       interval: parseInt(sensorData.interval),
     };
-    fetch("/sensors", {
+    fetch(window.baseUrl + "/sensors", {
       headers: { "Content-Type": "application/json" },
       method: "POST",
       body: JSON.stringify(sensorJson),
@@ -128,7 +129,7 @@ var store = {
   },
 
   fetchSensors() {
-    fetch("/sensors")
+    fetch(window.baseUrl + "/sensors")
       .then((response) => response.json())
       .then((response) => (this.state.sensors = response));
   },
@@ -165,7 +166,7 @@ var store = {
       port: parseInt(flowData.port),
       direction: parseInt(flowData.direction),
     };
-    fetch("/flows", {
+    fetch(window.baseUrl + "/flows", {
       headers: { "Content-Type": "application/json" },
       method: "POST",
       body: JSON.stringify(flowJson),
@@ -175,7 +176,7 @@ var store = {
   },
 
   fetchFlows() {
-    fetch("/flows")
+    fetch(window.baseUrl + "/flows")
       .then((response) => response.json())
       .then((response) => (this.state.flows = response));
   },
@@ -205,5 +206,98 @@ var store = {
   clearMessageAction() {
     if (this.debug) console.log("clearMessageAction triggered");
     this.state.message = "";
+  },
+
+  // Types
+  fetchTypes: function () {
+    let vm = this;
+    fetch(window.baseUrl + "/types")
+      .then(function (response) {
+        return response.json();
+      })
+      .then(function (data) {
+        vm.state.types = data;
+      });
+  },
+
+  getSidc: function (s) {
+    let curr = this.state.types;
+
+    if (s === "") {
+      return curr;
+    }
+
+    if (!curr?.next) {
+      return null;
+    }
+
+    for (;;) {
+      for (const k of curr.next) {
+        if (k.code === s) {
+          return k;
+        }
+
+        if (s.startsWith(k.code)) {
+          curr = k;
+          break;
+        }
+      }
+    }
+    return null;
+  },
+
+  getRootSidc: function (s) {
+    let curr = this.state.types;
+
+    if (!curr?.next) {
+      return null;
+    }
+
+    for (;;) {
+      let found = false;
+      for (const k of curr.next) {
+        if (k.code === s) {
+          return curr;
+        }
+
+        if (s.startsWith(k.code)) {
+          curr = k;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        return null;
+      }
+    }
+  },
+
+  sidcFromType: function (s) {
+    if (!s.startsWith("a-")) return "";
+
+    let n = s.split("-");
+
+    let sidc = "S" + n[1];
+
+    if (n.length > 2) {
+      sidc += n[2] + "P";
+    } else {
+      sidc += "-P";
+    }
+
+    if (n.length > 3) {
+      for (let i = 3; i < n.length; i++) {
+        if (n[i].length > 1) {
+          break;
+        }
+        sidc += n[i];
+      }
+    }
+
+    if (sidc.length < 10) {
+      sidc += "-".repeat(10 - sidc.length);
+    }
+
+    return sidc.toUpperCase();
   },
 };
