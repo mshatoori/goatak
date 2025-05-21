@@ -222,6 +222,7 @@
               :map="map"
               :casevac-location="casevacLocation"
               :on-done-casevac="onDoneCasevac"
+              v-on:save="saveItem"
             ></sidebar>
           </div>
         </div>
@@ -317,6 +318,7 @@
   <script src="static/js/store.js"></script>
   <script src="static/js/map.js"></script>
 
+  <script src="static/js/components/HierarchySelector.js"></script>
   <script src="static/js/components/UnitDetails.js"></script>
   <script src="static/js/components/PointDetails.js"></script>
   <script src="static/js/components/DrawingDetails.js"></script>

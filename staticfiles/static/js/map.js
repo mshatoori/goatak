@@ -164,7 +164,7 @@ let app = new Vue({
         u.geofence_aff = "All";
         // u.geofence_send = false
 
-        vm.sendUnit(u, function () {
+        vm.saveItem(u, function () {
           vm.setActiveItemUid(u.uid, true);
           new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
         });
@@ -218,7 +218,7 @@ let app = new Vue({
 
         console.log("TrySending:", u);
 
-        vm.sendUnit(u, function () {
+        vm.saveItem(u, function () {
           vm.setActiveItemUid(u.uid, true);
           new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
         });
@@ -859,7 +859,7 @@ let app = new Vue({
       //     u.parent_callsign = this.config.callsign;
       //   }
       //   const vm = this;
-      //   this.sendUnit(u, function () {
+      //   this.saveItem(u, function () {
       //     vm.setActiveItemUid(u.uid, true);
       //     new bootstrap.Modal(document.querySelector("#edit")).show();
       //   });
@@ -913,7 +913,7 @@ let app = new Vue({
       if (!this.beacon_active) {
         this.beacon_active = true;
         const alert = this.createEmergencyAlert(emergency_type);
-        this.sendUnit(alert);
+        this.saveItem(alert);
       }
     },
 
@@ -926,11 +926,11 @@ let app = new Vue({
         } else {
           alert = this.createEmergencyAlert("b-a-o-can");
         }
-        this.sendUnit(alert);
+        this.saveItem(alert);
       }
     },
 
-    sendUnit: function (u, cb) {
+    saveItem: function (u, cb) {
       console.log("Sending:", this.cleanUnit(u));
       store.createItem(u).then((results) => {
         this.processUnits(results);
@@ -1029,7 +1029,7 @@ let app = new Vue({
 
       console.log(u);
 
-      this.sendUnit(u);
+      this.saveItem(u);
     },
 
     removeTool: function (name) {
@@ -1145,7 +1145,7 @@ let app = new Vue({
       this.map.removeLayer(this.casevacMarker);
       this.casevacLocation = null;
       if (u !== null) {
-        this.sendUnit(u);
+        this.saveItem(u);
       }
     },
 

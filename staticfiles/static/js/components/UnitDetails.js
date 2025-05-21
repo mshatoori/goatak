@@ -23,6 +23,7 @@ Vue.component("UnitDetails", {
   },
   methods: {
     getSidc: (s) => store.getSidc(s),
+    getRootSidc: (s) => store.getRootSidc(s),
     milImg: function (item) {
       return getMilIcon(item, false).uri;
     },
@@ -62,6 +63,8 @@ Vue.component("UnitDetails", {
         isNew: this.item.isNew || false, // Include isNew flag
       };
 
+      console.log("Editing Data:", this.editingData); // Added log
+
       // Initialize root_sidc and subtype if not present
       if (!this.item.root_sidc) {
         this.editingData.root_sidc = this.getSidc(
@@ -83,12 +86,14 @@ Vue.component("UnitDetails", {
       for (const key in this.editingData) {
         this.item[key] = this.editingData[key];
       }
-      // Ensure the item's type is updated based on the selected subtype
-      this.item.type = this.editingData.subtype;
 
-      // Save to server/store
+      this.item["type"] = "a-" + this.item["aff"] + "-" + this.item.subtype;
+      this.item["sidc"] = store.sidcFromType(this.item["type"]);
+
       this.editing = false;
       this.editingData = null;
+
+      this.$emit("save", this.item);
     },
     openChat: function (uid, callsign) {
       // Implement chat opening functionality
@@ -100,12 +105,24 @@ Vue.component("UnitDetails", {
       this.editingData.subtype = code;
     },
   },
+  computed: {
+    renderedItem: function () {
+      if (this.editing)
+        return {
+          ...this.editingData,
+          sidc: store.sidcFromType(
+            "a-" + this.editingData["aff"] + "-" + this.editingData.subtype
+          ),
+        };
+      return this.item;
+    },
+  },
   template: html`
     <div class="card">
       <!-- Header -->
       <div class="card-header">
         <span class="pull-left fw-bold" v-on:click.stop="mapToUnit(item)">
-          <img :src="milImg(item)" /> {{ getUnitName(item) }}
+          <img :src="milImg(renderedItem)" /> {{ getUnitName(renderedItem) }}
           <span v-if="item.status"> ({{ item.status }}) </span>
           <img
             height="24"
@@ -317,45 +334,10 @@ Vue.component("UnitDetails", {
               </select>
             </div>
           </div>
-          <div class="form-group row mb-3" v-if="editingData.root_sidc">
-            <label class="col-sm-4 col-form-label" for="edit-subtype"
-              >نوع</label
-            >
-            <div class="col-sm-8 row">
-              <div class="col-2">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  v-if="editingData.root_sidc.code !== ''"
-                  v-on:click="setFormRootSidc(getRootSidc(editingData.root_sidc.code).code)"
-                >
-                  <
-                </button>
-              </div>
-              <div class="col-8">
-                <select
-                  class="form-select"
-                  id="edit-subtype"
-                  v-model="editingData.subtype"
-                >
-                  <option
-                    v-for="t in editingData.root_sidc.next"
-                    :value="t.code"
-                  >
-                    {{ t.name }}
-                  </option>
-                </select>
-              </div>
-              <div class="col-2">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  v-if="getSidc(editingData.subtype).next"
-                  v-on:click="setFormRootSidc(editingData.subtype)"
-                >
-                  >
-                </button>
-              </div>
+          <div class="form-group row my-2 mx-2">
+            <div class="col-12">
+              <label class="my-1 mr-2">نوع</label>
+              <hierarchy-selector v-model="editingData.subtype" />
             </div>
           </div>
           <div class="form-group row mb-3">
@@ -368,19 +350,6 @@ Vue.component("UnitDetails", {
                 id="edit-remarks"
                 rows="3"
                 v-model="editingData.text"
-              ></textarea>
-            </div>
-          </div>
-          <div class="form-group row mb-3">
-            <label for="edit-websensor" class="col-sm-4 col-form-label"
-              >اطلاعات اضافه</label
-            >
-            <div class="col-sm-8">
-              <textarea
-                class="form-control"
-                id="edit-websensor"
-                rows="3"
-                v-model="editingData.web_sensor"
               ></textarea>
             </div>
           </div>

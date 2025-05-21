@@ -109,6 +109,10 @@ Vue.component("Sidebar", {
       };
       this.switchTab("item-details");
     },
+    onSave: function (value) {
+      console.log("save@sidebar", value);
+      this.$emit("save", value);
+    },
   },
 
   watch: {
@@ -332,6 +336,7 @@ Vue.component("Sidebar", {
             :delete-item="deleteCurrent"
             :on-done="onDoneCasevac"
             :config="config"
+            v-on:save="onSave"
           ></item-details>
         </div>
       </div>

@@ -47,6 +47,7 @@ func NewHttp(app *App, address string) *air.Air {
 
 	srv.GET("/unit", getUnitsHandler(app))
 	srv.POST("/unit", addItemHandler(app))
+	srv.OPTIONS("/unit", optionsUnitHandler())
 	srv.GET("/message", getMessagesHandler(app))
 	srv.POST("/message", addMessageHandler(app))
 	srv.DELETE("/unit/:uid", deleteItemHandler(app))
@@ -360,6 +361,9 @@ func addItemHandler(app *App) air.Handler {
 			app.SendMsg(msg.GetTakMessage())
 		}
 
+		app.logger.Error("ERRRRRR", "msg", msg == nil)
+		app.logger.Error("ORRRRRR", "wu", wu)
+
 		var u *model.Item
 		if u = app.items.Get(msg.GetUID()); u != nil {
 			u.Update(msg)
@@ -643,4 +647,18 @@ func getLayers(mapServer string) []map[string]any {
 	//layers = append(layers, map[string]any)
 
 	return layers
+}
+
+func optionsUnitHandler() air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		// Set CORS headers
+		res.Header.Set("Access-Control-Allow-Origin", "http://127.0.0.1:5500")
+		res.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+		res.Header.Set("Access-Control-Allow-Headers", "Content-Type")
+		res.Header.Set("Access-Control-Max-Age", "86400") // 24 hours
+		
+		// Return 200 OK status for preflight requests
+		res.Status = 200
+		return nil
+	}
 }

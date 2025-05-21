@@ -51,6 +51,10 @@ Vue.component("ItemDetails", {
       // Implement chat opening functionality
       console.log("Opening chat with", uid, callsign);
     },
+    onSave(value) {
+      console.log("SAVE@item.detail");
+      this.$emit("save", value);
+    },
   },
   template: `
     <div>
@@ -84,6 +88,7 @@ Vue.component("ItemDetails", {
         :delete-item="deleteItem"
         :on-done="onDone"
         :config="config"
+        v-on:save="onSave"
       ></component>
     </div>
   `,
