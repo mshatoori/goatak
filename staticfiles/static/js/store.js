@@ -17,6 +17,7 @@ var store = {
   // Items
   createItem: function (item) {
     console.log("store.createItem called with:", item);
+    item.isNew = false;
     this.state.items.set(item.uid, item);
     this.state.ts += 1;
 
@@ -42,19 +43,29 @@ var store = {
   },
 
   removeItem: function (uid) {
-    return fetch(window.baseUrl + " unit/" + uid, { method: "DELETE" })
+    if (this.state.items.get(uid)?.isNew) {
+      console.warn("[removeItem] Item is new:", uid);
+
+      return new Promise((resolve, _reject) => {
+        resolve(this.handleItemChangeMessage(this.state.items.get(uid), true));
+      });
+    }
+
+    return fetch(window.baseUrl + "/unit/" + uid, { method: "DELETE" })
       .then(function (response) {
         return response.json();
       })
       .then(({ units }) => this._processItems(units));
   },
 
-  handleWSMessage: function (item, is_delete = false) {
+  handleItemChangeMessage: function (item, is_delete = false) {
     if (is_delete) {
       this.state.items.delete(item.uid);
       this.state.ts += 1;
       return {
+        added: [],
         removed: [item],
+        updated: [],
       };
     }
     return this._processItems([item], true);

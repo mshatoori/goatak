@@ -1,13 +1,5 @@
 Vue.component("UnitDetails", {
-  props: [
-    "item",
-    "coords",
-    "map",
-    "locked_unit_uid",
-    "deleteItem",
-    "onDone",
-    "config",
-  ],
+  props: ["item", "coords", "map", "locked_unit_uid", "onDone", "config"],
   data: function () {
     return {
       editing: false,
@@ -17,9 +9,18 @@ Vue.component("UnitDetails", {
   },
   mounted: function () {
     // Automatically start editing if this is a new item
-    if (this.item && this.item.isNew === true) {
+    if (this.item && this.item.isNew) {
       this.$nextTick(() => this.startEditing());
     }
+  },
+  watch: {
+    item: function (newVal, oldVal) {
+      if (newVal && newVal.uid !== oldVal.uid) {
+        if (newVal.isNew) {
+          this.$nextTick(() => this.startEditing());
+        }
+      }
+    },
   },
   methods: {
     getSidc: (s) => store.getSidc(s),
@@ -80,6 +81,10 @@ Vue.component("UnitDetails", {
     cancelEditing: function () {
       this.editing = false;
       this.editingData = null;
+
+      if (this.item.isNew) {
+        this.deleteItem();
+      }
     },
     saveEditing: function () {
       // Update the item with the edited data
@@ -94,6 +99,9 @@ Vue.component("UnitDetails", {
       this.editingData = null;
 
       this.$emit("save", this.item);
+    },
+    deleteItem: function () {
+      this.$emit("delete", this.item.uid);
     },
     openChat: function (uid, callsign) {
       // Implement chat opening functionality

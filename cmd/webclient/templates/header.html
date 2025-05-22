@@ -28,8 +28,26 @@
   <script src="/static/js/vue.js"></script>
   <script src="/static/js/milsymbol.js"></script>
   <!-- Load component index first to ensure proper component loading order -->
-  <script src="/static/js/components/index.js"></script>
-  [[ range .js ]]
-  <script src="/static/js/[[.]]"></script>
-  [[ end ]]
+  <script>
+    window.baseUrl = "http://localhost:8081";
+  </script>
+  <script src="static/js/utils.js"></script>
+  <script src="static/js/store.js"></script>
+  <script src="static/js/map.js"></script>
+
+  <script src="static/js/components/HierarchySelector.js"></script>
+  <script src="static/js/components/UnitDetails.js"></script>
+  <script src="static/js/components/PointDetails.js"></script>
+  <script src="static/js/components/DrawingDetails.js"></script>
+  <script src="static/js/components/CasevacDetails.js"></script>
+  <script src="static/js/components/item.details.js"></script>
+  <script src="static/js/components/alarms.js"></script>
+  <script src="static/js/components/casevacform.js"></script>
+  <script src="static/js/components/cotlog.js"></script>
+  <script src="static/js/components/flows.js"></script>
+  <script src="static/js/components/overlays.js"></script>
+  <script src="static/js/components/send.js"></script>
+  <script src="static/js/components/sensorsmodal.js"></script>
+  <script src="static/js/components/sidebar.js"></script>
+  <script src="static/js/components/userinfo.js"></script>
 </html>

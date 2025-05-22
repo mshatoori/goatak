@@ -48,6 +48,7 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.GET("/unit", getUnitsHandler(app))
 	srv.POST("/unit", addItemHandler(app))
 	srv.OPTIONS("/unit", optionsUnitHandler())
+	srv.OPTIONS("/unit/:uid", optionsUnitHandler())
 	srv.GET("/message", getMessagesHandler(app))
 	srv.POST("/message", addMessageHandler(app))
 	srv.DELETE("/unit/:uid", deleteItemHandler(app))
@@ -73,16 +74,18 @@ func NewHttp(app *App, address string) *air.Air {
 func getIndexHandler(app *App, r *staticfiles.Renderer) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
 		data := map[string]any{
-			"js": []string{"utils.js", "store.js", "map.js"},
+			"js": []string{
+				// "utils.js", "store.js", "map.js"
+			},
 		}
 
-		compf, err := staticfiles.StaticFiles.ReadDir("static/js/components")
-		if err != nil {
-			return err
-		}
-		for _, f := range compf {
-			data["js"] = append(data["js"].([]string), fmt.Sprintf("components/%s", f.Name()))
-		}
+		// compf, err := staticfiles.StaticFiles.ReadDir("static/js/components")
+		// if err != nil {
+		// 	return err
+		// }
+		// for _, f := range compf {
+		// 	data["js"] = append(data["js"].([]string), fmt.Sprintf("components/%s", f.Name()))
+		// }
 
 		s, err := r.Render(data, "map.html", "header.html")
 		if err != nil {
@@ -652,8 +655,8 @@ func getLayers(mapServer string) []map[string]any {
 func optionsUnitHandler() air.Handler {
 	return func(req *air.Request, res *air.Response) error {
 		// Set CORS headers
-		res.Header.Set("Access-Control-Allow-Origin", "http://127.0.0.1:5500")
-		res.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+		res.Header.Set("Access-Control-Allow-Origin", "*")
+		res.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE")
 		res.Header.Set("Access-Control-Allow-Headers", "Content-Type")
 		res.Header.Set("Access-Control-Max-Age", "86400") // 24 hours
 		
@@ -662,3 +665,4 @@ func optionsUnitHandler() air.Handler {
 		return nil
 	}
 }
+

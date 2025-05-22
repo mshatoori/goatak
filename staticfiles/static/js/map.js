@@ -256,7 +256,7 @@ let app = new Vue({
   computed: {
     activeItem: function () {
       return this.activeItemUid
-        ? this.activeItemUid && this.getCurrentUnit()
+        ? this.activeItemUid && this.getActiveItem()
         : null;
     },
   },
@@ -578,11 +578,11 @@ let app = new Vue({
     processWS: function (u) {
       if (u.type === "unit") {
         if (u.unit.uid === this.config.uid) this.processMe(u.unit);
-        else this.processUnits(store.handleWSMessage(u.unit));
+        else this.processUnits(store.handleItemChangeMessage(u.unit));
       }
 
       if (u.type === "delete") {
-        this.processUnits(store.handleWSMessage(u.unit, true));
+        this.processUnits(store.handleItemChangeMessage(u.unit, true));
       }
 
       if (u.type === "chat") {
@@ -591,9 +591,9 @@ let app = new Vue({
       }
     },
     removeFromAllOverlays(obj) {
-      console.log("=== removeFromAllOverlays", Object.values(this.overlays));
+      // console.log("=== removeFromAllOverlays", Object.values(this.overlays));
       for (const overlay of Object.values(this.overlays)) {
-        console.log("removeFromAllOverlays", obj, overlay);
+        // console.log("removeFromAllOverlays", obj, overlay);
         obj.removeFrom(overlay);
       }
     },
@@ -649,25 +649,12 @@ let app = new Vue({
       unit.marker.bindTooltip(popup(unit));
     },
 
-    removeUnit: function (uid) {
-      if (!this.units.has(uid)) return;
-
-      let item = this.units.get(uid);
-      if (item.marker) {
-        this.getItemOverlay(item).removeLayer(item.marker);
-        item.marker.remove();
-        if (item.infoMarker) {
-          this.getItemOverlay(item).removeLayer(item.infoMarker);
-          item.infoMarker.remove();
-        }
-      }
-      this.units.delete(uid);
-      if (this.activeItemUid === uid) {
-        this.setActiveItemUid(null, false);
-      }
-    },
-
     setActiveItemUid: function (uid, follow) {
+      let currentActiveItem = this.getActiveItem();
+      if (currentActiveItem?.isNew && currentActiveItem.uid != uid) {
+        // Remove previous unsaved item
+        this.deleteItem(currentActiveItem.uid);
+      }
       if (uid && this.sharedState.items.has(uid)) {
         this.activeItemUid = uid;
         let u = this.sharedState.items.get(uid);
@@ -679,9 +666,9 @@ let app = new Vue({
       }
     },
 
-    getCurrentUnit: function () {
+    getActiveItem: function () {
       console.log(
-        "[getCurrentUnit!] ",
+        "[getActiveItem!] ",
         this.activeItemUid,
         this.sharedState.items.has(this.activeItemUid),
         this.sharedState.items.get(this.activeItemUid)
@@ -938,6 +925,11 @@ let app = new Vue({
       });
     },
 
+    deleteItem: function (uid) {
+      console.debug("Deleting:", uid);
+      store.removeItem(uid).then((units) => this.processUnits(units));
+    },
+
     formFromUnit: function (u) {
       if (!u) {
         this.form_unit = {
@@ -1002,7 +994,7 @@ let app = new Vue({
           ...u,
         };
       } else {
-        u = this.getCurrentUnit();
+        u = this.getActiveItem();
         if (!u) {
           return;
         }
@@ -1195,7 +1187,7 @@ let app = new Vue({
     },
 
     cancelEditForm: function () {
-      this.formFromUnit(this.getCurrentUnit());
+      this.formFromUnit(this.getActiveItem());
     },
 
     cleanUnit: function (u) {
@@ -1213,7 +1205,6 @@ let app = new Vue({
       let unit = this.sharedState.items.get(uid);
       store.removeItem(uid).then((units) => this.processUnits(units));
       this.map.closePopup(unit.marker.contextmenu);
-      // this.removeUnit(this.activeItemUid);
     },
 
     menuSendAction: function (uid) {
@@ -1223,12 +1214,12 @@ let app = new Vue({
       this.map.closePopup(unit.marker.contextmenu);
     },
 
-    deleteCurrentUnit: function () {
-      if (!this.activeItemUid) return;
-      store
-        .removeItem(this.activeItemUid)
-        .then((units) => this.processUnits(units));
-    },
+    // deleteCurrentUnit: function () {
+    //   if (!this.activeItemUid) return;
+    //   store
+    //     .removeItem(this.activeItemUid)
+    //     .then((units) => this.processUnits(units));
+    // },
 
     sendMessage: function () {
       let msg = {

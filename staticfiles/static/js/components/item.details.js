@@ -55,8 +55,12 @@ Vue.component("ItemDetails", {
       console.log("SAVE@item.detail");
       this.$emit("save", value);
     },
+    onDelete(value) {
+      console.log("Delete@item.detail");
+      this.$emit("delete", value);
+    },
   },
-  template: `
+  template: html`
     <div>
       <!-- Contact Chat Button -->
       <div v-if="isContact" class="card">
@@ -89,6 +93,7 @@ Vue.component("ItemDetails", {
         :on-done="onDone"
         :config="config"
         v-on:save="onSave"
+        v-on:delete="onDelete"
       ></component>
     </div>
   `,

@@ -213,7 +213,6 @@
             <sidebar
               :toggle-overlay="toggleOverlay"
               :config="config"
-              :delete-current-unit="deleteCurrentUnit"
               :check-emergency="checkEmergency"
               :config-updated="configUpdated"
               :coords="coords"
@@ -223,6 +222,7 @@
               :casevac-location="casevacLocation"
               :on-done-casevac="onDoneCasevac"
               v-on:save="saveItem"
+              v-on:delete="deleteItem"
             ></sidebar>
           </div>
         </div>

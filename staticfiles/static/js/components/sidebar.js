@@ -14,12 +14,6 @@ Vue.component("Sidebar", {
       }
     },
 
-    deleteCurrent: function () {
-      this.deleteCurrentUnit();
-      this.switchTab("overlays");
-      this.activeItem = null; // Clear active item after deletion
-    },
-
     getActiveItemName: function () {
       if (this.activeItem) {
         if (
@@ -113,6 +107,10 @@ Vue.component("Sidebar", {
       console.log("save@sidebar", value);
       this.$emit("save", value);
     },
+    onDelete: function (value) {
+      console.log("delete@sidebar", value);
+      this.$emit("delete", value);
+    },
   },
 
   watch: {
@@ -190,14 +188,13 @@ Vue.component("Sidebar", {
     "configUpdated",
     "activeItem",
     "locked_unit_uid",
-    "deleteCurrentUnit",
     "checkEmergency",
     "map",
     "casevacLocation",
     "onDoneCasevac",
   ],
   inject: ["getTool", "removeTool"],
-  template: `
+  template: html`
     <div class="d-flex align-items-start">
       <div class="tab-content flex-grow-1" id="v-pills-tabContent">
         <div
@@ -276,22 +273,38 @@ Vue.component("Sidebar", {
                   >
                 </div>
               </li>
-               <li class="list-group-item">
-                 <div class="btn-group" role="group" aria-label="Create Items">
-                    <button type="button" class="btn btn-success btn-sm" v-on:click="createNewPoint">
-                        <i class="bi bi-geo-alt-fill"></i> ایجاد نقطه
-                    </button>
-                     <button type="button" class="btn btn-success btn-sm" v-on:click="createNewUnit">
-                        <i class="bi bi-person-fill"></i> ایجاد نیرو
-                    </button>
-                     <button type="button" class="btn btn-success btn-sm" v-on:click="createNewDrawing('polygon')">
-                        <i class="bi bi-pentagon-fill"></i> ایجاد چندضلعی
-                    </button>
-                     <button type="button" class="btn btn-success btn-sm" v-on:click="createNewDrawing('route')">
-                        <i class="bi bi-bezier2"></i> ایجاد مسیر
-                    </button>
-                 </div>
-               </li>
+              <li class="list-group-item">
+                <div class="btn-group" role="group" aria-label="Create Items">
+                  <button
+                    type="button"
+                    class="btn btn-success btn-sm"
+                    v-on:click="createNewPoint"
+                  >
+                    <i class="bi bi-geo-alt-fill"></i> ایجاد نقطه
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-success btn-sm"
+                    v-on:click="createNewUnit"
+                  >
+                    <i class="bi bi-person-fill"></i> ایجاد نیرو
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-success btn-sm"
+                    v-on:click="createNewDrawing('polygon')"
+                  >
+                    <i class="bi bi-pentagon-fill"></i> ایجاد چندضلعی
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-success btn-sm"
+                    v-on:click="createNewDrawing('route')"
+                  >
+                    <i class="bi bi-bezier2"></i> ایجاد مسیر
+                  </button>
+                </div>
+              </li>
               <li v-if="getTool('redx')" class="mt-1 list-group-item">
                 <span class="badge bg-danger">نشان</span>: {{
                 Utils.printCoordsll(getTool('redx').getLatLng()) }}
@@ -333,10 +346,10 @@ Vue.component("Sidebar", {
             :coords="coords"
             :map="map"
             :locked_unit_uid="locked_unit_uid"
-            :delete-item="deleteCurrent"
             :on-done="onDoneCasevac"
             :config="config"
             v-on:save="onSave"
+            v-on:delete="onDelete"
           ></item-details>
         </div>
       </div>
