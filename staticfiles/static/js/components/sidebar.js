@@ -246,7 +246,7 @@ Vue.component("Sidebar", {
         :class="{'d-none': isCollapsed}"
       >
         <div
-          class="tab-pane fade show active"
+          class="collapse show"
           id="v-pills-overlays"
           role="tabpanel"
           aria-labelledby="v-pills-overlays-tab"
@@ -255,7 +255,7 @@ Vue.component("Sidebar", {
         </div>
         <div
           v-if="config && config.callsign"
-          class="tab-pane fade"
+          class="collapse"
           id="v-pills-userinfo"
           role="tabpanel"
           aria-labelledby="v-pills-userinfo-tab"
@@ -269,7 +269,7 @@ Vue.component("Sidebar", {
           ></user-info>
         </div>
         <div
-          class="tab-pane fade"
+          class="collapse"
           id="v-pills-tools"
           role="tabpanel"
           aria-labelledby="v-pills-tools-tab"
@@ -383,7 +383,7 @@ Vue.component("Sidebar", {
 
         <!-- New Dynamic Item Details Tab -->
         <div
-          class="tab-pane fade"
+          class="collapse"
           id="v-pills-item-details"
           role="tabpanel"
           aria-labelledby="v-pills-item-details-tab"
@@ -410,8 +410,8 @@ Vue.component("Sidebar", {
         <button
           class="nav-link active"
           id="v-pills-overlays-tab"
-          data-bs-toggle="pill"
-          data-bs-target="#v-pills-overlays"
+          data-bs-toggle="collapse"
+          data-bs-target="#v-pills-overlays,.collapse.show"
           type="button"
           role="tab"
           aria-controls="v-pills-overlays"
@@ -423,8 +423,8 @@ Vue.component("Sidebar", {
         <button
           class="nav-link"
           id="v-pills-userinfo-tab"
-          data-bs-toggle="pill"
-          data-bs-target="#v-pills-userinfo"
+          data-bs-toggle="collapse"
+          data-bs-target="#v-pills-userinfo,.collapse.show"
           type="button"
           role="tab"
           aria-controls="v-pills-userinfo"
@@ -437,8 +437,8 @@ Vue.component("Sidebar", {
         <button
           class="nav-link"
           id="v-pills-tools-tab"
-          data-bs-toggle="pill"
-          data-bs-target="#v-pills-tools"
+          data-bs-toggle="collapse"
+          data-bs-target="#v-pills-tools,.collapse.show"
           type="button"
           role="tab"
           aria-controls="v-pills-tools"
@@ -450,8 +450,8 @@ Vue.component("Sidebar", {
         <button
           class="nav-link"
           id="v-pills-item-details-tab"
-          data-bs-toggle="pill"
-          data-bs-target="#v-pills-item-details"
+          data-bs-toggle="collapse"
+          data-bs-target="#v-pills-item-details,.collapse.show"
           type="button"
           role="tab"
           aria-controls="v-pills-item-details"
