@@ -18,6 +18,39 @@
     <link rel="stylesheet" href="static/css/leaflet.draw.css" />
     <link rel="stylesheet" href="static/css/main.css" />
     <link rel="stylesheet" href="static/css/Vazirmatn-font-face.css" />
+    <style>
+      /* Sidebar collapse styles */
+      .sidebar-collapsed .col-auto.p-0 {
+        width: auto !important;
+        min-width: auto !important;
+      }
+
+      .sidebar-collapsed #map {
+        flex-grow: 1;
+      }
+
+      /* Transition for smooth collapse/expand */
+      .col-auto.p-0,
+      #map {
+        transition: all 0.3s ease;
+      }
+
+      /* Ensure the pills are always visible */
+      .nav-pills {
+        min-width: 120px;
+      }
+
+      /* Make the sidebar content have a fixed width when expanded */
+      .tab-content:not(.d-none) {
+        min-width: 300px;
+        width: 300px;
+      }
+
+      /* Add some spacing between pills and content */
+      .d-flex.align-items-start .nav-pills {
+        margin-right: 10px;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
@@ -206,10 +239,13 @@
       </nav>
 
       <div class="container-fluid vh-100 mh-100" style="padding-top: 4rem">
-        <div class="row h-100">
-          <div id="map" class="col-9 h-100" style="cursor: crosshair"></div>
+        <div class="row h-100" :class="{'sidebar-collapsed': sidebarCollapsed}">
+          <div id="map" class="col h-100" style="cursor: crosshair"></div>
 
-          <div class="col-3 p-0 h-100">
+          <div
+            class="col-auto p-0 h-100"
+            :class="{'sidebar-collapsed': sidebarCollapsed}"
+          >
             <sidebar
               :toggle-overlay="toggleOverlay"
               :config="config"
@@ -223,6 +259,7 @@
               :on-done-casevac="onDoneCasevac"
               v-on:save="saveItem"
               v-on:delete="deleteItem"
+              v-on:collapsed="updateSidebarCollapsed"
             ></sidebar>
           </div>
         </div>

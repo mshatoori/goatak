@@ -30,6 +30,7 @@ let app = new Vue({
     casevacLocation: null,
     casevacMarker: null,
 
+    sidebarCollapsed: false, // Track sidebar collapse state
     beacon_active: false,
   },
   provide: function () {
@@ -262,6 +263,11 @@ let app = new Vue({
   },
 
   methods: {
+    // Update sidebar collapsed state
+    updateSidebarCollapsed: function (isCollapsed) {
+      console.log("updateSidebarCollapsed", isCollapsed);
+      this.sidebarCollapsed = isCollapsed;
+    },
     getItemOverlay(item) {
       return this.overlays[item.category];
     },

@@ -4,6 +4,7 @@ Vue.component("Sidebar", {
       sharedState: store.state,
       editing: false, // This might not be needed here anymore as editing state is in detail components
       // activeItem: null,
+      isCollapsed: false, // Tracks sidebar collapse state
     };
   },
   methods: {
@@ -12,7 +13,25 @@ Vue.component("Sidebar", {
       if (triggerEl) {
         bootstrap.Tab.getOrCreateInstance(triggerEl).show();
       }
+
+      // const tab = bootstrap.Tab.getOrCreateInstance(triggerEl);
+      // tab.show();
+      // this.isCollapsed = false; // Expand sidebar when a tab is active
+      // this.$emit("collapsed", false); // Emit expanded state to parent
+      // }
     },
+
+    // Check if any tab is active
+    // checkActiveTabs: function () {
+    //   const activeTabs = document.querySelectorAll(
+    //     "#v-pills-tab .nav-link.active"
+    //   );
+    //   console.log("activetabs", activeTabs);
+    //   const isAnyTabActive = activeTabs.length > 0;
+    //   this.isCollapsed = !isAnyTabActive;
+    //   this.$emit("collapsed", this.isCollapsed);
+    //   return isAnyTabActive;
+    // },
 
     getActiveItemName: function () {
       if (this.activeItem) {
@@ -114,6 +133,10 @@ Vue.component("Sidebar", {
   },
 
   watch: {
+    isCollapsed: function (newVal) {
+      // Emit the collapsed state whenever it changes
+      this.$emit("collapsed", newVal);
+    },
     casevacLocation: function (newVal) {
       if (newVal) {
         // Create a temporary casevac item
@@ -194,9 +217,34 @@ Vue.component("Sidebar", {
     "onDoneCasevac",
   ],
   inject: ["getTool", "removeTool"],
+  // mounted() {
+  //   // Check if any tab is active on mount
+  //   this.$nextTick(() => {
+  //     this.checkActiveTabs();
+  //   });
+
+  //   // Listen for tab show/hide events from Bootstrap
+  //   const tabEl = document.querySelector("#v-pills-tab");
+  //   if (tabEl) {
+  //     // tabEl.addEventListener("hidden.bs.tab", () => {
+  //     //   console.log('tabEl.addEventListener("hidden.bs.tab"');
+  //     //   this.checkActiveTabs();
+  //     // });
+
+  //     tabEl.addEventListener("shown.bs.tab", (e) => {
+  //       console.log('tabEl.addEventListener("shown.bs.tab", () => {');
+  //       this.isCollapsed = false;
+  //       this.$emit("collapsed", false);
+  //     });
+  //   }
+  // },
   template: html`
-    <div class="d-flex align-items-start">
-      <div class="tab-content flex-grow-1" id="v-pills-tabContent">
+    <div class="d-flex align-items-start h-100">
+      <div
+        class="tab-content flex-grow-1 h-100"
+        id="v-pills-tabContent"
+        :class="{'d-none': isCollapsed}"
+      >
         <div
           class="tab-pane fade show active"
           id="v-pills-overlays"
@@ -369,6 +417,7 @@ Vue.component("Sidebar", {
           aria-controls="v-pills-overlays"
           aria-selected="true"
         >
+          <!-- v-on:click="switchTab('overlays')" -->
           لایه‌ها
         </button>
         <button
@@ -382,6 +431,7 @@ Vue.component("Sidebar", {
           aria-selected="false"
           v-if="config && config.callsign"
         >
+          <!-- v-on:click="switchTab('userinfo')" -->
           اطلاعات من
         </button>
         <button
@@ -394,6 +444,7 @@ Vue.component("Sidebar", {
           aria-controls="v-pills-tools"
           aria-selected="false"
         >
+          <!-- v-on:click="switchTab('tools')" -->
           ابزارها
         </button>
         <button
@@ -407,6 +458,7 @@ Vue.component("Sidebar", {
           aria-selected="false"
           v-if="activeItem"
         >
+          <!-- v-on:click="switchTab('item-details')" -->
           {{ getActiveItemName() }}
         </button>
       </div>
