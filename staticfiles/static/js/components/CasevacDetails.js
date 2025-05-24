@@ -1,13 +1,5 @@
 Vue.component("CasevacDetails", {
-  props: [
-    "item",
-    "coords",
-    "map",
-    "locked_unit_uid",
-    "deleteItem",
-    "onDone",
-    "config",
-  ],
+  props: ["item", "coords", "map", "locked_unit_uid", "config"],
   data: function () {
     return {
       editing: false,
@@ -20,6 +12,15 @@ Vue.component("CasevacDetails", {
     if (this.item && this.item.isNew === true) {
       this.$nextTick(() => this.startEditing());
     }
+  },
+  watch: {
+    item: function (newVal, oldVal) {
+      if (newVal && newVal.uid !== oldVal.uid) {
+        if (newVal.isNew) {
+          this.$nextTick(() => this.startEditing());
+        }
+      }
+    },
   },
   methods: {
     mapToUnit: function (unit) {
@@ -95,57 +96,13 @@ Vue.component("CasevacDetails", {
     cancelEditing: function () {
       this.editing = false;
       this.editingData = null;
-    },
-    sendCasevac: function () {
-      if (!this.editingData) return;
 
-      let now = new Date();
-      let stale = new Date(now);
-      stale.setDate(stale.getDate() + 365);
-      let uid =
-        this.item.uid ||
-        "MED." +
-          now.getDay() +
-          "." +
-          now.getHours() +
-          "" +
-          now.getMinutes() +
-          "" +
-          now.getSeconds();
-
-      let u = {
-        uid: uid,
-        category: "report",
-        callsign: uid,
-        sidc: "",
-        start_time: now,
-        last_seen: now,
-        stale_time: stale,
-        type: "b-r-f-h-c",
-        lat: this.item.lat,
-        lon: this.item.lon,
-        hae: 0,
-        speed: 0,
-        course: 0,
-        status: "",
-        text: "",
-        parent_uid: "",
-        parent_callsign: "",
-        local: true,
-        send: true,
-        web_sensor: "",
-        remarks: this.editingData.remarks,
-        casevac_detail: this.editingData.casevac_detail,
-      };
-
-      if (this.config && this.config.uid) {
-        u.parent_uid = this.config.uid;
-        u.parent_callsign = this.config.callsign;
+      if (this.item.isNew) {
+        this.deleteItem();
       }
-
-      this.onDone(u);
-      this.editing = false;
-      this.editingData = null;
+    },
+    deleteItem: function () {
+      this.$emit("delete", this.item.uid);
     },
   },
   template: `
@@ -644,7 +601,7 @@ Vue.component("CasevacDetails", {
             <button
               type="button"
               class="btn btn-primary"
-              v-on:click="sendCasevac"
+              v-on:click="saveEditing"
             >
               ذخیره
             </button>

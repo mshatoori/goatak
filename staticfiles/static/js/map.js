@@ -786,6 +786,108 @@ let app = new Vue({
       this.setActiveItemUid(u.uid, true); // Set the new unit as the current unit to display in sidebar
       // The sidebar watcher for activeItem should handle opening the sidebar and showing the form
     },
+    mapClickAddCasevac: function (e) {
+      console.log("mapClickAddCasevac called with event:", e);
+      let now = new Date();
+      let stale = new Date(now);
+      stale.setDate(stale.getDate() + 365);
+      let u = {
+        uid: uuidv4(), // Generate a UUID for the new casevac
+        category: "casevac", // Set category to casevac
+        callsign: "casevac-" + uuidv4().substring(0, 4), // Generate a simple callsign
+        sidc: "b-m-o-!!!!", // Set a default SIDC for now
+        start_time: now,
+        last_seen: now,
+        stale_time: stale,
+        type: "b-m-o-!!!!", // Set a default type for now
+        lat: e.latlng.lat,
+        lon: e.latlng.lng,
+        hae: 0,
+        speed: 0,
+        course: 0,
+        status: "",
+        text: "",
+        parent_uid: "",
+        parent_callsign: "",
+        local: true,
+        send: false, // Do not send immediately
+        web_sensor: "",
+        isNew: true, // Mark as a new item to trigger automatic edit mode
+        casevac_detail: { // Initialize casevac_detail
+          casevac: true,
+          freq: 0,
+          urgent: 0,
+          priority: 0,
+          routine: 0,
+          hoist: false,
+          extraction_equipment: false,
+          ventilator: false,
+          equipment_other: false,
+          equipment_detail: "",
+          litter: 0,
+          ambulatory: 0,
+          security: 0,
+          us_military: 0,
+          us_civilian: 0,
+          nonus_military: 0,
+          nonus_civilian: 0,
+          epw: 0,
+          child: 0,
+          hlz_marking: 0,
+        },
+      };
+      if (this.config && this.config.uid) {
+        u.parent_uid = this.config.uid;
+        u.parent_callsign = this.config.callsign;
+      }
+
+      console.log("New casevac created locally:", u);
+      store.state.items.set(u.uid, u); // Add the new casevac to the store
+      store.state.ts += 1; // Increment timestamp to trigger reactivity
+      this._processAddition(u); // Manually add the marker for the new casevac
+      this.setActiveItemUid(u.uid, true); // Set the new casevac as the current item to display in sidebar
+      // The sidebar watcher for activeItem should handle opening the sidebar and showing the form
+    },
+    mapClickAddUnit: function (e) {
+      console.log("mapClickAddUnit called with event:", e);
+      let now = new Date();
+      let stale = new Date(now);
+      stale.setDate(stale.getDate() + 365);
+      let u = {
+        uid: uuidv4(), // Generate a UUID for the new unit
+        category: "unit",
+        callsign: "unit-" + this.unit_num++, // Use unit_num for units
+        sidc: store.sidcFromType("a-h-G"),
+        start_time: now,
+        last_seen: now,
+        stale_time: stale,
+        type: "a-h-G",
+        lat: e.latlng.lat,
+        lon: e.latlng.lng,
+        hae: 0,
+        speed: 0,
+        course: 0,
+        status: "",
+        text: "",
+        parent_uid: "",
+        parent_callsign: "",
+        local: true,
+        send: false, // Do not send immediately
+        web_sensor: "",
+        isNew: true, // Mark as a new item to trigger automatic edit mode
+      };
+      if (this.config && this.config.uid) {
+        u.parent_uid = this.config.uid;
+        u.parent_callsign = this.config.callsign;
+      }
+
+      console.log("New unit created locally:", u);
+      store.state.items.set(u.uid, u); // Add the new unit to the store
+      store.state.ts += 1; // Increment timestamp to trigger reactivity
+      this._processAddition(u); // Manually add the marker for the new unit
+      this.setActiveItemUid(u.uid, true); // Set the new unit as the current unit to display in sidebar
+      // The sidebar watcher for activeItem should handle opening the sidebar and showing the form
+    },
     mapClick: function (e) {
       if (this.inDrawMode) {
         return;
@@ -795,22 +897,11 @@ let app = new Vue({
         this.mode = "map";
         return;
       }
-      // if (this.mode === "add_casevac") {
-      //   this.casevacLocation = e.latlng;
-      //   if (this.casevacMarker) {
-      //     this.map.removeLayer(this.casevacMarker);
-      //   }
-      //   const casevacIcon = L.icon({
-      //     iconUrl: "/static/icons/casevac.svg",
-      //     iconSize: [32, 32],
-      //     iconAnchor: [16, 16],
-      //   });
-      //   this.casevacMarker = L.marker(this.casevacLocation, {
-      //     icon: casevacIcon,
-      //   }).addTo(this.map);
-      //   this.mode = "map";
-      //   return;
-      // }
+      if (this.mode === "add_casevac") {
+        this.mapClickAddCasevac(e);
+        this.mode = "map";
+        return;
+      }
       // if (this.modeIs("redx")) {
       //   this.addOrMove("redx", e.latlng, "/static/icons/x.png");
       //   return;
@@ -1299,3 +1390,4 @@ let app = new Vue({
     },
   },
 });
+

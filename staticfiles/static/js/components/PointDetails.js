@@ -1,13 +1,5 @@
 Vue.component("PointDetails", {
-  props: [
-    "item",
-    "coords",
-    "map",
-    "locked_unit_uid",
-    "deleteItem",
-    "onDone",
-    "config",
-  ],
+  props: ["item", "coords", "map", "locked_unit_uid", "onDone", "config"],
   data: function () {
     return {
       editing: false,
@@ -20,6 +12,15 @@ Vue.component("PointDetails", {
     if (this.item && this.item.isNew === true) {
       this.$nextTick(() => this.startEditing());
     }
+  },
+  watch: {
+    item: function (newVal, oldVal) {
+      if (newVal && newVal.uid !== oldVal.uid) {
+        if (newVal.isNew) {
+          this.$nextTick(() => this.startEditing());
+        }
+      }
+    },
   },
   methods: {
     mapToUnit: function (unit) {
@@ -48,6 +49,10 @@ Vue.component("PointDetails", {
     cancelEditing: function () {
       this.editing = false;
       this.editingData = null;
+
+      if (this.item.isNew) {
+        this.deleteItem();
+      }
     },
     saveEditing: function () {
       // Update the item with the edited data
@@ -55,9 +60,12 @@ Vue.component("PointDetails", {
         this.item[key] = this.editingData[key];
       }
 
-      // Save to server/store
+      this.$emit("save", this.item);
       this.editing = false;
       this.editingData = null;
+    },
+    deleteItem: function () {
+      this.$emit("delete", this.item.uid);
     },
   },
   template: `
@@ -192,8 +200,6 @@ Vue.component("PointDetails", {
               />
             </div>
           </div>
-:start_line:195
--------
           <div class="form-group row mb-3">
             <label for="edit-type" class="col-sm-4 col-form-label">نوع</label>
             <div class="col-sm-8">
