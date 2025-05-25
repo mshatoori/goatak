@@ -235,10 +235,10 @@ Vue.component("PointDetails", {
                 id="edit-type"
                 v-model="editingData.type"
               >
-                <option value="b-m-p-s-m">Spot</option>
-                <option value="b-m-p-w-GOTO">WayPt</option>
-                <option value="b-m-p-s-p-op">OP</option>
-                <option value="b-m-p-a">Aim</option>
+                <option value="b-m-p-s-m">محل</option>
+                <option value="b-m-p-w-GOTO">نشانگر مسیر</option>
+                <option value="b-m-p-s-p-op">نقطه دیده‌بانی</option>
+                <option value="b-m-p-a">نقطه هدف</option>
               </select>
             </div>
           </div>
