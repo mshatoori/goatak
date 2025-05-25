@@ -798,15 +798,14 @@ let app = new Vue({
       let stale = new Date(now);
       stale.setDate(stale.getDate() + 365);
       let uid =
-        this.item.uid ||
         "MED." +
-          now.getDay() +
-          "." +
-          now.getHours() +
-          "" +
-          now.getMinutes() +
-          "" +
-          now.getSeconds();
+        now.getDay() +
+        "." +
+        now.getHours() +
+        "" +
+        now.getMinutes() +
+        "" +
+        now.getSeconds();
       let u = {
         uid: uid,
         category: "report",

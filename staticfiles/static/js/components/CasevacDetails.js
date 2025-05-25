@@ -155,7 +155,7 @@ Vue.component("CasevacDetails", {
       <!-- Header -->
       <div class="card-header">
         <span class="pull-left fw-bold" v-on:click.stop="mapToUnit(item)">
-          <img src="/static/icons/casevac.svg" height="24" /> درخواست امداد
+          <img src="/static/icons/casevac.svg" height="24" /> {{ item.callsign }}
           <img
             height="24"
             src="/static/icons/coord_unlock.png"
