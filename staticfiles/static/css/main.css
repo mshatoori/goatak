@@ -1,68 +1,68 @@
 table.units {
-    font-size: 10pt;
+  font-size: 10pt;
 }
 
 div.info {
-    font-size: 11pt;
+  font-size: 11pt;
 }
 
 #app {
-    font-family: 'Vazirmatn', sans-serif;
-    direction: rtl;
+  font-family: "Vazirmatn", sans-serif;
+  direction: rtl;
 }
 
 .leaflet-marker-icon.my-marker-info.leaflet-zoom-animated.leaflet-interactive {
-    color: rgba(255, 0, 0, 0.3);
-    font-family: 'Vazirmatn', sans-serif;
-    font-size: 13px;
-    margin-left: 16px;
-    margin-top: 10px;
-    border: black 1px solid;
-    border-radius: 4px;
-    padding: 2px;
-    background: rgba(245, 222, 179, 0.3);
-    width: max-content;
+  color: rgba(255, 0, 0, 0.3);
+  font-family: "Vazirmatn", sans-serif;
+  font-size: 13px;
+  margin-left: 16px;
+  margin-top: 10px;
+  border: black 1px solid;
+  border-radius: 4px;
+  padding: 2px;
+  background: rgba(245, 222, 179, 0.3);
+  width: max-content;
 }
 
 .leaflet-marker-icon.my-marker-info.leaflet-zoom-animated.leaflet-interactive:hover {
-    background: rgba(245, 222, 179, 0.8);
-    color: rgba(255, 0, 0, 0.8);
+  background: rgba(245, 222, 179, 0.8);
+  color: rgba(255, 0, 0, 0.8);
 }
 
 .nav-item {
-    border: 1px gray solid;
-    border-radius: 11px;
-    margin: 0 5px;
+  border: 1px gray solid;
+  border-radius: 11px;
+  margin: 0 5px;
 }
 
 .nav-item span {
-    margin-inline-start: 5px;
+  margin-inline-start: 5px;
 }
 
 .marker-contextmenu {
-    position: static;
-    display: block;
-    border-width: 0 !important;
+  position: static;
+  display: block;
+  border-width: 0 !important;
 }
 
 .leaflet-container a.leaflet-popup-close-button {
-    right: auto;
-    left: 0;
-    padding: 8px;
-    width: auto;
-    height: auto;
+  right: auto;
+  left: 0;
+  padding: 8px;
+  width: auto;
+  height: auto;
 }
 
 .leaflet-popup-content {
-    margin: 0;
+  margin: 0;
 }
 
 .alarm-active {
-    color: red;
+  color: red;
 }
 
-.leaflet-marker-icon{
-    transform-origin: center !important;
+.leaflet-marker-icon {
+  transform-origin: center !important;
 }
 
 /*.form-switch .form-check-input {*/
@@ -75,15 +75,47 @@ div.info {
 /*}*/
 
 #map-locate-btn {
-    font-size: 22px;
+  font-size: 22px;
 }
 #map-add-unit-btn {
-    font-size: 22px;
+  font-size: 22px;
 }
+
 .nav-pills .nav-link {
-    text-orientation: sideways;
-    writing-mode: sideways-lr;
-    padding: 0.5rem 0.25rem;
-    border-radius: 0 0.5rem 0.5rem 0;
-    border: 1px solid;
+  text-orientation: sideways;
+  writing-mode: sideways-lr;
+  padding: 0.5rem 0.25rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  border: 1px solid;
+}
+
+.sidebar-collapsed .col-auto.p-0 {
+  width: auto !important;
+  min-width: auto !important;
+}
+
+.sidebar-collapsed #map {
+  flex-grow: 1;
+}
+
+/* Transition for smooth collapse/expand */
+.col-auto.p-0,
+#map {
+  transition: all 0.3s ease;
+}
+
+/* Ensure the pills are always visible */
+/* .nav-pills {
+  min-width: 120px;
+} */
+
+/* Make the sidebar content have a fixed width when expanded */
+.tab-content:not(.d-none) {
+  min-width: 300px;
+  width: 300px;
+}
+
+/* Add some spacing between pills and content */
+.d-flex.align-items-start .nav-pills {
+  margin-right: 10px;
 }

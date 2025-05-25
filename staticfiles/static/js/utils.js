@@ -1,3 +1,7 @@
+if (window.baseUrl === undefined) {
+  window.baseUrl = ""; // Default value
+}
+
 const colors = new Map([
   ["Clear", "white"],
   ["White", "white"],
@@ -35,9 +39,15 @@ function getIconUri(item, withText) {
   //     }
   //     return {uri: toUri(circle(24, col, '#000', roles.get(item.role) ?? '')), x: 12, y: 12};
   // }
+  if (item === null)
+    return {
+      uri: "",
+      x: 0,
+      y: 0,
+    };
   if (item.icon && item.icon.startsWith("COT_MAPPING_SPOTMAP/")) {
     return {
-      uri: toUri(circle(16, item.color ?? "green", "#000", null)),
+      uri: toUri(circle(16, item.color ?? "black", "#000", null)),
       x: 8,
       y: 8,
     };
@@ -65,7 +75,7 @@ function getIconUri(item, withText) {
   }
   if (item.category === "point") {
     return {
-      uri: toUri(circle(16, item.color ?? "green", "#000", null)),
+      uri: toUri(circle(16, item.color ?? "black", "#000", null)),
       x: 8,
       y: 8,
     };
@@ -78,6 +88,8 @@ function getIconUri(item, withText) {
 
 function getMilIcon(item, withText) {
   let opts = { size: 24 };
+
+  // console.log("[getMilIcon]", item);
 
   if (!item.sidc) {
     return "";
@@ -109,17 +121,13 @@ function getMilIcon(item, withText) {
 function getIcon(item, withText) {
   let img = getIconUri(item, withText);
 
+  // console.log("[getIcon] image = ", img);
+
   return L.icon({
     iconUrl: img.uri,
     iconAnchor: [img.x, img.y],
   });
 }
-
-Vue.prototype.Utils = {
-  getIconUri: getIconUri,
-  getMilIcon: getMilIcon,
-  getIcon: getIcon,
-};
 
 function circle(size, color, bg, text) {
   let x = Math.round(size / 2);
@@ -374,6 +382,7 @@ L.Marker.RotatedMarker = L.Marker.extend({
   },
 });
 
+// Define LocationControl and ToolsControl before making them globally accessible
 var LocationControl = L.Control.extend({
   options: {
     position: "bottomleft",
@@ -416,7 +425,7 @@ var LocationControl = L.Control.extend({
     link.setAttribute("aria-label", title);
 
     L.DomEvent.disableClickPropagation(link);
-    L.DomEvent.on(link, "click", stop);
+    // L.DomEvent.on(link, "click", stop);
     L.DomEvent.on(link, "click", fn, this);
     L.DomEvent.on(link, "click", this._refocusOnMap, this);
 
@@ -434,6 +443,13 @@ var ToolsControl = L.Control.extend({
       container = L.DomUtil.create("div", controlName + " leaflet-bar"),
       options = this.options;
 
+    this._pointButton = this._createButton(
+      '<i class="bi bi-plus-circle" id="map-add-point-btn"></i>',
+      "افزودن نقطه به نقشه",
+      controlName + "-in",
+      container,
+      this._addPoint
+    );
     this._unitButton = this._createButton(
       '<i class="bi bi-plus-circle-fill" id="map-add-unit-btn"></i>',
       "افزودن نیرو به نقشه",
@@ -455,6 +471,12 @@ var ToolsControl = L.Control.extend({
   },
 
   onRemove: function (map) {},
+
+  _addPoint: function (e) {
+    if (!this._disabled && this._map.options.changeMode) {
+      this._map.options.changeMode("add_point");
+    }
+  },
 
   _addUnit: function (e) {
     if (!this._disabled && this._map.options.changeMode) {
@@ -481,12 +503,84 @@ var ToolsControl = L.Control.extend({
     link.setAttribute("aria-label", title);
 
     L.DomEvent.disableClickPropagation(link);
-    // L.DomEvent.on(link, 'click', stop);
+    // L.DomEvent.on(link, "click", stop);
     L.DomEvent.on(link, "click", fn, this);
     L.DomEvent.on(link, "click", this._refocusOnMap, this);
 
     return link;
   },
 });
+
+// Make LocationControl and ToolsControl globally accessible
+window.LocationControl = LocationControl;
+window.ToolsControl = ToolsControl;
+
+function createMapItem(options) {
+  const now = new Date();
+  const stale = new Date(now);
+  stale.setDate(stale.getDate() + 365);
+
+  const baseItem = {
+    uid: options.uid || options.category[0] + "_" + uuidv4().substring(0, 6),
+    category: options.category || "",
+    callsign: options.callsign || "",
+    sidc: options.sidc || "",
+    start_time: now,
+    last_seen: now,
+    stale_time: stale,
+    type: options.type || "",
+    lat: options.lat || 0,
+    lon: options.lon || 0,
+    hae: options.hae || 0,
+    speed: options.speed || 0,
+    course: options.course || 0,
+    status: options.status || "",
+    text: options.text || "",
+    parent_uid: options.parent_uid || "",
+    parent_callsign: options.parent_callsign || "",
+    local: options.local !== undefined ? options.local : true,
+    send: options.send !== undefined ? options.send : true,
+    web_sensor: options.web_sensor || "",
+    links: options.links || [],
+  };
+
+  if (options.isNew !== undefined) {
+    baseItem.isNew = options.isNew;
+  }
+
+  if (options.category === "drawing" || options.category === "route") {
+    baseItem.color = options.color || "white";
+    baseItem.geofence = options.geofence || false;
+    baseItem.geofence_aff = options.geofence_aff || "All";
+  }
+
+  // Casevac Item
+  if (options.category === "report" && options.type === "b-r-f-h-c") {
+    baseItem.casevac_detail = {
+      casevac: true,
+      freq: 0,
+      urgent: 0,
+      priority: 0,
+      routine: 0,
+      hoist: false,
+      extraction_equipment: false,
+      ventilator: false,
+      equipment_other: false,
+      equipment_detail: "",
+      litter: 0,
+      ambulatory: 0,
+      security: 0,
+      us_military: 0,
+      us_civilian: 0,
+      nonus_military: 0,
+      nonus_civilian: 0,
+      epw: 0,
+      child: 0,
+      hlz_marking: 0,
+    };
+  }
+
+  return baseItem;
+}
 
 const html = (strings, ...values) => String.raw({ raw: strings }, ...values);

@@ -48,7 +48,7 @@ Vue.component("AlarmsModal", {
       return res;
     },
   },
-  template: html` <div
+  template: ` <div
     class="modal fade"
     id="alarms-modal"
     data-bs-backdrop="static"

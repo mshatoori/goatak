@@ -45,7 +45,7 @@ Vue.component("FlowsModal", {
       return this.sharedState.flows;
     },
   },
-  template: html` <div
+  template: ` <div
     class="modal fade"
     id="flows-modal"
     data-bs-backdrop="static"

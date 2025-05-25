@@ -13,7 +13,7 @@ Vue.component("UserInfo", {
       // TODO: Fix infomarker
     },
     save() {
-      fetch("/config", {
+      fetch(window.baseUrl + " /config", {
         headers: { "Content-Type": "application/json" },
         method: "PATCH",
         body: JSON.stringify({
@@ -46,7 +46,7 @@ Vue.component("UserInfo", {
   computed: {},
   props: ["config", "coords", "configUpdated", "map", "checkEmergency"],
   inject: [],
-  template: html`
+  template: `
     <div class="card">
       <h5 class="card-header">
         اطلاعات من

@@ -6,6 +6,11 @@
 // Then load the specialized item detail components
 // Finally load the item.details.js router component
 
+// Load HierarchySelector component (needed by UnitDetails)
+document.write(
+  '<script src="/static/js/components/HierarchySelector.js"></script>'
+);
+
 // Load UnitDetails component
 document.write('<script src="/static/js/components/UnitDetails.js"></script>');
 

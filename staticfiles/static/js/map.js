@@ -13,7 +13,7 @@ let app = new Vue({
     seenMessages: new Set(),
     ts: 0,
     locked_unit_uid: "",
-    current_unit_uid: null,
+    activeItemUid: null,
     config: null,
     tools: new Map(),
     me: null,
@@ -22,7 +22,6 @@ let app = new Vue({
     unit_num: 1,
     coord_format: "d",
     form_unit: {},
-    types: null,
     chatroom: "",
     chat_uid: "",
     chat_msg: "",
@@ -31,6 +30,7 @@ let app = new Vue({
     casevacLocation: null,
     casevacMarker: null,
 
+    sidebarCollapsed: false, // Track sidebar collapse state
     beacon_active: false,
   },
   provide: function () {
@@ -41,7 +41,7 @@ let app = new Vue({
       getTool: this.getTool,
       removeTool: this.removeTool,
       coords: this.coords,
-      current_unit: this.current_unit,
+      activeItem: this.activeItem,
     };
   },
   mounted() {
@@ -114,34 +114,17 @@ let app = new Vue({
     this.map.on(L.Draw.Event.CREATED, function (event) {
       var layer = event.layer;
 
+      let u = null;
+
       if (event.layerType === "polygon") {
-        let uid = uuidv4();
-        let now = new Date();
-        let stale = new Date(now);
-        stale.setDate(stale.getDate() + 365);
-        let u = {
-          uid: uid,
+        u = createMapItem({
           category: "drawing",
-          callsign: "ناحیه",
-          sidc: "",
-          start_time: now,
-          last_seen: now,
-          stale_time: stale,
+          callsign: "zone-" + vm.nextItemNumber("drawing"),
           type: "u-d-f",
-          lat: 0,
-          lon: 0,
-          hae: 0,
-          speed: 0,
-          course: 0,
-          status: "",
-          text: "",
-          parent_uid: "",
-          parent_callsign: "",
           local: true,
           send: true,
-          web_sensor: "",
-          links: [],
-        };
+          isNew: true,
+        });
         if (vm.config && vm.config.uid) {
           u.parent_uid = vm.config.uid;
           u.parent_callsign = vm.config.callsign;
@@ -164,38 +147,19 @@ let app = new Vue({
         u.geofence_aff = "All";
         // u.geofence_send = false
 
-        vm.sendUnit(u, function () {
-          vm.setCurrentUnitUid(u.uid, true);
-          new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
-        });
+        // vm.saveItem(u, function () {
+        //   vm.setActiveItemUid(u.uid, true);
+        //   new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
+        // });
       } else if (event.layerType === "polyline") {
-        let uid = uuidv4();
-        let now = new Date();
-        let stale = new Date(now);
-        stale.setDate(stale.getDate() + 365);
-        let u = {
-          uid: uid,
+        u = createMapItem({
           category: "route",
-          callsign: "مسیر",
-          sidc: "",
-          start_time: now,
-          last_seen: now,
-          stale_time: stale,
+          callsign: "route-" + vm.nextItemNumber("route"),
           type: "b-m-r",
-          lat: 0,
-          lon: 0,
-          hae: 0,
-          speed: 0,
-          course: 0,
-          status: "",
-          text: "",
-          parent_uid: "",
-          parent_callsign: "",
           local: true,
           send: true,
-          web_sensor: "",
-          links: [],
-        };
+          isNew: true, // Mark as a new item to trigger automatic edit mode
+        });
         if (vm.config && vm.config.uid) {
           u.parent_uid = vm.config.uid;
           u.parent_callsign = vm.config.callsign;
@@ -215,13 +179,16 @@ let app = new Vue({
 
         u.color = "white";
 
-        console.log("TrySending:", u);
-
-        vm.sendUnit(u, function () {
-          vm.setCurrentUnitUid(u.uid, true);
-          new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
-        });
+        // vm.saveItem(u, function () {
+        //   vm.setActiveItemUid(u.uid, true);
+        //   new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
+        // });
       }
+
+      store.state.items.set(u.uid, u);
+      store.state.ts += 1;
+      vm._processAddition(u);
+      vm.setActiveItemUid(u.uid, true);
     });
     this.map.on(L.Draw.Event.DRAWVERTEX, function (event) {
       console.log("DRAW VERTEX:", event);
@@ -237,27 +204,33 @@ let app = new Vue({
 
     if (supportsWebSockets) {
       this.connect();
-      setInterval(this.fetchAllUnits, 60000);
+      setInterval(this.fetchAllUnits, 5000); // TODO
+      // setInterval(this.fetchAllUnits, 60000);
     }
 
     this.renew();
     setInterval(this.renew, 5000);
 
+    store.fetchTypes();
+
     this.map.on("click", this.mapClick);
     this.map.on("mousemove", this.mouseMove);
-
-    this.formFromUnit(null);
   },
 
   computed: {
-    current_unit: function () {
-      return this.current_unit_uid
-        ? this.current_unit_uid && this.getCurrentUnit()
+    activeItem: function () {
+      return this.activeItemUid
+        ? this.activeItemUid && this.getActiveItem()
         : null;
     },
   },
 
   methods: {
+    // Update sidebar collapsed state
+    updateSidebarCollapsed: function (isCollapsed) {
+      console.log("updateSidebarCollapsed", isCollapsed);
+      this.sidebarCollapsed = isCollapsed;
+    },
     getItemOverlay(item) {
       return this.overlays[item.category];
     },
@@ -281,7 +254,7 @@ let app = new Vue({
     getConfig: function () {
       let vm = this;
 
-      fetch("/config")
+      fetch(window.baseUrl + "/config")
         .then(function (response) {
           return response.json();
         })
@@ -323,14 +296,6 @@ let app = new Vue({
 
             vm.myInfoMarker.setLatLng([data.lat, data.lon]);
             vm.myInfoMarker.setIcon(markerInfo);
-
-            fetch("/types")
-              .then(function (response) {
-                return response.json();
-              })
-              .then(function (data) {
-                vm.types = data;
-              });
           }
 
           layers = L.control.layers({}, null, { hideSingleBase: true });
@@ -430,7 +395,7 @@ let app = new Vue({
     fetchMessages: function () {
       let vm = this;
 
-      fetch("/message")
+      fetch(window.baseUrl + "/message")
         .then(function (response) {
           return response.json();
         })
@@ -455,7 +420,7 @@ let app = new Vue({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ lat: p.lat, lon: p.lng, name: "DP1" }),
         };
-        fetch("/dp", requestOptions);
+        fetch(window.baseUrl + " /dp", requestOptions);
       }
     },
 
@@ -471,8 +436,8 @@ let app = new Vue({
         }
       }
 
-      if (this.current_unit_uid === item.uid) {
-        this.setCurrentUnitUid(null, false);
+      if (this.activeItemUid === item.uid) {
+        this.setActiveItemUid(null, false);
       }
     },
 
@@ -488,7 +453,7 @@ let app = new Vue({
         });
         if (!item.uid.endsWith("-fence")) {
           item.marker.on("click", (e) => {
-            this.setCurrentUnitUid(item.uid, false);
+            this.setActiveItemUid(item.uid, false);
           });
         }
         item.marker.addTo(this.drawnItems);
@@ -497,7 +462,7 @@ let app = new Vue({
           color: item.color,
         });
         item.marker.on("click", (e) => {
-          this.setCurrentUnitUid(item.uid, false);
+          this.setActiveItemUid(item.uid, false);
         });
         item.marker.addTo(this.routeItems);
       }
@@ -541,7 +506,7 @@ let app = new Vue({
     },
 
     processUnits: function (results) {
-      console.log("RESULTS:", results);
+      // console.log("RESULTS:", results);
 
       results["removed"].forEach((item) => this._processRemoval(item));
       results["added"].forEach((item) => this._processAddition(item));
@@ -582,11 +547,11 @@ let app = new Vue({
     processWS: function (u) {
       if (u.type === "unit") {
         if (u.unit.uid === this.config.uid) this.processMe(u.unit);
-        else this.processUnits(store.handleWSMessage(u.unit));
+        else this.processUnits(store.handleItemChangeMessage(u.unit));
       }
 
       if (u.type === "delete") {
-        this.processUnits(store.handleWSMessage(u.unit, true));
+        this.processUnits(store.handleItemChangeMessage(u.unit, true));
       }
 
       if (u.type === "chat") {
@@ -595,9 +560,9 @@ let app = new Vue({
       }
     },
     removeFromAllOverlays(obj) {
-      console.log("=== removeFromAllOverlays", Object.values(this.overlays));
+      // console.log("=== removeFromAllOverlays", Object.values(this.overlays));
       for (const overlay of Object.values(this.overlays)) {
-        console.log("removeFromAllOverlays", obj, overlay);
+        // console.log("removeFromAllOverlays", obj, overlay);
         obj.removeFrom(overlay);
       }
     },
@@ -610,7 +575,7 @@ let app = new Vue({
         return;
       }
 
-      console.log("updateUnitMarker", unit, unit.marker, unit.infoMarker);
+      // console.log("updateUnitMarker", unit, unit.marker, unit.infoMarker);
       if (unit.marker) {
         this.removeFromAllOverlays(unit.marker);
       }
@@ -620,7 +585,7 @@ let app = new Vue({
 
       unit.marker = L.marker([unit.lat, unit.lon], { draggable: draggable });
       unit.marker.on("click", function (e) {
-        app.setCurrentUnitUid(unit.uid, false);
+        app.setActiveItemUid(unit.uid, false);
       });
       if (draggable) {
         unit.marker.on("dragend", function (e) {
@@ -653,43 +618,40 @@ let app = new Vue({
       unit.marker.bindTooltip(popup(unit));
     },
 
-    removeUnit: function (uid) {
-      if (!this.units.has(uid)) return;
-
-      let item = this.units.get(uid);
-      if (item.marker) {
-        this.getItemOverlay(item).removeLayer(item.marker);
-        item.marker.remove();
-        if (item.infoMarker) {
-          this.getItemOverlay(item).removeLayer(item.infoMarker);
-          item.infoMarker.remove();
-        }
+    setActiveItemUid: function (uid, follow) {
+      let currentActiveItem = this.getActiveItem();
+      if (currentActiveItem?.isNew && currentActiveItem.uid != uid) {
+        // Remove previous unsaved item
+        this.deleteItem(currentActiveItem.uid);
       }
-      this.units.delete(uid);
-      if (this.current_unit_uid === uid) {
-        this.setCurrentUnitUid(null, false);
-      }
-    },
-
-    setCurrentUnitUid: function (uid, follow) {
       if (uid && this.sharedState.items.has(uid)) {
-        this.current_unit_uid = uid;
-        let u = this.sharedState.items.get(uid);
-        if (follow) this.mapToUnit(u);
-        this.formFromUnit(u);
+        if (this.activeItemUid === uid) {
+          console.log("Force select: ", uid);
+          this.activeItemUid = null;
+          this.$nextTick(() => (this.activeItemUid = uid));
+        } else {
+          this.activeItemUid = uid;
+          let u = this.sharedState.items.get(uid);
+          if (follow) this.mapToUnit(u);
+        }
       } else {
-        this.current_unit_uid = null;
-        this.formFromUnit(null);
+        this.activeItemUid = null;
       }
     },
 
-    getCurrentUnit: function () {
+    getActiveItem: function () {
+      console.log(
+        "[getActiveItem!] ",
+        this.activeItemUid,
+        this.sharedState.items.has(this.activeItemUid),
+        this.sharedState.items.get(this.activeItemUid)
+      );
       if (
-        !this.current_unit_uid ||
-        !this.sharedState.items.has(this.current_unit_uid)
+        !this.activeItemUid ||
+        !this.sharedState.items.has(this.activeItemUid)
       )
         return null;
-      return this.sharedState.items.get(this.current_unit_uid);
+      return this.sharedState.items.get(this.activeItemUid);
     },
 
     byCategory: function (s) {
@@ -702,6 +664,25 @@ let app = new Vue({
         return a.callsign.toLowerCase().localeCompare(b.callsign.toLowerCase());
       });
       return this.ts && arr;
+    },
+
+    nextItemNumber: function (category) {
+      let maxNumber = 0;
+      this.sharedState.items.forEach(function (u) {
+        if (u.category === category) {
+          let splitParts = u.callsign.split("-");
+
+          if (
+            splitParts.length == 2 &&
+            ["point", "unit", "zone", "route"].includes(splitParts[0])
+          ) {
+            let number = parseInt(splitParts[1]);
+            if (number != NaN) maxNumber = Math.max(maxNumber, number);
+          }
+        }
+      });
+
+      return maxNumber + 1;
     },
 
     mapToUnit: function (u) {
@@ -751,43 +732,96 @@ let app = new Vue({
       this.coords = e.latlng;
     },
 
-    mapClickAddUnit: function (e) {
-      let now = new Date();
-      let stale = new Date(now);
-      stale.setDate(stale.getDate() + 365);
-      let u = {
-        uid: "__NEW__",
-        category: "unit",
-        callsign: "unit-" + this.point_num++,
-        sidc: "",
-        start_time: now,
-        last_seen: now,
-        stale_time: stale,
-        type: "a-h-G",
+    mapClickAddPoint: function (e) {
+      console.log("mapClickAddPoint called with event:", e);
+      let u = createMapItem({
+        category: "point",
+        callsign: "point-" + this.nextItemNumber("point"),
+        type: "b-m-p-s-m",
         lat: e.latlng.lat,
         lon: e.latlng.lng,
-        hae: 0,
-        speed: 0,
-        course: 0,
-        status: "",
-        text: "",
-        parent_uid: "",
-        parent_callsign: "",
         local: true,
         send: true,
-        web_sensor: "",
-      };
+        isNew: true,
+      });
       if (this.config && this.config.uid) {
         u.parent_uid = this.config.uid;
         u.parent_callsign = this.config.callsign;
       }
 
-      const vm = this;
-      this.formFromUnit(u);
-      new bootstrap.Modal(document.querySelector("#edit")).show();
+      console.log("New point created locally:", u);
+      store.state.items.set(u.uid, u);
+      store.state.ts += 1;
+      this._processAddition(u);
+      this.setActiveItemUid(u.uid, true);
+    },
+
+    mapClickAddUnit: function (e) {
+      console.log("mapClickAddUnit called with event:", e);
+      let u = createMapItem({
+        category: "unit",
+        callsign: "unit-" + this.nextItemNumber("unit"),
+        sidc: store.sidcFromType("a-h-G"),
+        type: "a-h-G",
+        lat: e.latlng.lat,
+        lon: e.latlng.lng,
+        local: true,
+        send: true,
+        isNew: true,
+      });
+      if (this.config && this.config.uid) {
+        u.parent_uid = this.config.uid;
+        u.parent_callsign = this.config.callsign;
+      }
+
+      console.log("New unit created locally:", u);
+      store.state.items.set(u.uid, u); // Add the new unit to the store
+      store.state.ts += 1; // Increment timestamp to trigger reactivity
+      this._processAddition(u); // Manually add the marker for the new unit
+      this.setActiveItemUid(u.uid, true); // Set the new unit as the current unit to display in sidebar
+      // The sidebar watcher for activeItem should handle opening the sidebar and showing the form
+    },
+    mapClickAddCasevac: function (e) {
+      console.log("mapClickAddCasevac called with event:", e);
+      let now = new Date();
+      let uid =
+        "MED." +
+        now.getDay() +
+        "." +
+        now.getHours() +
+        "" +
+        now.getMinutes() +
+        "" +
+        now.getSeconds();
+      let u = createMapItem({
+        uid: uid,
+        category: "report",
+        callsign: uid,
+        type: "b-r-f-h-c",
+        lat: e.latlng.lat,
+        lon: e.latlng.lng,
+        local: true,
+        send: true,
+        isNew: true,
+      });
+      if (this.config && this.config.uid) {
+        u.parent_uid = this.config.uid;
+        u.parent_callsign = this.config.callsign;
+      }
+
+      // console.log("New casevac created locally:", u);
+      store.state.items.set(u.uid, u);
+      store.state.ts += 1;
+      this._processAddition(u);
+      this.setActiveItemUid(u.uid, true);
     },
     mapClick: function (e) {
       if (this.inDrawMode) {
+        return;
+      }
+      if (this.mode === "add_point") {
+        this.mapClickAddPoint(e);
+        this.mode = "map";
         return;
       }
       if (this.mode === "add_unit") {
@@ -796,100 +830,49 @@ let app = new Vue({
         return;
       }
       if (this.mode === "add_casevac") {
-        this.casevacLocation = e.latlng;
-        if (this.casevacMarker) {
-          this.map.removeLayer(this.casevacMarker);
-        }
-        const casevacIcon = L.icon({
-          iconUrl: "/static/icons/casevac.svg",
-          iconSize: [32, 32],
-          iconAnchor: [16, 16],
-        });
-        this.casevacMarker = L.marker(this.casevacLocation, {
-          icon: casevacIcon,
-        }).addTo(this.map);
+        this.mapClickAddCasevac(e);
         this.mode = "map";
         return;
       }
-      if (this.modeIs("redx")) {
-        this.addOrMove("redx", e.latlng, "/static/icons/x.png");
-        return;
-      }
-      if (this.modeIs("dp1")) {
-        this.addOrMove("dp1", e.latlng, "/static/icons/spoi_icon.png");
-        return;
-      }
-      if (this.modeIs("point")) {
-        let uid = uuidv4();
-        let now = new Date();
-        let stale = new Date(now);
-        stale.setDate(stale.getDate() + 365);
-        let u = {
-          uid: uid,
-          category: "point",
-          callsign: "point-" + this.point_num++,
-          sidc: "",
-          start_time: now,
-          last_seen: now,
-          stale_time: stale,
-          type: "b-m-p-s-m",
-          lat: e.latlng.lat,
-          lon: e.latlng.lng,
-          hae: 0,
-          speed: 0,
-          course: 0,
-          status: "",
-          text: "",
-          parent_uid: "",
-          parent_callsign: "",
-          local: true,
-          send: true,
-          web_sensor: "",
-        };
-        if (this.config && this.config.uid) {
-          u.parent_uid = this.config.uid;
-          u.parent_callsign = this.config.callsign;
-        }
-
-        const vm = this;
-        this.sendUnit(u, function () {
-          vm.setCurrentUnitUid(u.uid, true);
-          new bootstrap.Modal(document.querySelector("#edit")).show();
-        });
-      }
-      if (this.modeIs("me")) {
-        this.config.lat = e.latlng.lat;
-        this.config.lon = e.latlng.lng;
-        this.me.setLatLng(e.latlng);
-        const markerInfo = L.divIcon({
-          className: "my-marker-info",
-          html:
-            "<div>" +
-            this.config.callsign +
-            "<br>" +
-            this.config.ip_address +
-            "<br>" +
-            this.config.urn +
-            "</div>",
-          iconSize: null,
-        });
-
-        if (!this.myInfoMarker) {
-          this.myInfoMarker = L.marker([e.latlng.lat, e.latlng.lon], {
-            icon: markerInfo,
-          });
-          this.myInfoMarker.addTo(this.map);
-        }
-
-        this.myInfoMarker.setLatLng(e.latlng);
-        this.myInfoMarker.setIcon(markerInfo);
-        const requestOptions = {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ lat: e.latlng.lat, lon: e.latlng.lng }),
-        };
-        fetch("/pos", requestOptions);
-      }
+      // if (this.modeIs("redx")) {
+      //   this.addOrMove("redx", e.latlng, "/static/icons/x.png");
+      //   return;
+      // }
+      // if (this.modeIs("dp1")) {
+      //   this.addOrMove("dp1", e.latlng, "/static/icons/spoi_icon.png");
+      //   return;
+      // }
+      // if (this.modeIs("me")) {
+      //   this.config.lat = e.latlng.lat;
+      //   this.config.lon = e.latlng.lng;
+      //   this.me.setLatLng(e.latlng);
+      //   const markerInfo = L.divIcon({
+      //     className: "my-marker-info",
+      //     html:
+      //       "<div>" +
+      //       this.config.callsign +
+      //       "<br>" +
+      //       this.config.ip_address +
+      //       "<br>" +
+      //       this.config.urn +
+      //       "</div>",
+      //     iconSize: null,
+      //   });
+      //   if (!this.myInfoMarker) {
+      //     this.myInfoMarker = L.marker([e.latlng.lat, e.latlng.lon], {
+      //       icon: markerInfo,
+      //     });
+      //     this.myInfoMarker.addTo(this.map);
+      //   }
+      //   this.myInfoMarker.setLatLng(e.latlng);
+      //   this.myInfoMarker.setIcon(markerInfo);
+      //   const requestOptions = {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify({ lat: e.latlng.lat, lon: e.latlng.lng }),
+      //   };
+      //   fetch(window.baseUrl + " /pos", requestOptions);
+      // }
     },
 
     checkEmergency: function (
@@ -908,7 +891,7 @@ let app = new Vue({
       if (!this.beacon_active) {
         this.beacon_active = true;
         const alert = this.createEmergencyAlert(emergency_type);
-        this.sendUnit(alert);
+        this.saveItem(alert);
       }
     },
 
@@ -921,11 +904,11 @@ let app = new Vue({
         } else {
           alert = this.createEmergencyAlert("b-a-o-can");
         }
-        this.sendUnit(alert);
+        this.saveItem(alert);
       }
     },
 
-    sendUnit: function (u, cb) {
+    saveItem: function (u, cb) {
       console.log("Sending:", this.cleanUnit(u));
       store.createItem(u).then((results) => {
         this.processUnits(results);
@@ -933,161 +916,9 @@ let app = new Vue({
       });
     },
 
-    formFromUnit: function (u) {
-      if (!u) {
-        this.form_unit = {
-          uid: "",
-          callsign: "",
-          category: "",
-          type: "",
-          subtype: "",
-          aff: "",
-          text: "",
-          send: false,
-          root_sidc: null,
-          web_sensor: "",
-          lat: 0,
-          lon: 0,
-        };
-      } else {
-        this.form_unit = {
-          uid: u.uid,
-          callsign: u.callsign,
-          category: u.category,
-          type: u.type,
-          subtype: "G",
-          aff: "h",
-          text: u.text,
-          send: u.send,
-          root_sidc: this.types,
-          web_sensor: u.web_sensor,
-        };
-
-        if (u.uid === "__NEW__") {
-          this.form_unit.lat = u.lat;
-          this.form_unit.lon = u.lon;
-        }
-
-        if (u.type.startsWith("u-") || u.type.startsWith("b-m-r")) {
-          // drawing
-          this.form_unit.color = u.color;
-
-          this.form_unit.geofence = u.geofence;
-          this.form_unit.geofence_aff = u.geofence_aff;
-          // this.form_unit.geofence_send = u.geofence_send
-        }
-
-        if (u.type.startsWith("a-")) {
-          this.form_unit.type = "b-m-p-s-m";
-          this.form_unit.aff = u.type.substring(2, 3);
-          this.form_unit.subtype = u.type.substring(4);
-          this.form_unit.root_sidc = this.getRootSidc(u.type.substring(4));
-        }
-      }
-    },
-
-    saveEditForm: function () {
-      u = {};
-
-      if (this.form_unit.uid === "__NEW__") {
-        u = {
-          uid: uuidv4(),
-          lat: this.form_unit.lat,
-          lon: this.form_unit.lon,
-          ...u,
-        };
-      } else {
-        u = this.getCurrentUnit();
-        if (!u) {
-          return;
-        }
-      }
-
-      u.callsign = this.form_unit.callsign;
-      u.category = this.form_unit.category;
-      u.send = this.form_unit.send;
-      u.text = this.form_unit.text;
-      u.web_sensor = this.form_unit.web_sensor;
-      u.color = this.form_unit.color;
-
-      if (this.form_unit.category === "unit") {
-        u.type = ["a", this.form_unit.aff, this.form_unit.subtype].join("-");
-        u.sidc = this.sidcFromType(u.type);
-      } else {
-        if (this.form_unit.category === "drawing") {
-          u.geofence = this.form_unit.geofence;
-          u.geofence_aff = this.form_unit.geofence_aff;
-        }
-        u.type = this.form_unit.type;
-        u.sidc = "";
-      }
-
-      console.log(u);
-
-      this.sendUnit(u);
-    },
-
-    getRootSidc: function (s) {
-      let curr = this.types;
-
-      if (!curr?.next) {
-        return null;
-      }
-
-      for (;;) {
-        let found = false;
-        for (const k of curr.next) {
-          if (k.code === s) {
-            return curr;
-          }
-
-          if (s.startsWith(k.code)) {
-            curr = k;
-            found = true;
-            break;
-          }
-        }
-        if (!found) {
-          return null;
-        }
-      }
-    },
-
-    getSidc: function (s) {
-      let curr = this.types;
-
-      if (s === "") {
-        return curr;
-      }
-
-      if (!curr?.next) {
-        return null;
-      }
-
-      for (;;) {
-        for (const k of curr.next) {
-          if (k.code === s) {
-            return k;
-          }
-
-          if (s.startsWith(k.code)) {
-            curr = k;
-            break;
-          }
-        }
-      }
-      return null;
-    },
-
-    setFormRootSidc: function (s) {
-      let t = this.getSidc(s);
-      if (t?.next) {
-        this.form_unit.root_sidc = t;
-        this.form_unit.subtype = t.next[0].code;
-      } else {
-        this.form_unit.root_sidc = this.types;
-        this.form_unit.subtype = this.types.next[0].code;
-      }
+    deleteItem: function (uid) {
+      console.debug("Deleting:", uid);
+      store.removeItem(uid).then((units) => this.processUnits(units));
     },
 
     removeTool: function (name) {
@@ -1199,13 +1030,6 @@ let app = new Vue({
         }
       }
     },
-    onDoneCasevac: function (u) {
-      this.map.removeLayer(this.casevacMarker);
-      this.casevacLocation = null;
-      if (u !== null) {
-        this.sendUnit(u);
-      }
-    },
 
     openFlows: function () {
       new bootstrap.Modal(document.getElementById("flows-modal")).show();
@@ -1252,39 +1076,6 @@ let app = new Vue({
       return res;
     },
 
-    cancelEditForm: function () {
-      this.formFromUnit(this.getCurrentUnit());
-    },
-
-    sidcFromType: function (s) {
-      if (!s.startsWith("a-")) return "";
-
-      let n = s.split("-");
-
-      let sidc = "S" + n[1];
-
-      if (n.length > 2) {
-        sidc += n[2] + "P";
-      } else {
-        sidc += "-P";
-      }
-
-      if (n.length > 3) {
-        for (let i = 3; i < n.length; i++) {
-          if (n[i].length > 1) {
-            break;
-          }
-          sidc += n[i];
-        }
-      }
-
-      if (sidc.length < 10) {
-        sidc += "-".repeat(10 - sidc.length);
-      }
-
-      return sidc.toUpperCase();
-    },
-
     cleanUnit: function (u) {
       let res = {};
 
@@ -1300,7 +1091,6 @@ let app = new Vue({
       let unit = this.sharedState.items.get(uid);
       store.removeItem(uid).then((units) => this.processUnits(units));
       this.map.closePopup(unit.marker.contextmenu);
-      // this.removeUnit(this.current_unit_uid);
     },
 
     menuSendAction: function (uid) {
@@ -1308,13 +1098,6 @@ let app = new Vue({
       this.sharedState.unitToSend = unit;
       new bootstrap.Modal(document.querySelector("#send-modal")).show();
       this.map.closePopup(unit.marker.contextmenu);
-    },
-
-    deleteCurrentUnit: function () {
-      if (!this.current_unit_uid) return;
-      store
-        .removeItem(this.current_unit_uid)
-        .then((units) => this.processUnits(units));
     },
 
     sendMessage: function () {
@@ -1333,7 +1116,7 @@ let app = new Vue({
         body: JSON.stringify(msg),
       };
       let vm = this;
-      fetch("/message", requestOptions)
+      fetch(window.baseUrl + "/message", requestOptions)
         .then(function (response) {
           return response.json();
         })
@@ -1380,7 +1163,7 @@ let app = new Vue({
       return u;
     },
     locateByGPS: function () {
-      fetch("/pos").then((r) =>
+      fetch(window.baseUrl + " /pos").then((r) =>
         this.map.setView([this.config.lat, this.config.lon])
       );
     },

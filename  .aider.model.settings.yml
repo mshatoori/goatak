@@ -1,0 +1,3 @@
+- name: ollama_chat/qwen-aider
+  extra_params:
+    num_ctx: 65536
