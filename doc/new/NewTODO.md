@@ -12,6 +12,7 @@
 
 1. ~~ DB Test ~~
 1. ~~ Fix tile map ~~
+1. UI (Navbar for Tools)
 1. Measure between points
 1. Update details sidebar
    1. Distance to self
