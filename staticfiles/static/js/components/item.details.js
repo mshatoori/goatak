@@ -1,13 +1,5 @@
 Vue.component("ItemDetails", {
-  props: [
-    "item",
-    "coords",
-    "map",
-    "locked_unit_uid",
-    "deleteItem",
-    "onDone",
-    "config",
-  ],
+  props: ["item", "coords", "map", "locked_unit_uid", "deleteItem", "config"],
   computed: {
     isCasevac() {
       return (
@@ -90,7 +82,6 @@ Vue.component("ItemDetails", {
         :map="map"
         :locked_unit_uid="locked_unit_uid"
         :delete-item="deleteItem"
-        :on-done="onDone"
         :config="config"
         v-on:save="onSave"
         v-on:delete="onDelete"

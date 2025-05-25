@@ -215,8 +215,6 @@ let app = new Vue({
 
     this.map.on("click", this.mapClick);
     this.map.on("mousemove", this.mouseMove);
-
-    this.formFromUnit(null);
   },
 
   computed: {
@@ -635,11 +633,9 @@ let app = new Vue({
           this.activeItemUid = uid;
           let u = this.sharedState.items.get(uid);
           if (follow) this.mapToUnit(u);
-          this.formFromUnit(u);
         }
       } else {
         this.activeItemUid = null;
-        this.formFromUnit(null);
       }
     },
 
@@ -745,7 +741,7 @@ let app = new Vue({
         lat: e.latlng.lat,
         lon: e.latlng.lng,
         local: true,
-        send: false,
+        send: true,
         isNew: true,
       });
       if (this.config && this.config.uid) {
@@ -770,7 +766,7 @@ let app = new Vue({
         lat: e.latlng.lat,
         lon: e.latlng.lng,
         local: true,
-        send: false,
+        send: true,
         isNew: true,
       });
       if (this.config && this.config.uid) {
@@ -805,7 +801,7 @@ let app = new Vue({
         lat: e.latlng.lat,
         lon: e.latlng.lng,
         local: true,
-        send: false,
+        send: true,
         isNew: true,
       });
       if (this.config && this.config.uid) {
@@ -845,44 +841,6 @@ let app = new Vue({
       // if (this.modeIs("dp1")) {
       //   this.addOrMove("dp1", e.latlng, "/static/icons/spoi_icon.png");
       //   return;
-      // }
-      // if (this.modeIs("point")) {
-      //   let uid = uuidv4();
-      //   let now = new Date();
-      //   let stale = new Date(now);
-      //   stale.setDate(stale.getDate() + 365);
-      //   let u = {
-      //     uid: uid,
-      //     category: "point",
-      //     callsign: "point-" + this.point_num++,
-      //     sidc: "",
-      //     start_time: now,
-      //     last_seen: now,
-      //     stale_time: stale,
-      //     type: "b-m-p-s-m",
-      //     lat: e.latlng.lat,
-      //     lon: e.latlng.lng,
-      //     hae: 0,
-      //     speed: 0,
-      //     course: 0,
-      //     status: "",
-      //     text: "",
-      //     parent_uid: "",
-      //     parent_callsign: "",
-      //     local: true,
-      //     send: true,
-      //     web_sensor: "",
-      //     isNew: true, // Mark as a new item to trigger automatic edit mode
-      //   };
-      //   if (this.config && this.config.uid) {
-      //     u.parent_uid = this.config.uid;
-      //     u.parent_callsign = this.config.callsign;
-      //   }
-      //   const vm = this;
-      //   this.saveItem(u, function () {
-      //     vm.setActiveItemUid(u.uid, true);
-      //     new bootstrap.Modal(document.querySelector("#edit")).show();
-      //   });
       // }
       // if (this.modeIs("me")) {
       //   this.config.lat = e.latlng.lat;
@@ -961,100 +919,6 @@ let app = new Vue({
     deleteItem: function (uid) {
       console.debug("Deleting:", uid);
       store.removeItem(uid).then((units) => this.processUnits(units));
-    },
-
-    formFromUnit: function (u) {
-      if (!u) {
-        this.form_unit = {
-          uid: "",
-          callsign: "",
-          category: "",
-          type: "",
-          subtype: "",
-          aff: "",
-          text: "",
-          send: false,
-          root_sidc: null,
-          web_sensor: "",
-          lat: 0,
-          lon: 0,
-        };
-      } else {
-        this.form_unit = {
-          uid: u.uid,
-          callsign: u.callsign,
-          category: u.category,
-          type: u.type,
-          subtype: "G",
-          aff: "h",
-          text: u.text,
-          send: u.send,
-          root_sidc: store.state.types,
-          web_sensor: u.web_sensor,
-        };
-
-        if (u.uid === "__NEW__") {
-          this.form_unit.lat = u.lat;
-          this.form_unit.lon = u.lon;
-        }
-
-        if (u.type.startsWith("u-") || u.type.startsWith("b-m-r")) {
-          // drawing
-          this.form_unit.color = u.color;
-
-          this.form_unit.geofence = u.geofence;
-          this.form_unit.geofence_aff = u.geofence_aff;
-          // this.form_unit.geofence_send = u.geofence_send
-        }
-
-        if (u.type.startsWith("a-")) {
-          this.form_unit.type = "b-m-p-s-m";
-          this.form_unit.aff = u.type.substring(2, 3);
-          this.form_unit.subtype = u.type.substring(4);
-          this.form_unit.root_sidc = store.getRootSidc(u.type.substring(4));
-        }
-      }
-    },
-
-    saveEditForm: function () {
-      u = {};
-
-      if (this.form_unit.uid === "__NEW__") {
-        u = {
-          uid: uuidv4(),
-          lat: this.form_unit.lat,
-          lon: this.form_unit.lon,
-          ...u,
-        };
-      } else {
-        u = this.getActiveItem();
-        if (!u) {
-          return;
-        }
-      }
-
-      u.callsign = this.form_unit.callsign;
-      u.category = this.form_unit.category;
-      u.send = this.form_unit.send;
-      u.text = this.form_unit.text;
-      u.web_sensor = this.form_unit.web_sensor;
-      u.color = this.form_unit.color;
-
-      if (this.form_unit.category === "unit") {
-        u.type = ["a", this.form_unit.aff, this.form_unit.subtype].join("-");
-        u.sidc = store.sidcFromType(u.type);
-      } else {
-        if (this.form_unit.category === "drawing") {
-          u.geofence = this.form_unit.geofence;
-          u.geofence_aff = this.form_unit.geofence_aff;
-        }
-        u.type = this.form_unit.type;
-        u.sidc = "";
-      }
-
-      console.log(u);
-
-      this.saveItem(u);
     },
 
     removeTool: function (name) {
@@ -1166,13 +1030,6 @@ let app = new Vue({
         }
       }
     },
-    onDoneCasevac: function (u) {
-      this.map.removeLayer(this.casevacMarker);
-      this.casevacLocation = null;
-      if (u !== null) {
-        this.saveItem(u);
-      }
-    },
 
     openFlows: function () {
       new bootstrap.Modal(document.getElementById("flows-modal")).show();
@@ -1217,10 +1074,6 @@ let app = new Vue({
         }
       }
       return res;
-    },
-
-    cancelEditForm: function () {
-      this.formFromUnit(this.getActiveItem());
     },
 
     cleanUnit: function (u) {

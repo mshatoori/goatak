@@ -194,31 +194,12 @@ Vue.component("Sidebar", {
       }
     },
     activeItem: function (newVal, oldVal) {
-      console.log("sidebar selectedItem watcher:", { newVal, oldVal });
-      // Handle selection of existing items
+      // console.log("sidebar selectedItem watcher:", { newVal, oldVal });
       if (newVal && (oldVal === null || newVal.uid !== oldVal.uid)) {
-        if (newVal.isNew) {
-          console.log(
-            "sidebar watcher: new item, setting activeItem and switching tab"
-          );
-        } else {
-          console.log(
-            "sidebar watcher: existing item, setting activeItem and switching tab"
-          );
-          // const existingItem = { ...newVal }; // Create a copy
-          // delete existingItem.isNew;
-          // this.activeItem = existingItem;
-        }
         this.$nextTick(() => {
-          console.log("sidebar watcher: switching to item-details tab");
+          // console.log("sidebar watcher: switching to item-details tab");
           this.switchTab("item-details", true);
         });
-      } else if (newVal === null && oldVal !== null) {
-        console.log(
-          "sidebar watcher: selectedItem cleared, clearing activeItem"
-        );
-        // Clear active item when selectedItem is cleared
-        // this.activeItem = null;
       }
     },
   },
@@ -233,30 +214,8 @@ Vue.component("Sidebar", {
     "checkEmergency",
     "map",
     "casevacLocation",
-    "onDoneCasevac",
   ],
   inject: ["getTool", "removeTool"],
-  // mounted() {
-  //   // Check if any tab is active on mount
-  //   this.$nextTick(() => {
-  //     this.checkActiveTabs();
-  //   });
-
-  //   // Listen for tab show/hide events from Bootstrap
-  //   const tabEl = document.querySelector("#v-pills-tab");
-  //   if (tabEl) {
-  //     // tabEl.addEventListener("hidden.bs.tab", () => {
-  //     //   console.log('tabEl.addEventListener("hidden.bs.tab"');
-  //     //   this.checkActiveTabs();
-  //     // });
-
-  //     tabEl.addEventListener("shown.bs.tab", (e) => {
-  //       console.log('tabEl.addEventListener("shown.bs.tab", () => {');
-  //       this.isCollapsed = false;
-  //       this.$emit("collapsed", false);
-  //     });
-  //   }
-  // },
   template: html`
     <div class="d-flex align-items-start h-100">
       <div
@@ -287,7 +246,8 @@ Vue.component("Sidebar", {
             :map="map"
           ></user-info>
         </div>
-        <div
+
+        <!-- <div
           class="tab-pane fade"
           id="v-pills-tools"
           role="tabpanel"
@@ -321,9 +281,6 @@ Vue.component("Sidebar", {
                     >نشان</label
                   >
 
-                  <!--                            <input type="radio" class="btn-check" name="btnradio" id="dp1" autocomplete="off">-->
-                  <!--                            <label class="btn btn-outline-primary btn-sm" for="dp1">DP</label>-->
-
                   <input
                     type="radio"
                     class="btn-check"
@@ -338,38 +295,6 @@ Vue.component("Sidebar", {
                     for="me"
                     >من</label
                   >
-                </div>
-              </li>
-              <li class="list-group-item">
-                <div class="btn-group" role="group" aria-label="Create Items">
-                  <button
-                    type="button"
-                    class="btn btn-success btn-sm"
-                    v-on:click="createNewPoint"
-                  >
-                    <i class="bi bi-geo-alt-fill"></i> ایجاد نقطه
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-success btn-sm"
-                    v-on:click="createNewUnit"
-                  >
-                    <i class="bi bi-person-fill"></i> ایجاد نیرو
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-success btn-sm"
-                    v-on:click="createNewDrawing('polygon')"
-                  >
-                    <i class="bi bi-pentagon-fill"></i> ایجاد چندضلعی
-                  </button>
-                  <button
-                    type="button"
-                    class="btn btn-success btn-sm"
-                    v-on:click="createNewDrawing('route')"
-                  >
-                    <i class="bi bi-bezier2"></i> ایجاد مسیر
-                  </button>
                 </div>
               </li>
               <li v-if="getTool('redx')" class="mt-1 list-group-item">
@@ -398,7 +323,7 @@ Vue.component("Sidebar", {
               </li>
             </ul>
           </div>
-        </div>
+        </div> -->
 
         <!-- New Dynamic Item Details Tab -->
         <div
@@ -413,7 +338,6 @@ Vue.component("Sidebar", {
             :coords="coords"
             :map="map"
             :locked_unit_uid="locked_unit_uid"
-            :on-done="onDoneCasevac"
             :config="config"
             v-on:save="onSave"
             v-on:delete="onDelete"
@@ -453,7 +377,7 @@ Vue.component("Sidebar", {
         >
           اطلاعات من
         </button>
-        <button
+        <!-- <button
           class="nav-link"
           id="v-pills-tools-tab"
           type="button"
@@ -465,7 +389,7 @@ Vue.component("Sidebar", {
           data-bs-target="#v-pills-tools"
         >
           ابزارها
-        </button>
+        </button> -->
         <button
           class="nav-link"
           id="v-pills-item-details-tab"

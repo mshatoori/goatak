@@ -1,5 +1,5 @@
 Vue.component("UnitDetails", {
-  props: ["item", "coords", "map", "locked_unit_uid", "onDone", "config"],
+  props: ["item", "coords", "map", "locked_unit_uid", "config"],
   data: function () {
     return {
       editing: false,

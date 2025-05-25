@@ -1,13 +1,5 @@
 Vue.component("DrawingDetails", {
-  props: [
-    "item",
-    "coords",
-    "map",
-    "locked_unit_uid",
-    "deleteItem",
-    "onDone",
-    "config",
-  ],
+  props: ["item", "coords", "map", "locked_unit_uid", "deleteItem", "config"],
   data: function () {
     return {
       editing: false,
@@ -20,6 +12,15 @@ Vue.component("DrawingDetails", {
     if (this.item && this.item.isNew === true) {
       this.$nextTick(() => this.startEditing());
     }
+  },
+  watch: {
+    item: function (newVal, oldVal) {
+      if (newVal && newVal.uid !== oldVal.uid) {
+        if (newVal.isNew) {
+          this.$nextTick(() => this.startEditing());
+        }
+      }
+    },
   },
   computed: {
     isPolygon() {
@@ -64,6 +65,10 @@ Vue.component("DrawingDetails", {
     cancelEditing: function () {
       this.editing = false;
       this.editingData = null;
+
+      if (this.item.isNew) {
+        this.deleteItem();
+      }
     },
     saveEditing: function () {
       // Update the item with the edited data
@@ -75,6 +80,31 @@ Vue.component("DrawingDetails", {
       this.editingData = null;
 
       this.$emit("save", this.item);
+    },
+    deleteItem: function () {
+      this.$emit("delete", this.item.uid);
+    },
+    colorName: function (color) {
+      switch (color) {
+        case "white":
+          return "سفید";
+        case "gray":
+          return "خاکستری";
+        case "red":
+          return "قرمز";
+        case "blue":
+          return "آبی";
+        case "green":
+          return "سبز";
+        case "yellow":
+          return "زرد";
+        case "orange":
+          return "نارنجی";
+        case "purple":
+          return "بنفش";
+        case "black":
+          return "سیاه";
+      }
     },
   },
   template: `
@@ -143,7 +173,7 @@ Vue.component("DrawingDetails", {
               ><strong>رنگ</strong></label
             >
             <div class="col-sm-8">
-              <label class="col-form-label">{{item.color}}</label>
+              <label class="col-form-label">{{colorName(item.color)}}</label>
             </div>
           </div>
           <div class="form-group row" v-if="isPolygon && item.geofence">
