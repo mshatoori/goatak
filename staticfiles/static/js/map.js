@@ -114,8 +114,10 @@ let app = new Vue({
     this.map.on(L.Draw.Event.CREATED, function (event) {
       var layer = event.layer;
 
+      let u = null;
+
       if (event.layerType === "polygon") {
-        let u = createMapItem({
+        u = createMapItem({
           category: "drawing",
           callsign: "zone-" + vm.nextItemNumber("drawing"),
           type: "u-d-f",
@@ -145,12 +147,12 @@ let app = new Vue({
         u.geofence_aff = "All";
         // u.geofence_send = false
 
-        vm.saveItem(u, function () {
-          vm.setActiveItemUid(u.uid, true);
-          new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
-        });
+        // vm.saveItem(u, function () {
+        //   vm.setActiveItemUid(u.uid, true);
+        //   new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
+        // });
       } else if (event.layerType === "polyline") {
-        let u = createMapItem({
+        u = createMapItem({
           category: "route",
           callsign: "route-" + vm.nextItemNumber("route"),
           type: "b-m-r",
@@ -177,13 +179,16 @@ let app = new Vue({
 
         u.color = "white";
 
-        console.log("TrySending:", u);
-
-        vm.saveItem(u, function () {
-          vm.setActiveItemUid(u.uid, true);
-          new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
-        });
+        // vm.saveItem(u, function () {
+        //   vm.setActiveItemUid(u.uid, true);
+        //   new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
+        // });
       }
+
+      store.state.items.set(u.uid, u);
+      store.state.ts += 1;
+      vm._processAddition(u);
+      vm.setActiveItemUid(u.uid, true);
     });
     this.map.on(L.Draw.Event.DRAWVERTEX, function (event) {
       console.log("DRAW VERTEX:", event);
@@ -670,7 +675,11 @@ let app = new Vue({
       this.sharedState.items.forEach(function (u) {
         if (u.category === category) {
           let splitParts = u.callsign.split("-");
-          if (splitParts.length == 2 && splitParts[0] === u.category) {
+
+          if (
+            splitParts.length == 2 &&
+            ["point", "unit", "zone", "route"].includes(splitParts[0])
+          ) {
             let number = parseInt(splitParts[1]);
             if (number != NaN) maxNumber = Math.max(maxNumber, number);
           }
@@ -1237,13 +1246,6 @@ let app = new Vue({
       new bootstrap.Modal(document.querySelector("#send-modal")).show();
       this.map.closePopup(unit.marker.contextmenu);
     },
-
-    // deleteCurrentUnit: function () {
-    //   if (!this.activeItemUid) return;
-    //   store
-    //     .removeItem(this.activeItemUid)
-    //     .then((units) => this.processUnits(units));
-    // },
 
     sendMessage: function () {
       let msg = {
