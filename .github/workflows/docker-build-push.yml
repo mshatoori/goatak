@@ -3,16 +3,15 @@ name: Docker Build and Push
 on:
   push:
     branches:
-      - main
+      - master
     tags:
-      - '*'
+      - "*"
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
       packages: write
-      packages: read
       contents: read
 
     steps:
