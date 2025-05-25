@@ -71,9 +71,10 @@ Vue.component("DrawingDetails", {
         this.item[key] = this.editingData[key];
       }
 
-      // Save to server/store
       this.editing = false;
       this.editingData = null;
+
+      this.$emit("save", this.item);
     },
   },
   template: `

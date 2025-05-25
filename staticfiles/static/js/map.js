@@ -115,34 +115,14 @@ let app = new Vue({
       var layer = event.layer;
 
       if (event.layerType === "polygon") {
-        let uid = uuidv4();
-        let now = new Date();
-        let stale = new Date(now);
-        stale.setDate(stale.getDate() + 365);
-        let u = {
-          uid: uid,
+        let u = createMapItem({
           category: "drawing",
           callsign: "ناحیه",
-          sidc: "",
-          start_time: now,
-          last_seen: now,
-          stale_time: stale,
           type: "u-d-f",
-          lat: 0,
-          lon: 0,
-          hae: 0,
-          speed: 0,
-          course: 0,
-          status: "",
-          text: "",
-          parent_uid: "",
-          parent_callsign: "",
           local: true,
           send: true,
-          web_sensor: "",
-          links: [],
-          isNew: true, // Mark as a new item to trigger automatic edit mode
-        };
+          isNew: true,
+        });
         if (vm.config && vm.config.uid) {
           u.parent_uid = vm.config.uid;
           u.parent_callsign = vm.config.callsign;
@@ -170,34 +150,14 @@ let app = new Vue({
           new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
         });
       } else if (event.layerType === "polyline") {
-        let uid = uuidv4();
-        let now = new Date();
-        let stale = new Date(now);
-        stale.setDate(stale.getDate() + 365);
-        let u = {
-          uid: uid,
+        let u = createMapItem({
           category: "route",
           callsign: "مسیر",
-          sidc: "",
-          start_time: now,
-          last_seen: now,
-          stale_time: stale,
           type: "b-m-r",
-          lat: 0,
-          lon: 0,
-          hae: 0,
-          speed: 0,
-          course: 0,
-          status: "",
-          text: "",
-          parent_uid: "",
-          parent_callsign: "",
           local: true,
           send: true,
-          web_sensor: "",
-          links: [],
           isNew: true, // Mark as a new item to trigger automatic edit mode
-        };
+        });
         if (vm.config && vm.config.uid) {
           u.parent_uid = vm.config.uid;
           u.parent_callsign = vm.config.callsign;
@@ -754,32 +714,17 @@ let app = new Vue({
 
     mapClickAddUnit: function (e) {
       console.log("mapClickAddUnit called with event:", e);
-      let now = new Date();
-      let stale = new Date(now);
-      stale.setDate(stale.getDate() + 365);
-      let u = {
-        uid: uuidv4(), // Generate a UUID for the new unit
+      let u = createMapItem({
         category: "unit",
-        callsign: "unit-" + this.unit_num++, // Use unit_num for units
+        callsign: "unit-" + this.unit_num++,
         sidc: store.sidcFromType("a-h-G"),
-        start_time: now,
-        last_seen: now,
-        stale_time: stale,
         type: "a-h-G",
         lat: e.latlng.lat,
         lon: e.latlng.lng,
-        hae: 0,
-        speed: 0,
-        course: 0,
-        status: "",
-        text: "",
-        parent_uid: "",
-        parent_callsign: "",
         local: true,
-        send: false, // Do not send immediately
-        web_sensor: "",
-        isNew: true, // Mark as a new item to trigger automatic edit mode
-      };
+        send: false,
+        isNew: true,
+      });
       if (this.config && this.config.uid) {
         u.parent_uid = this.config.uid;
         u.parent_callsign = this.config.callsign;
@@ -795,8 +740,6 @@ let app = new Vue({
     mapClickAddCasevac: function (e) {
       console.log("mapClickAddCasevac called with event:", e);
       let now = new Date();
-      let stale = new Date(now);
-      stale.setDate(stale.getDate() + 365);
       let uid =
         "MED." +
         now.getDay() +
@@ -806,51 +749,17 @@ let app = new Vue({
         now.getMinutes() +
         "" +
         now.getSeconds();
-      let u = {
+      let u = createMapItem({
         uid: uid,
         category: "report",
         callsign: uid,
-        sidc: "",
-        start_time: now,
-        last_seen: now,
-        stale_time: stale,
         type: "b-r-f-h-c",
         lat: e.latlng.lat,
         lon: e.latlng.lng,
-        hae: 0,
-        speed: 0,
-        course: 0,
-        status: "",
-        text: "",
-        parent_uid: "",
-        parent_callsign: "",
         local: true,
         send: false,
-        web_sensor: "",
         isNew: true,
-        casevac_detail: {
-          casevac: true,
-          freq: 0,
-          urgent: 0,
-          priority: 0,
-          routine: 0,
-          hoist: false,
-          extraction_equipment: false,
-          ventilator: false,
-          equipment_other: false,
-          equipment_detail: "",
-          litter: 0,
-          ambulatory: 0,
-          security: 0,
-          us_military: 0,
-          us_civilian: 0,
-          nonus_military: 0,
-          nonus_civilian: 0,
-          epw: 0,
-          child: 0,
-          hlz_marking: 0,
-        },
-      };
+      });
       if (this.config && this.config.uid) {
         u.parent_uid = this.config.uid;
         u.parent_callsign = this.config.callsign;

@@ -502,4 +502,72 @@ var ToolsControl = L.Control.extend({
 window.LocationControl = LocationControl;
 window.ToolsControl = ToolsControl;
 
+function createMapItem(options) {
+  const now = new Date();
+  const stale = new Date(now);
+  stale.setDate(stale.getDate() + 365);
+
+  const baseItem = {
+    uid: options.uid || uuidv4(),
+    category: options.category || "",
+    callsign: options.callsign || "",
+    sidc: options.sidc || "",
+    start_time: now,
+    last_seen: now,
+    stale_time: stale,
+    type: options.type || "",
+    lat: options.lat || 0,
+    lon: options.lon || 0,
+    hae: options.hae || 0,
+    speed: options.speed || 0,
+    course: options.course || 0,
+    status: options.status || "",
+    text: options.text || "",
+    parent_uid: options.parent_uid || "",
+    parent_callsign: options.parent_callsign || "",
+    local: options.local !== undefined ? options.local : true,
+    send: options.send !== undefined ? options.send : true,
+    web_sensor: options.web_sensor || "",
+    links: options.links || [],
+  };
+
+  if (options.isNew !== undefined) {
+    baseItem.isNew = options.isNew;
+  }
+
+  if (options.category === "drawing" || options.category === "route") {
+    baseItem.color = options.color || "white";
+    baseItem.geofence = options.geofence || false;
+    baseItem.geofence_aff = options.geofence_aff || "All";
+  }
+
+  // Casevac Item
+  if (options.category === "report" && options.type === "b-r-f-h-c") {
+    baseItem.casevac_detail = {
+      casevac: true,
+      freq: 0,
+      urgent: 0,
+      priority: 0,
+      routine: 0,
+      hoist: false,
+      extraction_equipment: false,
+      ventilator: false,
+      equipment_other: false,
+      equipment_detail: "",
+      litter: 0,
+      ambulatory: 0,
+      security: 0,
+      us_military: 0,
+      us_civilian: 0,
+      nonus_military: 0,
+      nonus_civilian: 0,
+      epw: 0,
+      child: 0,
+      hlz_marking: 0,
+    };
+  }
+
+  return baseItem;
+}
+
 const html = (strings, ...values) => String.raw({ raw: strings }, ...values);
