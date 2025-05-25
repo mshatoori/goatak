@@ -22,7 +22,14 @@ Vue.component("PointDetails", {
       }
     },
   },
+  computed: {
+    renderedItem: function () {
+      if (this.editing) return this.editingData;
+      return this.item;
+    },
+  },
   methods: {
+    getIconUri: getIconUri,
     mapToUnit: function (unit) {
       if (unit && unit.lat && unit.lon) {
         this.map.setView([unit.lat, unit.lon]);
@@ -40,6 +47,7 @@ Vue.component("PointDetails", {
         text: this.item.text || "",
         send: this.item.send || false,
         web_sensor: this.item.web_sensor || "",
+        color: this.item.color || "",
         parent_uid: this.item.parent_uid || "",
         parent_callsign: this.item.parent_callsign || "",
       };
@@ -67,13 +75,32 @@ Vue.component("PointDetails", {
     deleteItem: function () {
       this.$emit("delete", this.item.uid);
     },
+    colorName: function (color) {
+      switch (color) {
+        case "red":
+          return "قرمز";
+        case "blue":
+          return "آبی";
+        case "green":
+          return "سبز";
+        case "yellow":
+          return "زرد";
+        case "orange":
+          return "نارنجی";
+        case "purple":
+          return "بنفش";
+        case "black":
+          return "سیاه";
+      }
+    },
   },
-  template: `
+  template: html`
     <div class="card">
       <!-- Header -->
       <div class="card-header">
         <span class="pull-left fw-bold" v-on:click.stop="mapToUnit(item)">
-          <i class="bi bi-geo-alt-fill"></i> {{ item.callsign || "نقطه" }}
+          <!-- <i class="bi bi-geo-alt-fill"></i> {{ item.callsign || "نقطه" }} -->
+          <img :src="getIconUri(editingData).uri" /> {{ renderedItem.callsign }}
           <img
             height="24"
             src="/static/icons/coord_unlock.png"
@@ -153,7 +180,7 @@ Vue.component("PointDetails", {
               ><strong>رنگ</strong></label
             >
             <div class="col-sm-8">
-              <label class="col-form-label">{{item.color}}</label>
+              <label class="col-form-label">{{colorName(item.color)}}</label>
             </div>
           </div>
           <div v-if="item.parent_uid">
@@ -203,7 +230,11 @@ Vue.component("PointDetails", {
           <div class="form-group row mb-3">
             <label for="edit-type" class="col-sm-4 col-form-label">نوع</label>
             <div class="col-sm-8">
-              <select class="form-select" id="edit-type" v-model="editingData.type">
+              <select
+                class="form-select"
+                id="edit-type"
+                v-model="editingData.type"
+              >
                 <option value="b-m-p-s-m">Spot</option>
                 <option value="b-m-p-w-GOTO">WayPt</option>
                 <option value="b-m-p-s-p-op">OP</option>

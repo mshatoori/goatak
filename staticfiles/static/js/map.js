@@ -117,7 +117,7 @@ let app = new Vue({
       if (event.layerType === "polygon") {
         let u = createMapItem({
           category: "drawing",
-          callsign: "ناحیه",
+          callsign: "zone-" + vm.nextItemNumber("drawing"),
           type: "u-d-f",
           local: true,
           send: true,
@@ -152,7 +152,7 @@ let app = new Vue({
       } else if (event.layerType === "polyline") {
         let u = createMapItem({
           category: "route",
-          callsign: "مسیر",
+          callsign: "route-" + vm.nextItemNumber("route"),
           type: "b-m-r",
           local: true,
           send: true,
@@ -665,6 +665,21 @@ let app = new Vue({
       return this.ts && arr;
     },
 
+    nextItemNumber: function (category) {
+      let maxNumber = 0;
+      this.sharedState.items.forEach(function (u) {
+        if (u.category === category) {
+          let splitParts = u.callsign.split("-");
+          if (splitParts.length == 2 && splitParts[0] === u.category) {
+            let number = parseInt(splitParts[1]);
+            if (number != NaN) maxNumber = Math.max(maxNumber, number);
+          }
+        }
+      });
+
+      return maxNumber + 1;
+    },
+
     mapToUnit: function (u) {
       if (!u) {
         return;
@@ -712,11 +727,35 @@ let app = new Vue({
       this.coords = e.latlng;
     },
 
+    mapClickAddPoint: function (e) {
+      console.log("mapClickAddPoint called with event:", e);
+      let u = createMapItem({
+        category: "point",
+        callsign: "point-" + this.nextItemNumber("point"),
+        type: "b-m-p-s-m",
+        lat: e.latlng.lat,
+        lon: e.latlng.lng,
+        local: true,
+        send: false,
+        isNew: true,
+      });
+      if (this.config && this.config.uid) {
+        u.parent_uid = this.config.uid;
+        u.parent_callsign = this.config.callsign;
+      }
+
+      console.log("New point created locally:", u);
+      store.state.items.set(u.uid, u);
+      store.state.ts += 1;
+      this._processAddition(u);
+      this.setActiveItemUid(u.uid, true);
+    },
+
     mapClickAddUnit: function (e) {
       console.log("mapClickAddUnit called with event:", e);
       let u = createMapItem({
         category: "unit",
-        callsign: "unit-" + this.unit_num++,
+        callsign: "unit-" + this.nextItemNumber("unit"),
         sidc: store.sidcFromType("a-h-G"),
         type: "a-h-G",
         lat: e.latlng.lat,
@@ -765,15 +804,19 @@ let app = new Vue({
         u.parent_callsign = this.config.callsign;
       }
 
-      console.log("New casevac created locally:", u);
-      store.state.items.set(u.uid, u); // Add the new casevac to the store
-      store.state.ts += 1; // Increment timestamp to trigger reactivity
-      this._processAddition(u); // Manually add the marker for the new casevac
-      this.setActiveItemUid(u.uid, true); // Set the new casevac as the current item to display in sidebar
-      // The sidebar watcher for activeItem should handle opening the sidebar and showing the form
+      // console.log("New casevac created locally:", u);
+      store.state.items.set(u.uid, u);
+      store.state.ts += 1;
+      this._processAddition(u);
+      this.setActiveItemUid(u.uid, true);
     },
     mapClick: function (e) {
       if (this.inDrawMode) {
+        return;
+      }
+      if (this.mode === "add_point") {
+        this.mapClickAddPoint(e);
+        this.mode = "map";
         return;
       }
       if (this.mode === "add_unit") {

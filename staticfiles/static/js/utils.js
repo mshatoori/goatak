@@ -39,9 +39,15 @@ function getIconUri(item, withText) {
   //     }
   //     return {uri: toUri(circle(24, col, '#000', roles.get(item.role) ?? '')), x: 12, y: 12};
   // }
+  if (item === null)
+    return {
+      uri: "",
+      x: 0,
+      y: 0,
+    };
   if (item.icon && item.icon.startsWith("COT_MAPPING_SPOTMAP/")) {
     return {
-      uri: toUri(circle(16, item.color ?? "green", "#000", null)),
+      uri: toUri(circle(16, item.color ?? "black", "#000", null)),
       x: 8,
       y: 8,
     };
@@ -69,7 +75,7 @@ function getIconUri(item, withText) {
   }
   if (item.category === "point") {
     return {
-      uri: toUri(circle(16, item.color ?? "green", "#000", null)),
+      uri: toUri(circle(16, item.color ?? "black", "#000", null)),
       x: 8,
       y: 8,
     };
@@ -122,12 +128,6 @@ function getIcon(item, withText) {
     iconAnchor: [img.x, img.y],
   });
 }
-
-Vue.prototype.Utils = {
-  getIconUri: getIconUri,
-  getMilIcon: getMilIcon,
-  getIcon: getIcon,
-};
 
 function circle(size, color, bg, text) {
   let x = Math.round(size / 2);
@@ -443,6 +443,13 @@ var ToolsControl = L.Control.extend({
       container = L.DomUtil.create("div", controlName + " leaflet-bar"),
       options = this.options;
 
+    this._pointButton = this._createButton(
+      '<i class="bi bi-plus-circle" id="map-add-point-btn"></i>',
+      "افزودن نقطه به نقشه",
+      controlName + "-in",
+      container,
+      this._addPoint
+    );
     this._unitButton = this._createButton(
       '<i class="bi bi-plus-circle-fill" id="map-add-unit-btn"></i>',
       "افزودن نیرو به نقشه",
@@ -464,6 +471,12 @@ var ToolsControl = L.Control.extend({
   },
 
   onRemove: function (map) {},
+
+  _addPoint: function (e) {
+    if (!this._disabled && this._map.options.changeMode) {
+      this._map.options.changeMode("add_point");
+    }
+  },
 
   _addUnit: function (e) {
     if (!this._disabled && this._map.options.changeMode) {
@@ -508,7 +521,7 @@ function createMapItem(options) {
   stale.setDate(stale.getDate() + 365);
 
   const baseItem = {
-    uid: options.uid || uuidv4(),
+    uid: options.uid || options.category[0] + "_" + uuidv4().substring(0, 6),
     category: options.category || "",
     callsign: options.callsign || "",
     sidc: options.sidc || "",
