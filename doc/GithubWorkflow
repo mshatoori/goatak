@@ -1,0 +1,4 @@
+Write a github action workflow for this project.
+It should build a docker image from `Dockerfile`.
+Then tag it in an incremental fashion (some sort of build version, similar to what could be done in Gitlab using CI_PIPELINE_ID).
+Then push it to `ghcr.io/mshatoori/goatak-client:$TAG` and `ghcr.io/mshatoori/goatak-client:latest`.
