@@ -797,15 +797,25 @@ let app = new Vue({
       let now = new Date();
       let stale = new Date(now);
       stale.setDate(stale.getDate() + 365);
+      let uid =
+        this.item.uid ||
+        "MED." +
+          now.getDay() +
+          "." +
+          now.getHours() +
+          "" +
+          now.getMinutes() +
+          "" +
+          now.getSeconds();
       let u = {
-        uid: uuidv4(), // Generate a UUID for the new casevac
-        category: "casevac", // Set category to casevac
-        callsign: "casevac-" + uuidv4().substring(0, 4), // Generate a simple callsign
-        sidc: "b-m-o-!!!!", // Set a default SIDC for now
+        uid: uid,
+        category: "report",
+        callsign: uid,
+        sidc: "",
         start_time: now,
         last_seen: now,
         stale_time: stale,
-        type: "b-m-o-!!!!", // Set a default type for now
+        type: "b-r-f-h-c",
         lat: e.latlng.lat,
         lon: e.latlng.lng,
         hae: 0,
@@ -816,11 +826,10 @@ let app = new Vue({
         parent_uid: "",
         parent_callsign: "",
         local: true,
-        send: false, // Do not send immediately
+        send: false,
         web_sensor: "",
-        isNew: true, // Mark as a new item to trigger automatic edit mode
+        isNew: true,
         casevac_detail: {
-          // Initialize casevac_detail
           casevac: true,
           freq: 0,
           urgent: 0,
@@ -853,46 +862,6 @@ let app = new Vue({
       store.state.ts += 1; // Increment timestamp to trigger reactivity
       this._processAddition(u); // Manually add the marker for the new casevac
       this.setActiveItemUid(u.uid, true); // Set the new casevac as the current item to display in sidebar
-      // The sidebar watcher for activeItem should handle opening the sidebar and showing the form
-    },
-    mapClickAddUnit: function (e) {
-      console.log("mapClickAddUnit called with event:", e);
-      let now = new Date();
-      let stale = new Date(now);
-      stale.setDate(stale.getDate() + 365);
-      let u = {
-        uid: uuidv4(), // Generate a UUID for the new unit
-        category: "unit",
-        callsign: "unit-" + this.unit_num++, // Use unit_num for units
-        sidc: store.sidcFromType("a-h-G"),
-        start_time: now,
-        last_seen: now,
-        stale_time: stale,
-        type: "a-h-G",
-        lat: e.latlng.lat,
-        lon: e.latlng.lng,
-        hae: 0,
-        speed: 0,
-        course: 0,
-        status: "",
-        text: "",
-        parent_uid: "",
-        parent_callsign: "",
-        local: true,
-        send: false, // Do not send immediately
-        web_sensor: "",
-        isNew: true, // Mark as a new item to trigger automatic edit mode
-      };
-      if (this.config && this.config.uid) {
-        u.parent_uid = this.config.uid;
-        u.parent_callsign = this.config.callsign;
-      }
-
-      console.log("New unit created locally:", u);
-      store.state.items.set(u.uid, u); // Add the new unit to the store
-      store.state.ts += 1; // Increment timestamp to trigger reactivity
-      this._processAddition(u); // Manually add the marker for the new unit
-      this.setActiveItemUid(u.uid, true); // Set the new unit as the current unit to display in sidebar
       // The sidebar watcher for activeItem should handle opening the sidebar and showing the form
     },
     mapClick: function (e) {

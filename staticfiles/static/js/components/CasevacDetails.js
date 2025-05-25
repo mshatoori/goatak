@@ -104,6 +104,51 @@ Vue.component("CasevacDetails", {
     deleteItem: function () {
       this.$emit("delete", this.item.uid);
     },
+    saveEditing: function () {
+      // Validate form fields if necessary
+      if (!this.validateForm()) {
+        return;
+      }
+
+      // Update the item object with the new values from the form fields
+      this.item.casevac_detail = {
+        title: this.editingData.casevac_detail.title,
+        priority: this.editingData.casevac_detail.priority,
+        urgent: this.editingData.casevac_detail.urgent,
+        routine: this.editingData.casevac_detail.routine,
+        hoist: this.editingData.casevac_detail.hoist,
+        extraction_equipment:
+          this.editingData.casevac_detail.extraction_equipment,
+        ventilator: this.editingData.casevac_detail.ventilator,
+        equipment_other: this.editingData.casevac_detail.equipment_other,
+        equipment_detail: this.editingData.casevac_detail.equipment_detail,
+        litter: this.editingData.casevac_detail.litter,
+        ambulatory: this.editingData.casevac_detail.ambulatory,
+        security: this.editingData.casevac_detail.security,
+        hlz_marking: this.editingData.casevac_detail.hlz_marking,
+        us_military: this.editingData.casevac_detail.us_military,
+        us_civilian: this.editingData.casevac_detail.us_civilian,
+        nonus_military: this.editingData.casevac_detail.nonus_military,
+        nonus_civilian: this.editingData.casevac_detail.nonus_civilian,
+        epw: this.editingData.casevac_detail.epw,
+        child: this.editingData.casevac_detail.child,
+        freq: this.editingData.casevac_detail.freq,
+      };
+
+      // If `type` and `category` are editable, update them as well
+      this.item.type = this.editingData.type;
+      this.item.category = this.editingData.category;
+      this.item.remarks = this.editingData.remarks;
+
+      // Emit the save event with the updated item object
+      this.$emit("save", this.item);
+      this.editing = false;
+    },
+    validateForm: function () {
+      // Add any necessary form validation logic here
+      // For now, we'll just return true to allow saving
+      return true;
+    },
   },
   template: `
     <div class="card">
