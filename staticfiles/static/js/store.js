@@ -79,8 +79,8 @@ var store = {
     };
     let keys = new Set();
 
-    console.log("units:");
-    console.log(response);
+    // console.log("units:");
+    // console.log(response);
 
     for (let u of response) {
       let item = this.state.items.get(u.uid);
@@ -89,7 +89,7 @@ var store = {
       // Special Case: Canceling of an alarm
       if (u.type === "b-a-o-can") {
         if (item) {
-          console.log("REMOVED: ", u.uid, this.state.items.get(u.uid));
+          // console.log("REMOVED: ", u.uid, this.state.items.get(u.uid));
           results["removed"].push(item);
           this.state.items.delete(u.uid);
         }
@@ -110,7 +110,7 @@ var store = {
     if (!partial) {
       for (const k of this.state.items.keys()) {
         if (!keys.has(k) && !this.state.items.get(k).isNew) {
-          console.log("REMOVED: ", k, this.state.items.get(k));
+          // console.log("REMOVED: ", k, this.state.items.get(k));
           results["removed"].push(this.state.items.get(k));
           this.state.items.delete(k);
         }

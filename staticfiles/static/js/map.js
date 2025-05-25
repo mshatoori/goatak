@@ -543,7 +543,7 @@ let app = new Vue({
     },
 
     processUnits: function (results) {
-      console.log("RESULTS:", results);
+      // console.log("RESULTS:", results);
 
       results["removed"].forEach((item) => this._processRemoval(item));
       results["added"].forEach((item) => this._processAddition(item));
@@ -612,7 +612,7 @@ let app = new Vue({
         return;
       }
 
-      console.log("updateUnitMarker", unit, unit.marker, unit.infoMarker);
+      // console.log("updateUnitMarker", unit, unit.marker, unit.infoMarker);
       if (unit.marker) {
         this.removeFromAllOverlays(unit.marker);
       }
@@ -662,10 +662,16 @@ let app = new Vue({
         this.deleteItem(currentActiveItem.uid);
       }
       if (uid && this.sharedState.items.has(uid)) {
-        this.activeItemUid = uid;
-        let u = this.sharedState.items.get(uid);
-        if (follow) this.mapToUnit(u);
-        this.formFromUnit(u);
+        if (this.activeItemUid === uid) {
+          console.log("Force select: ", uid);
+          this.activeItemUid = null;
+          this.$nextTick(() => (this.activeItemUid = uid));
+        } else {
+          this.activeItemUid = uid;
+          let u = this.sharedState.items.get(uid);
+          if (follow) this.mapToUnit(u);
+          this.formFromUnit(u);
+        }
       } else {
         this.activeItemUid = null;
         this.formFromUnit(null);
@@ -813,7 +819,8 @@ let app = new Vue({
         send: false, // Do not send immediately
         web_sensor: "",
         isNew: true, // Mark as a new item to trigger automatic edit mode
-        casevac_detail: { // Initialize casevac_detail
+        casevac_detail: {
+          // Initialize casevac_detail
           casevac: true,
           freq: 0,
           urgent: 0,
@@ -1390,4 +1397,3 @@ let app = new Vue({
     },
   },
 });
-

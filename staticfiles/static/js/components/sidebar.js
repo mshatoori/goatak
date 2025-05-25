@@ -5,19 +5,34 @@ Vue.component("Sidebar", {
       editing: false, // This might not be needed here anymore as editing state is in detail components
       // activeItem: null,
       isCollapsed: false, // Tracks sidebar collapse state
+      activeTab: "overlays",
     };
   },
   methods: {
-    switchTab: function (tabName) {
+    switchTab: function (tabName, force = false) {
+      console.log(
+        "[switchTab] starting switch from " + this.activeTab + " to " + tabName
+      );
       const triggerEl = document.querySelector(`#v-pills-${tabName}-tab`);
       if (triggerEl) {
-        bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+        const tab = bootstrap.Tab.getOrCreateInstance(triggerEl);
+
+        if (this.activeTab != tabName || force) {
+          console.log("[switchTab] Showing " + tabName);
+          tab.show();
+          this.activeTab = tabName;
+          this.isCollapsed = false;
+        } else {
+          triggerEl.classList.remove("active");
+          let realTab = document.querySelector(tab._config.target);
+          realTab.classList.remove("active", "show");
+          this.activeTab = null;
+          this.isCollapsed = true;
+        }
       }
 
-      // const tab = bootstrap.Tab.getOrCreateInstance(triggerEl);
       // tab.show();
-      // this.isCollapsed = false; // Expand sidebar when a tab is active
-      // this.$emit("collapsed", false); // Emit expanded state to parent
+
       // }
     },
 
@@ -127,8 +142,12 @@ Vue.component("Sidebar", {
       this.$emit("save", value);
     },
     onDelete: function (value) {
-      console.log("delete@sidebar", value);
       this.$emit("delete", value);
+
+      if (this.activeTab === "item-details") {
+        // Switch to item details tab to collapse sidebar
+        this.switchTab("item-details");
+      }
     },
   },
 
@@ -192,7 +211,7 @@ Vue.component("Sidebar", {
         }
         this.$nextTick(() => {
           console.log("sidebar watcher: switching to item-details tab");
-          this.switchTab("item-details");
+          this.switchTab("item-details", true);
         });
       } else if (newVal === null && oldVal !== null) {
         console.log(
@@ -410,55 +429,55 @@ Vue.component("Sidebar", {
         <button
           class="nav-link active"
           id="v-pills-overlays-tab"
-          data-bs-toggle="pill"
-          data-bs-target="#v-pills-overlays"
           type="button"
           role="tab"
           aria-controls="v-pills-overlays"
           aria-selected="true"
+          v-on:click="switchTab('overlays')"
+          data-bs-toggle="pill"
+          data-bs-target="#v-pills-overlays"
         >
-          <!-- v-on:click="switchTab('overlays')" -->
           لایه‌ها
         </button>
         <button
           class="nav-link"
           id="v-pills-userinfo-tab"
-          data-bs-toggle="pill"
-          data-bs-target="#v-pills-userinfo"
           type="button"
           role="tab"
           aria-controls="v-pills-userinfo"
           aria-selected="false"
           v-if="config && config.callsign"
+          v-on:click="switchTab('userinfo')"
+          data-bs-toggle="pill"
+          data-bs-target="#v-pills-userinfo"
         >
-          <!-- v-on:click="switchTab('userinfo')" -->
           اطلاعات من
         </button>
         <button
           class="nav-link"
           id="v-pills-tools-tab"
-          data-bs-toggle="pill"
-          data-bs-target="#v-pills-tools"
           type="button"
           role="tab"
           aria-controls="v-pills-tools"
           aria-selected="false"
+          v-on:click="switchTab('tools')"
+          data-bs-toggle="pill"
+          data-bs-target="#v-pills-tools"
         >
-          <!-- v-on:click="switchTab('tools')" -->
           ابزارها
         </button>
         <button
           class="nav-link"
           id="v-pills-item-details-tab"
-          data-bs-toggle="pill"
-          data-bs-target="#v-pills-item-details"
           type="button"
           role="tab"
           aria-controls="v-pills-item-details"
           aria-selected="false"
           v-if="activeItem"
+          v-on:click="switchTab('item-details')"
+          data-bs-toggle="pill"
+          data-bs-target="#v-pills-item-details"
         >
-          <!-- v-on:click="switchTab('item-details')" -->
           {{ getActiveItemName() }}
         </button>
       </div>
