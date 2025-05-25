@@ -150,12 +150,13 @@ Vue.component("CasevacDetails", {
       return true;
     },
   },
-  template: `
+  template: html`
     <div class="card">
       <!-- Header -->
       <div class="card-header">
         <span class="pull-left fw-bold" v-on:click.stop="mapToUnit(item)">
-          <img src="/static/icons/casevac.svg" height="24" /> {{ item.callsign }}
+          <img src="/static/icons/casevac.svg" height="24" /> {{ item.callsign
+          }}
           <img
             height="24"
             src="/static/icons/coord_unlock.png"
@@ -227,6 +228,27 @@ Vue.component("CasevacDetails", {
         </div>
 
         <div class="card mb-3">
+          <div class="card-header">وضعیت امنیتی منطقه</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <!-- <label class="form-label fw-bold">روتین:</label> -->
+              <div v-if="item.casevacdetail.security===0">
+                عدم حضور نیروهای دشمن در منطقه
+              </div>
+              <div v-if="item.casevacdetail.security===1">
+                احتمال حضور نیروهای دشمن در منطقه
+              </div>
+              <div v-if="item.casevacdetail.security===2">
+                نیروهای دشمن، با احتیاط نزدیک شوید
+              </div>
+              <div v-if="item.casevacdetail.security===3">
+                نیروهای دشمن، نیاز به اسکورت مسلح
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-3">
           <div class="card-header">وضعیت حرکتی بیماران</div>
           <div class="card-body">
             <div class="row">
@@ -252,12 +274,6 @@ Vue.component("CasevacDetails", {
           <div class="card-header">نوع بیماران</div>
           <div class="card-body">
             <div class="row">
-              <div class="col">
-                <div class="mb-3">
-                  <label class="form-label fw-bold">تعداد امنیتی:</label>
-                  <div>{{ item.casevac_detail?.security || 0 }}</div>
-                </div>
-              </div>
               <div class="col">
                 <div class="mb-3">
                   <label class="form-label fw-bold">تعداد نظامی خودی:</label>
@@ -421,6 +437,24 @@ Vue.component("CasevacDetails", {
           </div>
 
           <div class="card mb-3">
+            <div class="card-header">وضعیت امنیتی منطقه</div>
+            <div class="card-body">
+              <div class="mb-3">
+                <select
+                  class="form-select"
+                  id="security"
+                  v-model.number="editingData.casevac_detail.security"
+                >
+                  <option value="0">عدم حضور نیروهای دشمن در منطقه</option>
+                  <option value="1">احتمال حضور نیروهای دشمن در منطقه</option>
+                  <option value="2">نیروهای دشمن، با احتیاط نزدیک شوید</option>
+                  <option value="3">نیروهای دشمن، نیاز به اسکورت مسلح</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card mb-3">
             <div class="card-header">وضعیت حرکتی بیماران</div>
             <div class="card-body">
               <div class="row">
@@ -458,19 +492,6 @@ Vue.component("CasevacDetails", {
             <div class="card-header">نوع بیماران</div>
             <div class="card-body">
               <div class="row">
-                <div class="col">
-                  <div class="mb-3">
-                    <label for="security" class="form-label"
-                      >تعداد امنیتی:</label
-                    >
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="security"
-                      v-model.number="editingData.casevac_detail.security"
-                    />
-                  </div>
-                </div>
                 <div class="col">
                   <div class="mb-3">
                     <label for="us_military" class="form-label"
