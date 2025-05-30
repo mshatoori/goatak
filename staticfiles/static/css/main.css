@@ -119,3 +119,24 @@ div.info {
 .d-flex.align-items-start .nav-pills {
   margin-right: 10px;
 }
+
+/* Navigation line styles */
+.navigation-line {
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.navigation-line:hover {
+  opacity: 0.8 !important;
+}
+
+/* Animation for navigation line */
+@keyframes navigation-pulse {
+  0% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.4; }
+}
+
+.navigation-line.pulse {
+  animation: navigation-pulse 2s infinite;
+}

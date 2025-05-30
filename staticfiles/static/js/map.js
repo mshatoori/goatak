@@ -32,6 +32,11 @@ let app = new Vue({
 
     sidebarCollapsed: false, // Track sidebar collapse state
     beacon_active: false,
+    
+    // Navigation line state
+    navigationLine: null,
+    navigationLineActive: false,
+    navigationTarget: null,
   },
   provide: function () {
     return {
@@ -63,6 +68,7 @@ let app = new Vue({
       drawing: L.layerGroup(),
       route: L.layerGroup(),
       report: L.layerGroup(),
+      navigation: L.layerGroup(),
     };
 
     for (const overlay of Object.values(this.overlays)) {
@@ -223,6 +229,26 @@ let app = new Vue({
         ? this.activeItemUid && this.getActiveItem()
         : null;
     },
+  },
+
+  watch: {
+    // Watch for changes in user position to update navigation line
+    config: {
+      handler: function (newConfig, oldConfig) {
+        if (newConfig && oldConfig &&
+            (newConfig.lat !== oldConfig.lat || newConfig.lon !== oldConfig.lon)) {
+          this.updateNavigationLine();
+        }
+      },
+      deep: true
+    },
+    
+    // Watch for active item changes to clear navigation line
+    activeItemUid: function (newUid, oldUid) {
+      if (newUid !== oldUid) {
+        this.clearNavigationLineOnItemChange();
+      }
+    }
   },
 
   methods: {
@@ -1169,6 +1195,91 @@ let app = new Vue({
     },
     changeMode: function (newMode) {
       this.mode = newMode;
+    },
+
+    // Navigation line methods
+    handleNavigationLineToggle: function (event) {
+      console.log("Navigation line toggle event:", event);
+      
+      if (event.show) {
+        this.showNavigationLine(event.targetItem, event.userPosition, event.navigationData);
+      } else {
+        this.hideNavigationLine();
+      }
+    },
+
+    showNavigationLine: function (targetItem, userPosition, navigationData) {
+      // Clear any existing navigation line
+      this.hideNavigationLine();
+      
+      if (!targetItem || !userPosition || !navigationData) {
+        console.warn("Missing data for navigation line:", { targetItem, userPosition, navigationData });
+        return;
+      }
+
+      // Create the navigation line
+      const userLatLng = [userPosition.lat, userPosition.lon];
+      const targetLatLng = [navigationData.targetPosition.lat, navigationData.targetPosition.lng];
+      
+      this.navigationLine = L.polyline([userLatLng, targetLatLng], {
+        color: '#007bff',
+        weight: 2,
+        opacity: 0.6,
+        dashArray: '5, 10',
+        className: 'navigation-line'
+      });
+
+      // Add to navigation overlay
+      this.overlays.navigation.addLayer(this.navigationLine);
+      
+      // Store navigation state
+      this.navigationLineActive = true;
+      this.navigationTarget = targetItem;
+      
+      console.log("Navigation line created for:", targetItem.callsign || targetItem.uid);
+    },
+
+    hideNavigationLine: function () {
+      if (this.navigationLine) {
+        this.overlays.navigation.removeLayer(this.navigationLine);
+        this.navigationLine = null;
+      }
+      
+      this.navigationLineActive = false;
+      this.navigationTarget = null;
+      
+      console.log("Navigation line hidden");
+    },
+
+    updateNavigationLine: function () {
+      // Update navigation line when user position changes
+      if (this.navigationLineActive && this.navigationTarget && this.config) {
+        // Get target coordinates
+        let targetCoords = null;
+        
+        if (this.navigationTarget.lat !== undefined && this.navigationTarget.lon !== undefined) {
+          targetCoords = {
+            lat: this.navigationTarget.lat,
+            lng: this.navigationTarget.lon,
+          };
+        }
+        
+        if (targetCoords) {
+          const userLatLng = [this.config.lat, this.config.lon];
+          const targetLatLng = [targetCoords.lat, targetCoords.lng];
+          
+          if (this.navigationLine) {
+            this.navigationLine.setLatLngs([userLatLng, targetLatLng]);
+          }
+        }
+      }
+    },
+
+    clearNavigationLineOnItemChange: function () {
+      // Clear navigation line when active item changes
+      if (this.navigationLineActive) {
+        this.hideNavigationLine();
+      }
     },
   },
 });

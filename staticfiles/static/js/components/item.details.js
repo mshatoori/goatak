@@ -51,6 +51,10 @@ Vue.component("ItemDetails", {
       console.log("Delete@item.detail");
       this.$emit("delete", value);
     },
+    onNavigationLineToggle(event) {
+      console.log("Navigation line toggle@item.detail", event);
+      this.$emit("navigation-line-toggle", event);
+    },
   },
   template: html`
     <div>
@@ -85,6 +89,7 @@ Vue.component("ItemDetails", {
         :config="config"
         v-on:save="onSave"
         v-on:delete="onDelete"
+        v-on:navigation-line-toggle="onNavigationLineToggle"
       ></component>
     </div>
   `,

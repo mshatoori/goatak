@@ -1,5 +1,8 @@
 Vue.component("PointDetails", {
   props: ["item", "coords", "map", "locked_unit_uid", "config"],
+  components: {
+    NavigationInfo: Vue.component("NavigationInfo"),
+  },
   data: function () {
     return {
       editing: false,
@@ -209,6 +212,14 @@ Vue.component("PointDetails", {
           </div>
         </dl>
         <div class="form-group row">{{ item.text }}</div>
+        
+        <!-- Navigation Info Component -->
+        <navigation-info
+          v-if="!editing"
+          :target-item="item"
+          :user-position="config"
+          @navigation-line-toggle="$emit('navigation-line-toggle', $event)"
+        ></navigation-info>
       </div>
 
       <!-- Point Edit Form -->

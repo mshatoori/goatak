@@ -341,6 +341,7 @@ Vue.component("Sidebar", {
             :config="config"
             v-on:save="onSave"
             v-on:delete="onDelete"
+            v-on:navigation-line-toggle="onNavigationLineToggle"
           ></item-details>
         </div>
       </div>

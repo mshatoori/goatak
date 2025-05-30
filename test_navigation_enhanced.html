@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced NavigationInfo Component Test</title>
+    <link href="staticfiles/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="staticfiles/static/css/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@2/dist/vue.js"></script>
+    <style>
+        .test-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        .position-display {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="test-container">
+        <h1>Enhanced NavigationInfo Component Test</h1>
+        <p class="text-muted">Testing the updated NavigationInfo component with API integration for complex objects.</p>
+
+        <!-- User Position Controls -->
+        <div class="test-section">
+            <h3>User Position</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label">Latitude:</label>
+                    <input type="number" class="form-control" v-model.number="userPosition.lat" step="0.000001">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Longitude:</label>
+                    <input type="number" class="form-control" v-model.number="userPosition.lon" step="0.000001">
+                </div>
+            </div>
+            <div class="position-display mt-2">
+                Current Position: {{ userPosition.lat.toFixed(6) }}, {{ userPosition.lon.toFixed(6) }}
+            </div>
+        </div>
+
+        <!-- Test Objects -->
+        <div class="test-section">
+            <h3>Test Objects</h3>
+            <div class="row">
+                <div class="col-md-4 mb-3" v-for="(item, index) in testItems" :key="index">
+                    <div class="card">
+                        <div class="card-body">
+                            <h6 class="card-title">{{ item.name }}</h6>
+                            <p class="card-text">
+                                <small class="text-muted">Type: {{ item.type }}</small><br>
+                                <small class="text-muted">Category: {{ item.category }}</small>
+                            </p>
+                            <button class="btn btn-primary btn-sm" @click="selectItem(item)">
+                                Select
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Item Display -->
+        <div class="test-section" v-if="selectedItem">
+            <h3>Selected Item</h3>
+            <div class="position-display">
+                <strong>{{ selectedItem.name }}</strong><br>
+                Type: {{ selectedItem.type }}<br>
+                Category: {{ selectedItem.category }}<br>
+                ID: {{ selectedItem.uid }}<br>
+                Complex Object: {{ isComplexObject(selectedItem) ? 'Yes' : 'No' }}
+            </div>
+        </div>
+
+        <!-- NavigationInfo Component -->
+        <div class="test-section">
+            <h3>Navigation Information</h3>
+            <NavigationInfo 
+                :target-item="selectedItem" 
+                :user-position="userPosition"
+                @navigation-line-toggle="onNavigationLineToggle">
+            </NavigationInfo>
+        </div>
+
+        <!-- API Test Controls -->
+        <div class="test-section">
+            <h3>API Testing</h3>
+            <div class="row">
+                <div class="col-md-8">
+                    <label class="form-label">Test Item ID:</label>
+                    <input type="text" class="form-control" v-model="testItemId" placeholder="Enter item ID to test API">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-info d-block w-100" @click="testAPI" :disabled="apiTesting">
+                        {{ apiTesting ? 'Testing...' : 'Test API' }}
+                    </button>
+                </div>
+            </div>
+            <div v-if="apiResult" class="mt-3">
+                <h6>API Result:</h6>
+                <pre class="position-display">{{ JSON.stringify(apiResult, null, 2) }}</pre>
+            </div>
+            <div v-if="apiError" class="alert alert-danger mt-3">
+                <strong>API Error:</strong> {{ apiError }}
+            </div>
+        </div>
+
+        <!-- Debug Information -->
+        <div class="test-section">
+            <h3>Debug Information</h3>
+            <div class="position-display">
+                <strong>Component State:</strong><br>
+                Selected Item: {{ selectedItem ? selectedItem.name : 'None' }}<br>
+                User Position: {{ userPosition.lat.toFixed(6) }}, {{ userPosition.lon.toFixed(6) }}<br>
+                Navigation Line: {{ navigationLineVisible ? 'Visible' : 'Hidden' }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Include NavigationInfo Component -->
+    <script>
+        // Define html template literal function for compatibility
+        function html(strings, ...values) {
+            let result = strings[0];
+            for (let i = 0; i < values.length; i++) {
+                result += values[i] + strings[i + 1];
+            }
+            return result;
+        }
+    </script>
+    <script src="staticfiles/static/js/components/NavigationInfo.js"></script>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                userPosition: {
+                    lat: 35.7796,
+                    lon: 51.4211
+                },
+                selectedItem: null,
+                navigationLineVisible: false,
+                testItemId: '',
+                apiTesting: false,
+                apiResult: null,
+                apiError: null,
+                testItems: [
+                    {
+                        uid: 'simple-point-1',
+                        name: 'Simple Point',
+                        type: 'point',
+                        category: 'point',
+                        lat: 35.7800,
+                        lon: 51.4220
+                    },
+                    {
+                        uid: 'unit-1',
+                        name: 'Military Unit',
+                        type: 'unit',
+                        category: 'unit',
+                        lat: 35.7790,
+                        lon: 51.4200
+                    },
+                    {
+                        uid: 'route-1',
+                        name: 'Complex Route',
+                        type: 'route',
+                        category: 'route',
+                        route: [
+                            { lat: 35.7800, lng: 51.4220 },
+                            { lat: 35.7810, lng: 51.4230 },
+                            { lat: 35.7820, lng: 51.4240 }
+                        ]
+                    },
+                    {
+                        uid: 'drawing-1',
+                        name: 'Polygon Drawing',
+                        type: 'drawing',
+                        category: 'polygon',
+                        coordinates: [
+                            { lat: 35.7780, lng: 51.4180 },
+                            { lat: 35.7790, lng: 51.4190 },
+                            { lat: 35.7785, lng: 51.4200 },
+                            { lat: 35.7775, lng: 51.4190 }
+                        ]
+                    },
+                    {
+                        uid: 'complex-route-2',
+                        name: 'Multi-Point Route',
+                        type: 'route_planning',
+                        category: 'route',
+                        coordinates: [
+                            [35.7750, 51.4150],
+                            [35.7760, 51.4160],
+                            [35.7770, 51.4170],
+                            [35.7780, 51.4180],
+                            [35.7790, 51.4190]
+                        ]
+                    }
+                ]
+            },
+            methods: {
+                selectItem: function(item) {
+                    this.selectedItem = item;
+                    this.apiResult = null;
+                    this.apiError = null;
+                },
+                isComplexObject: function(item) {
+                    if (!item) return false;
+                    
+                    const type = (item.type || '').toLowerCase();
+                    const category = (item.category || '').toLowerCase();
+                    
+                    // Check for route patterns
+                    if (type.includes('route') || category.includes('route')) {
+                        return true;
+                    }
+                    
+                    // Check for drawing/polygon patterns
+                    if (type.includes('drawing') || type.includes('polygon') || 
+                        category.includes('drawing') || category.includes('polygon')) {
+                        return true;
+                    }
+                    
+                    // Check for complex coordinate structures
+                    if (item.coordinates && item.coordinates.length > 1) {
+                        return true;
+                    }
+                    
+                    if (item.route && item.route.length > 1) {
+                        return true;
+                    }
+                    
+                    return false;
+                },
+                onNavigationLineToggle: function(data) {
+                    this.navigationLineVisible = data.show;
+                    console.log('Navigation line toggle:', data);
+                },
+                async testAPI() {
+                    if (!this.testItemId.trim()) {
+                        this.apiError = 'Please enter an item ID';
+                        return;
+                    }
+                    
+                    this.apiTesting = true;
+                    this.apiResult = null;
+                    this.apiError = null;
+                    
+                    try {
+                        const url = `/api/navigation/distance/${this.testItemId}?userLat=${this.userPosition.lat}&userLon=${this.userPosition.lon}`;
+                        const response = await fetch(url);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        
+                        const data = await response.json();
+                        this.apiResult = data;
+                        
+                        if (!data.success) {
+                            this.apiError = data.error || 'API request failed';
+                        }
+                        
+                    } catch (error) {
+                        this.apiError = error.message;
+                    } finally {
+                        this.apiTesting = false;
+                    }
+                }
+            },
+            mounted: function() {
+                console.log('Enhanced NavigationInfo test page loaded');
+                console.log('Available test items:', this.testItems.length);
+            }
+        });
+    </script>
+</body>
+</html>

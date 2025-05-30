@@ -4,6 +4,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"math"
 	"runtime/pprof"
 	"strconv"
 	"strings"
@@ -62,6 +63,9 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.POST("/sensors", addSensorHandler(app))
 	srv.DELETE("/sensors/:uid", deleteSensorHandler(app))
 	srv.PUT("/sensors/:uid", editSensorHandler(app))
+
+	// Navigation distance calculation endpoints
+	srv.GET("/api/navigation/distance/:itemId", getNavigationDistanceHandler(app))
 
 	srv.GET("/stack", getStackHandler())
 
@@ -659,10 +663,355 @@ func optionsUnitHandler() air.Handler {
 		res.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE")
 		res.Header.Set("Access-Control-Allow-Headers", "Content-Type")
 		res.Header.Set("Access-Control-Max-Age", "86400") // 24 hours
-		
+
 		// Return 200 OK status for preflight requests
 		res.Status = 200
 		return nil
 	}
 }
 
+func getNavigationDistanceHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		itemId := getStringParam(req, "itemId")
+		if itemId == "" {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Missing itemId parameter",
+			})
+		}
+
+		// Get user coordinates from query parameters
+		httpReq := req.HTTPRequest()
+		userLatStr := httpReq.URL.Query().Get("userLat")
+		userLonStr := httpReq.URL.Query().Get("userLon")
+
+		if userLatStr == "" || userLonStr == "" {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Missing userLat or userLon query parameters",
+			})
+		}
+
+		userLat, err := strconv.ParseFloat(userLatStr, 64)
+		if err != nil {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Invalid userLat parameter",
+			})
+		}
+
+		userLon, err := strconv.ParseFloat(userLonStr, 64)
+		if err != nil {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Invalid userLon parameter",
+			})
+		}
+
+		// Get the item from the repository
+		item := app.items.Get(itemId)
+		if item == nil {
+			res.Status = 404
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Item not found",
+			})
+		}
+
+		// Calculate distance based on item type
+		result, err := calculateNavigationDistance(item, userLat, userLon)
+		if err != nil {
+			res.Status = 500
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   err.Error(),
+			})
+		}
+
+		return res.WriteJSON(map[string]any{
+			"success": true,
+			"data":    result,
+		})
+	}
+}
+
+// NavigationResult represents the result of distance calculation
+type NavigationResult struct {
+	ClosestPoint struct {
+		Lat float64 `json:"lat"`
+		Lon float64 `json:"lon"`
+	} `json:"closestPoint"`
+	Distance float64 `json:"distance"`
+	Bearing  float64 `json:"bearing"`
+	ItemType string  `json:"itemType"`
+}
+
+// calculateNavigationDistance calculates the closest point and distance for complex objects
+func calculateNavigationDistance(item *model.Item, userLat, userLon float64) (*NavigationResult, error) {
+	if item == nil {
+		return nil, fmt.Errorf("item is nil")
+	}
+
+	itemClass := item.GetClass()
+	result := &NavigationResult{
+		ItemType: itemClass,
+	}
+
+	switch itemClass {
+	case model.ROUTE:
+		return calculateRouteDistance(item, userLat, userLon)
+	case model.DRAWING:
+		return calculateDrawingDistance(item, userLat, userLon)
+	default:
+		// For simple points, use the item's coordinates directly
+		itemLat, itemLon := item.GetLanLon()
+		if itemLat == 0 && itemLon == 0 {
+			return nil, fmt.Errorf("item has no valid coordinates")
+		}
+
+		distance, bearing := model.DistBea(userLat, userLon, itemLat, itemLon)
+		result.ClosestPoint.Lat = itemLat
+		result.ClosestPoint.Lon = itemLon
+		result.Distance = distance
+		result.Bearing = bearing
+		result.ItemType = "point"
+
+		return result, nil
+	}
+}
+
+// calculateRouteDistance finds the closest point on a route
+func calculateRouteDistance(item *model.Item, userLat, userLon float64) (*NavigationResult, error) {
+	msg := item.GetMsg()
+	if msg == nil {
+		return nil, fmt.Errorf("item has no message")
+	}
+
+	detail := msg.GetDetail()
+	if detail == nil {
+		return nil, fmt.Errorf("item has no detail")
+	}
+
+	// Get all link elements that contain route points
+	links := detail.GetAll("link")
+	if len(links) == 0 {
+		return nil, fmt.Errorf("route has no link points")
+	}
+
+	var routePoints []struct {
+		lat, lon float64
+	}
+
+	// Parse coordinates from link elements
+	for _, link := range links {
+		pointStr := link.GetAttr("point")
+		if pointStr == "" {
+			continue
+		}
+
+		// Parse point format: "lat,lon,elevation"
+		coords := strings.Split(pointStr, ",")
+		if len(coords) < 2 {
+			continue
+		}
+
+		lat, err := strconv.ParseFloat(coords[0], 64)
+		if err != nil {
+			continue
+		}
+
+		lon, err := strconv.ParseFloat(coords[1], 64)
+		if err != nil {
+			continue
+		}
+
+		routePoints = append(routePoints, struct{ lat, lon float64 }{lat, lon})
+	}
+
+	if len(routePoints) == 0 {
+		return nil, fmt.Errorf("route has no valid coordinate points")
+	}
+
+	// Find the closest point on the route
+	minDistance := math.Inf(1)
+	var closestLat, closestLon, bearing float64
+
+	// Check distance to each route point
+	for _, point := range routePoints {
+		distance, bear := model.DistBea(userLat, userLon, point.lat, point.lon)
+		if distance < minDistance {
+			minDistance = distance
+			closestLat = point.lat
+			closestLon = point.lon
+			bearing = bear
+		}
+	}
+
+	// For routes with multiple segments, also check distance to line segments
+	if len(routePoints) > 1 {
+		for i := 0; i < len(routePoints)-1; i++ {
+			p1 := routePoints[i]
+			p2 := routePoints[i+1]
+
+			// Find closest point on line segment
+			segmentLat, segmentLon := closestPointOnSegment(userLat, userLon, p1.lat, p1.lon, p2.lat, p2.lon)
+			distance, bear := model.DistBea(userLat, userLon, segmentLat, segmentLon)
+
+			if distance < minDistance {
+				minDistance = distance
+				closestLat = segmentLat
+				closestLon = segmentLon
+				bearing = bear
+			}
+		}
+	}
+
+	return &NavigationResult{
+		ClosestPoint: struct {
+			Lat float64 `json:"lat"`
+			Lon float64 `json:"lon"`
+		}{closestLat, closestLon},
+		Distance: minDistance,
+		Bearing:  bearing,
+		ItemType: "route",
+	}, nil
+}
+
+// calculateDrawingDistance finds the closest point on a drawing/polygon
+func calculateDrawingDistance(item *model.Item, userLat, userLon float64) (*NavigationResult, error) {
+	msg := item.GetMsg()
+	if msg == nil {
+		return nil, fmt.Errorf("item has no message")
+	}
+
+	detail := msg.GetDetail()
+	if detail == nil {
+		return nil, fmt.Errorf("item has no detail")
+	}
+
+	// Get all link elements that contain drawing points
+	links := detail.GetAll("link")
+	if len(links) == 0 {
+		return nil, fmt.Errorf("drawing has no link points")
+	}
+
+	var drawingPoints []struct {
+		lat, lon float64
+	}
+
+	// Parse coordinates from link elements
+	for _, link := range links {
+		pointStr := link.GetAttr("point")
+		if pointStr == "" {
+			continue
+		}
+
+		// Parse point format: "lat,lon,elevation"
+		coords := strings.Split(pointStr, ",")
+		if len(coords) < 2 {
+			continue
+		}
+
+		lat, err := strconv.ParseFloat(coords[0], 64)
+		if err != nil {
+			continue
+		}
+
+		lon, err := strconv.ParseFloat(coords[1], 64)
+		if err != nil {
+			continue
+		}
+
+		drawingPoints = append(drawingPoints, struct{ lat, lon float64 }{lat, lon})
+	}
+
+	if len(drawingPoints) == 0 {
+		return nil, fmt.Errorf("drawing has no valid coordinate points")
+	}
+
+	// Find the closest point on the drawing perimeter
+	minDistance := math.Inf(1)
+	var closestLat, closestLon, bearing float64
+
+	// Check distance to each drawing point
+	for _, point := range drawingPoints {
+		distance, bear := model.DistBea(userLat, userLon, point.lat, point.lon)
+		if distance < minDistance {
+			minDistance = distance
+			closestLat = point.lat
+			closestLon = point.lon
+			bearing = bear
+		}
+	}
+
+	// For polygons, also check distance to edges
+	if len(drawingPoints) > 2 {
+		for i := 0; i < len(drawingPoints); i++ {
+			p1 := drawingPoints[i]
+			p2 := drawingPoints[(i+1)%len(drawingPoints)] // Wrap around for polygon
+
+			// Find closest point on line segment
+			segmentLat, segmentLon := closestPointOnSegment(userLat, userLon, p1.lat, p1.lon, p2.lat, p2.lon)
+			distance, bear := model.DistBea(userLat, userLon, segmentLat, segmentLon)
+
+			if distance < minDistance {
+				minDistance = distance
+				closestLat = segmentLat
+				closestLon = segmentLon
+				bearing = bear
+			}
+		}
+	}
+
+	return &NavigationResult{
+		ClosestPoint: struct {
+			Lat float64 `json:"lat"`
+			Lon float64 `json:"lon"`
+		}{closestLat, closestLon},
+		Distance: minDistance,
+		Bearing:  bearing,
+		ItemType: "drawing",
+	}, nil
+}
+
+// closestPointOnSegment finds the closest point on a line segment to a given point
+func closestPointOnSegment(userLat, userLon, lat1, lon1, lat2, lon2 float64) (float64, float64) {
+	// Convert to a simple 2D coordinate system for calculation
+	// This is an approximation suitable for small distances
+
+	// Vector from point 1 to point 2
+	dx := lon2 - lon1
+	dy := lat2 - lat1
+
+	// Vector from point 1 to user
+	px := userLon - lon1
+	py := userLat - lat1
+
+	// Calculate the parameter t for the closest point on the line
+	// t = 0 means closest to point 1, t = 1 means closest to point 2
+	segmentLengthSquared := dx*dx + dy*dy
+
+	if segmentLengthSquared == 0 {
+		// Degenerate case: the segment is a point
+		return lat1, lon1
+	}
+
+	t := (px*dx + py*dy) / segmentLengthSquared
+
+	// Clamp t to [0, 1] to stay on the segment
+	if t < 0 {
+		t = 0
+	} else if t > 1 {
+		t = 1
+	}
+
+	// Calculate the closest point
+	closestLat := lat1 + t*dy
+	closestLon := lon1 + t*dx
+
+	return closestLat, closestLon
+}
