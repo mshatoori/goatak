@@ -149,6 +149,10 @@ Vue.component("Sidebar", {
         this.switchTab("item-details");
       }
     },
+    onNavigationLineToggle: function (event) {
+      console.log("Navigation line toggle@sidebar", event);
+      this.$emit("navigation-line-toggle", event);
+    },
   },
 
   watch: {

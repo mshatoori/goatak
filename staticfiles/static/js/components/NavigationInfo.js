@@ -9,6 +9,7 @@ Vue.component("NavigationInfo", {
       apiError: null,
       apiCache: new Map(), // Cache for API responses
       currentRequest: null, // For request cancellation
+      apiUpdateTrigger: 0, // Reactive trigger for API updates
     };
   },
   computed: {
@@ -48,17 +49,26 @@ Vue.component("NavigationInfo", {
   },
   watch: {
     userPosition: {
-      handler: function () {
-        this.throttledRecalculate();
+      handler: function (newVal, oldVal) {
+        // Only recalculate if position actually changed significantly
+        if (newVal && oldVal && this.hasSignificantPositionChange(oldVal, newVal)) {
+          this.throttledRecalculate();
+        } else if (!oldVal && newVal) {
+          // Initial position set
+          this.throttledRecalculate();
+        }
       },
-      deep: true,
+      deep: false, // Don't use deep watching to avoid recursion
     },
     targetItem: {
-      handler: function () {
-        this.lastCalculation = null; // Reset cache when target changes
-        this.throttledRecalculate();
+      handler: function (newVal, oldVal) {
+        // Only recalculate if target item actually changed
+        if (!oldVal || !newVal || oldVal.uid !== newVal.uid) {
+          this.lastCalculation = null; // Reset cache when target changes
+          this.throttledRecalculate();
+        }
       },
-      deep: true,
+      deep: false, // Don't use deep watching to avoid recursion
     },
     showNavigationLine: function (newVal) {
       this.$emit("navigation-line-toggle", {
@@ -258,6 +268,9 @@ Vue.component("NavigationInfo", {
         return null;
       }
       
+      // Access the reactive trigger to ensure this computed property updates
+      this.apiUpdateTrigger;
+      
       const itemId = this.targetItem.uid || this.targetItem.id;
       if (!itemId) {
         console.warn('Complex object missing ID, falling back to client-side calculation');
@@ -293,8 +306,8 @@ Vue.component("NavigationInfo", {
                 userPosition: { ...this.userPosition }
               });
               
-              // Force reactivity update
-              this.$forceUpdate();
+              // Trigger reactivity update by incrementing the trigger
+              this.apiUpdateTrigger++;
             }
           })
           .catch(error => {
@@ -385,7 +398,8 @@ Vue.component("NavigationInfo", {
           }
         }
         
-        this.$forceUpdate(); // Trigger reactivity
+        // Don't use $forceUpdate() as it causes infinite recursion
+        // The computed properties will automatically recalculate when needed
       }, 500);
     },
 
