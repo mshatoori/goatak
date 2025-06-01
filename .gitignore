@@ -27,18 +27,8 @@ setup/config.sqlite3
 setup/tiles/
 .aider*
 .env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
+
+# MCP Language Server configuration is committed
+# (.vscode/settings.json and .roo/mcp.json contain MCP setup)
 .env
 .env

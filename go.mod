@@ -1,6 +1,6 @@
 module github.com/kdudkov/goatak
 
-go 1.22.2
+go 1.24.3
 
 require (
 	github.com/adrianmo/go-nmea v1.10.0

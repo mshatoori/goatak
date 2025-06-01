@@ -57,3 +57,28 @@ fmt:
 .PHONY: gox
 gox: clean dep
 	GOARM=6 gox --osarch="linux/amd64 linux/arm windows/amd64 darwin/arm64" -output "dist/{{.OS}}_{{.Arch}}/{{.Dir}}" $(LDFLAGS) ./cmd/...
+
+.PHONY: install-mcp
+install-mcp:
+	@echo "Installing MCP Language Server..."
+	go install github.com/isaacphi/mcp-language-server@latest
+	@echo "Installing gopls..."
+	go install golang.org/x/tools/gopls@latest
+	@echo "MCP Language Server setup complete!"
+
+.PHONY: check-mcp
+check-mcp:
+	@echo "Checking MCP Language Server installation..."
+	@which mcp-language-server || echo "mcp-language-server not found in PATH"
+	@which gopls || echo "gopls not found in PATH"
+	@echo "Go environment:"
+	@go env GOPATH GOCACHE GOMODCACHE
+
+.PHONY: mcp-help
+mcp-help:
+	@echo "MCP Language Server targets:"
+	@echo "  install-mcp  - Install MCP Language Server and gopls"
+	@echo "  check-mcp    - Check MCP installation and environment"
+	@echo "  mcp-help     - Show this help message"
+	@echo ""
+	@echo "See MCP_SETUP.md for detailed setup instructions"
