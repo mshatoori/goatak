@@ -22,6 +22,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/kdudkov/goatak/internal/tracking"
 	_ "modernc.org/sqlite"
 
 	"github.com/peterstace/simplefeatures/geom"
@@ -95,7 +96,8 @@ type App struct {
 	ipAddress string
 	urn       int32
 
-	DB *sql.DB
+	DB              *sql.DB
+	trackingService *tracking.TrackingService
 }
 
 type CoTEventMutator struct {
@@ -264,6 +266,19 @@ func initFlowsSensorsAndConfig(app *App) {
 
 	// Load flows from database or config
 	app.loadFlowsFromDatabaseOrConfig(db, dbExists)
+
+	// Create tracking tables if they don't exist
+	if err := app.createTrackingTables(db); err != nil {
+		app.logger.Error("failed to create tracking tables", "error", err)
+		// Continue without tracking functionality
+	} else {
+		// Initialize tracking service
+		app.trackingService = tracking.NewTrackingService(db, app.logger)
+		app.logger.Info("Tracking service initialized")
+
+		// Start periodic cleanup of old tracking data
+		go app.startTrackingCleanup()
+	}
 }
 
 func (app *App) initializeDatabase(dbPath string) (*sql.DB, bool, error) {
@@ -544,6 +559,83 @@ func (app *App) createSensorsTable(db *sql.DB) error {
 	);`
 	_, err := db.Exec(createTableSQL)
 	return err
+}
+
+func (app *App) createTrackingTables(db *sql.DB) error {
+	// Create tracking_positions table
+	createPositionsTableSQL := `CREATE TABLE IF NOT EXISTS tracking_positions (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		unit_uid TEXT NOT NULL,
+		latitude REAL NOT NULL,
+		longitude REAL NOT NULL,
+		altitude REAL,
+		speed REAL,
+		course REAL,
+		timestamp DATETIME NOT NULL,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	);`
+
+	if _, err := db.Exec(createPositionsTableSQL); err != nil {
+		return fmt.Errorf("failed to create tracking_positions table: %w", err)
+	}
+
+	// Create indexes for tracking_positions
+	createIndexSQL := `CREATE INDEX IF NOT EXISTS idx_tracking_unit_timestamp ON tracking_positions(unit_uid, timestamp);`
+	if _, err := db.Exec(createIndexSQL); err != nil {
+		return fmt.Errorf("failed to create tracking_positions index: %w", err)
+	}
+
+	createTimestampIndexSQL := `CREATE INDEX IF NOT EXISTS idx_tracking_timestamp ON tracking_positions(timestamp);`
+	if _, err := db.Exec(createTimestampIndexSQL); err != nil {
+		return fmt.Errorf("failed to create tracking_positions timestamp index: %w", err)
+	}
+
+	// Create tracking_config table
+	createConfigTableSQL := `CREATE TABLE IF NOT EXISTS tracking_config (
+		unit_uid TEXT PRIMARY KEY,
+		enabled BOOLEAN DEFAULT TRUE,
+		trail_length INTEGER DEFAULT 50,
+		update_interval INTEGER DEFAULT 30,
+		trail_color TEXT DEFAULT '#FF0000',
+		trail_width INTEGER DEFAULT 2,
+		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	);`
+
+	if _, err := db.Exec(createConfigTableSQL); err != nil {
+		return fmt.Errorf("failed to create tracking_config table: %w", err)
+	}
+
+	// Create tracking_settings table
+	createSettingsTableSQL := `CREATE TABLE IF NOT EXISTS tracking_settings (
+		key TEXT PRIMARY KEY,
+		value TEXT NOT NULL,
+		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	);`
+
+	if _, err := db.Exec(createSettingsTableSQL); err != nil {
+		return fmt.Errorf("failed to create tracking_settings table: %w", err)
+	}
+
+	// Insert default settings if they don't exist
+	defaultSettings := []struct {
+		key   string
+		value string
+	}{
+		{"global_enabled", "true"},
+		{"default_trail_length", "50"},
+		{"default_update_interval", "30"},
+		{"cleanup_interval_hours", "24"},
+	}
+
+	for _, setting := range defaultSettings {
+		insertSettingSQL := `INSERT OR IGNORE INTO tracking_settings (key, value) VALUES (?, ?)`
+		if _, err := db.Exec(insertSettingSQL, setting.key, setting.value); err != nil {
+			return fmt.Errorf("failed to insert default setting %s: %w", setting.key, err)
+		}
+	}
+
+	return nil
 }
 
 func (app *App) loadSensorsFromDatabase(db *sql.DB) error {
@@ -1110,6 +1202,28 @@ func (app *App) forceLocationUpdate() {
 	for _, sensor := range app.sensors {
 		if sensor.GetType() == "GPS" {
 			sensor.(*sensors.GpsdSensor).ForceUpdate()
+		}
+	}
+}
+
+func (app *App) startTrackingCleanup() {
+	if app.trackingService == nil {
+		return
+	}
+
+	// Run cleanup every 6 hours
+	ticker := time.NewTicker(6 * time.Hour)
+	defer ticker.Stop()
+
+	// Run initial cleanup after 1 minute
+	time.Sleep(1 * time.Minute)
+	if err := app.trackingService.CleanupOldData(); err != nil {
+		app.logger.Error("initial tracking cleanup failed", "error", err)
+	}
+
+	for range ticker.C {
+		if err := app.trackingService.CleanupOldData(); err != nil {
+			app.logger.Error("tracking cleanup failed", "error", err)
 		}
 	}
 }

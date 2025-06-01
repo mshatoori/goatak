@@ -56,4 +56,18 @@ you can run it with docker, using `docker run -p 8088:8088 -p 8080:8080 -p 8999:
 
 [![CI](https://github.com/kdudkov/goatak/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/kdudkov/goatak/actions/workflows/main.yml)
 
+## Development Setup
+
+### MCP Language Server
+
+This project includes configuration for the [MCP Language Server](https://github.com/isaacphi/mcp-language-server) to enhance development experience with Go language support.
+
+To set up the MCP Language Server:
+
+```bash
+make install-mcp
+```
+
+For detailed setup instructions, see [`MCP_SETUP.md`](MCP_SETUP.md).
+
 [By me a beer 🍺](https://buymeacoffee.com/kdudkov)
