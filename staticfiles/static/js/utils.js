@@ -328,6 +328,19 @@ function needIconUpdate(oldUnit, newUnit) {
   return false;
 }
 
+function humanReadableType(type) {
+  switch (type) {
+    case "u-d-f":
+      return "ناحیه";
+    case "b-m-r":
+      return "مسیر";
+  }
+
+  let sidc = store.getSidc(type.substring(4));
+  if (sidc) return sidc.name;
+  return type;
+}
+
 Vue.prototype.Utils = {
   getIconUri: getIconUri,
   getMilIcon: getMilIcon,
@@ -345,6 +358,7 @@ Vue.prototype.Utils = {
   popup: popup,
   latLongToIso6709: latLongToIso6709,
   needIconUpdate: needIconUpdate,
+  humanReadableType: humanReadableType,
 };
 
 L.Marker.RotatedMarker = L.Marker.extend({

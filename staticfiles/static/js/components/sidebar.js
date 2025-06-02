@@ -30,23 +30,7 @@ Vue.component("Sidebar", {
           this.isCollapsed = true;
         }
       }
-
-      // tab.show();
-
-      // }
     },
-
-    // Check if any tab is active
-    // checkActiveTabs: function () {
-    //   const activeTabs = document.querySelectorAll(
-    //     "#v-pills-tab .nav-link.active"
-    //   );
-    //   console.log("activetabs", activeTabs);
-    //   const isAnyTabActive = activeTabs.length > 0;
-    //   this.isCollapsed = !isAnyTabActive;
-    //   this.$emit("collapsed", this.isCollapsed);
-    //   return isAnyTabActive;
-    // },
 
     getActiveItemName: function () {
       if (this.activeItem) {
@@ -76,67 +60,6 @@ Vue.component("Sidebar", {
       return "آیتم";
     },
 
-    // Methods to create new items
-    createNewPoint: function () {
-      let now = new Date();
-      let uid = "POINT." + now.getTime(); // Simple unique ID
-      this.activeItem = {
-        uid: uid,
-        category: "point",
-        callsign: "نقطه جدید",
-        type: "b-m-p-s-m", // Default point type
-        lat: this.coords ? this.coords.lat : 0,
-        lon: this.coords ? this.coords.lng : 0,
-        text: "",
-        send: true,
-        web_sensor: "",
-        isNew: true,
-      };
-      this.switchTab("item-details");
-    },
-
-    createNewUnit: function () {
-      let now = new Date();
-      let uid = "UNIT." + now.getTime(); // Simple unique ID
-      this.activeItem = {
-        uid: uid,
-        category: "unit",
-        callsign: "نیروی جدید",
-        type: "a-f-G-U-C", // Default unit type (example)
-        aff: "f", // Default affiliation (friendly)
-        lat: this.coords ? this.coords.lat : 0,
-        lon: this.coords ? this.coords.lng : 0,
-        text: "",
-        send: true,
-        web_sensor: "",
-        isNew: true,
-        root_sidc: app.getSidc("a-f-G-U-C"), // Initialize root_sidc
-        subtype: "a-f-G-U-C", // Initialize subtype
-      };
-      this.switchTab("item-details");
-    },
-
-    createNewDrawing: function (type) {
-      let now = new Date();
-      let uid = (type === "route" ? "ROUTE." : "DRAWING.") + now.getTime(); // Simple unique ID
-      this.activeItem = {
-        uid: uid,
-        category: type === "route" ? "route" : "drawing",
-        callsign: type === "route" ? "مسیر جدید" : "چندضلعی جدید",
-        type: type === "route" ? "u-d-r" : "u-d-f", // Default drawing type (route or polygon)
-        lat: this.coords ? this.coords.lat : 0, // May not be needed for drawings initially
-        lon: this.coords ? this.coords.lng : 0, // May not be needed for drawings initially
-        points: [], // Drawings have points
-        color: "blue", // Default color
-        text: "",
-        send: true,
-        web_sensor: "",
-        isNew: true,
-        geofence: false, // Default geofence state
-        geofence_aff: "All", // Default geofence affiliation
-      };
-      this.switchTab("item-details");
-    },
     onSave: function (value) {
       console.log("save@sidebar", value);
       this.$emit("save", value);

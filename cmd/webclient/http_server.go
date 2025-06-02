@@ -935,6 +935,22 @@ func calculateDrawingDistance(item *model.Item, userLat, userLon float64) (*Navi
 		return nil, fmt.Errorf("drawing has no valid coordinate points")
 	}
 
+	// For polygons with 3 or more points, check if user is inside
+	if len(drawingPoints) > 2 {
+		if isPointInPolygon(userLat, userLon, drawingPoints) {
+			// User is inside the polygon, return zero distance
+			return &NavigationResult{
+				ClosestPoint: struct {
+					Lat float64 `json:"lat"`
+					Lon float64 `json:"lon"`
+				}{userLat, userLon},
+				Distance: 0,
+				Bearing:  0,
+				ItemType: "drawing",
+			}, nil
+		}
+	}
+
 	// Find the closest point on the drawing perimeter
 	minDistance := math.Inf(1)
 	var closestLat, closestLon, bearing float64
@@ -1016,4 +1032,37 @@ func closestPointOnSegment(userLat, userLon, lat1, lon1, lat2, lon2 float64) (fl
 	closestLon := lon1 + t*dx
 
 	return closestLat, closestLon
+}
+
+// isPointInPolygon determines if a point is inside a polygon using the ray casting algorithm
+func isPointInPolygon(userLat, userLon float64, polygon []struct{ lat, lon float64 }) bool {
+	if len(polygon) < 3 {
+		return false // Not a valid polygon
+	}
+
+	x, y := userLon, userLat
+	n := len(polygon)
+	inside := false
+
+	p1x, p1y := polygon[0].lon, polygon[0].lat
+	for i := 1; i <= n; i++ {
+		p2x, p2y := polygon[i%n].lon, polygon[i%n].lat
+
+		if y > math.Min(p1y, p2y) {
+			if y <= math.Max(p1y, p2y) {
+				if x <= math.Max(p1x, p2x) {
+					var xinters float64
+					if p1y != p2y {
+						xinters = (y-p1y)*(p2x-p1x)/(p2y-p1y) + p1x
+					}
+					if p1x == p2x || x <= xinters {
+						inside = !inside
+					}
+				}
+			}
+		}
+		p1x, p1y = p2x, p2y
+	}
+
+	return inside
 }
