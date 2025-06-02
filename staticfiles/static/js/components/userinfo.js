@@ -13,7 +13,7 @@ Vue.component("UserInfo", {
       // TODO: Fix infomarker
     },
     save() {
-      fetch(window.baseUrl + " /config", {
+      fetch(window.baseUrl + "/config", {
         headers: { "Content-Type": "application/json" },
         method: "PATCH",
         body: JSON.stringify({

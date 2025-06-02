@@ -3,13 +3,9 @@ Vue.component("NavigationInfo", {
   data: function () {
     return {
       showNavigationLine: false,
-      throttleTimer: null,
-      lastCalculation: null,
       isLoading: false,
       apiError: null,
-      apiCache: new Map(), // Cache for API responses
-      currentRequest: null, // For request cancellation
-      apiUpdateTrigger: 0, // Reactive trigger for API updates
+      apiResult: null,
     };
   },
   computed: {
@@ -29,8 +25,8 @@ Vue.component("NavigationInfo", {
         return null;
       }
 
-      // Use throttled calculation for performance
-      return this.calculateNavigationThrottled(targetCoords);
+      // Direct calculation without throttling
+      return this.calculateNavigation(targetCoords);
     },
     hasValidData: function () {
       return this.navigationData !== null;
@@ -50,29 +46,82 @@ Vue.component("NavigationInfo", {
   watch: {
     userPosition: {
       handler: function (newVal, oldVal) {
-        // Only recalculate if position actually changed significantly
-        if (
-          newVal &&
-          oldVal &&
-          this.hasSignificantPositionChange(oldVal, newVal)
-        ) {
-          this.throttledRecalculate();
-        } else if (!oldVal && newVal) {
-          // Initial position set
-          this.throttledRecalculate();
+        console.log("UserPos Updated!");
+        // Clear API result and recalculate immediately when position changes
+        if (newVal) {
+          this.apiResult = null;
+
+          // For complex objects, force immediate recalculation
+          if (this.targetItem && this.isComplexObject()) {
+            // Force new API call by clearing result and triggering update
+            this.$forceUpdate();
+            // Give time for the computed property to trigger API call
+            this.$nextTick(() => {
+              if (this.showNavigationLine) {
+                // The API call will handle the navigation line update
+                this.getApiNavigationData();
+                this.$emit("navigation-line-toggle", {
+                  show: true,
+                  targetItem: this.targetItem,
+                  userPosition: newVal,
+                  navigationData: this.navigationData,
+                });
+              }
+            });
+          } else {
+            this.$forceUpdate();
+
+            // Update navigation line if it's currently shown for simple objects
+            if (this.showNavigationLine && this.targetItem) {
+              this.$nextTick(() => {
+                this.$emit("navigation-line-toggle", {
+                  show: true,
+                  targetItem: this.targetItem,
+                  userPosition: newVal,
+                  navigationData: this.navigationData,
+                });
+              });
+            }
+          }
         }
       },
-      deep: false, // Don't use deep watching to avoid recursion
+      deep: false,
     },
     targetItem: {
       handler: function (newVal, oldVal) {
-        // Only recalculate if target item actually changed
-        if (!oldVal || !newVal || oldVal.uid !== newVal.uid) {
-          this.lastCalculation = null; // Reset cache when target changes
-          this.throttledRecalculate();
+        // Clear API result and recalculate immediately when target changes
+        if (newVal) {
+          this.apiResult = null;
+
+          // For complex objects, force immediate recalculation
+          if (this.isComplexObject()) {
+            // Force new API call by clearing result and triggering update
+            this.$forceUpdate();
+            // Give time for the computed property to trigger API call
+            this.$nextTick(() => {
+              if (this.showNavigationLine && this.userPosition) {
+                // The API call will handle the navigation line update
+                this.getApiNavigationData();
+              }
+            });
+          } else {
+            this.$forceUpdate();
+
+            // Update navigation line if it's currently shown for simple objects
+            if (this.showNavigationLine && this.userPosition) {
+              this.$nextTick(() => {
+                this.$emit("navigation-line-toggle", {
+                  show: true,
+                  targetItem: newVal,
+                  userPosition: this.userPosition,
+                  navigationData: this.navigationData,
+                });
+              });
+            }
+          }
         }
       },
-      deep: false, // Don't use deep watching to avoid recursion
+      deep: false,
     },
     showNavigationLine: function (newVal) {
       this.$emit("navigation-line-toggle", {
@@ -81,6 +130,20 @@ Vue.component("NavigationInfo", {
         userPosition: this.userPosition,
         navigationData: this.navigationData,
       });
+    },
+    navigationData: {
+      handler: function (newVal, oldVal) {
+        // Update navigation line whenever navigation data changes
+        if (this.showNavigationLine && newVal) {
+          this.$emit("navigation-line-toggle", {
+            show: true,
+            targetItem: this.targetItem,
+            userPosition: this.userPosition,
+            navigationData: newVal,
+          });
+        }
+      },
+      deep: false,
     },
   },
   methods: {
@@ -161,70 +224,16 @@ Vue.component("NavigationInfo", {
       return null;
     },
 
-    getCacheKey: function () {
-      if (!this.targetItem || !this.userPosition) return null;
-
-      const itemId = this.targetItem.uid || this.targetItem.id;
-      const userLat = this.userPosition.lat.toFixed(6);
-      const userLon = this.userPosition.lon.toFixed(6);
-
-      return `${itemId}_${userLat}_${userLon}`;
-    },
-
-    isCacheValid: function (cacheEntry) {
-      if (!cacheEntry) return false;
-
-      const now = Date.now();
-      const cacheAge = now - cacheEntry.timestamp;
-
-      // Cache is valid for 30 seconds
-      return cacheAge < 30000;
-    },
-
-    hasSignificantPositionChange: function (oldPos, newPos) {
-      if (!oldPos || !newPos) return true;
-
-      // Consider position change significant if moved more than 5 meters
-      const distance = this.calculateSimpleDistance(oldPos, newPos);
-      return distance > 5;
-    },
-
-    calculateSimpleDistance: function (pos1, pos2) {
-      const R = 6371000; // Earth's radius in meters
-      const toRadian = Math.PI / 180;
-
-      const deltaLat = (pos2.lat - pos1.lat) * toRadian;
-      const deltaLng = (pos2.lon - pos1.lon) * toRadian;
-
-      const a =
-        Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
-        Math.cos(pos1.lat * toRadian) *
-          Math.cos(pos2.lat * toRadian) *
-          Math.sin(deltaLng / 2) *
-          Math.sin(deltaLng / 2);
-
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return R * c;
-    },
-
     async fetchNavigationFromAPI(itemId, userLat, userLon) {
-      const url = `/api/navigation/distance/${itemId}?userLat=${userLat}&userLon=${userLon}`;
-
-      // Cancel previous request if still pending
-      if (this.currentRequest) {
-        this.currentRequest.abort();
-      }
-
-      // Create new AbortController for this request
-      const controller = new AbortController();
-      this.currentRequest = controller;
+      const url =
+        window.baseUrl +
+        `/api/navigation/distance/${itemId}?userLat=${userLat}&userLon=${userLon}`;
 
       try {
         this.isLoading = true;
         this.apiError = null;
 
         const response = await fetch(url, {
-          signal: controller.signal,
           headers: {
             Accept: "application/json",
           },
@@ -255,11 +264,6 @@ Vue.component("NavigationInfo", {
 
         return result;
       } catch (error) {
-        if (error.name === "AbortError") {
-          // Request was cancelled, don't treat as error
-          return null;
-        }
-
         console.warn("Navigation API error:", error.message);
         this.apiError = error.message;
 
@@ -277,7 +281,6 @@ Vue.component("NavigationInfo", {
         throw error;
       } finally {
         this.isLoading = false;
-        this.currentRequest = null;
       }
     },
 
@@ -285,9 +288,6 @@ Vue.component("NavigationInfo", {
       if (!this.targetItem || !this.userPosition) {
         return null;
       }
-
-      // Access the reactive trigger to ensure this computed property updates
-      this.apiUpdateTrigger;
 
       const itemId = this.targetItem.uid || this.targetItem.id;
       if (!itemId) {
@@ -298,25 +298,8 @@ Vue.component("NavigationInfo", {
         return targetCoords ? this.calculateNavigation(targetCoords) : null;
       }
 
-      const cacheKey = this.getCacheKey();
-      const cachedResult = this.apiCache.get(cacheKey);
-
-      // Return cached result if valid
-      if (this.isCacheValid(cachedResult)) {
-        return cachedResult.data;
-      }
-
-      // Check if we should make a new API call
-      const shouldFetch =
-        !cachedResult ||
-        !this.isCacheValid(cachedResult) ||
-        this.hasSignificantPositionChange(
-          cachedResult.userPosition,
-          this.userPosition
-        );
-
-      if (shouldFetch && !this.isLoading) {
-        // Make async API call
+      // Make immediate API call without caching
+      if (!this.isLoading && !this.apiResult) {
         this.fetchNavigationFromAPI(
           itemId,
           this.userPosition.lat,
@@ -324,15 +307,19 @@ Vue.component("NavigationInfo", {
         )
           .then((result) => {
             if (result) {
-              // Cache the result
-              this.apiCache.set(cacheKey, {
-                data: result,
-                timestamp: Date.now(),
-                userPosition: { ...this.userPosition },
-              });
+              this.apiResult = result;
 
-              // Trigger reactivity update by incrementing the trigger
-              this.apiUpdateTrigger++;
+              // Trigger navigation line update for complex objects
+              if (this.showNavigationLine) {
+                this.$nextTick(() => {
+                  this.$emit("navigation-line-toggle", {
+                    show: true,
+                    targetItem: this.targetItem,
+                    userPosition: this.userPosition,
+                    navigationData: result,
+                  });
+                });
+              }
             }
           })
           .catch((error) => {
@@ -340,8 +327,7 @@ Vue.component("NavigationInfo", {
           });
       }
 
-      // Return cached result or null while loading
-      return cachedResult ? cachedResult.data : null;
+      return this.apiResult;
     },
     calculateNavigation: function (targetCoords) {
       if (!this.userPosition || !targetCoords) {
@@ -387,60 +373,8 @@ Vue.component("NavigationInfo", {
         distance: distance,
         userPosition: userLatLng,
         targetPosition: targetCoords,
+        source: "client",
       };
-    },
-    calculateNavigationThrottled: function (targetCoords) {
-      // Use cached result if available and recent
-      if (
-        this.lastCalculation &&
-        Date.now() - this.lastCalculation.timestamp < 1000
-      ) {
-        return this.lastCalculation.result;
-      }
-
-      const result = this.calculateNavigation(targetCoords);
-      if (result) {
-        result.source = "client";
-      }
-
-      this.lastCalculation = {
-        result: result,
-        timestamp: Date.now(),
-      };
-
-      return result;
-    },
-    throttledRecalculate: function () {
-      if (this.throttleTimer) {
-        clearTimeout(this.throttleTimer);
-      }
-      this.throttleTimer = setTimeout(() => {
-        this.lastCalculation = null; // Force recalculation
-
-        // Clear API cache if position changed significantly
-        if (this.apiCache.size > 0) {
-          const currentPos = this.userPosition;
-          for (const [key, cached] of this.apiCache.entries()) {
-            if (
-              this.hasSignificantPositionChange(cached.userPosition, currentPos)
-            ) {
-              this.apiCache.delete(key);
-            }
-          }
-        }
-
-        // Don't use $forceUpdate() as it causes infinite recursion
-        // The computed properties will automatically recalculate when needed
-      }, 500);
-    },
-
-    cleanupCache: function () {
-      const now = Date.now();
-      for (const [key, cached] of this.apiCache.entries()) {
-        if (!this.isCacheValid(cached)) {
-          this.apiCache.delete(key);
-        }
-      }
     },
     getItemDisplayName: function () {
       if (!this.targetItem) return "نامشخص";
@@ -462,28 +396,10 @@ Vue.component("NavigationInfo", {
     },
   },
   mounted: function () {
-    // Clean up cache periodically
-    this.cacheCleanupInterval = setInterval(() => {
-      this.cleanupCache();
-    }, 60000); // Clean every minute
+    // Component mounted
   },
   beforeDestroy: function () {
-    // Cancel any pending requests
-    if (this.currentRequest) {
-      this.currentRequest.abort();
-    }
-
-    // Clear timers
-    if (this.throttleTimer) {
-      clearTimeout(this.throttleTimer);
-    }
-
-    if (this.cacheCleanupInterval) {
-      clearInterval(this.cacheCleanupInterval);
-    }
-
-    // Clear cache
-    this.apiCache.clear();
+    // Component cleanup
   },
   template: html`
     <div class="card mt-2">
@@ -524,12 +440,12 @@ Vue.component("NavigationInfo", {
               استفاده از محاسبه تقریبی (API: {{ apiError }})
             </small>
           </div>
-          <div class="mb-2">
+          <!-- <div class="mb-2">
             <strong>به:</strong> {{ getItemDisplayName() }}
             <span v-if="getItemTypeDisplay()" class="text-muted">
               ({{ getItemTypeDisplay() }})
             </span>
-          </div>
+          </div> -->
 
           <div class="row mb-2">
             <div class="col-6">

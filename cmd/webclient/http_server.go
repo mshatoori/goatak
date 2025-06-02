@@ -48,8 +48,8 @@ func NewHttp(app *App, address string) *air.Air {
 
 	srv.GET("/unit", getUnitsHandler(app))
 	srv.POST("/unit", addItemHandler(app))
-	srv.OPTIONS("/unit", optionsUnitHandler())
-	srv.OPTIONS("/unit/:uid", optionsUnitHandler())
+	srv.OPTIONS("/unit", optionsHandler())
+	srv.OPTIONS("/unit/:uid", optionsHandler())
 	srv.GET("/message", getMessagesHandler(app))
 	srv.POST("/message", addMessageHandler(app))
 	srv.DELETE("/unit/:uid", deleteItemHandler(app))
@@ -61,8 +61,10 @@ func NewHttp(app *App, address string) *air.Air {
 
 	srv.GET("/sensors", getSensorsHandler(app))
 	srv.POST("/sensors", addSensorHandler(app))
+	srv.OPTIONS("/sensors", optionsHandler())
 	srv.DELETE("/sensors/:uid", deleteSensorHandler(app))
 	srv.PUT("/sensors/:uid", editSensorHandler(app))
+	srv.OPTIONS("/sensors/:uid", optionsHandler())
 
 	// Navigation distance calculation endpoints
 	srv.GET("/api/navigation/distance/:itemId", getNavigationDistanceHandler(app))
@@ -656,7 +658,7 @@ func getLayers(mapServer string) []map[string]any {
 	return layers
 }
 
-func optionsUnitHandler() air.Handler {
+func optionsHandler() air.Handler {
 	return func(req *air.Request, res *air.Response) error {
 		// Set CORS headers
 		res.Header.Set("Access-Control-Allow-Origin", "*")
