@@ -11,3 +11,4 @@ staticfiles\static\js\mp.js
 staticfiles\static\js\points.js
 staticfiles\static\js\vue.js
 setup\
+staticfiles\header.html

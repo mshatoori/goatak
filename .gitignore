@@ -25,6 +25,7 @@ tasks/
 doc/roo/
 setup/config.sqlite3
 setup/tiles/
+frontend/node_modules/
 .aider*
 .env
 .env

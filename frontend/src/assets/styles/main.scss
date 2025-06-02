@@ -1,0 +1,190 @@
+// Import Vuetify styles
+@import 'vuetify/styles';
+
+// Persian font imports
+@import url('./fonts.scss');
+
+// Variables
+:root {
+  --primary-color: #1976D2;
+  --secondary-color: #424242;
+  --accent-color: #82B1FF;
+  --error-color: #FF5252;
+  --info-color: #2196F3;
+  --success-color: #4CAF50;
+  --warning-color: #FFC107;
+}
+
+// Global styles
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Vazirmatn', 'Roboto', sans-serif;
+  background-color: #fafafa;
+  color: #212121;
+  direction: rtl;
+  text-align: right;
+}
+
+// RTL support
+[dir="rtl"] {
+  text-align: right;
+  
+  .v-application {
+    direction: rtl;
+  }
+  
+  .v-btn {
+    direction: rtl;
+  }
+  
+  .v-list-item {
+    direction: rtl;
+  }
+}
+
+[dir="ltr"] {
+  text-align: left;
+  
+  .v-application {
+    direction: ltr;
+  }
+}
+
+// Custom scrollbar
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+// Leaflet map styles
+.leaflet-container {
+  font-family: 'Vazirmatn', 'Roboto', sans-serif;
+}
+
+.leaflet-popup-content {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Vazirmatn', 'Roboto', sans-serif;
+}
+
+.leaflet-control {
+  font-family: 'Vazirmatn', 'Roboto', sans-serif;
+}
+
+// Custom utility classes
+.text-persian {
+  font-family: 'Vazirmatn', sans-serif;
+  direction: rtl;
+  text-align: right;
+}
+
+.text-english {
+  font-family: 'Roboto', sans-serif;
+  direction: ltr;
+  text-align: left;
+}
+
+.full-height {
+  height: 100vh;
+}
+
+.full-width {
+  width: 100%;
+}
+
+// Animation classes
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-enter-from {
+  transform: translateX(100%);
+}
+
+.slide-leave-to {
+  transform: translateX(-100%);
+}
+
+// Responsive design
+@media (max-width: 600px) {
+  .v-navigation-drawer {
+    width: 100% !important;
+  }
+  
+  .map-controls {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+  }
+  
+  .fab {
+    bottom: 16px;
+    right: 16px;
+  }
+}
+
+// Dark theme adjustments
+.v-theme--dark {
+  .leaflet-container {
+    filter: brightness(0.8) contrast(1.2);
+  }
+  
+  .leaflet-control {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+  }
+  
+  .leaflet-popup-content-wrapper {
+    background-color: #1e1e1e !important;
+    color: #ffffff !important;
+  }
+}
+
+// Print styles
+@media print {
+  .v-app-bar,
+  .v-navigation-drawer,
+  .fab,
+  .map-controls {
+    display: none !important;
+  }
+  
+  .map-container {
+    height: 100vh !important;
+  }
+}
