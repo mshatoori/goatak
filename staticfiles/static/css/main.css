@@ -113,6 +113,8 @@ div.info {
 .tab-content:not(.d-none) {
   min-width: 300px;
   width: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Add some spacing between pills and content */
@@ -132,9 +134,15 @@ div.info {
 
 /* Animation for navigation line */
 @keyframes navigation-pulse {
-  0% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-  100% { opacity: 0.4; }
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.4;
+  }
 }
 
 .navigation-line.pulse {

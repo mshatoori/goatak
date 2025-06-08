@@ -148,7 +148,7 @@ let app = new Vue({
         u.lat = latSum / layer.editing.latlngs[0][0].length;
         u.lon = lngSum / layer.editing.latlngs[0][0].length;
 
-        u.color = "white";
+        u.color = "gray";
         u.geofence = false;
         u.geofence_aff = "All";
         // u.geofence_send = false
@@ -183,7 +183,7 @@ let app = new Vue({
         u.lat = latSum / layer.editing.latlngs[0].length;
         u.lon = lngSum / layer.editing.latlngs[0].length;
 
-        u.color = "white";
+        u.color = "gray";
 
         // vm.saveItem(u, function () {
         //   vm.setActiveItemUid(u.uid, true);
