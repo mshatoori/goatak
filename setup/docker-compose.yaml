@@ -3,27 +3,27 @@ services:
     build:
       dockerfile: Dockerfile.webclient
       context: ..
-#      network: host
-#    pull_policy: always
+    #      network: host
+    #    pull_policy: always
     image: ghcr.io/mshatoori/goatak-client:latest
     ports:
-     - "8081:8080"
-     - "6970:6969"
-     - "6970:6969/udp"
-     - "1200:1100"
-     - "1200:1100/udp"
+      - "8081:8080"
+      - "6970:6969"
+      - "6970:6969/udp"
+      - "1200:1100"
+      - "1200:1100/udp"
     volumes:
       - .:/workspace:cached
       - ./goatak_client.yml:/app/goatak_client.yml
       - ./config.sqlite3:/app/config.sqlite3
-    networks:
-      - mmhs
+    # networks:
+    #   - mmhs
   map:
     image: ghcr.io/mshatoori/goatak-maps:latest
     ports:
       - "8000:8000"
     networks:
-        - mmhs
+      - mmhs
   # map:
   #   image: overv/openstreetmap-tile-server
   #   volumes:
@@ -62,7 +62,7 @@ services:
       - "-D2"
       - "udp://0.0.0.0:5577"
     networks:
-        - mmhs
+      - mmhs
 
 networks:
   mmhs:
