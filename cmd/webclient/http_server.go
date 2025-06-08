@@ -36,27 +36,36 @@ func NewHttp(app *App, address string) *air.Air {
 	renderer.RightDelimeter = "]]"
 	_ = renderer.Load(templates)
 
+	srv.OPTIONS("/", optionsHandler())
 	srv.GET("/", getIndexHandler(app, renderer))
+	srv.OPTIONS("/config", optionsHandler())
 	srv.GET("/config", getConfigHandler(app))
 	srv.PATCH("/config", changeConfigHandler(app))
+	srv.OPTIONS("/types", optionsHandler())
 	srv.GET("/types", getTypes)
+	srv.OPTIONS("/dp", optionsHandler())
 	srv.POST("/dp", getDpHandler(app))
+	srv.OPTIONS("/pos", optionsHandler())
 	srv.GET("/pos", getPosHandler(app))
 	srv.POST("/pos", changePosHandler(app))
 
+	srv.OPTIONS("/ws", optionsHandler())
 	srv.GET("/ws", getWsHandler(app))
 
 	srv.GET("/unit", getUnitsHandler(app))
 	srv.POST("/unit", addItemHandler(app))
 	srv.OPTIONS("/unit", optionsHandler())
 	srv.OPTIONS("/unit/:uid", optionsHandler())
+	srv.OPTIONS("/message", optionsHandler())
 	srv.GET("/message", getMessagesHandler(app))
 	srv.POST("/message", addMessageHandler(app))
 	srv.DELETE("/unit/:uid", deleteItemHandler(app))
 	srv.POST("/unit/:uid/send/", sendItemHandler(app))
 
+	srv.OPTIONS("/flows", optionsHandler())
 	srv.GET("/flows", getFlowsHandler(app))
 	srv.POST("/flows", addFlowHandler(app))
+	srv.OPTIONS("/flows/:uid", optionsHandler())
 	srv.DELETE("/flows/:uid", deleteFlowHandler(app))
 
 	srv.GET("/sensors", getSensorsHandler(app))
@@ -67,7 +76,9 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.OPTIONS("/sensors/:uid", optionsHandler())
 
 	// Navigation distance calculation endpoints
+	srv.OPTIONS("/api/navigation/distance/:itemId", optionsHandler())
 	srv.GET("/api/navigation/distance/:itemId", getNavigationDistanceHandler(app))
+	srv.OPTIONS("/stack", optionsHandler())
 
 	srv.GET("/stack", getStackHandler())
 

@@ -67,7 +67,8 @@ export const useWebSocketStore = defineStore('websocket', () => {
     isConnecting.value = true
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const url = `${protocol}//${window.location.host}/ws`
+    // Use port 8081 for WebSocket connection
+    const url = `${protocol}//localhost:8081/ws`
 
     console.log('Connecting to WebSocket:', url)
 
@@ -228,7 +229,8 @@ export const useWebSocketStore = defineStore('websocket', () => {
     }
 
     try {
-      const response = await fetch(`${window.location.origin}/message`, {
+      // Use port 8081 for API calls
+      const response = await fetch(`http://localhost:8081/message`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(message),

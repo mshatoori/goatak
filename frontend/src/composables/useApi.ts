@@ -5,7 +5,8 @@ export function useApi() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const baseUrl = window.location.origin
+  // Use port 8081 for API calls
+  const baseUrl = 'http://localhost:8081'
 
   // Generic API request function
   const request = async <T>(
