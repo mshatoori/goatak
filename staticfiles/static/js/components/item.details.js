@@ -18,7 +18,8 @@ Vue.component("ItemDetails", {
       return this.item && this.item.category === "point";
     },
     isContact() {
-      return this.item && this.item.category === "contact";
+      return false;
+      // return this.item && this.item.category === "contact";
     },
     isUnit() {
       return (

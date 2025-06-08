@@ -449,7 +449,15 @@ let app = new Vue({
     _processRemoval: function (item) {
       console.log("processRemoval", item);
       if (item.marker) {
+        // Handle removal for drawings and routes
         this.getItemOverlay(item).removeLayer(item.marker);
+        // if (item.category === "drawing") {
+        //   this.drawnItems.removeLayer(item.marker);
+        // } else if (item.category === "route") {
+        //   this.routeItems.removeLayer(item.marker);
+        // } else {
+        //   this.getItemOverlay(item).removeLayer(item.marker);
+        // }
         item.marker.remove();
 
         if (item.infoMarker) {
@@ -482,6 +490,9 @@ let app = new Vue({
           });
         }
         item.marker.addTo(this.drawnItems);
+
+        // Add infomarker for polygon
+        this.addDrawingInfoMarker(item);
       } else if (item.category === "route") {
         item.marker = L.polyline(latlngs, {
           color: item.color,
@@ -490,8 +501,106 @@ let app = new Vue({
           this.setActiveItemUid(item.uid, false);
         });
         item.marker.addTo(this.routeItems);
+
+        // Add infomarker for route
+        this.addDrawingInfoMarker(item);
       }
     },
+
+    addDrawingInfoMarker: function (item) {
+      // Remove existing infomarker if it exists
+      if (item.infoMarker) {
+        this.removeFromAllOverlays(item.infoMarker);
+      }
+
+      let markerHtml = '<div class="drawing-infomarker">' + item.callsign;
+
+      // Add category-specific information
+      if (item.category === "drawing") {
+        // markerHtml += "<br>Polygon";
+        // if (item.color) markerHtml += "<br>Color: " + item.color;
+        // if (item.geofence !== undefined) {
+        //   markerHtml +=
+        //     "<br>" + (item.geofence ? "Geofence: ON" : "Geofence: OFF");
+        // }
+      } else if (item.category === "route") {
+        // markerHtml += "<br>Route";
+        // if (item.color) markerHtml += "<br>Color: " + item.color;
+        // // Calculate route length if possible
+        // if (item.links && item.links.length > 1) {
+        //   markerHtml += "<br>Points: " + item.links.length;
+        // }
+      }
+
+      // Add parent information if available
+      // if (item.parent_callsign) {
+      //   markerHtml += "<br>By: " + item.parent_callsign;
+      // }
+
+      markerHtml += "</div>";
+
+      const markerInfo = L.divIcon({
+        className: "edge-marker-info",
+        html: markerHtml,
+        iconSize: null,
+      });
+
+      // Calculate edge position for infomarker placement
+      let infoMarkerPosition = this.calculateEdgePosition(item);
+
+      // Create infomarker at the calculated edge position
+      item.infoMarker = L.marker(infoMarkerPosition, { icon: markerInfo });
+
+      // Add click event to select the item
+      item.infoMarker.on("click", (e) => {
+        this.setActiveItemUid(item.uid, false);
+      });
+
+      item.infoMarker.addTo(this.getItemOverlay(item));
+    },
+
+    calculateEdgePosition: function (item) {
+      if (!item.links || item.links.length === 0) {
+        // Fallback to center if no links available
+        return [item.lat, item.lon];
+      }
+
+      let latlngs = item.links.map((it) => {
+        return it.split(",").map(parseFloat);
+      });
+
+      if (item.category === "drawing") {
+        // For polygons, place infomarker at the middle of the first edge
+        if (latlngs.length < 2) {
+          return [latlngs[0][0], latlngs[0][1]];
+        }
+        // Calculate midpoint between first and second vertex
+        let lat1 = latlngs[0][0];
+        let lng1 = latlngs[0][1];
+        let lat2 = latlngs[1][0];
+        let lng2 = latlngs[1][1];
+        return [(lat1 + lat2) / 2, (lng1 + lng2) / 2];
+      } else if (item.category === "route") {
+        // For routes, place infomarker at the middle edge
+        if (latlngs.length < 2) {
+          return [latlngs[0][0], latlngs[0][1]];
+        }
+
+        // Find the middle edge index
+        let middleEdgeIndex = Math.floor((latlngs.length - 1) / 2);
+
+        // Calculate midpoint of the middle edge
+        let lat1 = latlngs[middleEdgeIndex][0];
+        let lng1 = latlngs[middleEdgeIndex][1];
+        let lat2 = latlngs[middleEdgeIndex + 1][0];
+        let lng2 = latlngs[middleEdgeIndex + 1][1];
+        return [(lat1 + lat2) / 2, (lng1 + lng2) / 2];
+      }
+
+      // Fallback to center
+      return [item.lat, item.lon];
+    },
+
     _processAddition: function (item) {
       if (item.category === "drawing" || item.category === "route") {
         this._processDrawing(item);
@@ -514,10 +623,13 @@ let app = new Vue({
 
     _processUpdate: function (item) {
       if (item.category === "drawing" || item.category === "route") {
-        // TODO: Handle things other than polygon!
+        // Remove existing markers and infomarkers
         if (item.marker) {
           this.drawnItems.removeLayer(item.marker);
           this.routeItems.removeLayer(item.marker);
+        }
+        if (item.infoMarker) {
+          this.removeFromAllOverlays(item.infoMarker);
         }
         this._processDrawing(item);
       } else {
@@ -558,6 +670,28 @@ let app = new Vue({
           unit.marker.contextmenu.openOn(this.getItemOverlay(unit));
         });
       }
+
+      // Also add context menu to infomarker for drawings and routes
+      // if (
+      //   unit.infoMarker &&
+      //   (unit.category === "drawing" || unit.category === "route")
+      // ) {
+      //   unit.infoMarker.on("contextmenu", (e) => {
+      //     if (unit.infoMarker.contextmenu === undefined) {
+      //       let menu = `
+      //               <ul class="dropdown-menu marker-contextmenu">
+      //                 <li><h6 class="dropdown-header">${unit.callsign}</h6></li>
+      //                 <li><button class="dropdown-item" onclick="app.menuDeleteAction('${unit.uid}')"> حذف </button></li>
+      //                 <li><button class="dropdown-item" onclick="app.menuSendAction('${unit.uid}')"> ارسال... </button></li>
+      //               </ul>`;
+      //       unit.infoMarker.contextmenu = L.popup()
+      //         .setLatLng(e.latlng)
+      //         .setContent(menu);
+      //       unit.infoMarker.contextmenu.addTo(this.getItemOverlay(unit));
+      //     }
+      //     unit.infoMarker.contextmenu.openOn(this.getItemOverlay(unit));
+      //   });
+      // }
     },
 
     processMe: function (u) {

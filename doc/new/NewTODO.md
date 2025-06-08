@@ -1,7 +1,7 @@
 Build a Version:
 
 1. Test and Debug everything
-1. Better Icons
+1. ~~Better Icons~~
 
 1. ~~Fix ToolsControl:~~
 
@@ -21,7 +21,7 @@ Build a Version:
 1. Measure between points
 1. Update details sidebar
    1. Distance to self
-   1. Lat/Lon
+   1. ~~Lat/Lon~~
    1. Last Seen (stale)
 1. ~~Persian Name for Points & Icons in the Dropdown~~
 1. Icons in the Dropdown for Points
@@ -33,7 +33,7 @@ Build a Version:
 1. ~~Debug radar objects getting removed~~
 1. ~~Better staling of objects~~
 1. Test new front-end
-1. Show name of polygons and routes on map
+1. ~~Show name of polygons and routes on map~~
 1. Fix infomarkers
 
 1. Sub-nets = Groups!

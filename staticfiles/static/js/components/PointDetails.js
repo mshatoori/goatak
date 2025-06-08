@@ -96,6 +96,20 @@ Vue.component("PointDetails", {
           return "سیاه";
       }
     },
+    typeName: function (type) {
+      switch (type) {
+        case "b-m-p-s-m":
+          return "محل";
+        case "b-m-p-w-GOTO":
+          return "نشانگر مسیر";
+        case "b-m-p-s-p-op":
+          return "نقطه دیده‌بانی";
+        case "b-m-p-a":
+          return "نقطه هدف";
+        default:
+          return type; // Return the original type if no mapping found
+      }
+    },
   },
   template: html`
     <div class="card">
@@ -155,7 +169,7 @@ Vue.component("PointDetails", {
               ><strong>نوع</strong></label
             >
             <div class="col-sm-8">
-              <label class="col-form-label">{{item.type}}</label>
+              <label class="col-form-label">{{typeName(item.type)}}</label>
             </div>
           </div>
           <div class="form-group row">
@@ -212,7 +226,7 @@ Vue.component("PointDetails", {
           </div>
         </dl>
         <div class="form-group row">{{ item.text }}</div>
-        
+
         <!-- Navigation Info Component -->
         <navigation-info
           v-if="!editing"
@@ -241,16 +255,102 @@ Vue.component("PointDetails", {
           <div class="form-group row mb-3">
             <label for="edit-type" class="col-sm-4 col-form-label">نوع</label>
             <div class="col-sm-8">
-              <select
-                class="form-select"
-                id="edit-type"
-                v-model="editingData.type"
-              >
-                <option value="b-m-p-s-m">محل</option>
-                <option value="b-m-p-w-GOTO">نشانگر مسیر</option>
-                <option value="b-m-p-s-p-op">نقطه دیده‌بانی</option>
-                <option value="b-m-p-a">نقطه هدف</option>
-              </select>
+              <div class="dropdown">
+                <button
+                  class="btn btn-outline-secondary dropdown-toggle w-100 text-start"
+                  type="button"
+                  id="edit-type-dropdown"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <img
+                    v-if="editingData.type === 'b-m-p-w-GOTO'"
+                    src="/static/icons/green_flag.png"
+                    style="width: 16px; height: 16px; margin-left: 8px;"
+                  />
+                  <img
+                    v-else-if="editingData.type === 'b-m-p-s-p-op'"
+                    src="/static/icons/binos.png"
+                    style="width: 16px; height: 16px; margin-left: 8px;"
+                  />
+                  <img
+                    v-else-if="editingData.type === 'b-m-p-a'"
+                    src="/static/icons/aimpoint.png"
+                    style="width: 16px; height: 16px; margin-left: 8px;"
+                  />
+                  <span
+                    v-else-if="editingData.type === 'b-m-p-s-m'"
+                    style="display: inline-block; width: 16px; height: 16px; border-radius: 50%; background-color: black; margin-left: 8px;"
+                  ></span>
+                  <span v-if="editingData.type === 'b-m-p-s-m'">محل</span>
+                  <span v-else-if="editingData.type === 'b-m-p-w-GOTO'"
+                    >نشانگر مسیر</span
+                  >
+                  <span v-else-if="editingData.type === 'b-m-p-s-p-op'"
+                    >نقطه دیده‌بانی</span
+                  >
+                  <span v-else-if="editingData.type === 'b-m-p-a'"
+                    >نقطه هدف</span
+                  >
+                  <span v-else>انتخاب نوع</span>
+                </button>
+                <ul
+                  class="dropdown-menu w-100"
+                  aria-labelledby="edit-type-dropdown"
+                >
+                  <li>
+                    <a
+                      class="dropdown-item d-flex align-items-center"
+                      href="#"
+                      @click.prevent="editingData.type = 'b-m-p-s-m'"
+                    >
+                      <span
+                        style="display: inline-block; width: 16px; height: 16px; border-radius: 50%; background-color: black; margin-left: 8px;"
+                      ></span>
+                      محل
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item d-flex align-items-center"
+                      href="#"
+                      @click.prevent="editingData.type = 'b-m-p-w-GOTO'"
+                    >
+                      <img
+                        src="/static/icons/green_flag.png"
+                        style="width: 16px; height: 16px; margin-left: 8px;"
+                      />
+                      نشانگر مسیر
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item d-flex align-items-center"
+                      href="#"
+                      @click.prevent="editingData.type = 'b-m-p-s-p-op'"
+                    >
+                      <img
+                        src="/static/icons/binos.png"
+                        style="width: 16px; height: 16px; margin-left: 8px;"
+                      />
+                      نقطه دیده‌بانی
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      class="dropdown-item d-flex align-items-center"
+                      href="#"
+                      @click.prevent="editingData.type = 'b-m-p-a'"
+                    >
+                      <img
+                        src="/static/icons/aimpoint.png"
+                        style="width: 16px; height: 16px; margin-left: 8px;"
+                      />
+                      نقطه هدف
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
           <div class="form-group row mb-3">
