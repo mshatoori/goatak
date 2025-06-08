@@ -329,7 +329,7 @@ Vue.component("UnitDetails", {
         <unit-tracking-control
           v-if="!editing && item.category === 'unit'"
           :unit="item"
-          :tracking-manager="$parent.trackingManager"
+          :tracking-manager="$root.trackingManager"
         ></unit-tracking-control>
       </div>
 
