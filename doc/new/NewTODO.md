@@ -1,3 +1,8 @@
+Build a Version:
+
+1. Test and Debug everything
+1. Better Icons
+
 1. ~~Fix ToolsControl:~~
 
    1. ~~Add PointsButton~~
