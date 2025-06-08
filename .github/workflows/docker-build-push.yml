@@ -32,7 +32,7 @@ jobs:
           images: ghcr.io/mshatoori/goatak-client
           tags: |
             type=raw,value=latest
-            type=raw,value=v${{ github.ref_name }}
+            type=raw,value=${{ github.ref_name }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
