@@ -242,7 +242,10 @@ var store = {
       return null;
     }
 
+    let cont = false;
+
     for (;;) {
+      cont = false;
       for (const k of curr.next) {
         if (k.code === s) {
           return k;
@@ -250,9 +253,11 @@ var store = {
 
         if (s.startsWith(k.code)) {
           curr = k;
+          cont = true;
           break;
         }
       }
+      if (!cont) break;
     }
     return null;
   },

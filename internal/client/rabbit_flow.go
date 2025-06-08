@@ -90,6 +90,7 @@ type RabbitMsg struct {
 	CreationDate   string               `json:"creationDate"` // datetime?
 	Version        string               `json:"version"`
 	Type           string               `json:"type"`
+	SourceSystem   string               `json:"sourceSystem"`
 }
 
 func (r *RabbitReader) Read(b []byte) (n int, err error) {
@@ -407,6 +408,7 @@ func (h *RabbitFlow) wrapMessage(buf []byte, _msg *cotproto.TakMessage) []byte {
 		CreationDate: "2023-06-11T14:27:43.7958539+03:30",
 		Version:      "1.0",
 		Type:         SEND_VMF_COMMAND,
+		SourceSystem: "SA",
 	}
 
 	err := json.NewEncoder(&newBuffer).Encode(rabbitMsg)

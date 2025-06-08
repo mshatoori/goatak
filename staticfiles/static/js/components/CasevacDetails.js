@@ -235,16 +235,16 @@ Vue.component("CasevacDetails", {
           <div class="card-body">
             <div class="mb-3">
               <!-- <label class="form-label fw-bold">روتین:</label> -->
-              <div v-if="item.casevacdetail.security===0">
+              <div v-if="item.casevac_detail.security===0">
                 عدم حضور نیروهای دشمن در منطقه
               </div>
-              <div v-if="item.casevacdetail.security===1">
+              <div v-if="item.casevac_detail.security===1">
                 احتمال حضور نیروهای دشمن در منطقه
               </div>
-              <div v-if="item.casevacdetail.security===2">
+              <div v-if="item.casevac_detail.security===2">
                 نیروهای دشمن، با احتیاط نزدیک شوید
               </div>
-              <div v-if="item.casevacdetail.security===3">
+              <div v-if="item.casevac_detail.security===3">
                 نیروهای دشمن، نیاز به اسکورت مسلح
               </div>
             </div>
@@ -371,7 +371,7 @@ Vue.component("CasevacDetails", {
           <label class="form-label fw-bold">فرکانس تماس:</label>
           <div>{{ item.casevac_detail?.freq || 0 }}</div>
         </div>
-        
+
         <!-- Navigation Info Component -->
         <navigation-info
           v-if="!editing"

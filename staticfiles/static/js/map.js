@@ -32,7 +32,7 @@ let app = new Vue({
 
     sidebarCollapsed: false, // Track sidebar collapse state
     beacon_active: false,
-    
+
     // Navigation line state
     navigationLine: null,
     navigationLineActive: false,
@@ -233,22 +233,18 @@ let app = new Vue({
 
   watch: {
     // Watch for changes in user position to update navigation line
-    config: {
-      handler: function (newConfig, oldConfig) {
-        if (newConfig && oldConfig &&
-            (newConfig.lat !== oldConfig.lat || newConfig.lon !== oldConfig.lon)) {
-          this.updateNavigationLine();
-        }
-      },
-      deep: true
-    },
-    
-    // Watch for active item changes to clear navigation line
+    // config: {
+    //   handler: function (newConfig, oldConfig) {
+    //     this.updateNavigationLine();
+    //   },
+    //   deep: true,
+    // },
+    // // Watch for active item changes to clear navigation line
     activeItemUid: function (newUid, oldUid) {
       if (newUid !== oldUid) {
         this.clearNavigationLineOnItemChange();
       }
-    }
+    },
   },
 
   methods: {
@@ -376,7 +372,7 @@ let app = new Vue({
     connect: function () {
       let url =
         (window.location.protocol === "https:" ? "wss://" : "ws://") +
-        window.location.host +
+        window.baseUrl.replace("http://", "") +
         "/ws";
       let vm = this;
 
@@ -446,7 +442,7 @@ let app = new Vue({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ lat: p.lat, lon: p.lng, name: "DP1" }),
         };
-        fetch(window.baseUrl + " /dp", requestOptions);
+        fetch(window.baseUrl + "/dp", requestOptions);
       }
     },
 
@@ -465,6 +461,9 @@ let app = new Vue({
       if (this.activeItemUid === item.uid) {
         this.setActiveItemUid(null, false);
       }
+
+      if (this.navigationTarget && item.uid === this.navigationTarget.uid)
+        this.hideNavigationLine();
     },
 
     _processDrawing(item) {
@@ -563,8 +562,7 @@ let app = new Vue({
 
     processMe: function (u) {
       if (!u || !this.me) return;
-      this.config.lat = u.lat;
-      this.config.lon = u.lon;
+      this.config = { ...this.config, lat: u.lat, lon: u.lon };
       this.me.setLatLng([u.lat, u.lon]);
       if (this.myInfoMarker) this.myInfoMarker.setLatLng([u.lat, u.lon]);
       if (u.course) this.me.setIconAngle(u.course);
@@ -642,6 +640,9 @@ let app = new Vue({
       }
       unit.marker.setLatLng([unit.lat, unit.lon]);
       unit.marker.bindTooltip(popup(unit));
+
+      // if (this.navigationTarget && unit.uid === this.navigationTarget.uid)
+      //   this.updateNavigationLine();
     },
 
     setActiveItemUid: function (uid, follow) {
@@ -1189,7 +1190,7 @@ let app = new Vue({
       return u;
     },
     locateByGPS: function () {
-      fetch(window.baseUrl + " /pos").then((r) =>
+      fetch(window.baseUrl + "/pos").then((r) =>
         this.map.setView([this.config.lat, this.config.lon])
       );
     },
@@ -1200,9 +1201,13 @@ let app = new Vue({
     // Navigation line methods
     handleNavigationLineToggle: function (event) {
       console.log("Navigation line toggle event:", event);
-      
+
       if (event.show) {
-        this.showNavigationLine(event.targetItem, event.userPosition, event.navigationData);
+        this.showNavigationLine(
+          event.targetItem,
+          event.userPosition,
+          event.navigationData
+        );
       } else {
         this.hideNavigationLine();
       }
@@ -1211,32 +1216,42 @@ let app = new Vue({
     showNavigationLine: function (targetItem, userPosition, navigationData) {
       // Clear any existing navigation line
       this.hideNavigationLine();
-      
+
       if (!targetItem || !userPosition || !navigationData) {
-        console.warn("Missing data for navigation line:", { targetItem, userPosition, navigationData });
+        console.warn("Missing data for navigation line:", {
+          targetItem,
+          userPosition,
+          navigationData,
+        });
         return;
       }
 
       // Create the navigation line
       const userLatLng = [userPosition.lat, userPosition.lon];
-      const targetLatLng = [navigationData.targetPosition.lat, navigationData.targetPosition.lng];
-      
+      const targetLatLng = [
+        navigationData.targetPosition.lat,
+        navigationData.targetPosition.lng,
+      ];
+
       this.navigationLine = L.polyline([userLatLng, targetLatLng], {
-        color: '#007bff',
+        color: "#007bff",
         weight: 2,
         opacity: 0.6,
-        dashArray: '5, 10',
-        className: 'navigation-line'
+        dashArray: "5, 10",
+        className: "navigation-line",
       });
 
       // Add to navigation overlay
       this.overlays.navigation.addLayer(this.navigationLine);
-      
+
       // Store navigation state
       this.navigationLineActive = true;
       this.navigationTarget = targetItem;
-      
-      console.log("Navigation line created for:", targetItem.callsign || targetItem.uid);
+
+      console.log(
+        "Navigation line created for:",
+        targetItem.callsign || targetItem.uid
+      );
     },
 
     hideNavigationLine: function () {
@@ -1244,30 +1259,34 @@ let app = new Vue({
         this.overlays.navigation.removeLayer(this.navigationLine);
         this.navigationLine = null;
       }
-      
+
       this.navigationLineActive = false;
       this.navigationTarget = null;
-      
+
       console.log("Navigation line hidden");
     },
 
     updateNavigationLine: function () {
+      console.log("updateNavigationLine");
       // Update navigation line when user position changes
       if (this.navigationLineActive && this.navigationTarget && this.config) {
         // Get target coordinates
         let targetCoords = null;
-        
-        if (this.navigationTarget.lat !== undefined && this.navigationTarget.lon !== undefined) {
+
+        if (
+          this.navigationTarget.lat !== undefined &&
+          this.navigationTarget.lon !== undefined
+        ) {
           targetCoords = {
             lat: this.navigationTarget.lat,
             lng: this.navigationTarget.lon,
           };
         }
-        
+
         if (targetCoords) {
           const userLatLng = [this.config.lat, this.config.lon];
           const targetLatLng = [targetCoords.lat, targetCoords.lng];
-          
+
           if (this.navigationLine) {
             this.navigationLine.setLatLngs([userLatLng, targetLatLng]);
           }

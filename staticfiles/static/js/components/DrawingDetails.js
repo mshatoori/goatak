@@ -168,7 +168,7 @@ Vue.component("DrawingDetails", {
               ><strong>نوع</strong></label
             >
             <div class="col-sm-8">
-              <label class="col-form-label">{{item.type}}</label>
+              <label class="col-form-label">{{Utils.humanReadableType(item.type)}}</label>
             </div>
           </div>
           <div class="form-group row">
