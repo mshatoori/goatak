@@ -316,9 +316,9 @@ class TrackingManager {
     content += `<p><strong>Points:</strong> ${trail.length}</p>`;
 
     if (startTime && endTime) {
-      content += `<p><strong>Duration:</strong> ${Utils.dt(
-        startTime
-      )} - ${Utils.dt(endTime)}</p>`;
+      content += `<p><strong>Duration:</strong> ${dt(startTime)} - ${dt(
+        endTime
+      )}</p>`;
     }
 
     if (trail.length > 1) {
@@ -410,7 +410,8 @@ class TrackingManager {
       return;
     }
 
-    const { unit_uid, latitude, longitude, timestamp, speed, course } = data;
+    const { unit_uid, latitude, longitude, timestamp, speed, course } =
+      data.tracking_update;
 
     if (!unit_uid || !latitude || !longitude) {
       console.warn(

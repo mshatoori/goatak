@@ -382,10 +382,17 @@ let app = new Vue({
     },
 
     connect: function () {
-      let url =
-        (window.location.protocol === "https:" ? "wss://" : "ws://") +
-        window.baseUrl.replace("http://", "") +
-        "/ws";
+      let url = "";
+      if (window.baseUrl !== "")
+        url =
+          (window.location.protocol === "https:" ? "wss://" : "ws://") +
+          window.baseUrl.replace("http://", "") +
+          "/ws";
+      else
+        url =
+          (window.location.protocol === "https:" ? "wss://" : "ws://") +
+          window.location.host +
+          "/ws";
       let vm = this;
 
       this.fetchAllUnits();
