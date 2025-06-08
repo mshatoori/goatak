@@ -46,7 +46,7 @@ Vue.component("NavigationInfo", {
   watch: {
     userPosition: {
       handler: function (newVal, oldVal) {
-        console.log("UserPos Updated!");
+        console.log("WATCH @userPosition");
         // Clear API result and recalculate immediately when position changes
         if (newVal) {
           this.apiResult = null;
@@ -89,6 +89,7 @@ Vue.component("NavigationInfo", {
     },
     targetItem: {
       handler: function (newVal, oldVal) {
+        console.log("WATCH @targetItem");
         // Clear API result and recalculate immediately when target changes
         if (newVal) {
           this.apiResult = null;
@@ -124,6 +125,7 @@ Vue.component("NavigationInfo", {
       deep: false,
     },
     showNavigationLine: function (newVal) {
+      console.log("WATCH @showNavigationLine");
       this.$emit("navigation-line-toggle", {
         show: newVal,
         targetItem: this.targetItem,
@@ -133,6 +135,7 @@ Vue.component("NavigationInfo", {
     },
     navigationData: {
       handler: function (newVal, oldVal) {
+        console.log("WATCH @navigationData");
         // Update navigation line whenever navigation data changes
         if (this.showNavigationLine && newVal) {
           this.$emit("navigation-line-toggle", {
