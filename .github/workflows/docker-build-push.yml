@@ -32,7 +32,7 @@ jobs:
           images: ghcr.io/mshatoori/ghcr.io
           tags: |
             type=raw,value=latest
-            type=raw,value=${{ github.run_id }}
+            type=raw,value=${{ github.run_number }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
