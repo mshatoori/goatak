@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"embed"
 	"encoding/json"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/kdudkov/goatak/internal/client"
+	imodel "github.com/kdudkov/goatak/internal/model"
 	"github.com/kdudkov/goatak/internal/wshandler"
 
 	"github.com/aofei/air"
@@ -78,6 +80,17 @@ func NewHttp(app *App, address string) *air.Air {
 	// Navigation distance calculation endpoints
 	srv.OPTIONS("/api/navigation/distance/:itemId", optionsHandler())
 	srv.GET("/api/navigation/distance/:itemId", getNavigationDistanceHandler(app))
+
+	// Tracking API endpoints
+	srv.OPTIONS("/api/tracking/trails", optionsHandler())
+	srv.GET("/api/tracking/trails", getTrackingTrailsHandler(app))
+	srv.OPTIONS("/api/tracking/trail/:uid", optionsHandler())
+	srv.GET("/api/tracking/trail/:uid", getTrackingTrailHandler(app))
+	srv.OPTIONS("/api/tracking/config/:uid", optionsHandler())
+	srv.POST("/api/tracking/config/:uid", updateTrackingConfigHandler(app))
+	srv.OPTIONS("/api/tracking/settings", optionsHandler())
+	srv.GET("/api/tracking/settings", getTrackingSettingsHandler(app))
+	srv.POST("/api/tracking/settings", updateTrackingSettingsHandler(app))
 
 	srv.OPTIONS("/stack", optionsHandler())
 	srv.GET("/stack", getStackHandler())
@@ -525,6 +538,7 @@ func getWsHandler(app *App) air.Handler {
 		app.changeCb.SubscribeNamed(name, h.SendItem)
 		app.deleteCb.SubscribeNamed(name, h.DeleteItem)
 		app.chatCb.SubscribeNamed(name, h.NewChatMessage)
+		app.trackingUpdateCb.SubscribeNamed(name, h.SendTrackingUpdate)
 		h.Listen()
 		app.logger.Debug("ws listener disconnected")
 
@@ -1076,4 +1090,370 @@ func isPointInPolygon(userLat, userLon float64, polygon []struct{ lat, lon float
 	}
 
 	return inside
+}
+
+// getTrackingTrailsHandler handles GET /api/tracking/trails - Get all active trails
+func getTrackingTrailsHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		if app.trackingService == nil {
+			res.Status = 503
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Tracking service not available",
+			})
+		}
+
+		trails, err := app.trackingService.GetAllTrails()
+		if err != nil {
+			res.Status = 500
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   fmt.Sprintf("Failed to get trails: %v", err),
+			})
+		}
+
+		return res.WriteJSON(map[string]any{
+			"success": true,
+			"data":    trails,
+		})
+	}
+}
+
+// getTrackingTrailHandler handles GET /api/tracking/trail/:uid - Get trail for specific unit
+func getTrackingTrailHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		if app.trackingService == nil {
+			res.Status = 503
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Tracking service not available",
+			})
+		}
+
+		uid := getStringParam(req, "uid")
+		if uid == "" {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Missing uid parameter",
+			})
+		}
+
+		// Get trail length from config or use default
+		config, err := app.trackingService.GetConfig(uid)
+		if err != nil {
+			app.logger.Error("failed to get tracking config", "error", err, "uid", uid)
+			// Use default trail length if config retrieval fails
+			config.TrailLength = 50
+		}
+
+		positions, err := app.trackingService.GetTrail(uid, config.TrailLength)
+		if err != nil {
+			res.Status = 500
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   fmt.Sprintf("Failed to get trail: %v", err),
+			})
+		}
+
+		// Get callsign from items repository if available
+		callsign := ""
+		if item := app.items.Get(uid); item != nil {
+			callsign = item.GetCallsign()
+		}
+
+		trail := map[string]any{
+			"unit_uid":  uid,
+			"callsign":  callsign,
+			"positions": positions,
+			"config":    config,
+		}
+
+		return res.WriteJSON(map[string]any{
+			"success": true,
+			"data":    trail,
+		})
+	}
+}
+
+// updateTrackingConfigHandler handles POST /api/tracking/config/:uid - Update tracking configuration
+func updateTrackingConfigHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		if app.trackingService == nil {
+			res.Status = 503
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Tracking service not available",
+			})
+		}
+
+		uid := getStringParam(req, "uid")
+		if uid == "" {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Missing uid parameter",
+			})
+		}
+
+		if req.Body == nil {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Missing request body",
+			})
+		}
+
+		var config imodel.TrackingConfig
+		if err := json.NewDecoder(req.Body).Decode(&config); err != nil {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   fmt.Sprintf("Invalid JSON: %v", err),
+			})
+		}
+
+		// Validate configuration values
+		if config.TrailLength < 1 || config.TrailLength > 1000 {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Trail length must be between 1 and 1000",
+			})
+		}
+
+		if config.UpdateInterval < 1 || config.UpdateInterval > 3600 {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Update interval must be between 1 and 3600 seconds",
+			})
+		}
+
+		if config.TrailWidth < 1 || config.TrailWidth > 10 {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Trail width must be between 1 and 10",
+			})
+		}
+
+		// Set default color if not provided
+		if config.TrailColor == "" {
+			config.TrailColor = "#FF0000"
+		}
+
+		err := app.trackingService.UpdateConfig(uid, config)
+		if err != nil {
+			res.Status = 500
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   fmt.Sprintf("Failed to update config: %v", err),
+			})
+		}
+
+		// Return the updated config
+		updatedConfig, err := app.trackingService.GetConfig(uid)
+		if err != nil {
+			app.logger.Error("failed to get updated config", "error", err, "uid", uid)
+			// Return success anyway since the update succeeded
+			return res.WriteJSON(map[string]any{
+				"success": true,
+				"message": "Configuration updated successfully",
+			})
+		}
+
+		return res.WriteJSON(map[string]any{
+			"success": true,
+			"data":    updatedConfig,
+		})
+	}
+}
+
+// getTrackingSettingsHandler handles GET /api/tracking/settings - Get global tracking settings
+func getTrackingSettingsHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		if app.DB == nil {
+			res.Status = 503
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Database not available",
+			})
+		}
+
+		settings, err := getTrackingSettings(app.DB)
+		if err != nil {
+			res.Status = 500
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   fmt.Sprintf("Failed to get settings: %v", err),
+			})
+		}
+
+		return res.WriteJSON(map[string]any{
+			"success": true,
+			"data":    settings,
+		})
+	}
+}
+
+// updateTrackingSettingsHandler handles POST /api/tracking/settings - Update global tracking settings
+func updateTrackingSettingsHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		if app.DB == nil {
+			res.Status = 503
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Database not available",
+			})
+		}
+
+		if req.Body == nil {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Missing request body",
+			})
+		}
+
+		var settings imodel.TrackingSettings
+		if err := json.NewDecoder(req.Body).Decode(&settings); err != nil {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   fmt.Sprintf("Invalid JSON: %v", err),
+			})
+		}
+
+		// Validate settings
+		if settings.DefaultTrailLength < 1 || settings.DefaultTrailLength > 1000 {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Default trail length must be between 1 and 1000",
+			})
+		}
+
+		if settings.DefaultUpdateInterval < 1 || settings.DefaultUpdateInterval > 3600 {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Default update interval must be between 1 and 3600 seconds",
+			})
+		}
+
+		if settings.CleanupInterval < 1 || settings.CleanupInterval > 168 {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Cleanup interval must be between 1 and 168 hours",
+			})
+		}
+
+		err := updateTrackingSettings(app.DB, settings)
+		if err != nil {
+			res.Status = 500
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   fmt.Sprintf("Failed to update settings: %v", err),
+			})
+		}
+
+		// Return the updated settings
+		updatedSettings, err := getTrackingSettings(app.DB)
+		if err != nil {
+			app.logger.Error("failed to get updated settings", "error", err)
+			// Return success anyway since the update succeeded
+			return res.WriteJSON(map[string]any{
+				"success": true,
+				"message": "Settings updated successfully",
+			})
+		}
+
+		return res.WriteJSON(map[string]any{
+			"success": true,
+			"data":    updatedSettings,
+		})
+	}
+}
+
+// Helper functions for tracking settings
+
+// getTrackingSettings retrieves global tracking settings from database
+func getTrackingSettings(db *sql.DB) (imodel.TrackingSettings, error) {
+	settings := imodel.TrackingSettings{
+		GlobalEnabled:         true,
+		DefaultTrailLength:    50,
+		DefaultUpdateInterval: 30,
+		CleanupInterval:       24,
+	}
+
+	rows, err := db.Query("SELECT key, value FROM tracking_settings")
+	if err != nil {
+		return settings, fmt.Errorf("failed to query tracking settings: %w", err)
+	}
+	defer rows.Close()
+
+	settingsMap := make(map[string]string)
+	for rows.Next() {
+		var key, value string
+		if err := rows.Scan(&key, &value); err != nil {
+			continue
+		}
+		settingsMap[key] = value
+	}
+
+	// Parse settings from map
+	if val, ok := settingsMap["global_enabled"]; ok {
+		settings.GlobalEnabled = val == "true"
+	}
+	if val, ok := settingsMap["default_trail_length"]; ok {
+		if parsed, err := strconv.Atoi(val); err == nil {
+			settings.DefaultTrailLength = parsed
+		}
+	}
+	if val, ok := settingsMap["default_update_interval"]; ok {
+		if parsed, err := strconv.Atoi(val); err == nil {
+			settings.DefaultUpdateInterval = parsed
+		}
+	}
+	if val, ok := settingsMap["cleanup_interval_hours"]; ok {
+		if parsed, err := strconv.Atoi(val); err == nil {
+			settings.CleanupInterval = parsed
+		}
+	}
+
+	return settings, nil
+}
+
+// updateTrackingSettings updates global tracking settings in database
+func updateTrackingSettings(db *sql.DB, settings imodel.TrackingSettings) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.Prepare("INSERT OR REPLACE INTO tracking_settings (key, value, updated_at) VALUES (?, ?, ?)")
+	if err != nil {
+		return fmt.Errorf("failed to prepare statement: %w", err)
+	}
+	defer stmt.Close()
+
+	now := time.Now().Format("2006-01-02 15:04:05")
+
+	settingsMap := map[string]string{
+		"global_enabled":          fmt.Sprintf("%t", settings.GlobalEnabled),
+		"default_trail_length":    fmt.Sprintf("%d", settings.DefaultTrailLength),
+		"default_update_interval": fmt.Sprintf("%d", settings.DefaultUpdateInterval),
+		"cleanup_interval_hours":  fmt.Sprintf("%d", settings.CleanupInterval),
+	}
+
+	for key, value := range settingsMap {
+		if _, err := stmt.Exec(key, value, now); err != nil {
+			return fmt.Errorf("failed to update setting %s: %w", key, err)
+		}
+	}
+
+	return tx.Commit()
 }

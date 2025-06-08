@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/kdudkov/goatak/internal/tracking"
+	"github.com/kdudkov/goatak/internal/wshandler"
 	_ "modernc.org/sqlite"
 
 	"github.com/peterstace/simplefeatures/geom"
@@ -51,27 +52,28 @@ const (
 )
 
 type App struct {
-	dialTimeout     time.Duration
-	host            string
-	tcpPort         string
-	webPort         int
-	logger          *slog.Logger
-	ch              chan []byte
-	items           repository.ItemsRepository
-	chatMessages    *model.ChatMessages
-	tls             bool
-	tlsCert         *tls.Certificate
-	cas             *x509.CertPool
-	cl              *client.ConnClientHandler
-	mesh            *client.MeshHandler
-	changeCb        *callback.Callback[*model.Item]
-	deleteCb        *callback.Callback[string]
-	chatCb          *callback.Callback[*model.ChatMessage]
-	eventProcessors []*EventProcessor
-	remoteAPI       *RemoteAPI
-	saveFile        string
-	connected       uint32
-	mapServer       string
+	dialTimeout      time.Duration
+	host             string
+	tcpPort          string
+	webPort          int
+	logger           *slog.Logger
+	ch               chan []byte
+	items            repository.ItemsRepository
+	chatMessages     *model.ChatMessages
+	tls              bool
+	tlsCert          *tls.Certificate
+	cas              *x509.CertPool
+	cl               *client.ConnClientHandler
+	mesh             *client.MeshHandler
+	changeCb         *callback.Callback[*model.Item]
+	deleteCb         *callback.Callback[string]
+	chatCb           *callback.Callback[*model.ChatMessage]
+	trackingUpdateCb *callback.Callback[*wshandler.TrackingUpdateData]
+	eventProcessors  []*EventProcessor
+	remoteAPI        *RemoteAPI
+	saveFile         string
+	connected        uint32
+	mapServer        string
 
 	flows             []client.CoTFlow
 	sensors           []sensors.BaseSensor
@@ -176,25 +178,26 @@ func NewApp(uid string, callsign string, connectStr string, webPort int, mapServ
 	}
 
 	return &App{
-		logger:          logger,
-		callsign:        callsign,
-		uid:             uid,
-		host:            parts[0],
-		tcpPort:         parts[1],
-		tls:             tlsConn,
-		webPort:         webPort,
-		items:           repository.NewItemsMemoryRepo(),
-		dialTimeout:     time.Second * 5,
-		changeCb:        callback.New[*model.Item](),
-		deleteCb:        callback.New[string](),
-		chatCb:          callback.New[*model.ChatMessage](),
-		chatMessages:    model.NewChatMessages(uid),
-		eventProcessors: make([]*EventProcessor, 0),
-		pos:             atomic.Pointer[model.Pos]{},
-		mapServer:       mapServer,
-		ipAddress:       ipAddress,
-		urn:             urn,
-		flows:           make([]client.CoTFlow, 0),
+		logger:           logger,
+		callsign:         callsign,
+		uid:              uid,
+		host:             parts[0],
+		tcpPort:          parts[1],
+		tls:              tlsConn,
+		webPort:          webPort,
+		items:            repository.NewItemsMemoryRepo(),
+		dialTimeout:      time.Second * 5,
+		changeCb:         callback.New[*model.Item](),
+		deleteCb:         callback.New[string](),
+		chatCb:           callback.New[*model.ChatMessage](),
+		trackingUpdateCb: callback.New[*wshandler.TrackingUpdateData](),
+		chatMessages:     model.NewChatMessages(uid),
+		eventProcessors:  make([]*EventProcessor, 0),
+		pos:              atomic.Pointer[model.Pos]{},
+		mapServer:        mapServer,
+		ipAddress:        ipAddress,
+		urn:              urn,
+		flows:            make([]client.CoTFlow, 0),
 
 		selfPosEventMutators: sync.Map{},
 		alarms:               make([]string, 0),
@@ -1226,6 +1229,32 @@ func (app *App) startTrackingCleanup() {
 			app.logger.Error("tracking cleanup failed", "error", err)
 		}
 	}
+}
+
+// broadcastTrackingUpdate sends tracking updates to all connected WebSocket clients
+func (app *App) broadcastTrackingUpdate(unitUID, callsign string, lat, lon, alt, speed, course float64) {
+	// Create tracking update data
+	update := &wshandler.TrackingUpdateData{
+		UnitUID:   unitUID,
+		Callsign:  callsign,
+		Latitude:  lat,
+		Longitude: lon,
+		Timestamp: time.Now().Format(time.RFC3339),
+	}
+
+	// Add optional fields if they have valid values
+	if alt != 0 {
+		update.Altitude = &alt
+	}
+	if speed != 0 {
+		update.Speed = &speed
+	}
+	if course != 0 {
+		update.Course = &course
+	}
+
+	// Broadcast to all WebSocket clients via the callback system
+	app.trackingUpdateCb.AddMessage(update)
 }
 
 func main() {

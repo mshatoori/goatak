@@ -37,6 +37,9 @@ let app = new Vue({
     navigationLine: null,
     navigationLineActive: false,
     navigationTarget: null,
+
+    // Tracking manager
+    trackingManager: null,
   },
   provide: function () {
     return {
@@ -69,6 +72,7 @@ let app = new Vue({
       route: L.layerGroup(),
       report: L.layerGroup(),
       navigation: L.layerGroup(),
+      tracking: L.layerGroup(),
     };
 
     for (const overlay of Object.values(this.overlays)) {
@@ -102,6 +106,14 @@ let app = new Vue({
     this.map.addControl(this.drawControl);
     this.map.addControl(new LocationControl());
     this.map.addControl(new ToolsControl());
+
+    // Initialize TrackingManager
+    this.trackingManager = new TrackingManager(this.map, {
+      trailLength: 50,
+      trailColor: "#FF0000",
+      trailWidth: 2,
+      trailOpacity: 0.7,
+    });
 
     vm = this;
 
@@ -715,6 +727,11 @@ let app = new Vue({
       if (u.type === "chat") {
         console.log(u.chat_msg);
         this.fetchMessages();
+      }
+
+      // Handle tracking updates
+      if (u.type === "tracking_update" && this.trackingManager) {
+        this.trackingManager.handleTrackingUpdate(u);
       }
     },
     removeFromAllOverlays(obj) {
@@ -1433,6 +1450,90 @@ let app = new Vue({
       if (this.navigationLineActive) {
         this.hideNavigationLine();
       }
+    },
+
+    // Tracking management methods
+    enableTrackingForUnit: function (unitUid, config = {}) {
+      if (!this.trackingManager) return false;
+
+      // Set default config for unit
+      const defaultConfig = {
+        enabled: true,
+        trailLength: 50,
+        trailColor: this.generateTrailColor(unitUid),
+        trailWidth: 2,
+        trailOpacity: 0.7,
+      };
+
+      const finalConfig = { ...defaultConfig, ...config };
+      return this.trackingManager.setTrailConfig(unitUid, finalConfig);
+    },
+
+    disableTrackingForUnit: function (unitUid) {
+      if (!this.trackingManager) return false;
+      return this.trackingManager.removeTrail(unitUid);
+    },
+
+    updateUnitTrackingConfig: function (unitUid, config) {
+      if (!this.trackingManager) return false;
+      return this.trackingManager.setTrailConfig(unitUid, config);
+    },
+
+    clearAllTrails: function () {
+      if (!this.trackingManager) return false;
+      this.trackingManager.clearAllTrails();
+      return true;
+    },
+
+    generateTrailColor: function (unitUid) {
+      // Generate a consistent color for each unit based on UID
+      const colors = [
+        "#FF0000",
+        "#00FF00",
+        "#0000FF",
+        "#FFFF00",
+        "#FF00FF",
+        "#00FFFF",
+        "#FFA500",
+        "#800080",
+        "#008000",
+        "#000080",
+        "#800000",
+        "#808000",
+      ];
+
+      let hash = 0;
+      for (let i = 0; i < unitUid.length; i++) {
+        hash = unitUid.charCodeAt(i) + ((hash << 5) - hash);
+      }
+
+      return colors[Math.abs(hash) % colors.length];
+    },
+
+    getTrackingStatus: function () {
+      if (!this.trackingManager) return false;
+      return this.trackingManager.isTrackingEnabled();
+    },
+
+    setGlobalTrackingEnabled: function (enabled) {
+      if (!this.trackingManager) return false;
+      this.trackingManager.setTrackingEnabled(enabled);
+      return true;
+    },
+
+    exportTrailData: function (unitUid, format = "json") {
+      if (!this.trackingManager) return null;
+      return this.trackingManager.exportTrailData(unitUid, format);
+    },
+
+    importTrailData: function (unitUid, data, format = "json") {
+      if (!this.trackingManager) return false;
+      return this.trackingManager.importTrailData(unitUid, data, format);
+    },
+
+    getActiveTrails: function () {
+      if (!this.trackingManager) return [];
+      return this.trackingManager.getAllTrails();
     },
   },
 });

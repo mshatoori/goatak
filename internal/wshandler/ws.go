@@ -5,21 +5,53 @@ import (
 	"sync/atomic"
 
 	"github.com/aofei/air"
-	"github.com/kdudkov/goatak/pkg/model"
+	"github.com/kdudkov/goatak/internal/model"
+	pkgmodel "github.com/kdudkov/goatak/pkg/model"
 )
 
 type WebMessage struct {
-	Typ         string             `json:"type"`
-	Unit        *model.WebUnit     `json:"unit,omitempty"`
-	UID         string             `json:"uid,omitempty"`
-	ChatMessage *model.ChatMessage `json:"chat_msg,omitempty"`
+	Typ         string                `json:"type"`
+	Unit        *pkgmodel.WebUnit     `json:"unit,omitempty"`
+	UID         string                `json:"uid,omitempty"`
+	ChatMessage *pkgmodel.ChatMessage `json:"chat_msg,omitempty"`
+	// Tracking-related fields
+	TrackingUpdate *TrackingUpdateData   `json:"tracking_update,omitempty"`
+	TrackingConfig *model.TrackingConfig `json:"tracking_config,omitempty"`
+	TrackingTrail  *model.TrackingTrail  `json:"tracking_trail,omitempty"`
+	Error          string                `json:"error,omitempty"`
+}
+
+// TrackingUpdateData represents real-time tracking position updates
+type TrackingUpdateData struct {
+	UnitUID   string   `json:"unit_uid"`
+	Callsign  string   `json:"callsign,omitempty"`
+	Latitude  float64  `json:"latitude"`
+	Longitude float64  `json:"longitude"`
+	Altitude  *float64 `json:"altitude,omitempty"`
+	Speed     *float64 `json:"speed,omitempty"`
+	Course    *float64 `json:"course,omitempty"`
+	Timestamp string   `json:"timestamp"`
+}
+
+// TrackingRequestData represents incoming tracking requests from clients
+type TrackingRequestData struct {
+	UnitUID string `json:"unit_uid"`
+	Action  string `json:"action"` // "get_trail", "subscribe", "unsubscribe"
+}
+
+// TrackingMessageHandler interface for handling tracking-related WebSocket messages
+type TrackingMessageHandler interface {
+	HandleTrackingRequest(request *TrackingRequestData) error
+	GetTrail(unitUID string) (*model.TrackingTrail, error)
+	GetConfig(unitUID string) (*model.TrackingConfig, error)
 }
 
 type JSONWsHandler struct {
-	name   string
-	ws     *air.WebSocket
-	ch     chan *WebMessage
-	active int32
+	name            string
+	ws              *air.WebSocket
+	ch              chan *WebMessage
+	active          int32
+	trackingHandler TrackingMessageHandler
 }
 
 func NewHandler(name string, ws *air.WebSocket) *JSONWsHandler {
@@ -28,6 +60,16 @@ func NewHandler(name string, ws *air.WebSocket) *JSONWsHandler {
 		ws:     ws,
 		ch:     make(chan *WebMessage, 10),
 		active: 1,
+	}
+}
+
+func NewHandlerWithTracking(name string, ws *air.WebSocket, trackingHandler TrackingMessageHandler) *JSONWsHandler {
+	return &JSONWsHandler{
+		name:            name,
+		ws:              ws,
+		ch:              make(chan *WebMessage, 10),
+		active:          1,
+		trackingHandler: trackingHandler,
 	}
 }
 
@@ -64,7 +106,7 @@ func (w *JSONWsHandler) writer() {
 	}
 }
 
-func (w *JSONWsHandler) SendItem(i *model.Item) bool {
+func (w *JSONWsHandler) SendItem(i *pkgmodel.Item) bool {
 	if w == nil || !w.IsActive() {
 		return false
 	}
@@ -90,7 +132,7 @@ func (w *JSONWsHandler) DeleteItem(uid string) bool {
 	return true
 }
 
-func (w *JSONWsHandler) NewChatMessage(msg *model.ChatMessage) bool {
+func (w *JSONWsHandler) NewChatMessage(msg *pkgmodel.ChatMessage) bool {
 	if w == nil || !w.IsActive() {
 		return false
 	}
@@ -112,4 +154,60 @@ func (w *JSONWsHandler) Listen() {
 
 	go w.writer()
 	w.ws.Listen()
+}
+
+// SendTrackingUpdate sends a real-time tracking position update to the client
+func (w *JSONWsHandler) SendTrackingUpdate(update *TrackingUpdateData) bool {
+	if w == nil || !w.IsActive() {
+		return false
+	}
+
+	select {
+	case w.ch <- &WebMessage{Typ: "tracking_update", TrackingUpdate: update}:
+	default:
+	}
+
+	return true
+}
+
+// SendTrackingConfigUpdate sends tracking configuration changes to the client
+func (w *JSONWsHandler) SendTrackingConfigUpdate(config *model.TrackingConfig) bool {
+	if w == nil || !w.IsActive() {
+		return false
+	}
+
+	select {
+	case w.ch <- &WebMessage{Typ: "tracking_config_update", TrackingConfig: config}:
+	default:
+	}
+
+	return true
+}
+
+// SendTrackingTrail sends complete trail data to the client
+func (w *JSONWsHandler) SendTrackingTrail(trail *model.TrackingTrail) bool {
+	if w == nil || !w.IsActive() {
+		return false
+	}
+
+	select {
+	case w.ch <- &WebMessage{Typ: "tracking_trail", TrackingTrail: trail}:
+	default:
+	}
+
+	return true
+}
+
+// SendTrackingError sends tracking-related error messages to the client
+func (w *JSONWsHandler) SendTrackingError(errorMsg string) bool {
+	if w == nil || !w.IsActive() {
+		return false
+	}
+
+	select {
+	case w.ch <- &WebMessage{Typ: "tracking_error", Error: errorMsg}:
+	default:
+	}
+
+	return true
 }

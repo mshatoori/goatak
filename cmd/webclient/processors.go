@@ -194,5 +194,9 @@ func (app *App) trackingProcessor(msg *cot.CotMessage) {
 	// Add position to tracking service
 	if err := app.trackingService.AddPosition(msg.GetUID(), lat, lon, alt, speed, course); err != nil {
 		app.logger.Debug("failed to add tracking position", "error", err, "uid", msg.GetUID())
+		return
 	}
+
+	// Broadcast tracking update to WebSocket clients
+	app.broadcastTrackingUpdate(msg.GetUID(), msg.GetCallsign(), lat, lon, alt, speed, course)
 }

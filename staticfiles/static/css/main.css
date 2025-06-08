@@ -179,3 +179,243 @@ div.info {
 .leaflet-draw-actions {
   display: none !important;
 }
+
+/* Tracking Components Styles */
+.tracking-control {
+  margin-bottom: 1rem;
+}
+
+.tracking-trail-popup {
+  min-width: 200px;
+}
+
+.tracking-trail-popup h6 {
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.tracking-trail-popup p {
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.trail-list {
+  border: 1px solid #dee2e6;
+  border-radius: 0.375rem;
+  background-color: #f8f9fa;
+}
+
+.trail-item {
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+.trail-item:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.trail-item:last-child {
+  margin-bottom: 0 !important;
+}
+
+.unit-tracking-control .card {
+  border: 1px solid #e3f2fd;
+  background-color: #fafafa;
+}
+
+.unit-tracking-control .card-header {
+  background-color: #e3f2fd;
+  border-bottom: 1px solid #bbdefb;
+}
+
+.unit-tracking-control .trail-config {
+  background-color: white;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  border: 1px solid #e0e0e0;
+}
+
+/* Tracking trail styles on map */
+.tracking-trail {
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+}
+
+.tracking-trail:hover {
+  opacity: 1 !important;
+}
+
+/* Form control improvements for tracking */
+.tracking-control .form-range {
+  margin-bottom: 0.25rem;
+}
+
+.tracking-control .form-control-color {
+  width: 100%;
+  height: 38px;
+  border-radius: 0.375rem;
+}
+
+.tracking-control .btn-group-sm .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+/* Statistics display */
+.trail-stats {
+  background-color: #f8f9fa;
+  border-radius: 0.375rem;
+  padding: 0.5rem;
+}
+
+.trail-stats .stat-item {
+  text-align: center;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: white;
+  border: 1px solid #dee2e6;
+}
+
+.trail-stats .stat-value {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #495057;
+}
+
+.trail-stats .stat-label {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-transform: uppercase;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tracking-control .row {
+    margin: 0;
+  }
+
+  .tracking-control .col-4,
+  .tracking-control .col-6 {
+    padding: 0.25rem;
+  }
+
+  .trail-item .btn-group-sm .btn {
+    padding: 0.125rem 0.25rem;
+    font-size: 0.7rem;
+  }
+}
+
+/* Animation for trail updates */
+@keyframes trailUpdate {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+.tracking-trail.updating {
+  animation: trailUpdate 0.5s ease-in-out;
+}
+
+/* Loading states */
+.tracking-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.tracking-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Trail color indicators */
+.trail-color-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+  border: 1px solid #ccc;
+}
+
+/* Export/Import section styling */
+.export-import-section {
+  background-color: #f8f9fa;
+  border-radius: 0.375rem;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.export-import-section h6 {
+  color: #495057;
+  margin-bottom: 0.75rem;
+}
+
+/* Tracking status indicators */
+.tracking-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.tracking-status.active {
+  color: #28a745;
+}
+
+.tracking-status.inactive {
+  color: #6c757d;
+}
+
+.tracking-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+/* Compact mode for mobile */
+@media (max-width: 576px) {
+  .tracking-control .card-body {
+    padding: 0.75rem;
+  }
+
+  .unit-tracking-control .row {
+    --bs-gutter-x: 0.5rem;
+  }
+
+  .trail-item {
+    padding: 0.75rem;
+  }
+
+  .trail-stats .stat-item {
+    padding: 0.375rem;
+  }
+
+  .trail-stats .stat-value {
+    font-size: 1rem;
+  }
+}
