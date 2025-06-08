@@ -29,7 +29,7 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/mshatoori/ghcr.io
+          images: ghcr.io/mshatoori/goatak-client
           tags: |
             type=raw,value=latest
             type=raw,value=${{ github.run_number }}
