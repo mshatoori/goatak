@@ -1,31 +1,29 @@
 services:
-  webclient:
+  webclient2:
     build:
       dockerfile: Dockerfile.webclient
       context: ..
-#      network: host
-#    pull_policy: always
+    #      network: host
+    #    pull_policy: always
     image: ghcr.io/mshatoori/goatak-client:latest
     ports:
-     - "8081:8080"
-     - "6970:6969"
-     - "6970:6969/udp"
-     - "1200:1100"
-     - "1200:1100/udp"
+      - "8082:8080"
+      - "6971:6969"
+      - "6971:6969/udp"
     volumes:
       - .:/workspace:cached
-      - ./goatak_client.yml:/app/goatak_client.yml
+      - ./goatak_client-7.yml:/app/goatak_client.yml
     networks:
       - mmhs
   map:
-#    build:
-#      context: ../maps
-#      dockerfile: ../maps/Dockerfile
+    #    build:
+    #      context: ../maps
+    #      dockerfile: ../maps/Dockerfile
     image: ghcr.io/mshatoori/goatak-maps:latest
     ports:
       - "8000:8000"
     networks:
-        - mmhs
+      - mmhs
   gpsd:
     image: ghcr.io/mshatoori/docker-gpsd:latest
     ports:
@@ -35,7 +33,7 @@ services:
       - "-D2"
       - "udp://0.0.0.0:5577"
     networks:
-        - mmhs
+      - mmhs
 
 networks:
   mmhs:

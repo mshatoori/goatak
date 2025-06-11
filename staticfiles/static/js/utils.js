@@ -182,7 +182,68 @@ function printCoordsll(latlng) {
 }
 
 function printCoords(lat, lng) {
-  return lat.toFixed(6) + "," + lng.toFixed(6);
+  // ISO 6709 format: DD°MM′SS″N/S DDD°MM′SS″E/W
+  const absLat = Math.abs(lat);
+  const absLng = Math.abs(lng);
+
+  // Convert to degrees, minutes, seconds
+  const latDeg = Math.floor(absLat);
+  const latMin = Math.floor((absLat - latDeg) * 60);
+  const latSec = Math.round(((absLat - latDeg) * 60 - latMin) * 60);
+
+  const lngDeg = Math.floor(absLng);
+  const lngMin = Math.floor((absLng - lngDeg) * 60);
+  const lngSec = Math.round(((absLng - lngDeg) * 60 - lngMin) * 60);
+
+  // Handle seconds overflow
+  let finalLatMin = latMin;
+  let finalLatDeg = latDeg;
+  let finalLatSec = latSec;
+  if (latSec >= 60) {
+    finalLatSec = 0;
+    finalLatMin += 1;
+    if (finalLatMin >= 60) {
+      finalLatMin = 0;
+      finalLatDeg += 1;
+    }
+  }
+
+  let finalLngMin = lngMin;
+  let finalLngDeg = lngDeg;
+  let finalLngSec = lngSec;
+  if (lngSec >= 60) {
+    finalLngSec = 0;
+    finalLngMin += 1;
+    if (finalLngMin >= 60) {
+      finalLngMin = 0;
+      finalLngDeg += 1;
+    }
+  }
+
+  // Determine hemispheres
+  const latHemisphere = lat >= 0 ? "N" : "S";
+  const lngHemisphere = lng >= 0 ? "E" : "W";
+
+  // Format: DD°MM′SS″N DDD°MM′SS″W
+  const latStr =
+    finalLatDeg +
+    "°" +
+    finalLatMin.toString().padStart(2, "0") +
+    "′" +
+    finalLatSec.toString().padStart(2, "0") +
+    "″" +
+    latHemisphere;
+
+  const lngStr =
+    finalLngDeg +
+    "°" +
+    finalLngMin.toString().padStart(2, "0") +
+    "′" +
+    finalLngSec.toString().padStart(2, "0") +
+    "″" +
+    lngHemisphere;
+
+  return latStr + " " + lngStr;
 }
 
 function latlng(lat, lon) {
@@ -458,22 +519,22 @@ var ToolsControl = L.Control.extend({
       options = this.options;
 
     this._pointButton = this._createButton(
-      '<i class="bi bi-plus-circle" id="map-add-point-btn"></i>',
+      '<img src="static/icons/add-point.svg" id="map-add-point-btn" alt="Add Point" style="width: 30px; height: 30px;">',
       "افزودن نقطه به نقشه",
       controlName + "-in",
       container,
       this._addPoint
     );
     this._unitButton = this._createButton(
-      '<i class="bi bi-plus-circle-fill" id="map-add-unit-btn"></i>',
+      '<img src="static/icons/add-unit.svg" id="map-add-unit-btn" alt="Add Unit" style="width: 30px; height: 30px;">',
       "افزودن نیرو به نقشه",
       controlName + "-in",
       container,
       this._addUnit
     );
     this._casevacButton = this._createButton(
-      '<i class="bi bi-bandaid-fill" id="map-add-casevac-btn"></i>',
-      "افزودن گزارش Casevac",
+      '<img src="static/icons/add-casevac.svg" id="map-add-casevac-btn" alt="Add Casevac" style="width: 30px; height: 30px;">',
+      "افزودن درخواست امداد",
       controlName + "-in",
       container,
       this._addCasevac

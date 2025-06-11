@@ -113,6 +113,8 @@ div.info {
 .tab-content:not(.d-none) {
   min-width: 300px;
   width: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* Add some spacing between pills and content */
@@ -132,11 +134,48 @@ div.info {
 
 /* Animation for navigation line */
 @keyframes navigation-pulse {
-  0% { opacity: 0.4; }
-  50% { opacity: 0.8; }
-  100% { opacity: 0.4; }
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    opacity: 0.4;
+  }
 }
 
 .navigation-line.pulse {
   animation: navigation-pulse 2s infinite;
+}
+
+/* Edge infomarker styles for drawings and routes */
+.leaflet-marker-icon.edge-marker-info.leaflet-zoom-animated.leaflet-interactive {
+  /* Center the marker on the position - no margins */
+}
+
+.drawing-infomarker {
+  color: rgba(255, 0, 0, 0.3);
+  font-family: "Vazirmatn", sans-serif;
+  font-size: 13px;
+  border: black 1px solid;
+  border-radius: 4px;
+  padding: 2px;
+  background: rgba(245, 222, 179, 0.3);
+  width: max-content;
+
+  transform: translate(-50%, -50%);
+}
+
+.drawing-infomarker:hover {
+  background: rgba(245, 222, 179, 0.8);
+  color: rgba(255, 0, 0, 0.8);
+}
+
+.leaflet-draw-tooltip {
+  display: none;
+}
+
+.leaflet-draw-actions {
+  display: none !important;
 }

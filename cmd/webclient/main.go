@@ -126,6 +126,7 @@ type FlowConfig struct {
 	Addr         string `mapstructure:"address"`
 	Port         int    `mapstructure:"port"`
 	Type         string `mapstructure:"type,omitempty"`
+	Direction    int    `mapstructure:"direction,omitempty"`
 	SendExchange string `mapstructure:"sendExchange,omitempty"`
 	RecvQueue    string `mapstructure:"recvQueue,omitempty"`
 }
@@ -208,139 +209,7 @@ func (app *App) Init() {
 	app.ch = make(chan []byte, 20)
 	app.InitMessageProcessors()
 
-	dbPath := viper.GetString("database.path")
-	if dbPath == "" {
-		app.logger.Error("database.path not set in config")
-		// Fallback to config loading if database path is not set
-		app.loadFlowsFromConfig()
-	} else {
-		dbExists := false
-		if _, err := os.Stat(dbPath); err == nil {
-			dbExists = true
-		}
-
-		db, err := sql.Open("sqlite", dbPath)
-		if err != nil {
-			app.logger.Error("failed to open database", "error", err)
-			// Fallback to config loading if database cannot be opened
-			app.loadFlowsFromConfig()
-		} else {
-			// Create flows table if it doesn't exist
-			createTableSQL := `CREATE TABLE IF NOT EXISTS flows (
-				title TEXT,
-				uid TEXT,
-				addr TEXT NOT NULL,
-				port INTEGER NOT NULL,
-				type TEXT NOT NULL,
-				sendExchange TEXT,
-				recvQueue TEXT
-			);`
-			_, err = db.Exec(createTableSQL)
-			if err != nil {
-				app.logger.Error("failed to create flows table", "error", err)
-				// Fallback to config loading if table cannot be created
-				app.loadFlowsFromConfig()
-			} else {
-				// Create sensors table if it doesn't exist
-				if err := app.createSensorsTable(db); err != nil {
-					app.logger.Error("failed to create sensors table", "error", err)
-					// Fallback to config loading if table cannot be created
-					app.loadSensorsFromConfig()
-				} else {
-					// Load sensors from database
-					if err := app.loadSensorsFromDatabase(db); err != nil {
-						app.logger.Error("failed to load sensors from database", "error", err)
-						// Fallback to config loading if loading from database fails
-						app.loadSensorsFromConfig()
-					}
-				}
-				// Create config table if it doesn't exist
-				createConfigTableSQL := `CREATE TABLE IF NOT EXISTS config (
-					key TEXT PRIMARY KEY,
-					value TEXT
-				);`
-				_, err = db.Exec(createConfigTableSQL)
-				if err != nil {
-					app.logger.Error("failed to create config table", "error", err)
-					// Continue without loading/saving config to DB, but log the error
-				} else {
-					// Load config from database
-					app.logger.Info("Loading config from database")
-					rows, err := db.Query("SELECT key, value FROM config")
-					if err != nil {
-						app.logger.Error("failed to query config from database", "error", err)
-						// Continue without loading config from DB, but log the error
-					} else {
-						defer rows.Close()
-						configMap := make(map[string]string)
-						for rows.Next() {
-							var key, value string
-							if err := rows.Scan(&key, &value); err != nil {
-								app.logger.Error("failed to scan config row", "error", err)
-								continue
-							}
-							configMap[key] = value
-						}
-						if err := rows.Err(); err != nil {
-							app.logger.Error("error during database rows iteration for config", "error", err)
-						}
-
-						// Override config values from database if they exist
-						if uid, ok := configMap["app.uid"]; ok {
-							app.uid = uid
-							app.logger.Info("Loaded app.uid from database", "value", app.uid)
-						}
-						if callsign, ok := configMap["app.callsign"]; ok {
-							app.callsign = callsign
-							app.logger.Info("Loaded app.callsign from database", "value", app.callsign)
-						}
-						if ipAddress, ok := configMap["app.ipAddress"]; ok {
-							app.ipAddress = ipAddress
-							app.logger.Info("Loaded app.ipAddress from database", "value", app.ipAddress)
-						}
-						if urnStr, ok := configMap["app.urn"]; ok {
-							if urn, err := strconv.ParseInt(urnStr, 10, 32); err == nil {
-								app.urn = int32(urn)
-								app.logger.Info("Loaded app.urn from database", "value", app.urn)
-							} else {
-								app.logger.Error("failed to parse app.urn from database", "error", err, "value", urnStr)
-							}
-						}
-					}
-				}
-
-				if dbExists {
-					app.logger.Info("Loading flows from database")
-					// Load flows from database
-					rows, err := db.Query("SELECT title, addr, port, type, sendExchange, recvQueue FROM flows")
-					if err != nil {
-						app.logger.Error("failed to query flows from database", "error", err)
-						// Fallback to config loading if query fails
-						app.loadFlowsFromConfig()
-					} else {
-						defer rows.Close()
-						for rows.Next() {
-							var flowConfig FlowConfig
-							if err := rows.Scan(&flowConfig.Title, &flowConfig.Addr, &flowConfig.Port, &flowConfig.Type, &flowConfig.SendExchange, &flowConfig.RecvQueue); err != nil {
-								app.logger.Error("failed to scan flow row", "error", err)
-								continue
-							}
-							app.addFlow(flowConfig)
-						}
-						if err := rows.Err(); err != nil {
-							app.logger.Error("error during database rows iteration", "error", err)
-						}
-					}
-				} else {
-					app.logger.Info("Database not found, loading flows from config and saving to database")
-					// Load flows from config and save to database
-					app.loadFlowsFromConfig()
-					app.saveFlowsToDatabase(db)
-				}
-			}
-		}
-		app.DB = db
-	}
+	initFlowsSensorsAndConfig(app)
 
 	// Ensure default rabbit flow is created if no rabbit flows were loaded
 	hasRabbitFlow := false
@@ -359,6 +228,216 @@ func (app *App) Init() {
 	app.deleteCb.Subscribe(app.updateGeofencesAfterDelete)
 }
 
+func initFlowsSensorsAndConfig(app *App) {
+	dbPath := viper.GetString("database.path")
+	if dbPath == "" {
+		app.logger.Error("database.path not set in config")
+		app.loadFlowsFromConfig()
+		return
+	}
+
+	db, dbExists, err := app.initializeDatabase(dbPath)
+	if err != nil {
+		app.logger.Error("failed to initialize database", "error", err)
+		app.loadFlowsFromConfig()
+		return
+	}
+
+	app.DB = db
+
+	// Initialize database tables
+	if err := app.createDatabaseTables(db); err != nil {
+		app.logger.Error("failed to create database tables", "error", err)
+		app.loadFlowsFromConfig()
+		app.loadSensorsFromConfig()
+		return
+	}
+
+	// Load sensors from database
+	if err := app.loadSensorsFromDatabase(db); err != nil {
+		app.logger.Error("failed to load sensors from database", "error", err)
+		app.loadSensorsFromConfig()
+	}
+
+	// Load config from database
+	app.loadConfigFromDatabase(db)
+
+	// Load flows from database or config
+	app.loadFlowsFromDatabaseOrConfig(db, dbExists)
+}
+
+func (app *App) initializeDatabase(dbPath string) (*sql.DB, bool, error) {
+	dbExists := false
+	if _, err := os.Stat(dbPath); err == nil {
+		dbExists = true
+	}
+
+	db, err := sql.Open("sqlite", dbPath)
+	if err != nil {
+		return nil, false, fmt.Errorf("failed to open database: %w", err)
+	}
+
+	return db, dbExists, nil
+}
+
+func (app *App) createDatabaseTables(db *sql.DB) error {
+	// Create flows table
+	createFlowsTableSQL := `CREATE TABLE IF NOT EXISTS flows (
+		title TEXT,
+		uid TEXT,
+		addr TEXT NOT NULL,
+		port INTEGER NOT NULL,
+		type TEXT NOT NULL,
+		direction INTEGER NOT NULL DEFAULT 3,
+		sendExchange TEXT,
+		recvQueue TEXT
+	);`
+	if _, err := db.Exec(createFlowsTableSQL); err != nil {
+		return fmt.Errorf("failed to create flows table: %w", err)
+	}
+
+	// Add direction column to existing flows table if it doesn't exist
+	if err := app.migrateFlowsTable(db); err != nil {
+		return fmt.Errorf("failed to migrate flows table: %w", err)
+	}
+
+	// Create sensors table
+	if err := app.createSensorsTable(db); err != nil {
+		return fmt.Errorf("failed to create sensors table: %w", err)
+	}
+
+	// Create config table
+	createConfigTableSQL := `CREATE TABLE IF NOT EXISTS config (
+		key TEXT PRIMARY KEY,
+		value TEXT
+	);`
+	if _, err := db.Exec(createConfigTableSQL); err != nil {
+		return fmt.Errorf("failed to create config table: %w", err)
+	}
+
+	return nil
+}
+
+func (app *App) migrateFlowsTable(db *sql.DB) error {
+	// Check if direction column exists
+	rows, err := db.Query("PRAGMA table_info(flows)")
+	if err != nil {
+		return fmt.Errorf("failed to get table info: %w", err)
+	}
+	defer rows.Close()
+
+	hasDirectionColumn := false
+	for rows.Next() {
+		var cid int
+		var name, dataType string
+		var notNull, pk int
+		var defaultValue sql.NullString
+
+		if err := rows.Scan(&cid, &name, &dataType, &notNull, &defaultValue, &pk); err != nil {
+			continue
+		}
+
+		if name == "direction" {
+			hasDirectionColumn = true
+			break
+		}
+	}
+
+	// Add direction column if it doesn't exist
+	if !hasDirectionColumn {
+		app.logger.Info("Adding direction column to flows table")
+		if _, err := db.Exec("ALTER TABLE flows ADD COLUMN direction INTEGER NOT NULL DEFAULT 3"); err != nil {
+			return fmt.Errorf("failed to add direction column: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (app *App) loadConfigFromDatabase(db *sql.DB) {
+	app.logger.Info("Loading config from database")
+	rows, err := db.Query("SELECT key, value FROM config")
+	if err != nil {
+		app.logger.Error("failed to query config from database", "error", err)
+		return
+	}
+	defer rows.Close()
+
+	configMap := make(map[string]string)
+	for rows.Next() {
+		var key, value string
+		if err := rows.Scan(&key, &value); err != nil {
+			app.logger.Error("failed to scan config row", "error", err)
+			continue
+		}
+		configMap[key] = value
+	}
+
+	if err := rows.Err(); err != nil {
+		app.logger.Error("error during database rows iteration for config", "error", err)
+		return
+	}
+
+	app.applyConfigFromDatabase(configMap)
+}
+
+func (app *App) applyConfigFromDatabase(configMap map[string]string) {
+	if uid, ok := configMap["app.uid"]; ok {
+		app.uid = uid
+		app.logger.Info("Loaded app.uid from database", "value", app.uid)
+	}
+	if callsign, ok := configMap["app.callsign"]; ok {
+		app.callsign = callsign
+		app.logger.Info("Loaded app.callsign from database", "value", app.callsign)
+	}
+	if ipAddress, ok := configMap["app.ipAddress"]; ok {
+		app.ipAddress = ipAddress
+		app.logger.Info("Loaded app.ipAddress from database", "value", app.ipAddress)
+	}
+	if urnStr, ok := configMap["app.urn"]; ok {
+		if urn, err := strconv.ParseInt(urnStr, 10, 32); err == nil {
+			app.urn = int32(urn)
+			app.logger.Info("Loaded app.urn from database", "value", app.urn)
+		} else {
+			app.logger.Error("failed to parse app.urn from database", "error", err, "value", urnStr)
+		}
+	}
+}
+
+func (app *App) loadFlowsFromDatabaseOrConfig(db *sql.DB, dbExists bool) {
+	if dbExists {
+		app.loadFlowsFromDatabase(db)
+	} else {
+		app.logger.Info("Database not found, loading flows from config and saving to database")
+		app.loadFlowsFromConfig()
+		app.saveFlowsToDatabase(db)
+	}
+}
+
+func (app *App) loadFlowsFromDatabase(db *sql.DB) {
+	app.logger.Info("Loading flows from database")
+	rows, err := db.Query("SELECT title, addr, port, type, direction, sendExchange, recvQueue FROM flows")
+	if err != nil {
+		app.logger.Error("failed to query flows from database", "error", err)
+		app.loadFlowsFromConfig()
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var flowConfig FlowConfig
+		if err := rows.Scan(&flowConfig.Title, &flowConfig.Addr, &flowConfig.Port, &flowConfig.Type, &flowConfig.Direction, &flowConfig.SendExchange, &flowConfig.RecvQueue); err != nil {
+			app.logger.Error("failed to scan flow row", "error", err)
+			continue
+		}
+		app.addFlow(flowConfig)
+	}
+
+	if err := rows.Err(); err != nil {
+		app.logger.Error("error during database rows iteration", "error", err)
+	}
+}
+
 func (app *App) loadFlowsFromConfig() {
 	var outgoingFlowConfigs []FlowConfig
 	var incomingFlowConfigs []FlowConfig
@@ -371,8 +450,12 @@ func (app *App) loadFlowsFromConfig() {
 			if flowConfig.Type == "" {
 				flowConfig.Type = "udp"
 			}
+			// Set direction to OUTGOING if not specified
+			if flowConfig.Direction == 0 {
+				flowConfig.Direction = int(client.OUTGOING)
+			}
 			app.addFlow(flowConfig)
-			app.logger.Info("Outgoing flow added from config", "addr", fmt.Sprintf("%s:%d", flowConfig.Addr, flowConfig.Port), "type", flowConfig.Type)
+			app.logger.Info("Outgoing flow added from config", "addr", fmt.Sprintf("%s:%d", flowConfig.Addr, flowConfig.Port), "type", flowConfig.Type, "direction", flowConfig.Direction)
 		}
 	}
 
@@ -384,8 +467,12 @@ func (app *App) loadFlowsFromConfig() {
 			if flowConfig.Type == "" {
 				flowConfig.Type = "udp"
 			}
+			// Set direction to INCOMING if not specified
+			if flowConfig.Direction == 0 {
+				flowConfig.Direction = int(client.INCOMING)
+			}
 			app.addFlow(flowConfig)
-			app.logger.Info("Incoming flow added from config", "addr", fmt.Sprintf("%s:%d", flowConfig.Addr, flowConfig.Port), "type", flowConfig.Type)
+			app.logger.Info("Incoming flow added from config", "addr", fmt.Sprintf("%s:%d", flowConfig.Addr, flowConfig.Port), "type", flowConfig.Type, "direction", flowConfig.Direction)
 		}
 	}
 }
@@ -399,7 +486,7 @@ func (app *App) saveFlowsToDatabase(db *sql.DB) {
 	}
 	defer tx.Rollback() // Rollback if not committed
 
-	stmt, err := tx.Prepare("INSERT INTO flows(title, uid, addr, port, type, sendExchange, recvQueue) VALUES(?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := tx.Prepare("INSERT INTO flows(title, uid, addr, port, type, direction, sendExchange, recvQueue) VALUES(?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		app.logger.Error("failed to prepare insert statement for flows", "error", err)
 		return
@@ -411,10 +498,11 @@ func (app *App) saveFlowsToDatabase(db *sql.DB) {
 		switch f := flow.(type) {
 		case *client.UDPFlow:
 			flowConfig = FlowConfig{
-				Title: f.Title, // Use the Title field from UDPFlow
-				Addr:  f.Addr.IP.String(),
-				Port:  f.Addr.Port,
-				Type:  "udp",
+				Title:     f.Title, // Use the Title field from UDPFlow
+				Addr:      f.Addr.IP.String(),
+				Port:      f.Addr.Port,
+				Type:      "udp",
+				Direction: int(f.Direction),
 			}
 		case *client.RabbitFlow:
 			rabbitModel := f.ToCoTFlowModel()
@@ -423,6 +511,7 @@ func (app *App) saveFlowsToDatabase(db *sql.DB) {
 				Addr:         rabbitModel.Addr,
 				Port:         0, // RabbitMQ uses Addr as connection string, Port is not a separate field
 				Type:         "rabbit",
+				Direction:    rabbitModel.Direction,
 				SendExchange: rabbitModel.SendExchange,
 				RecvQueue:    rabbitModel.RecvQueue,
 			}
@@ -431,7 +520,7 @@ func (app *App) saveFlowsToDatabase(db *sql.DB) {
 			continue
 		}
 
-		_, err := stmt.Exec(flowConfig.Title, flow.ToCoTFlowModel().UID, flowConfig.Addr, flowConfig.Port, flowConfig.Type, flowConfig.SendExchange, flowConfig.RecvQueue)
+		_, err := stmt.Exec(flowConfig.Title, flow.ToCoTFlowModel().UID, flowConfig.Addr, flowConfig.Port, flowConfig.Type, flowConfig.Direction, flowConfig.SendExchange, flowConfig.RecvQueue)
 		if err != nil {
 			app.logger.Error("failed to insert flow into database", "error", err, "flow", flowConfig)
 			return // Stop saving on first error
@@ -544,12 +633,21 @@ func (app *App) addFlow(flowConfig FlowConfig) {
 			Addr: flowConfig.Addr,
 			Port: flowConfig.Port,
 		}
-		if flowConfig.RecvQueue != "" { // Assuming RecvQueue indicates incoming for UDP
+
+		// Use direction from config if specified, otherwise fall back to legacy logic
+		if flowConfig.Direction != 0 {
+			udpConfig.Direction = client.FlowDirection(flowConfig.Direction)
+		} else if flowConfig.RecvQueue != "" { // Legacy: RecvQueue indicates incoming for UDP
 			udpConfig.Direction = client.INCOMING
-			udpConfig.MessageCb = app.ProcessEvent
 		} else {
 			udpConfig.Direction = client.OUTGOING
 		}
+
+		// Set message callback for incoming flows
+		if udpConfig.Direction&client.INCOMING != 0 {
+			udpConfig.MessageCb = app.ProcessEvent
+		}
+
 		app.flows = append(app.flows, client.NewUDPFlow(udpConfig))
 	case "rabbit":
 		rabbitConfig := &client.RabbitFlowConfig{
@@ -558,10 +656,19 @@ func (app *App) addFlow(flowConfig FlowConfig) {
 			SendExchange: flowConfig.SendExchange,
 			RecvQueue:    flowConfig.RecvQueue,
 		}
-		// RabbitMQ flows are typically bidirectional, but we'll set MessageCb if a RecvQueue is specified
-		if flowConfig.RecvQueue != "" {
+
+		// Use direction from config if specified, otherwise default to BOTH
+		if flowConfig.Direction != 0 {
+			rabbitConfig.Direction = client.FlowDirection(flowConfig.Direction)
+		} else {
+			rabbitConfig.Direction = client.BOTH
+		}
+
+		// Set message callback for incoming flows
+		if rabbitConfig.Direction&client.INCOMING != 0 {
 			rabbitConfig.MessageCb = app.ProcessEvent
 		}
+
 		app.flows = append(app.flows, client.NewRabbitFlow(rabbitConfig))
 	default:
 		app.logger.Warn("unknown flow type in config or database", "type", flowConfig.Type)

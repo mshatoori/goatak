@@ -1,5 +1,5 @@
 Vue.component("ItemDetails", {
-  props: ["item", "coords", "map", "locked_unit_uid", "deleteItem", "config"],
+  props: ["item", "coords", "map", "locked_unit_uid", "config"],
   computed: {
     isCasevac() {
       return (
@@ -18,7 +18,8 @@ Vue.component("ItemDetails", {
       return this.item && this.item.category === "point";
     },
     isContact() {
-      return this.item && this.item.category === "contact";
+      return false;
+      // return this.item && this.item.category === "contact";
     },
     isUnit() {
       return (
@@ -85,7 +86,6 @@ Vue.component("ItemDetails", {
         :coords="coords"
         :map="map"
         :locked_unit_uid="locked_unit_uid"
-        :delete-item="deleteItem"
         :config="config"
         v-on:save="onSave"
         v-on:delete="onDelete"

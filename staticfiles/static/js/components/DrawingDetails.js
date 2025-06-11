@@ -1,5 +1,5 @@
 Vue.component("DrawingDetails", {
-  props: ["item", "coords", "map", "locked_unit_uid", "deleteItem", "config"],
+  props: ["item", "coords", "map", "locked_unit_uid", "config"],
   components: {
     NavigationInfo: Vue.component("NavigationInfo"),
   },

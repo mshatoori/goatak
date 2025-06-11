@@ -1,0 +1,13 @@
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- Person silhouette -->
+  <!-- Head -->
+  <circle cx="12" cy="6" r="3" fill="#000000"/>
+  
+  <!-- Body -->
+  <path d="M12 10 C8 10 6 12 6 16 L6 22 L8 22 L8 16 C8 14 9 13 12 13 C15 13 16 14 16 16 L16 22 L18 22 L18 16 C18 12 16 10 12 10 Z" fill="#000000"/>
+  
+  <!-- Plus symbol on top left -->
+  <circle cx="5" cy="4" r="2.75" fill="#dddddd"/>
+  <rect x="4.25" y="1.5" width="1.5" height="5" fill="#000000"/>
+  <rect x="2.5" y="3.25" width="5" height="1.5" fill="#000000"/>
+</svg>

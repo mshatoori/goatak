@@ -2,10 +2,10 @@ name: Docker Build and Push
 
 on:
   push:
-    branches:
-      - master
+    # branches:
+    #   - master
     tags:
-      - "*"
+      - "v*"
 
 jobs:
   build-and-push:
@@ -29,14 +29,15 @@ jobs:
         id: docker_meta
         uses: docker/metadata-action@v4
         with:
-          images: ghcr.io/mshatoori/ghcr.io
+          images: ghcr.io/mshatoori/goatak-client
           tags: |
             type=raw,value=latest
-            type=raw,value=${{ github.run_id }}
+            type=raw,value=${{ github.ref_name }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
+          build-args: GIT_REVISION=${{ github.ref_name }}
           context: .
           push: true
           tags: ${{ steps.docker_meta.outputs.tags }}

@@ -80,6 +80,7 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.GET("/api/navigation/distance/:itemId", getNavigationDistanceHandler(app))
 	srv.OPTIONS("/stack", optionsHandler())
 
+	srv.OPTIONS("/stack", optionsHandler())
 	srv.GET("/stack", getStackHandler())
 
 	srv.RendererTemplateLeftDelim = "[["

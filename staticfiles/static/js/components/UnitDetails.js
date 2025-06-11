@@ -127,6 +127,9 @@ Vue.component("UnitDetails", {
         };
       return this.item;
     },
+    isContact: function () {
+      return this.item && this.item.category === "contact";
+    },
   },
   template: html`
     <div class="card">
@@ -148,7 +151,7 @@ Vue.component("UnitDetails", {
             v-on:click.stop="locked_unit_uid=''"
           />
         </span>
-        <span class="pull-right" v-if="!editing">
+        <span class="pull-right" v-if="!editing && !isContact">
           <button
             type="button"
             class="btn btn-sm btn-primary"
@@ -208,7 +211,9 @@ Vue.component("UnitDetails", {
               ><strong>نوع</strong></label
             >
             <div class="col-sm-8">
-              <label class="col-form-label">{{item.type}}</label>
+              <label class="col-form-label"
+                >{{Utils.humanReadableType(item.type)}}</label
+              >
             </div>
           </div>
           <div class="form-group row">
@@ -311,7 +316,7 @@ Vue.component("UnitDetails", {
           </table>
         </div>
         <div class="form-group row">{{ item.text }}</div>
-        
+
         <!-- Navigation Info Component -->
         <navigation-info
           v-if="!editing"
