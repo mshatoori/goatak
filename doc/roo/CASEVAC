@@ -1,0 +1,37 @@
+We added a new item type to the service in the backend (`pkg/model/http.go` and `pkg/cot/util.go`). The new item type is called "Casevac" (code="b-r-f-h-c"). It is in the category/class "Report" (prefix="b-r-").
+You used `new_item.md` for information how to implement this.
+
+Now you need to implement the frontend for it.
+On the map, I want another button in the ToolControl on the map (the other one being the add unit button).
+When it is clicked, and the user clicks on the map, I want a new tab to open up in the sidebar. The the tab is a should be implemented as a new component created in a new file, in the `components` directory.
+There is a primary action button on there that would send the casevac item to the backend. and a cancel button to discard it.
+We also need to show where the casevac item is on the map with an red plus icon.
+
+Make sure to consider every angle of this task before implementing it. Don't mess up the design of the application.
+
+====
+We added a new item type to the service in the backend (`pkg/model/http.go` and `pkg/cot/util.go`). The new item type is called "Casevac" (code="b-r-f-h-c"). It is in the category/class "Report" (prefix="b-r-").
+You used `new_item.md` for information how to implement this.
+
+You tried to implement the frontend in the `staticfiles/static/js/casevacform.js`. However you didn't include all of fields as input in the front-end.
+Include `security` field from `CasevacDetail`, in the front-end form.
+These are the possible values and their label in English:
+
+```
+0 => No enemy troops in area
+1 => Possible enemy troops in area
+2 => Enemy troops, approach with caution
+3 => Enemy troops, armed escort required
+```
+
+Try to implement them with a good UI.
+Translate labels to Persian.
+
+===========
+
+In the sidebar component of the front-end, whenever the `current_unit` prop changes, the current unit tab becomes active. So whenever the `current_unit` prop is a casevac (i.e. has type: "b-r-f-h-c") instead of the detailed data that is in a casevac item (i.e. fields that are inputed in the `casevacform` component) some general data about the casevac item is shown which are not helpful.
+
+I want to merge the current unit tab and the casevac tab, so that all of the items would be inputed/viewed in the same sidebar tab. However this also requires that the input (adding/editing) process for other items (routes, polygons, points, and units) would change from modal form to sidebar tab, just like casevac. That way, we could have one single tab that would (depending on the type of the item being added/viewed/edited) select the correct vue component to show on that tab.
+
+Please do this refactor with great care.
+You can look at the backend code if needed, but all of the changes should be confined to `staticfiles/static/` directory.

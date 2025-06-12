@@ -1,0 +1,6 @@
+I want to change the way polygons and routes are identified on the map. Currently they have infomarkers just like other items, but instead I want to remove the info marker on polygons and routes and replaces them with simpler text written on these drawings.
+
+For polygons, it should be a text with the same color, written inside the polygon.
+For routes, it should be a text with the same color, written on the middle edge of the route.
+
+Both of these are currently handled in `map.js` and the replacement should be implemented there too.

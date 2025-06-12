@@ -172,6 +172,29 @@ div.info {
   color: rgba(255, 0, 0, 0.8);
 }
 
+/* Text label styles for drawings and routes */
+.leaflet-marker-icon.drawing-text-label-icon.leaflet-zoom-animated.leaflet-interactive {
+  /* transform is now handled in inline style */
+}
+
+.drawing-text-label {
+  font-family: "Vazirmatn", sans-serif;
+  /* font-size is now set dynamically in JavaScript */
+  font-weight: bold;
+  text-align: center;
+  white-space: nowrap;
+  text-shadow: 4px 4px 8px rgba(255, 255, 255, 0.9),
+    -2px -2px 4px rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  user-select: none;
+  /* Remove background and border to blend with drawing */
+  background: none;
+  border: none;
+  padding: 0;
+  transform-origin: center center;
+  opacity: 0.7;
+}
+
 .leaflet-draw-tooltip {
   display: none;
 }

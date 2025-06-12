@@ -13,8 +13,8 @@ Build a Version:
 1. ~~Fix Polygon Details~~
 1. ~~Fix Path Details~~
 
-1. Change Casevac Icon to ambulance
-1. Change the style of infomarker for polygons and routes
+1. ~~Change Casevac Icon to ambulance~~
+1. ~~Change the style of infomarker for polygons and routes~~
 1. Smarter zoom levels
 1. Make HierarchySelector easier to work with
 1. Separate Unit and Buildings

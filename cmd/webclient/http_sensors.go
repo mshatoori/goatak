@@ -15,12 +15,14 @@ import (
 
 func getSensorsHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		return res.WriteJSON(getSensors(app))
 	}
 }
 
 func addSensorHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		f := new(model.SensorModel)
 
 		// TODO: Validation!
@@ -80,6 +82,7 @@ func addSensorHandler(app *App) air.Handler {
 
 func editSensorHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		uid := getStringParam(req, "uid")
 		if uid == "" {
 			res.Status = 400
@@ -162,6 +165,7 @@ func getSensors(app *App) []*model.SensorModel {
 
 func deleteSensorHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		uid := getStringParam(req, "uid")
 
 		sensorIdx := slices.IndexFunc(app.sensors, func(sensor sensors.BaseSensor) bool {
