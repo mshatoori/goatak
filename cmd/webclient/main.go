@@ -816,16 +816,21 @@ func makeUID(callsign string) string {
 func (app *App) myPosSender(ctx context.Context) {
 	app.SendMsg(app.MakeMe())
 
-	ticker := time.NewTicker(time.Second * time.Duration(viper.GetInt("me.interval")))
+	ticker := time.NewTicker(time.Second * 10)
 	defer ticker.Stop()
+
+	my_ticker := time.NewTicker(time.Second * time.Duration(viper.GetInt("me.interval")))
+	defer my_ticker.Stop()
 
 	for ctx.Err() == nil {
 		select {
 		case <-ctx.Done():
 			return
-		case <-ticker.C:
-			app.logger.Debug("sending pos")
+		case <-my_ticker.C:
+			app.logger.Debug("Sending my pos")
 			app.SendMsg(app.MakeMe())
+		case <-ticker.C:
+			app.logger.Debug("Sending other objects")
 			app.sendMyPoints()
 		}
 	}
@@ -895,12 +900,12 @@ func (app *App) MakeMe() *cotproto.TakMessage {
 			Name: app.team,
 			Role: app.role,
 		},
-		Takv: &cotproto.Takv{
-			Device:   app.device,
-			Platform: app.platform,
-			Os:       app.os,
-			Version:  app.version,
-		},
+		// Takv: &cotproto.Takv{
+		// 	Device:   app.device,
+		// 	Platform: app.platform,
+		// 	Os:       app.os,
+		// 	Version:  app.version,
+		// },
 		// Track: &cotproto.Track{
 		// 	Speed:  pos.GetSpeed(),
 		// 	Course: pos.GetTrack(),
@@ -909,9 +914,9 @@ func (app *App) MakeMe() *cotproto.TakMessage {
 		// 	Geopointsrc: "GPS",
 		// 	Altsrc:      "GPS",
 		// },
-		Status: &cotproto.Status{Battery: 39},
+		// Status: &cotproto.Status{Battery: 39},
 	}
-	ev.CotEvent.Detail.XmlDetail = fmt.Sprintf("<uid Droid=\"%s\"></uid>", app.callsign)
+	// ev.CotEvent.Detail.XmlDetail = fmt.Sprintf("<uid Droid=\"%s\"></uid>", app.callsign)
 
 	app.MutateSelfPosMessage(ev.CotEvent)
 
