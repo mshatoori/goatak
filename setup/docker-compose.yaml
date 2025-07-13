@@ -16,8 +16,8 @@ services:
       - .:/workspace:cached
       - ./goatak_client.yml:/app/goatak_client.yml
       - ./config.sqlite3:/app/config.sqlite3
-    # networks:
-    #   - mmhs
+    networks:
+      - mmhs
   map:
     image: ghcr.io/mshatoori/goatak-maps:latest
     ports:
@@ -67,7 +67,7 @@ services:
 networks:
   mmhs:
     name: mmhs-network
-    # external: true
+    external: true
 
 volumes:
   osm-data:

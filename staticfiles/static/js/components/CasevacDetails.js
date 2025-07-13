@@ -160,7 +160,7 @@ Vue.component("CasevacDetails", {
         <span class="pull-left fw-bold" v-on:click.stop="mapToUnit(item)">
           <img src="/static/icons/casevac.svg" height="24" /> {{ item.callsign
           }}
-          <img
+          <!-- <img
             height="24"
             src="/static/icons/coord_unlock.png"
             v-if="locked_unit_uid != item.uid"
@@ -171,7 +171,7 @@ Vue.component("CasevacDetails", {
             src="/static/icons/coord_lock.png"
             v-if="locked_unit_uid == item.uid"
             v-on:click.stop="locked_unit_uid=''"
-          />
+          /> -->
         </span>
         <span class="pull-right" v-if="!editing">
           <button
@@ -195,7 +195,15 @@ Vue.component("CasevacDetails", {
       <div class="card-body" v-if="!editing">
         <div class="mb-3">
           <label class="form-label fw-bold">مکان:</label>
-          <div>{{ Utils.printCoords(item.lat, item.lon) }}</div>
+          <div>
+            {{ Utils.printCoords(item.lat, item.lon) }}
+            <span
+              class="badge rounded-pill bg-success"
+              style="cursor:default;"
+              v-on:click="mapToUnit(item)"
+              ><i class="bi bi-geo"></i
+            ></span>
+          </div>
         </div>
         <div class="mb-3">
           <label class="form-label fw-bold">توضیحات:</label>

@@ -195,7 +195,6 @@ func (h *RabbitFlow) handleRead(ctx context.Context) {
 	}
 
 	h.logger.Debug("RabbitFlow Handling read")
-	defer h.Stop()
 
 	q, err := h.ch.QueueDeclare(
 		h.recvQueue, // name
@@ -233,12 +232,54 @@ func (h *RabbitFlow) handleRead(ctx context.Context) {
 		h.logger.Debug("RabbitFlow Read Message")
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-				h.logger.Info("EOF")
+				h.logger.Info("EOF, attempting reconnection...")
+			} else {
+				h.logger.Warn("read error, attempting reconnection", "error", err.Error())
+			}
 
+			// Attempt to reconnect (will retry forever until successful or context cancelled)
+			h.reconnect(ctx)
+
+			// Check if context was cancelled during reconnection
+			if ctx.Err() != nil {
 				break
 			}
-			h.logger.Warn("error", "error", err.Error())
-			break
+
+			// Re-setup the read infrastructure after reconnection
+			q, err := h.ch.QueueDeclare(
+				h.recvQueue, // name
+				true,        // durable
+				false,       // delete when unused
+				false,       // exclusive
+				false,       // no-wait
+				nil,         // arguments
+			)
+			if h.failOnError(err, "Failed to declare a queue after reconnect") {
+				continue
+			}
+
+			err = h.ch.QueueBind(q.Name, "#", "EventBus.Messages.Events:VmfMessageReceivedEvent", false, nil)
+			if h.failOnError(err, "Failed to bind a queue after reconnect") {
+				continue
+			}
+
+			msgs, err := h.ch.Consume(
+				q.Name,
+				"",
+				true, // TODO: check
+				false,
+				false,
+				false,
+				nil,
+			)
+			if h.failOnError(err, "Failed to register a consumer after reconnect") {
+				continue
+			}
+
+			pr = cot.NewProtoReader(&RabbitReader{
+				deliveryChannel: msgs,
+			})
+			continue
 		}
 
 		if msg == nil {
@@ -281,9 +322,62 @@ func (h *RabbitFlow) GetVersion() int32 {
 	return atomic.LoadInt32(&h.ver)
 }
 
-func (h *RabbitFlow) failOnError(err error, msg string) {
+func (h *RabbitFlow) failOnError(err error, msg string) bool {
 	if err != nil {
 		h.logger.Error("%s: %s", msg, err)
+		return true
+	}
+	return false
+}
+
+func (h *RabbitFlow) reconnect(ctx context.Context) {
+	h.logger.Info("Starting reconnection process to RabbitMQ...")
+
+	// Close existing connections if they exist
+	if h.ch != nil {
+		h.ch.Close()
+	}
+	if h.conn != nil {
+		h.conn.Close()
+	}
+
+	attempt := 1
+	for ctx.Err() == nil {
+		h.logger.Info("Attempting to reconnect to RabbitMQ", "attempt", attempt)
+
+		// Attempt to re-establish connection
+		var err error
+		h.conn, err = amqp.Dial(h.Addr)
+		if err != nil {
+			h.logger.Error("Failed to reconnect to RabbitMQ", "error", err, "attempt", attempt)
+			attempt++
+			// Wait before next attempt, but respect context cancellation
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(5 * time.Second):
+				continue
+			}
+		}
+
+		h.ch, err = h.conn.Channel()
+		if err != nil {
+			h.logger.Error("Failed to create channel after reconnect", "error", err, "attempt", attempt)
+			if h.conn != nil {
+				h.conn.Close()
+			}
+			attempt++
+			// Wait before next attempt, but respect context cancellation
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(5 * time.Second):
+				continue
+			}
+		}
+
+		h.logger.Info("Successfully reconnected to RabbitMQ", "after_attempts", attempt)
+		return
 	}
 }
 
@@ -318,9 +412,30 @@ func (h *RabbitFlow) handleWrite(ctx context.Context) {
 
 		if err != nil {
 			h.logger.Debug(fmt.Sprintf("RabbitFlow client %s write error %v", h.Addr, err))
-			h.Stop()
 
-			break
+			// Attempt to reconnect (will retry forever until successful or context cancelled)
+			h.reconnect(ctx)
+
+			// Check if context was cancelled during reconnection
+			if ctx.Err() != nil {
+				break
+			}
+
+			// Re-declare the queue after reconnection
+			q, err = h.ch.QueueDeclare(
+				h.sendExchange,
+				true,
+				false,
+				false,
+				false,
+				nil,
+			)
+			if h.failOnError(err, "Failed to declare queue after write reconnect") {
+				// If queue declaration fails after reconnect, try reconnecting again
+				continue
+			}
+			// Don't retry the failed message, just continue with the next one
+			continue
 		}
 	}
 }
