@@ -328,7 +328,7 @@ Vue.component("Sidebar", {
           data-bs-toggle="pill"
           data-bs-target="#v-pills-tracking"
         >
-          <i class="bi bi-geo-alt-fill"></i> ردیابی
+          <i class="bi bi-geo-alt-fill"></i> ردگیری
         </button>
         <!-- <button
           class="nav-link"

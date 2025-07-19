@@ -71,7 +71,7 @@ Vue.component("tracking-control", {
     clearAllTrails: function () {
       if (
         this.trackingManager &&
-        confirm("Are you sure you want to clear all trails?")
+        confirm("آیا از پاک کردن تمام ردها مطمئن هستید؟")
       ) {
         this.trackingManager.clearAllTrails();
         this.refreshActiveTrails();
@@ -80,7 +80,7 @@ Vue.component("tracking-control", {
     },
 
     removeTrail: function (unitUid) {
-      if (this.trackingManager && confirm(`Remove trail for ${unitUid}?`)) {
+      if (this.trackingManager && confirm(`آیا رد برای ${unitUid} حذف شود؟`)) {
         this.trackingManager.removeTrail(unitUid);
         this.refreshActiveTrails();
         console.log(`Trail removed for ${unitUid}`);
@@ -145,13 +145,13 @@ Vue.component("tracking-control", {
             this.importData = "";
             this.selectedUnitForImport = "";
             this.refreshActiveTrails();
-            alert("Trail data imported successfully");
+            alert("داده‌های رد با موفقیت وارد شد");
           } else {
-            alert("Failed to import trail data");
+            alert("ورود داده‌های رد با شکست مواجه شد");
           }
         } catch (error) {
           console.error("Import error:", error);
-          alert("Error importing trail data: " + error.message);
+          alert("خطا در ورود داده‌های رد: " + error.message);
         }
       }
     },
@@ -189,9 +189,9 @@ Vue.component("tracking-control", {
             new Date(trail.positions[0].timestamp)
           : 0;
       const durationStr =
-        duration > 0 ? `${Math.round(duration / 60000)}m` : "N/A";
+        duration > 0 ? `${Math.round(duration / 60000)}m` : "نامشخص";
 
-      return `${positions} points, ${durationStr}`;
+      return `${positions} نقطه، ${durationStr}`;
     },
 
     getTrailDistance: function (trail) {
@@ -218,7 +218,7 @@ Vue.component("tracking-control", {
           class="card-header d-flex justify-content-between align-items-center"
         >
           <h5 class="mb-0">
-            <i class="bi bi-geo-alt-fill"></i> Tracking Control
+            <i class="bi bi-geo-alt-fill"></i> کنترل ردگیری
           </h5>
           <button
             class="btn btn-sm btn-outline-secondary"
@@ -239,17 +239,17 @@ Vue.component("tracking-control", {
               @change="toggleGlobalTracking"
             />
             <label class="form-check-label" for="globalTracking">
-              <strong>Enable Global Tracking</strong>
+              <strong>فعال‌سازی ردگیری سراسری</strong>
             </label>
           </div>
 
           <!-- Advanced Settings -->
-          <div v-if="showAdvancedSettings" class="border-top pt-3">
-            <h6>Default Settings</h6>
+          <!-- <div v-if="showAdvancedSettings" class="border-top pt-3">
+            <h6>تنظیمات پیش‌فرض</h6>
 
             <div class="row mb-3">
               <div class="col-6">
-                <label class="form-label">Trail Length:</label>
+                <label class="form-label">طول رد:</label>
                 <input
                   type="range"
                   class="form-range"
@@ -259,28 +259,28 @@ Vue.component("tracking-control", {
                   @change="updateDefaultSettings"
                 />
                 <small class="text-muted"
-                  >{{ defaultTrailLength }} points</small
+                  >{{ defaultTrailLength }} نقطه</small
                 >
               </div>
 
               <div class="col-6">
-                <label class="form-label">Update Interval:</label>
+                <label class="form-label">فاصله زمانی به‌روزرسانی:</label>
                 <select
                   class="form-select form-select-sm"
                   v-model="defaultUpdateInterval"
                   @change="updateDefaultSettings"
                 >
-                  <option value="10">10 seconds</option>
-                  <option value="30">30 seconds</option>
-                  <option value="60">1 minute</option>
-                  <option value="300">5 minutes</option>
+                  <option value="10">۱۰ ثانیه</option>
+                  <option value="30">۳۰ ثانیه</option>
+                  <option value="60">۱ دقیقه</option>
+                  <option value="300">۵ دقیقه</option>
                 </select>
               </div>
             </div>
 
             <div class="row mb-3">
               <div class="col-6">
-                <label class="form-label">Default Color:</label>
+                <label class="form-label">رنگ پیش‌فرض:</label>
                 <input
                   type="color"
                   class="form-control form-control-color"
@@ -290,7 +290,7 @@ Vue.component("tracking-control", {
               </div>
 
               <div class="col-6">
-                <label class="form-label">Trail Width:</label>
+                <label class="form-label">عرض رد:</label>
                 <input
                   type="range"
                   class="form-range"
@@ -302,24 +302,23 @@ Vue.component("tracking-control", {
                 <small class="text-muted">{{ defaultTrailWidth }}px</small>
               </div>
             </div>
-          </div>
+          </div> -->
 
           <!-- Active Trails -->
           <div class="border-top pt-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
-              <h6 class="mb-0">Active Trails ({{ activeTrails.length }})</h6>
+              <h6 class="mb-0">ردهای فعال ({{ activeTrails.length }})</h6>
               <div class="btn-group btn-group-sm">
                 <button
                   class="btn btn-outline-primary"
                   @click="refreshActiveTrails"
-                  title="Refresh"
                 >
                   <i class="bi bi-arrow-clockwise"></i>
                 </button>
                 <button
                   class="btn btn-outline-danger"
                   @click="clearAllTrails"
-                  title="Clear All"
+                  title="پاک کردن همه"
                 >
                   <i class="bi bi-trash"></i>
                 </button>
@@ -330,7 +329,7 @@ Vue.component("tracking-control", {
               v-if="activeTrails.length === 0"
               class="text-muted text-center py-3"
             >
-              No active trails
+              هیچ رد فعالی وجود ندارد
             </div>
 
             <div
@@ -359,14 +358,14 @@ Vue.component("tracking-control", {
                     <button
                       class="btn btn-outline-primary"
                       @click="exportTrail(trail.unitUid)"
-                      title="Export"
+                      title="خروجی گرفتن"
                     >
                       <i class="bi bi-download"></i>
                     </button>
                     <button
                       class="btn btn-outline-danger"
                       @click="removeTrail(trail.unitUid)"
-                      title="Remove"
+                      title="حذف"
                     >
                       <i class="bi bi-x"></i>
                     </button>
@@ -382,7 +381,7 @@ Vue.component("tracking-control", {
                         class="form-control form-control-color form-control-sm"
                         :value="trail.config.trailColor"
                         @change="updateTrailConfig(trail.unitUid, { trailColor: $event.target.value })"
-                        title="Trail Color"
+                        title="رنگ رد"
                       />
                     </div>
                     <div class="col-4">
@@ -393,7 +392,7 @@ Vue.component("tracking-control", {
                         max="10"
                         :value="trail.config.trailWidth"
                         @change="updateTrailConfig(trail.unitUid, { trailWidth: parseInt($event.target.value) })"
-                        title="Trail Width"
+                        title="عرض رد"
                       />
                     </div>
                     <div class="col-4">
@@ -404,7 +403,7 @@ Vue.component("tracking-control", {
                         max="200"
                         :value="trail.config.trailLength"
                         @change="updateTrailConfig(trail.unitUid, { trailLength: parseInt($event.target.value) })"
-                        title="Trail Length"
+                        title="طول رد"
                       />
                     </div>
                   </div>
@@ -414,12 +413,12 @@ Vue.component("tracking-control", {
           </div>
 
           <!-- Export/Import -->
-          <div v-if="showAdvancedSettings" class="border-top pt-3">
-            <h6>Export/Import</h6>
+          <!-- <div v-if="showAdvancedSettings" class="border-top pt-3">
+            <h6>ورود/خروج اطلاعات</h6>
 
             <div class="row mb-2">
               <div class="col-6">
-                <label class="form-label">Export Format:</label>
+                <label class="form-label">فرمت خروجی:</label>
                 <select
                   class="form-select form-select-sm"
                   v-model="exportFormat"
@@ -434,18 +433,18 @@ Vue.component("tracking-control", {
                   class="btn btn-sm btn-outline-primary w-100"
                   @click="exportAllTrails"
                 >
-                  Export All
+                  خروجی از همه
                 </button>
               </div>
             </div>
 
             <div class="mb-2">
-              <label class="form-label">Import Data:</label>
+              <label class="form-label">داده ورودی:</label>
               <textarea
                 class="form-control form-control-sm"
                 rows="3"
                 v-model="importData"
-                placeholder="Paste trail data here..."
+                placeholder="داده‌های رد را اینجا الصاق کنید..."
               ></textarea>
             </div>
 
@@ -464,7 +463,7 @@ Vue.component("tracking-control", {
                   type="text"
                   class="form-control form-control-sm"
                   v-model="selectedUnitForImport"
-                  placeholder="Unit UID"
+                  placeholder="شناسه یکتا"
                 />
               </div>
               <div class="col-4">
@@ -473,11 +472,11 @@ Vue.component("tracking-control", {
                   @click="importTrail"
                   :disabled="!importData || !selectedUnitForImport"
                 >
-                  Import
+                  ورود
                 </button>
               </div>
             </div>
-          </div>
+          </div> -->
         </div>
       </div>
     </div>

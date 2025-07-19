@@ -95,7 +95,7 @@ Vue.component("unit-tracking-control", {
     clearTrail: function () {
       if (!this.unit || !this.trackingManager) return;
 
-      if (confirm(`Clear trail for ${this.unit.callsign || this.unit.uid}?`)) {
+      if (confirm(`آیا رد برای ${this.unit.callsign || this.unit.uid} پاک شود؟`)) {
         this.trackingManager.removeTrail(this.unit.uid);
         this.trackingEnabled = false;
         this.updateTrailStats();
@@ -205,7 +205,7 @@ Vue.component("unit-tracking-control", {
         <div
           class="card-header d-flex justify-content-between align-items-center"
         >
-          <h6 class="mb-0"><i class="bi bi-geo-alt"></i> Trail Tracking</h6>
+          <h6 class="mb-0"><i class="bi bi-geo-alt"></i> ردگیری مسیر</h6>
           <button
             class="btn btn-sm btn-outline-secondary"
             @click="showAdvanced = !showAdvanced"
@@ -226,7 +226,7 @@ Vue.component("unit-tracking-control", {
               @change="toggleTracking"
             />
             <label class="form-check-label" :for="'tracking-' + unit.uid">
-              <strong>Track {{ unit.callsign || unit.uid }}</strong>
+              <strong>ردگیری {{ unit.callsign || unit.uid }}</strong>
             </label>
           </div>
 
@@ -236,7 +236,7 @@ Vue.component("unit-tracking-control", {
               <div class="col-4">
                 <div class="border rounded p-2">
                   <div class="fw-bold">{{ trailStats.pointCount }}</div>
-                  <small class="text-muted">Points</small>
+                  <small class="text-muted">نقاط</small>
                 </div>
               </div>
               <div class="col-4" v-if="trailStats.distance > 0">
@@ -252,7 +252,7 @@ Vue.component("unit-tracking-control", {
                   <div class="fw-bold">
                     {{ formatDuration(trailStats.duration) }}
                   </div>
-                  <small class="text-muted">Duration</small>
+                  <small class="text-muted">مدت زمان</small>
                 </div>
               </div>
             </div>
@@ -262,7 +262,7 @@ Vue.component("unit-tracking-control", {
           <div v-if="trackingEnabled" class="trail-config">
             <div class="row g-2 mb-3">
               <div class="col-6">
-                <label class="form-label">Trail Color:</label>
+                <label class="form-label">رنگ رد:</label>
                 <input
                   type="color"
                   class="form-control form-control-color"
@@ -271,7 +271,7 @@ Vue.component("unit-tracking-control", {
                 />
               </div>
               <div class="col-6">
-                <label class="form-label">Trail Length:</label>
+                <label class="form-label">طول رد:</label>
                 <input
                   type="number"
                   class="form-control"
@@ -287,7 +287,7 @@ Vue.component("unit-tracking-control", {
             <div v-if="showAdvanced" class="border-top pt-3">
               <div class="row g-2 mb-3">
                 <div class="col-6">
-                  <label class="form-label">Trail Width:</label>
+                  <label class="form-label">عرض رد:</label>
                   <input
                     type="range"
                     class="form-range"
@@ -301,7 +301,7 @@ Vue.component("unit-tracking-control", {
                   >
                 </div>
                 <div class="col-6">
-                  <label class="form-label">Opacity:</label>
+                  <label class="form-label">شفافیت:</label>
                   <input
                     type="range"
                     class="form-range"
@@ -323,23 +323,23 @@ Vue.component("unit-tracking-control", {
               <button
                 class="btn btn-sm btn-outline-primary flex-fill"
                 @click="exportTrail"
-                title="Export trail data"
+                title="خروجی گرفتن از داده‌های رد"
               >
-                <i class="bi bi-download"></i> Export
+                <i class="bi bi-download"></i> خروجی
               </button>
               <button
                 class="btn btn-sm btn-outline-warning flex-fill"
                 @click="updateTrailStats"
-                title="Refresh statistics"
+                title="تازه‌سازی آمار"
               >
-                <i class="bi bi-arrow-clockwise"></i> Refresh
+                <i class="bi bi-arrow-clockwise"></i> تازه‌سازی
               </button>
               <button
                 class="btn btn-sm btn-outline-danger flex-fill"
                 @click="clearTrail"
-                title="Clear trail"
+                title="پاک کردن رد"
               >
-                <i class="bi bi-trash"></i> Clear
+                <i class="bi bi-trash"></i> پاک کردن
               </button>
             </div>
           </div>
@@ -348,8 +348,7 @@ Vue.component("unit-tracking-control", {
           <div v-if="!trackingEnabled" class="text-muted">
             <small>
               <i class="bi bi-info-circle"></i>
-              Enable tracking to record and visualize this unit's movement trail
-              on the map.
+              ردگیری را فعال کنید تا مسیر حرکت این واحد روی نقشه ضبط و نمایش داده شود.
             </small>
           </div>
         </div>

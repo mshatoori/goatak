@@ -312,21 +312,21 @@ class TrackingManager {
       trail.length > 0 ? new Date(trail[trail.length - 1].timestamp) : null;
 
     let content = `<div class="tracking-trail-popup">`;
-    content += `<h6><strong>Trail: ${unitUid}</strong></h6>`;
-    content += `<p><strong>Points:</strong> ${trail.length}</p>`;
+    content += `<h6><strong>رد: ${unitUid}</strong></h6>`;
+    content += `<p><strong>تعداد نقاط:</strong> ${trail.length}</p>`;
 
     if (startTime && endTime) {
-      content += `<p><strong>Duration:</strong> ${dt(startTime)} - ${dt(
+      content += `<p><strong>مدت زمان:</strong> ${dt(startTime)} - ${dt(
         endTime
       )}</p>`;
     }
 
     if (trail.length > 1) {
       const distance = this.calculateTrailDistance(trail);
-      content += `<p><strong>Distance:</strong> ${distance.toFixed(1)} km</p>`;
+      content += `<p><strong>مسافت:</strong> ${distance.toFixed(1)} km</p>`;
     }
 
-    content += `<p><strong>Color:</strong> <span style="color: ${config.trailColor}">●</span> ${config.trailColor}</p>`;
+    content += `<p><strong>رنگ:</strong> <span style="color: ${config.trailColor}">●</span> ${config.trailColor}</p>`;
     content += `</div>`;
 
     return content;
@@ -472,7 +472,7 @@ class TrackingManager {
     const config = this.getTrailConfig(unitUid);
 
     if (trail.length === 0) {
-      console.warn(`No trail data found for unit ${unitUid}`);
+      console.warn(`داده‌ای برای ردگیری واحد ${unitUid} یافت نشد`);
       return null;
     }
 
@@ -513,7 +513,7 @@ class TrackingManager {
         return gpx;
 
       default:
-        console.warn(`Unsupported export format: ${format}`);
+        console.warn(`فرمت خروجی پشتیبانی نمی‌شود: ${format}`);
         return null;
     }
   }
@@ -556,13 +556,13 @@ class TrackingManager {
           break;
 
         default:
-          console.warn(`Unsupported import format: ${format}`);
+          console.warn(`فرمت ورودی پشتیبانی نمی‌شود: ${format}`);
           return false;
       }
 
       return this.addTrail(unitUid, positions, config);
     } catch (error) {
-      console.error("Error importing trail data:", error);
+      console.error("خطا در ورود داده‌های رد:", error);
       return false;
     }
   }
