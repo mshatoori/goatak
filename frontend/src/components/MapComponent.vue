@@ -46,6 +46,27 @@ import { useCasevacStore } from '@/stores/casevacStore'
 import { useWebSocket } from '@/composables/useWebSocket'
 import type { MapItem, MapMode, NavigationLineToggleEvent } from '@/types'
 
+// Import Leaflet and Leaflet Draw as ES6 modules
+import L from 'leaflet'
+import 'leaflet-draw'
+
+// Import Leaflet CSS (will be handled by Vite)
+import 'leaflet/dist/leaflet.css'
+import 'leaflet-draw/dist/leaflet.draw.css'
+
+// Fix Leaflet default markers when using ES6 modules
+import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
+import iconUrl from 'leaflet/dist/images/marker-icon.png'
+import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
+
+// Configure default icon
+delete (L.Icon.Default.prototype as any)._getIconUrl
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl,
+  iconUrl,
+  shadowUrl,
+})
+
 // Props
 interface Props {
   sidebarCollapsed?: boolean
@@ -122,14 +143,9 @@ onUnmounted(() => {
 })
 
 const initializeMap = async () => {
-  // Wait for Leaflet to be available
-  const L = (window as any).L
-  if (!L) {
-    console.error('Leaflet not available')
-    return
-  }
-
-  // Create map
+  console.log('Initializing map with imported Leaflet:', L)
+  
+  // Create map using imported Leaflet
   const map = L.map('map', {
     attributionControl: false,
     zoomControl: true,
@@ -205,12 +221,12 @@ const initializeMap = async () => {
     .addTo(map)
 
   // Set up event listeners
-  setupMapEvents(map, L)
+  setupMapEvents(map)
 
   console.log('Map initialized')
 }
 
-const setupMapEvents = (map: any, L: any) => {
+const setupMapEvents = (map: any) => {
   // Mouse move for coordinates
   map.on('mousemove', (e: any) => {
     mouseCoords.value = e.latlng
