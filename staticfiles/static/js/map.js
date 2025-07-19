@@ -40,6 +40,9 @@ let app = new Vue({
 
     // Tracking manager
     trackingManager: null,
+
+    // Zoom update throttling
+    zoomUpdateTimeout: null,
   },
   provide: function () {
     return {
@@ -233,6 +236,7 @@ let app = new Vue({
 
     this.map.on("click", this.mapClick);
     this.map.on("mousemove", this.mouseMove);
+    this.map.on("zoomanim", this.onMapZoom);
   },
 
   computed: {
@@ -394,7 +398,6 @@ let app = new Vue({
           window.location.host +
           "/ws";
       let vm = this;
-
       this.fetchAllUnits();
       this.fetchMessages();
       store.fetchSensors();
@@ -483,6 +486,11 @@ let app = new Vue({
           this.getItemOverlay(item).removeLayer(item.infoMarker);
           item.infoMarker.remove();
         }
+
+        if (item.textLabel) {
+          this.getItemOverlay(item).removeLayer(item.textLabel);
+          item.textLabel.remove();
+        }
       }
 
       if (this.activeItemUid === item.uid) {
@@ -510,8 +518,8 @@ let app = new Vue({
         }
         item.marker.addTo(this.drawnItems);
 
-        // Add infomarker for polygon
-        this.addDrawingInfoMarker(item);
+        // Add text label for polygon
+        this.addDrawingTextLabel(item);
       } else if (item.category === "route") {
         item.marker = L.polyline(latlngs, {
           color: item.color,
@@ -521,64 +529,49 @@ let app = new Vue({
         });
         item.marker.addTo(this.routeItems);
 
-        // Add infomarker for route
-        this.addDrawingInfoMarker(item);
+        // Add text label for route
+        this.addDrawingTextLabel(item);
       }
     },
 
-    addDrawingInfoMarker: function (item) {
-      // Remove existing infomarker if it exists
-      if (item.infoMarker) {
-        this.removeFromAllOverlays(item.infoMarker);
+    addDrawingTextLabel: function (item) {
+      // Remove existing text label if it exists
+      if (item.textLabel) {
+        this.removeFromAllOverlays(item.textLabel);
       }
 
-      let markerHtml = '<div class="drawing-infomarker">' + item.callsign;
+      // Calculate position for text label placement
+      let textLabelPosition = this.calculateTextLabelPosition(item);
 
-      // Add category-specific information
-      if (item.category === "drawing") {
-        // markerHtml += "<br>Polygon";
-        // if (item.color) markerHtml += "<br>Color: " + item.color;
-        // if (item.geofence !== undefined) {
-        //   markerHtml +=
-        //     "<br>" + (item.geofence ? "Geofence: ON" : "Geofence: OFF");
-        // }
-      } else if (item.category === "route") {
-        // markerHtml += "<br>Route";
-        // if (item.color) markerHtml += "<br>Color: " + item.color;
-        // // Calculate route length if possible
-        // if (item.links && item.links.length > 1) {
-        //   markerHtml += "<br>Points: " + item.links.length;
-        // }
-      }
+      // Calculate dynamic styling based on item type
+      let labelStyle = this.calculateLabelStyle(item);
 
-      // Add parent information if available
-      // if (item.parent_callsign) {
-      //   markerHtml += "<br>By: " + item.parent_callsign;
-      // }
+      let displayStyle = "";
 
-      markerHtml += "</div>";
+      if (labelStyle.fontSize < 12) displayStyle = "display:none;";
 
-      const markerInfo = L.divIcon({
-        className: "edge-marker-info",
-        html: markerHtml,
+      // Create text label HTML with dynamic styling and combined transform
+      let labelHtml = `<div class="drawing-text-label" style="color: ${item.color}; font-size: ${labelStyle.fontSize}px; transform: translate(-50%, -50%) rotate(${labelStyle.rotation}deg); ${displayStyle}">${item.callsign}</div>`;
+
+      const textIcon = L.divIcon({
+        className: "drawing-text-label-icon",
+        html: labelHtml,
         iconSize: null,
+        iconAnchor: [0, 0], // No offset, will be centered with CSS
       });
 
-      // Calculate edge position for infomarker placement
-      let infoMarkerPosition = this.calculateEdgePosition(item);
-
-      // Create infomarker at the calculated edge position
-      item.infoMarker = L.marker(infoMarkerPosition, { icon: markerInfo });
+      // Create text label at the calculated position
+      item.textLabel = L.marker(textLabelPosition, { icon: textIcon });
 
       // Add click event to select the item
-      item.infoMarker.on("click", (e) => {
+      item.textLabel.on("click", (e) => {
         this.setActiveItemUid(item.uid, false);
       });
 
-      item.infoMarker.addTo(this.getItemOverlay(item));
+      item.textLabel.addTo(this.getItemOverlay(item));
     },
 
-    calculateEdgePosition: function (item) {
+    calculateTextLabelPosition: function (item) {
       if (!item.links || item.links.length === 0) {
         // Fallback to center if no links available
         return [item.lat, item.lon];
@@ -589,20 +582,24 @@ let app = new Vue({
       });
 
       if (item.category === "drawing") {
-        // For polygons, place infomarker at the middle of the first edge
-        if (latlngs.length < 2) {
-          return [latlngs[0][0], latlngs[0][1]];
+        // For polygons, place text label inside the polygon (at centroid)
+        if (latlngs.length < 3) {
+          return [item.lat, item.lon]; // Fallback to item center if not enough points
         }
-        // Calculate midpoint between first and second vertex
-        let lat1 = latlngs[0][0];
-        let lng1 = latlngs[0][1];
-        let lat2 = latlngs[1][0];
-        let lng2 = latlngs[1][1];
-        return [(lat1 + lat2) / 2, (lng1 + lng2) / 2];
+
+        // Calculate polygon centroid using a more robust method (e.g., average of all points)
+        let latSum = 0;
+        let lngSum = 0;
+        latlngs.forEach((coord) => {
+          latSum += coord[0];
+          lngSum += coord[1];
+        });
+
+        return [latSum / latlngs.length, lngSum / latlngs.length];
       } else if (item.category === "route") {
-        // For routes, place infomarker at the middle edge
+        // For routes, place text label at the middle edge, offset to the side
         if (latlngs.length < 2) {
-          return [latlngs[0][0], latlngs[0][1]];
+          return [item.lat, item.lon]; // Fallback to item center if not enough points
         }
 
         // Find the middle edge index
@@ -613,11 +610,158 @@ let app = new Vue({
         let lng1 = latlngs[middleEdgeIndex][1];
         let lat2 = latlngs[middleEdgeIndex + 1][0];
         let lng2 = latlngs[middleEdgeIndex + 1][1];
-        return [(lat1 + lat2) / 2, (lng1 + lng2) / 2];
+
+        let midLat = (lat1 + lat2) / 2;
+        let midLng = (lng1 + lng2) / 2;
+
+        // Calculate perpendicular offset to place label beside the route
+        let deltaLat = lat2 - lat1;
+        let deltaLng = lng2 - lng1;
+
+        // Calculate perpendicular vector (rotate 90 degrees)
+        let perpLat = -deltaLng;
+        let perpLng = deltaLat;
+
+        // For horizontal edges, ensure label appears on top (positive latitude direction)
+        // Check if the edge is more horizontal than vertical
+        if (Math.abs(deltaLng) > Math.abs(deltaLat)) {
+          // Horizontal edge - ensure perpendicular vector points upward (positive lat)
+          if (perpLat < 0) {
+            perpLat = -perpLat;
+            perpLng = -perpLng;
+          }
+        }
+
+        // Normalize the perpendicular vector
+        let length = Math.sqrt(perpLat * perpLat + perpLng * perpLng);
+        if (length > 0) {
+          perpLat = perpLat / length;
+          perpLng = perpLng / length;
+        }
+
+        // Calculate offset distance based on zoom level (increased distance)
+        let zoom = this.map.getZoom();
+        let offsetDistance = 0.0003 * Math.pow(2, 15 - zoom); // Increased offset distance
+
+        // Apply offset to position label beside the route
+        return [
+          midLat + perpLat * offsetDistance,
+          midLng + perpLng * offsetDistance,
+        ];
       }
 
       // Fallback to center
       return [item.lat, item.lon];
+    },
+
+    calculateLabelStyle: function (item) {
+      let fontSize = 18; // Default font size
+      let rotation = 0; // Default rotation
+      let zoom = this.map.getZoom();
+
+      if (!item.links || item.links.length === 0) {
+        // Even without links, make font size responsive to zoom
+        fontSize = Math.max(8, Math.min(24, zoom * 1.5));
+        return { fontSize, rotation };
+      }
+
+      let latlngs = item.links.map((it) => {
+        return it.split(",").map(parseFloat);
+      });
+
+      if (item.category === "drawing") {
+        // For polygons, calculate font size based on pixel size on screen
+        if (latlngs.length >= 3 && item.marker) {
+          try {
+            // Convert lat/lng coordinates to pixel coordinates
+            let pixelPoints = latlngs.map((coord) =>
+              this.map.latLngToContainerPoint([coord[0], coord[1]])
+            );
+
+            // Calculate bounding box in pixels
+            let minX = Math.min(...pixelPoints.map((p) => p.x));
+            let maxX = Math.max(...pixelPoints.map((p) => p.x));
+            let minY = Math.min(...pixelPoints.map((p) => p.y));
+            let maxY = Math.max(...pixelPoints.map((p) => p.y));
+
+            // Calculate pixel dimensions
+            let pixelWidth = maxX - minX;
+            let pixelHeight = maxY - minY;
+            let pixelDiagonal = Math.sqrt(
+              pixelWidth * pixelWidth + pixelHeight * pixelHeight
+            );
+
+            // Scale font size based on pixel size (more intuitive scaling)
+            // Larger polygons get larger text, smaller polygons get smaller text
+            fontSize = Math.max(8, Math.min(42, pixelDiagonal / 12));
+
+            // console.log(
+            //   `Polygon pixel size: ${pixelWidth}x${pixelHeight}, diagonal: ${pixelDiagonal}, fontSize: ${fontSize}`
+            // );
+          } catch (error) {
+            console.warn("Error calculating pixel size for polygon:", error);
+            // Fallback to zoom-based sizing
+            fontSize = Math.max(8, Math.min(24, zoom * 1.5));
+          }
+        } else {
+          // Fallback for polygons with insufficient points
+          fontSize = Math.max(8, Math.min(24, zoom * 1.5));
+        }
+      } else if (item.category === "route") {
+        // For routes, calculate rotation angle and pixel-based font size
+        if (latlngs.length >= 2) {
+          let middleEdgeIndex = Math.floor((latlngs.length - 1) / 2);
+
+          let lat1 = latlngs[middleEdgeIndex][0];
+          let lng1 = latlngs[middleEdgeIndex][1];
+          let lat2 = latlngs[middleEdgeIndex + 1][0];
+          let lng2 = latlngs[middleEdgeIndex + 1][1];
+
+          // Calculate angle in degrees based on the middle edge
+          let deltaLng = lng2 - lng1;
+          let deltaLat = lat2 - lat1;
+          rotation = -Math.atan2(deltaLat, deltaLng) * (180 / Math.PI);
+
+          // Normalize rotation to keep text readable (between -90 and 90 degrees)
+          if (rotation > 90) {
+            rotation -= 180;
+          } else if (rotation < -90) {
+            rotation += 180;
+          }
+
+          // Calculate pixel-based font size for routes
+          try {
+            // Convert route points to pixel coordinates
+            let pixelPoints = latlngs.map((coord) =>
+              this.map.latLngToContainerPoint([coord[0], coord[1]])
+            );
+
+            // Calculate total pixel length of the route
+            let totalPixelLength = 0;
+            for (let i = 0; i < pixelPoints.length - 1; i++) {
+              let dx = pixelPoints[i + 1].x - pixelPoints[i].x;
+              let dy = pixelPoints[i + 1].y - pixelPoints[i].y;
+              totalPixelLength += Math.sqrt(dx * dx + dy * dy);
+            }
+
+            // Scale font size based on route length in pixels
+            fontSize = Math.max(8, Math.min(28, totalPixelLength / 15));
+
+            console.log(
+              `Route pixel length: ${totalPixelLength}, fontSize: ${fontSize}`
+            );
+          } catch (error) {
+            console.warn("Error calculating pixel size for route:", error);
+            // Fallback to zoom-based sizing
+            fontSize = Math.max(8, Math.min(28, zoom * 1.5));
+          }
+        } else {
+          // Fallback for routes with insufficient points
+          fontSize = Math.max(8, Math.min(28, zoom * 1.5));
+        }
+      }
+
+      return { fontSize, rotation };
     },
 
     _processAddition: function (item) {
@@ -649,6 +793,9 @@ let app = new Vue({
         }
         if (item.infoMarker) {
           this.removeFromAllOverlays(item.infoMarker);
+        }
+        if (item.textLabel) {
+          this.removeFromAllOverlays(item.textLabel);
         }
         this._processDrawing(item);
       } else {
@@ -1265,7 +1412,12 @@ let app = new Vue({
       let res = {};
 
       for (const k in u) {
-        if (k !== "marker" && k !== "infoMarker" && k !== "polygon") {
+        if (
+          k !== "marker" &&
+          k !== "infoMarker" &&
+          k !== "textLabel" &&
+          k !== "polygon"
+        ) {
           res[k] = u[k];
         }
       }
@@ -1541,6 +1693,53 @@ let app = new Vue({
     getActiveTrails: function () {
       if (!this.trackingManager) return [];
       return this.trackingManager.getAllTrails();
+    },
+
+    onMapZoom: function () {
+      // Throttle zoom updates to improve performance during zoom animations
+      if (this.zoomUpdateTimeout) {
+        clearTimeout(this.zoomUpdateTimeout);
+      }
+
+      this.zoomUpdateTimeout = setTimeout(() => {
+        // Update all drawing and route labels when zoom changes
+        this.sharedState.items.forEach((item) => {
+          if (
+            (item.category === "drawing" || item.category === "route") &&
+            item.textLabel
+          ) {
+            this.updateDrawingTextLabel(item);
+          }
+        });
+      }, 8); // Reduced throttling since we're just updating styles
+    },
+
+    updateDrawingTextLabel: function (item) {
+      // Only update the style of existing text label instead of recreating it
+      if (item.textLabel) {
+        // Calculate new styling
+        let labelStyle = this.calculateLabelStyle(item);
+
+        // For routes, also update position since offset is zoom-dependent
+        if (item.category === "route") {
+          let newPosition = this.calculateTextLabelPosition(item);
+          item.textLabel.setLatLng(newPosition);
+        }
+
+        // Get the existing label element and update its style
+        let labelElement = item.textLabel.getElement();
+        if (labelElement) {
+          let labelDiv = labelElement.querySelector(".drawing-text-label");
+          if (labelDiv) {
+            // Update font size and rotation while preserving other styles
+            labelDiv.style.fontSize = labelStyle.fontSize + "px";
+            labelDiv.style.transform = `translate(-50%, -50%) rotate(${labelStyle.rotation}deg)`;
+
+            if (labelStyle.fontSize < 12) labelDiv.style.display = "none";
+            else labelDiv.style.display = "block";
+          }
+        }
+      }
     },
   },
 });

@@ -12,7 +12,7 @@ Vue.component("SendModal", {
   methods: {
     send: function () {
       fetch(
-        "window.baseUrl + unit/" + this.sharedState.unitToSend.uid + "/send/",
+        window.baseUrl + "unit/" + this.sharedState.unitToSend.uid + "/send/",
         {
           headers: { "Content-Type": "application/json" },
           method: "POST",

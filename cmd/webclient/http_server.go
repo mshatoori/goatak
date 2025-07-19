@@ -128,24 +128,28 @@ func getIndexHandler(app *App, r *staticfiles.Renderer) air.Handler {
 
 func getUnitsHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		return res.WriteJSON(getUnits(app))
 	}
 }
 
 func getFlowsHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		return res.WriteJSON(getFlows(app))
 	}
 }
 
 func getMessagesHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		return res.WriteJSON(app.chatMessages.Chats)
 	}
 }
 
 func getConfigHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		m := make(map[string]any, 0)
 		m["version"] = getVersion()
 		m["uid"] = app.uid
@@ -171,6 +175,7 @@ func getConfigHandler(app *App) air.Handler {
 
 func changeConfigHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		wu := make(map[string]string)
 
 		if req.Body == nil {
@@ -224,6 +229,7 @@ func changeConfigHandler(app *App) air.Handler {
 
 func getDpHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		dp := new(model.DigitalPointer)
 
 		if req.Body == nil {
@@ -243,6 +249,7 @@ func getDpHandler(app *App) air.Handler {
 
 func getPosHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		m := make(map[string]any, 0)
 
 		app.forceLocationUpdate()
@@ -258,6 +265,7 @@ func getPosHandler(app *App) air.Handler {
 
 func changePosHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		pos := make(map[string]float64)
 
 		if req.Body == nil {
@@ -284,6 +292,7 @@ func changePosHandler(app *App) air.Handler {
 
 func addFlowHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		f := new(model.CoTFlow)
 
 		if req.Body == nil {
@@ -378,6 +387,7 @@ func addFlowHandler(app *App) air.Handler {
 }
 func addItemHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		wu := new(model.WebUnit)
 
 		if req.Body == nil {
@@ -417,6 +427,7 @@ func addItemHandler(app *App) air.Handler {
 
 func addMessageHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		msg := new(model.ChatMessage)
 
 		if req.Body == nil {
@@ -453,6 +464,7 @@ func addMessageHandler(app *App) air.Handler {
 
 func deleteItemHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		uid := getStringParam(req, "uid")
 		app.items.Remove(uid)
 		app.updateGeofencesAfterDelete(uid)
@@ -467,6 +479,7 @@ func deleteItemHandler(app *App) air.Handler {
 
 func sendItemHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		dest := new(model.SendItemDest)
 
 		if req.Body == nil {
@@ -519,12 +532,14 @@ func sendItemHandler(app *App) air.Handler {
 
 func getStackHandler() air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		return pprof.Lookup("goroutine").WriteTo(res.Body, 1)
 	}
 }
 
 func getWsHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		ws, err := res.WebSocket()
 		if err != nil {
 			return err
@@ -570,6 +585,7 @@ func getFlows(app *App) []*model.CoTFlow {
 
 func deleteFlowHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		uid := getStringParam(req, "uid")
 
 		// Find and remove the flow from the slice
@@ -643,6 +659,7 @@ func getStringParam(req *air.Request, name string) string {
 }
 
 func getTypes(_ *air.Request, res *air.Response) error {
+	setCORSHeaders(res)
 	return res.WriteJSON(cot.Root)
 }
 
@@ -687,8 +704,8 @@ func optionsHandler() air.Handler {
 	return func(req *air.Request, res *air.Response) error {
 		// Set CORS headers
 		res.Header.Set("Access-Control-Allow-Origin", "*")
-		res.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE")
-		res.Header.Set("Access-Control-Allow-Headers", "Content-Type")
+		res.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PUT, PATCH")
+		res.Header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
 		res.Header.Set("Access-Control-Max-Age", "86400") // 24 hours
 
 		// Return 200 OK status for preflight requests
@@ -697,8 +714,17 @@ func optionsHandler() air.Handler {
 	}
 }
 
+// setCORSHeaders sets CORS headers to allow all origins
+func setCORSHeaders(res *air.Response) {
+	res.Header.Set("Access-Control-Allow-Origin", "*")
+	res.Header.Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PUT, PATCH")
+	res.Header.Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+	res.Header.Set("Access-Control-Expose-Headers", "Content-Length, Content-Type")
+}
+
 func getNavigationDistanceHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
 		itemId := getStringParam(req, "itemId")
 		if itemId == "" {
 			res.Status = 400
