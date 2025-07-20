@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "language-server": {
+      "command": "mcp-language-server",
+      "args": ["--workspace", ".", "--lsp", "gopls"],
+
+      "timeout": 15,
+      "alwaysAllow": [],
+      "disabled": false
+    }
+  }
+}

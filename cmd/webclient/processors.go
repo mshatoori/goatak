@@ -32,6 +32,7 @@ func (app *App) InitMessageProcessors() {
 	app.AddEventProcessor("chat", app.chatProcessor, "b-t-f")
 	app.AddEventProcessor("chat_r", app.chatReceiptProcessor, "b-t-f-")
 	app.AddEventProcessor("items", app.saveItemProcessor, "a-", "b-", "u-")
+	app.AddEventProcessor("tracking", app.trackingProcessor, "a-")
 
 	// u-rb-a Range & Bearing – Line
 	// u-r-b-c-c R&b - Circle
@@ -150,4 +151,52 @@ func logMessage(msg *cot.CotMessage, fname string) error {
 	_, _ = f.Write(d)
 
 	return nil
+}
+
+func (app *App) trackingProcessor(msg *cot.CotMessage) {
+	// Only process position updates for units (a- prefix)
+	if !strings.HasPrefix(msg.GetType(), "a-") {
+		return
+	}
+
+	// Skip our own position updates
+	if msg.GetUID() == app.uid {
+		return
+	}
+
+	// Check if tracking service is available
+	if app.trackingService == nil {
+		return
+	}
+
+	// Extract position data
+	lat := msg.GetLat()
+	lon := msg.GetLon()
+
+	// Skip if coordinates are invalid
+	if lat == 0 && lon == 0 {
+		return
+	}
+
+	// Extract altitude from the CotEvent
+	cotEvent := msg.GetTakMessage().GetCotEvent()
+	alt := cotEvent.GetHae()
+
+	// Try to get speed and course from track detail if available
+	var speed, course float64
+	if detail := cotEvent.GetDetail(); detail != nil {
+		if track := detail.GetTrack(); track != nil {
+			speed = track.GetSpeed()
+			course = track.GetCourse()
+		}
+	}
+
+	// Add position to tracking service
+	if err := app.trackingService.AddPosition(msg.GetUID(), lat, lon, alt, speed, course); err != nil {
+		app.logger.Debug("failed to add tracking position", "error", err, "uid", msg.GetUID())
+		return
+	}
+
+	// Broadcast tracking update to WebSocket clients
+	app.broadcastTrackingUpdate(msg.GetUID(), msg.GetCallsign(), lat, lon, alt, speed, course)
 }

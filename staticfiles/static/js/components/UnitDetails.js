@@ -324,6 +324,13 @@ Vue.component("UnitDetails", {
           :user-position="config"
           @navigation-line-toggle="$emit('navigation-line-toggle', $event)"
         ></navigation-info>
+
+        <!-- Unit Tracking Control Component -->
+        <unit-tracking-control
+          v-if="!editing && item.category === 'unit'"
+          :unit="item"
+          :tracking-manager="$root.trackingManager"
+        ></unit-tracking-control>
       </div>
 
       <!-- Unit Edit Form -->

@@ -22,24 +22,15 @@ pkg/sumdb/
 /goatak-maps.tar
 /make-3.81.exe
 tasks/
+setup/*.tar
 setup/config.sqlite3
 setup/tiles/
 frontend/node_modules/
 frontend/.vite/
 .aider*
 .env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
-.env
+
+# MCP Language Server configuration is committed
+# (.vscode/settings.json and .roo/mcp.json contain MCP setup)
 .env
 .env

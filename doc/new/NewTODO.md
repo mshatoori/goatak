@@ -29,7 +29,7 @@
 1. Update details sidebar
    1. ~~Distance to self~~
    1. ~~Lat/Lon~~
-   1. Last Seen (stale)
+   1. Last Seen (stale) -> Add stale time to details edit sidebar
 1. ~~Persian Name for Points & Icons in the Dropdown~~
 1. ~~Icons in the Dropdown for Points~~
 1. ~~Implement Casevac~~

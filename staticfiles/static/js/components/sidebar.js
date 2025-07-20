@@ -141,6 +141,7 @@ Vue.component("Sidebar", {
     "checkEmergency",
     "map",
     "casevacLocation",
+    "trackingManager",
   ],
   inject: ["getTool", "removeTool"],
   template: html`
@@ -173,6 +174,17 @@ Vue.component("Sidebar", {
             :map="map"
           ></user-info>
         </div>
+        <!--<div
+          class="tab-pane fade"
+          id="v-pills-tracking"
+          role="tabpanel"
+          aria-labelledby="v-pills-tracking-tab"
+        >
+          <tracking-control
+            :map="map"
+            :tracking-manager="trackingManager"
+          ></tracking-control>
+        </div> -->
 
         <!-- <div
           class="tab-pane fade"
@@ -305,6 +317,19 @@ Vue.component("Sidebar", {
         >
           اطلاعات من
         </button>
+        <!--<button
+          class="nav-link"
+          id="v-pills-tracking-tab"
+          type="button"
+          role="tab"
+          aria-controls="v-pills-tracking"
+          aria-selected="false"
+          v-on:click="switchTab('tracking')"
+          data-bs-toggle="pill"
+          data-bs-target="#v-pills-tracking"
+        >
+          <i class="bi bi-geo-alt-fill"></i> ردگیری
+        </button> -->
         <!-- <button
           class="nav-link"
           id="v-pills-tools-tab"
