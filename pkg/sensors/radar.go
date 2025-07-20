@@ -4,22 +4,24 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/adrianmo/go-nmea"
-	"github.com/google/uuid"
-	"github.com/kdudkov/goatak/pkg/cot"
-	"github.com/kdudkov/goatak/pkg/cotproto"
-	"github.com/kdudkov/goatak/pkg/model"
 	"log/slog"
 	"net"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/adrianmo/go-nmea"
+	"github.com/google/uuid"
+	"github.com/kdudkov/goatak/pkg/cot"
+	"github.com/kdudkov/goatak/pkg/cotproto"
+	"github.com/kdudkov/goatak/pkg/model"
 )
 
 const (
 	RadarStaleTime = time.Second * 3600
 	RadarType      = "Radar"
+	DebugRadar     = false
 )
 
 type RadarSensor struct {
@@ -51,16 +53,22 @@ func NewRadarSensor(sensorModel *model.SensorModel, logger *slog.Logger) *RadarS
 }
 
 func (sensor *RadarSensor) Initialize() bool {
-	sensor.Logger.Debug("RadarSensor.Initialize", sensor.Addr)
+	if DebugRadar {
+		sensor.Logger.Debug("RadarSensor.Initialize", "addr", sensor.Addr)
+	}
 	addr, err := net.ResolveUDPAddr("udp", sensor.Addr)
 	if err != nil {
-		sensor.Logger.Debug("RadarSensor can't resolve")
+		if DebugRadar {
+			sensor.Logger.Debug("RadarSensor can't resolve")
+		}
 		return false
 	}
 
 	sensor.Conn, err = net.ListenUDP("udp", addr)
 	if err != nil {
-		sensor.Logger.Debug("RadarSensor can't listen", "error", err.Error())
+		if DebugRadar {
+			sensor.Logger.Debug("RadarSensor can't listen", "error", err.Error())
+		}
 		return false
 	}
 
@@ -75,11 +83,15 @@ func (sensor *RadarSensor) sendLoop(cb func(data any)) {
 	for {
 		select {
 		case <-ticker.C:
-			sensor.Logger.Warn(fmt.Sprintf("RadarSensor [%s] tick", sensor.UID))
+			if DebugRadar {
+				sensor.Logger.Debug(fmt.Sprintf("RadarSensor [%s] tick", sensor.UID))
+			}
 
 			sensor.mu.Lock()
 			for _, event := range sensor.sendBuffer {
-				sensor.Logger.Warn("RadarSensor sending data: ", event.String())
+				if DebugRadar {
+					sensor.Logger.Warn("RadarSensor sending data: ", "data", event.String())
+				}
 				cb(event)
 			}
 			sensor.sendBuffer = make(map[int]*cotproto.CotEvent)
@@ -100,9 +112,13 @@ func (sensor *RadarSensor) handleRead() {
 	reader := bufio.NewReader(sensor.Conn)
 
 	for sensor.Ctx.Err() == nil {
-		sensor.Logger.Debug(fmt.Sprintf("RadarSensor TryingRead"))
+		if DebugRadar {
+			sensor.Logger.Debug(fmt.Sprintf("RadarSensor TryingRead"))
+		}
 		sentenceStr, _ := reader.ReadString('\n')
-		sensor.Logger.Debug(fmt.Sprintf("RadarSensor Read [%s] %s", sensor.UID, sentenceStr))
+		if DebugRadar {
+			sensor.Logger.Debug(fmt.Sprintf("RadarSensor Read [%s] %s", sensor.UID, sentenceStr))
+		}
 		sentence, _ := nmea.Parse(sentenceStr)
 		switch sentence.(type) {
 		case nmea.TLL:
@@ -139,10 +155,14 @@ func (sensor *RadarSensor) handleRead() {
 			sensor.mu.Unlock()
 
 		case nmea.TTM:
-			sensor.Logger.Debug("RadarSensor TTM messages are not supported yet!")
+			if DebugRadar {
+				sensor.Logger.Debug("RadarSensor TTM messages are not supported yet!")
+			}
 		}
 	}
-	sensor.Logger.Debug("RadarSensor stopping")
+	if DebugRadar {
+		sensor.Logger.Debug("RadarSensor stopping")
+	}
 }
 
 func (sensor *RadarSensor) GetType() string {
