@@ -288,7 +288,7 @@ func (app *App) loadContactsFromDNS() {
 		concatenatedIPs := strings.Join(ips, ",")
 		callsign := urnToName[urn]
 
-		// Create unique UID for this contact
+		// TODO: This should be temporary. Also the other fileds that are set here.
 		uid := fmt.Sprintf("DNS-CONTACT-%d", urn)
 
 		// Create CotEvent for this contact

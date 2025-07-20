@@ -995,7 +995,7 @@ let app = new Vue({
       arr.sort(function (a, b) {
         return a.callsign.toLowerCase().localeCompare(b.callsign.toLowerCase());
       });
-      return this.ts && arr;
+      return this.sharedState.ts && arr;
     },
 
     nextItemNumber: function (category) {

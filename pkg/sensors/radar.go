@@ -128,7 +128,7 @@ func (sensor *RadarSensor) handleRead() {
 				Valid: true,
 				DD:    time.Now().UTC().Day(),
 				MM:    int(time.Now().UTC().Month()),
-				YY:    time.Now().UTC().Year(),
+				YY:    time.Now().UTC().Year() % 100,
 			}
 
 			startTime := nmea.DateTime(0, today, ttlSentence.TimeUTC)
