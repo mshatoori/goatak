@@ -36,6 +36,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/kdudkov/goatak/internal/client"
+	"github.com/kdudkov/goatak/internal/dnsproxy"
 	"github.com/kdudkov/goatak/internal/repository"
 	"github.com/kdudkov/goatak/pkg/cot"
 	"github.com/kdudkov/goatak/pkg/cotproto"
@@ -100,6 +101,7 @@ type App struct {
 
 	DB              *sql.DB
 	trackingService *tracking.TrackingService
+	dnsServiceProxy *dnsproxy.DnsServiceProxy
 }
 
 type CoTEventMutator struct {
@@ -211,6 +213,10 @@ func (app *App) Init() {
 		app.remoteAPI.SetTLS(app.getTLSConfig())
 	}
 
+	// Initialize DNS service proxy
+	dnsServiceURL := viper.GetString("dns_service.url")
+	app.dnsServiceProxy = dnsproxy.NewDnsServiceProxy(dnsServiceURL)
+
 	app.ch = make(chan []byte, 20)
 	app.InitMessageProcessors()
 
@@ -231,6 +237,89 @@ func (app *App) Init() {
 
 	app.changeCb.Subscribe(app.checkGeofences)
 	app.deleteCb.Subscribe(app.updateGeofencesAfterDelete)
+
+	// Load contacts from DNS service
+	app.loadContactsFromDNS()
+}
+
+func (app *App) loadContactsFromDNS() {
+	if app.dnsServiceProxy == nil {
+		app.logger.Warn("DNS service proxy not initialized, skipping contact loading")
+		return
+	}
+
+	app.logger.Info("Loading contacts from DNS service")
+	addresses, err := app.dnsServiceProxy.GetAddresses()
+	if err != nil {
+		app.logger.Error("Failed to get addresses from DNS service", "error", err)
+		return
+	}
+
+	// Group IP addresses by URN, excluding our own URN
+	urnToIPs := make(map[int32][]string)
+	urnToName := make(map[int32]string)
+
+	for _, addr := range addresses {
+		if addr.Urn == nil || addr.IPAddress == nil {
+			continue
+		}
+
+		// Skip addresses with our URN
+		if *addr.Urn == app.urn {
+			continue
+		}
+
+		urn := *addr.Urn
+		ip := *addr.IPAddress
+
+		urnToIPs[urn] = append(urnToIPs[urn], ip)
+
+		// Use UnitName if available, otherwise use URN as name
+		if addr.UnitName != nil && *addr.UnitName != "" {
+			urnToName[urn] = *addr.UnitName
+		} else if _, exists := urnToName[urn]; !exists {
+			urnToName[urn] = fmt.Sprintf("Node-%d", urn)
+		}
+	}
+
+	// Create CONTACT items for each unique URN
+	for urn, ips := range urnToIPs {
+		// Concatenate all IPs with comma
+		concatenatedIPs := strings.Join(ips, ",")
+		callsign := urnToName[urn]
+
+		// Create unique UID for this contact
+		uid := fmt.Sprintf("DNS-CONTACT-%d", urn)
+
+		// Create CotEvent for this contact
+		msg := cot.BasicMsg("a-f-X", uid, time.Hour*24) // CONTACT type with 24h stale time
+		msg.CotEvent.Detail = &cotproto.Detail{
+			Contact: &cotproto.Contact{
+				Endpoint: "*:-1:stcp",
+				Callsign: callsign,
+				ClientInfo: &cotproto.ClientInfo{
+					IpAddress: concatenatedIPs,
+					Urn:       urn,
+				},
+			},
+			Group: &cotproto.Group{
+				Name: "contacts",
+				Role: "",
+			},
+		}
+
+		// Convert to CotMessage and then to Item
+		cotMsg := cot.LocalCotMessage(msg)
+		item := model.FromMsg(cotMsg)
+		item.GetClass()
+		if item != nil {
+			app.items.Store(item)
+			app.changeCb.AddMessage(item)
+			app.logger.Info("Created contact from DNS", "urn", urn, "callsign", callsign, "ips", concatenatedIPs)
+		}
+	}
+
+	app.logger.Info("Finished loading contacts from DNS service", "contacts_created", len(urnToIPs))
 }
 
 func initFlowsSensorsAndConfig(app *App) {
@@ -1308,6 +1397,9 @@ func main() {
 	viper.BindEnv("default_dest_urn", "DEFAULT_DEST_URN")
 	viper.SetDefault("default_dest_ip", "255.255.255.255")
 	viper.SetDefault("default_dest_urn", 16777215)
+
+	viper.SetDefault("dns_service.url", "http://dns.api")
+	viper.BindEnv("dns_service.url", "DNS_SERVICE_URL")
 
 	err := viper.ReadInConfig()
 	if err != nil {

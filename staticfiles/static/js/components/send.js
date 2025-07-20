@@ -1,28 +1,59 @@
 Vue.component("SendModal", {
   data: function () {
     return {
-      dest: {
-        addr: "",
-        urn: "",
-      },
+      selectedUrn: "",
+      availableIps: [],
+      selectedIp: "",
       sharedState: store.state,
       toast: { text: "ارسال با موفقیت انجام شد", icon: "bi-mailbox" },
     };
   },
+
+  computed: {
+    contactsData: function () {
+      let contacts = [];
+      if (this.sharedState.ts) {
+        this.sharedState.items.forEach(function (u) {
+          if (u.category === "contact") {
+            contacts.push(u);
+          }
+        });
+      }
+
+      return contacts;
+    },
+  },
+
   methods: {
+    onUrnSelected: function () {
+      console.log("URN SELECTED", this.contactsData);
+      const selectedContact = this.contactsData.find(
+        (contact) => contact.urn.toString() == this.selectedUrn
+      );
+      console.log("selectedUrn", this.selectedUrn);
+      console.log("selectedContact", selectedContact);
+      if (selectedContact) {
+        this.availableIps = selectedContact.ip_address.split(",");
+        this.selectedIp =
+          this.availableIps.length > 0 ? this.availableIps[0] : ""; // Select first IP by default
+      } else {
+        this.availableIps = [];
+        this.selectedIp = "";
+      }
+    },
     send: function () {
+      // Use selectedIp and selectedUrn for sending
       fetch(
         window.baseUrl + "unit/" + this.sharedState.unitToSend.uid + "/send/",
         {
           headers: { "Content-Type": "application/json" },
           method: "POST",
           body: JSON.stringify({
-            ipAddress: this.dest.addr,
-            urn: parseInt(this.dest.urn),
+            ipAddress: this.selectedIp,
+            urn: parseInt(this.selectedUrn),
           }),
         }
       ).then((response) => {
-        // return response.json()
         if (response.status === 200) {
           this.toast.text = "ارسال با موفقیت انجام شد";
           this.toast.icon = "bi-mailbox";
@@ -32,13 +63,12 @@ Vue.component("SendModal", {
         }
 
         const sentToastElement = document.getElementById("sendToast");
-
         const sendToast = bootstrap.Toast.getOrCreateInstance(sentToastElement);
         sendToast.show();
       });
     },
   },
-  template: `
+  template: html`
     <div>
       <div
         class="modal fade"
@@ -68,32 +98,50 @@ Vue.component("SendModal", {
                   <div class="form">
                     <div class="form-group row">
                       <label
-                        for="dest-addr"
+                        for="dest-urn-select"
                         class="col-sm-4 col-form-label font-weight-bold"
-                        ><strong>IP</strong></label
+                        ><strong>URN (مخاطب)</strong></label
                       >
                       <div class="col-sm-8">
-                        <input
-                          type="text"
+                        <select
+                          id="dest-urn-select"
                           class="form-control"
-                          id="dest-addr"
-                          v-model="dest.addr"
-                        />
+                          v-model="selectedUrn"
+                          @change="onUrnSelected"
+                        >
+                          <option value="" disabled>URN را انتخاب کنید</option>
+                          <option
+                            v-for="contact in contactsData"
+                            :key="contact.urn"
+                            :value="contact.urn"
+                          >
+                            {{ contact.urn }} ({{ contact.callsign }})
+                          </option>
+                        </select>
                       </div>
                     </div>
-                    <div class="form-group row">
+                    <div class="form-group row mt-3">
                       <label
-                        for="dest-urn"
+                        for="dest-ip-select"
                         class="col-sm-4 col-form-label font-weight-bold"
-                        ><strong>URN</strong></label
+                        ><strong>IP Address</strong></label
                       >
                       <div class="col-sm-8">
-                        <input
-                          type="text"
+                        <select
+                          id="dest-ip-select"
                           class="form-control"
-                          id="dest-urn"
-                          v-model="dest.urn"
-                        />
+                          v-model="selectedIp"
+                          :disabled="!selectedUrn"
+                        >
+                          <option value="" disabled>IP را انتخاب کنید</option>
+                          <option
+                            v-for="ip in availableIps"
+                            :key="ip"
+                            :value="ip"
+                          >
+                            {{ ip }}
+                          </option>
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -101,7 +149,12 @@ Vue.component("SendModal", {
               </div>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-primary" v-on:click="send">
+              <button
+                type="button"
+                class="btn btn-primary"
+                v-on:click="send"
+                :disabled="!selectedUrn || !selectedIp"
+              >
                 ارسال
               </button>
               <button
@@ -126,7 +179,6 @@ Vue.component("SendModal", {
           <div class="toast-header">
             <i class="bi" :class="toast.icon"></i>
             <strong class="me-auto">ارسال</strong>
-            <!--                    <small>11 mins ago</small>-->
             <button
               type="button"
               class="btn-close"

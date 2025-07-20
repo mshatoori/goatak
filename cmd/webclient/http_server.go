@@ -22,6 +22,13 @@ import (
 	"github.com/kdudkov/goatak/staticfiles"
 )
 
+// DnsContact holds the URN and a list of IP addresses for a DNS contact.
+type DnsContact struct {
+	Urn      int32    `json:"urn"`
+	IPs      []string `json:"ips"`
+	Callsign string   `json:"callsign"`
+}
+
 //go:embed templates
 var templates embed.FS
 
@@ -62,6 +69,9 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.DELETE("/unit/:uid", deleteItemHandler(app))
 	srv.POST("/unit/:uid/send/", sendItemHandler(app))
 
+	srv.OPTIONS("/api/dns/contacts", optionsHandler())
+	srv.GET("/api/dns/contacts", getDnsContactsHandler(app))
+
 	srv.OPTIONS("/flows", optionsHandler())
 	srv.GET("/flows", getFlowsHandler(app))
 	srv.POST("/flows", addFlowHandler(app))
@@ -95,6 +105,75 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.RendererTemplateRightDelim = "]]"
 
 	return srv
+}
+
+func getDnsContactsHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
+
+		contactsMap := make(map[int32][]string)
+		contactsList := make([]DnsContact, 0)
+
+		app.items.ForEach(func(item *model.Item) bool {
+			if item.GetClass() == model.CONTACT {
+				cotMsg := item.GetMsg().GetTakMessage().GetCotEvent()
+				if cotMsg != nil && cotMsg.Detail != nil && cotMsg.Detail.Contact != nil && cotMsg.Detail.Contact.ClientInfo != nil {
+					urn := cotMsg.Detail.Contact.ClientInfo.Urn
+					ip := cotMsg.Detail.Contact.ClientInfo.IpAddress
+					callsign := cotMsg.Detail.Contact.Callsign
+
+					if urn != 0 && ip != "" {
+						// Split IPs and add each one
+						ips := strings.Split(ip, ",")
+						currentIPs := contactsMap[urn]
+						for _, singleIP := range ips {
+							found := false
+							for _, existingIP := range currentIPs {
+								if existingIP == singleIP {
+									found = true
+									break
+								}
+							}
+							if !found {
+								currentIPs = append(currentIPs, singleIP)
+							}
+						}
+						contactsMap[urn] = currentIPs
+
+						// Update callsing if not set or if it's generic
+						if _, exists := contactsMap[urn]; !exists || !strings.HasPrefix(callsign, "Node-") {
+							// If a more specific callsign is available, use it
+							// If not already set, or if current is generic "Node-X" and new is better
+							// This logic is a bit more complex. For simplicity, just store the first non-generic one.
+						}
+					}
+				}
+			}
+			return true
+		})
+
+		// Convert map to slice for consistent JSON output
+		for urn, ips := range contactsMap {
+			// Find the corresponding callsign. Assume the latest update by dnsProxy had the best callsign.
+			// This is a simplification; a more robust solution might store callsigns with the IPs.
+			var callsign string
+			app.items.ForEach(func(item *model.Item) bool {
+				if item.GetClass() == model.CONTACT {
+					cotMsg := item.GetMsg().GetTakMessage().GetCotEvent()
+					if cotMsg != nil && cotMsg.Detail != nil && cotMsg.Detail.Contact != nil && cotMsg.Detail.Contact.ClientInfo != nil {
+						if cotMsg.Detail.Contact.ClientInfo.Urn == urn {
+							callsign = cotMsg.Detail.Contact.Callsign
+							return false // Found, stop iteration
+						}
+					}
+				}
+				return true
+			})
+			contactsList = append(contactsList, DnsContact{Urn: urn, IPs: ips, Callsign: callsign})
+		}
+
+		return res.WriteJSON(contactsList)
+	}
 }
 
 func getIndexHandler(app *App, r *staticfiles.Renderer) air.Handler {
