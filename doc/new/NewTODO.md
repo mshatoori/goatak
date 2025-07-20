@@ -1,4 +1,4 @@
-Build a Version:
+~~ Build a Version:~~
 
 1. ~~Test and Debug everything~~
 1. ~~Better Icons~~
@@ -16,10 +16,9 @@ Build a Version:
 1. ~~Change Casevac Icon to ambulance~~
 1. ~~Change the style of infomarker for polygons and routes~~
 1. Smarter zoom levels
-1. Make HierarchySelector easier to work with
-1. Separate Unit and Buildings
-
 1. Tracking
+1. Make HierarchySelector easier to work with
+1. Separate Unit and Buildings (?)
 
 1. ~~Hide Sidebar~~
 
@@ -32,7 +31,7 @@ Build a Version:
    1. ~~Lat/Lon~~
    1. Last Seen (stale)
 1. ~~Persian Name for Points & Icons in the Dropdown~~
-1. Icons in the Dropdown for Points
+1. ~~Icons in the Dropdown for Points~~
 1. ~~Implement Casevac~~
    1. ~~Fix Icon~~
    1. ~~Show data in side bar?~~
@@ -40,9 +39,9 @@ Build a Version:
 1. ~~Distance from routes~~
 1. ~~Debug radar objects getting removed~~
 1. ~~Better staling of objects~~
-1. Test new front-end
+1. ~~Test new front-end~~
 1. ~~Show name of polygons and routes on map~~
-1. Fix infomarkers
+1. Fix infomarkers -> Just remove them! only on hover. Maybe add settings to have them.
 
 1. Use DNS Service for getting contacts
 
@@ -51,5 +50,6 @@ Build a Version:
    1. Broadcast to Group (select group!)
    1. Select from contacts (from dns service) for unicast
 1. Chat also should be debugged for this
+1. Proxy service (relay/router)
 
-1. Use TransmissionProxy or host network for connecting to external sensors
+1. ~~Use TransmissionProxy or host network for connecting to external sensors~~
