@@ -53,3 +53,4 @@
 1. Proxy service (relay/router)
 
 1. ~~Use TransmissionProxy or host network for connecting to external sensors~~
+1. Add URN in Contact info
