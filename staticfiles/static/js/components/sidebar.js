@@ -174,7 +174,7 @@ Vue.component("Sidebar", {
             :map="map"
           ></user-info>
         </div>
-        <div
+        <!--<div
           class="tab-pane fade"
           id="v-pills-tracking"
           role="tabpanel"
@@ -184,7 +184,7 @@ Vue.component("Sidebar", {
             :map="map"
             :tracking-manager="trackingManager"
           ></tracking-control>
-        </div>
+        </div> -->
 
         <!-- <div
           class="tab-pane fade"
@@ -317,7 +317,7 @@ Vue.component("Sidebar", {
         >
           اطلاعات من
         </button>
-        <button
+        <!--<button
           class="nav-link"
           id="v-pills-tracking-tab"
           type="button"
@@ -329,7 +329,7 @@ Vue.component("Sidebar", {
           data-bs-target="#v-pills-tracking"
         >
           <i class="bi bi-geo-alt-fill"></i> ردگیری
-        </button>
+        </button> -->
         <!-- <button
           class="nav-link"
           id="v-pills-tools-tab"

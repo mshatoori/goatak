@@ -1219,21 +1219,6 @@ func (app *App) startTrackingCleanup() {
 		return
 	}
 
-	// Run cleanup every 6 hours
-	ticker := time.NewTicker(6 * time.Hour)
-	defer ticker.Stop()
-
-	// Run initial cleanup after 1 minute
-	time.Sleep(1 * time.Minute)
-	if err := app.trackingService.CleanupOldData(); err != nil {
-		app.logger.Error("initial tracking cleanup failed", "error", err)
-	}
-
-	for range ticker.C {
-		if err := app.trackingService.CleanupOldData(); err != nil {
-			app.logger.Error("tracking cleanup failed", "error", err)
-		}
-	}
 }
 
 // broadcastTrackingUpdate sends tracking updates to all connected WebSocket clients

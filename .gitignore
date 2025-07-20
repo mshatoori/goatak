@@ -22,6 +22,7 @@ pkg/sumdb/
 /goatak-maps.tar
 /make-3.81.exe
 tasks/
+setup/*.tar
 setup/config.sqlite3
 setup/tiles/
 frontend/node_modules/

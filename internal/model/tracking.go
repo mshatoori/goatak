@@ -34,11 +34,3 @@ type TrackingTrail struct {
 	Positions []TrackingPosition `json:"positions"`
 	Config    TrackingConfig     `json:"config"`
 }
-
-// TrackingSettings represents global tracking settings
-type TrackingSettings struct {
-	GlobalEnabled         bool `json:"global_enabled"`
-	DefaultTrailLength    int  `json:"default_trail_length"`
-	DefaultUpdateInterval int  `json:"default_update_interval"`
-	CleanupInterval       int  `json:"cleanup_interval"` // hours
-}

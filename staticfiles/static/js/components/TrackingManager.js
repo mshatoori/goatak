@@ -311,12 +311,12 @@ class TrackingManager {
     const endTime =
       trail.length > 0 ? new Date(trail[trail.length - 1].timestamp) : null;
 
-    let content = `<div class="tracking-trail-popup">`;
+    let content = `<div class="tracking-trail-popup" dir="rtl">`;
     content += `<h6><strong>رد: ${unitUid}</strong></h6>`;
     content += `<p><strong>تعداد نقاط:</strong> ${trail.length}</p>`;
 
     if (startTime && endTime) {
-      content += `<p><strong>مدت زمان:</strong> ${dt(startTime)} - ${dt(
+      content += `<p><strong>زمان:</strong> ${dt(startTime)} - ${dt(
         endTime
       )}</p>`;
     }
@@ -326,7 +326,6 @@ class TrackingManager {
       content += `<p><strong>مسافت:</strong> ${distance.toFixed(1)} km</p>`;
     }
 
-    content += `<p><strong>رنگ:</strong> <span style="color: ${config.trailColor}">●</span> ${config.trailColor}</p>`;
     content += `</div>`;
 
     return content;

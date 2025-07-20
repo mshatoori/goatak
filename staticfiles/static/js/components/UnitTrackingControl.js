@@ -13,7 +13,7 @@ Vue.component("unit-tracking-control", {
         trailColor: "#FF0000",
         trailLength: 50,
         trailWidth: 2,
-        trailOpacity: 0.7,
+        trailOpacity: 0.5,
       },
       trailStats: {
         pointCount: 0,
@@ -95,7 +95,9 @@ Vue.component("unit-tracking-control", {
     clearTrail: function () {
       if (!this.unit || !this.trackingManager) return;
 
-      if (confirm(`آیا رد برای ${this.unit.callsign || this.unit.uid} پاک شود؟`)) {
+      if (
+        confirm(`آیا رد برای ${this.unit.callsign || this.unit.uid} پاک شود؟`)
+      ) {
         this.trackingManager.removeTrail(this.unit.uid);
         this.trackingEnabled = false;
         this.updateTrailStats();
@@ -206,12 +208,19 @@ Vue.component("unit-tracking-control", {
           class="card-header d-flex justify-content-between align-items-center"
         >
           <h6 class="mb-0"><i class="bi bi-geo-alt"></i> ردگیری مسیر</h6>
-          <button
+          <!--<button
             class="btn btn-sm btn-outline-secondary"
             @click="showAdvanced = !showAdvanced"
             v-if="trackingEnabled"
           >
             <i class="bi bi-gear"></i>
+          </button>-->
+          <button
+            class="btn btn-sm btn-outline-secondary"
+            @click="updateTrailStats"
+            v-if="trackingEnabled"
+          >
+            <i class="bi bi-arrow-clockwise"></i>
           </button>
         </div>
 
@@ -319,7 +328,7 @@ Vue.component("unit-tracking-control", {
             </div>
 
             <!-- Action Buttons -->
-            <div class="d-flex gap-2">
+            <!--<div class="d-flex gap-2">
               <button
                 class="btn btn-sm btn-outline-primary flex-fill"
                 @click="exportTrail"
@@ -341,14 +350,15 @@ Vue.component("unit-tracking-control", {
               >
                 <i class="bi bi-trash"></i> پاک کردن
               </button>
-            </div>
+            </div>-->
           </div>
 
           <!-- Help Text -->
           <div v-if="!trackingEnabled" class="text-muted">
             <small>
               <i class="bi bi-info-circle"></i>
-              ردگیری را فعال کنید تا مسیر حرکت این واحد روی نقشه ضبط و نمایش داده شود.
+              ردگیری را فعال کنید تا مسیر حرکت این واحد روی نقشه ضبط و نمایش
+              داده شود.
             </small>
           </div>
         </div>

@@ -52,6 +52,11 @@ func (s *TrackingService) AddPosition(unitUID string, lat, lon, alt, speed, cour
 	}
 
 	s.logger.Debug("added tracking position", "unit_uid", unitUID, "lat", lat, "lon", lon)
+
+	// Perform cleanup after adding a new position to maintain trail length
+	if err := s.CleanupOldData(unitUID); err != nil {
+		s.logger.Error("failed to cleanup old data after adding position", "error", err, "unit_uid", unitUID)
+	}
 	return nil
 }
 
@@ -209,25 +214,49 @@ func (s *TrackingService) UpdateConfig(unitUID string, config model.TrackingConf
 	}
 
 	s.logger.Info("updated tracking config", "unit_uid", unitUID, "enabled", config.Enabled)
+
+	// Perform cleanup after config update to ensure trail length is respected
+	if err := s.CleanupOldData(unitUID); err != nil {
+		s.logger.Error("failed to cleanup old data after config update", "error", err, "unit_uid", unitUID)
+	}
 	return nil
 }
 
-// CleanupOldData removes tracking data older than 24 hours
-func (s *TrackingService) CleanupOldData() error {
+// CleanupOldData removes tracking data for a specific unit to maintain trail length
+func (s *TrackingService) CleanupOldData(unitUID string) error {
 	if s.db == nil {
 		return fmt.Errorf("database not available")
 	}
 
-	cutoff := time.Now().Add(-24 * time.Hour)
-
-	result, err := s.db.Exec("DELETE FROM tracking_positions WHERE timestamp < ?", cutoff)
+	// Get the tracking config for this unit to determine trail length
+	config, err := s.GetConfig(unitUID)
 	if err != nil {
-		s.logger.Error("failed to cleanup old tracking data", "error", err)
-		return fmt.Errorf("failed to cleanup old tracking data: %w", err)
+		s.logger.Error("failed to get tracking config for cleanup", "error", err, "unit_uid", unitUID)
+		return fmt.Errorf("failed to get tracking config: %w", err)
+	}
+
+	if !config.Enabled {
+		return nil // Skip cleanup if tracking is disabled
+	}
+
+	// Keep only the most recent positions based on trail length
+	query := `DELETE FROM tracking_positions
+			  WHERE unit_uid = ?
+			  AND id NOT IN (
+				  SELECT id FROM tracking_positions
+				  WHERE unit_uid = ?
+				  ORDER BY timestamp DESC
+				  LIMIT ?
+			  )`
+
+	result, err := s.db.Exec(query, unitUID, unitUID, config.TrailLength)
+	if err != nil {
+		s.logger.Error("failed to cleanup tracking data for unit", "error", err, "unit_uid", unitUID)
+		return fmt.Errorf("failed to cleanup tracking data: %w", err)
 	}
 
 	rowsAffected, _ := result.RowsAffected()
-	s.logger.Info("cleaned up old tracking data", "rows_deleted", rowsAffected, "cutoff", cutoff)
+	s.logger.Debug("cleaned up tracking data for unit", "unit_uid", unitUID, "rows_deleted", rowsAffected, "trail_length", config.TrailLength)
 
 	return nil
 }

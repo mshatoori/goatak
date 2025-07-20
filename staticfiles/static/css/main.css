@@ -210,15 +210,16 @@ div.info {
 
 .tracking-trail-popup {
   min-width: 200px;
+  text-align: start;
 }
 
 .tracking-trail-popup h6 {
-  margin-bottom: 0.5rem;
+  /* margin-bottom: 0.5rem; */
   color: #333;
 }
 
 .tracking-trail-popup p {
-  margin-bottom: 0.25rem;
+  /* margin-bottom: 0.25rem; */
   font-size: 0.875rem;
 }
 
