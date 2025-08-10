@@ -65,6 +65,7 @@ Vue.component("UnitDetails", {
         parent_uid: this.item.parent_uid || "",
         parent_callsign: this.item.parent_callsign || "",
         isNew: this.item.isNew || false, // Include isNew flag
+        stale_duration: 24, // Default duration in hours
       };
 
       console.log("Editing Data:", this.editingData); // Added log
@@ -92,7 +93,19 @@ Vue.component("UnitDetails", {
     saveEditing: function () {
       // Update the item with the edited data
       for (const key in this.editingData) {
-        this.item[key] = this.editingData[key];
+        if (key !== "stale_duration") {
+          this.item[key] = this.editingData[key];
+        }
+      }
+
+      // Calculate stale_time from last_seen + duration (in hours)
+      if (this.editingData.stale_duration) {
+        const lastSeen = new Date(this.item.last_seen || new Date());
+        const staleDurationMs =
+          this.editingData.stale_duration * 60 * 60 * 1000; // Convert hours to milliseconds
+        this.item.stale_time = new Date(
+          lastSeen.getTime() + staleDurationMs
+        ).toISOString();
       }
 
       this.item["type"] = "a-" + this.item["aff"] + "-" + this.item.subtype;
@@ -382,6 +395,22 @@ Vue.component("UnitDetails", {
                 rows="3"
                 v-model="editingData.text"
               ></textarea>
+            </div>
+          </div>
+          <div class="form-group row mb-3">
+            <label for="edit-stale-duration" class="col-sm-4 col-form-label"
+              >مدت انقضا (ساعت)</label
+            >
+            <div class="col-sm-8">
+              <input
+                type="number"
+                class="form-control"
+                id="edit-stale-duration"
+                v-model.number="editingData.stale_duration"
+                min="1"
+                max="168"
+                step="1"
+              />
             </div>
           </div>
           <div class="form-check mb-3">
