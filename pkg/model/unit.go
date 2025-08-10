@@ -27,10 +27,14 @@ type Item struct {
 	uid      string
 	class    string
 	online   bool
-	lastSeen time.Time
-	local    bool
-	send     bool
-	track    []*Pos
+	lastSeen       time.Time
+	local          bool
+	send           bool
+	sendMode       string
+	selectedSubnet string
+	selectedUrn    int32
+	selectedIP     string
+	track          []*Pos
 	msg      *cot.CotMessage
 	lastSent time.Time
 }
@@ -142,6 +146,85 @@ func (i *Item) IsSend() bool {
 	return i.send
 }
 
+func (i *Item) SetSendMode(sendMode string) {
+	i.mx.Lock()
+	defer i.mx.Unlock()
+	i.sendMode = sendMode
+	// Update legacy send field for backward compatibility
+	i.send = sendMode != "none" && sendMode != ""
+}
+
+func (i *Item) GetSendMode() string {
+	i.mx.RLock()
+	defer i.mx.RUnlock()
+	
+	// For backward compatibility, if sendMode is empty but send is true, return "broadcast"
+	if i.sendMode == "" && i.send {
+		return "broadcast"
+	}
+	// If sendMode is empty and send is false, return "none"
+	if i.sendMode == "" && !i.send {
+		return "none"
+	}
+	return i.sendMode
+}
+
+func (i *Item) SetSelectedSubnet(subnet string) {
+	i.mx.Lock()
+	defer i.mx.Unlock()
+	i.selectedSubnet = subnet
+}
+
+func (i *Item) GetSelectedSubnet() string {
+	i.mx.RLock()
+	defer i.mx.RUnlock()
+	return i.selectedSubnet
+}
+
+func (i *Item) SetSelectedUrn(urn int32) {
+	i.mx.Lock()
+	defer i.mx.Unlock()
+	i.selectedUrn = urn
+}
+
+func (i *Item) GetSelectedUrn() int32 {
+	i.mx.RLock()
+	defer i.mx.RUnlock()
+	return i.selectedUrn
+}
+
+func (i *Item) SetSelectedIP(ip string) {
+	i.mx.Lock()
+	defer i.mx.Unlock()
+	i.selectedIP = ip
+}
+
+func (i *Item) GetSelectedIP() string {
+	i.mx.RLock()
+	defer i.mx.RUnlock()
+	return i.selectedIP
+}
+
+// UpdateSendFromMode updates the legacy send field based on sendMode for backward compatibility
+func (i *Item) UpdateSendFromMode() {
+	i.mx.Lock()
+	defer i.mx.Unlock()
+	i.send = i.sendMode != "none" && i.sendMode != ""
+}
+
+// UpdateSendModeFromSend updates sendMode based on legacy send field for backward compatibility
+func (i *Item) UpdateSendModeFromSend() {
+	i.mx.Lock()
+	defer i.mx.Unlock()
+	if i.sendMode == "" {
+		if i.send {
+			i.sendMode = "broadcast"
+		} else {
+			i.sendMode = "none"
+		}
+	}
+}
+
 func (i *Item) ShouldSend() bool {
 	i.mx.RLock()
 	defer i.mx.RUnlock()
@@ -208,15 +291,19 @@ func FromMsg(msg *cot.CotMessage) *Item {
 	}
 
 	i := &Item{
-		mx:       sync.RWMutex{},
-		uid:      msg.GetUID(),
-		class:    cls,
-		lastSeen: time.Now(),
-		online:   true,
-		local:    false,
-		send:     false,
-		track:    nil,
-		msg:      msg,
+		mx:             sync.RWMutex{},
+		uid:            msg.GetUID(),
+		class:          cls,
+		lastSeen:       time.Now(),
+		online:         true,
+		local:          false,
+		send:           false,
+		sendMode:       "none", // Default to "none"
+		selectedSubnet: "",
+		selectedUrn:    0,
+		selectedIP:     "",
+		track:          nil,
+		msg:            msg,
 	}
 
 	if i.class == UNIT || i.class == CONTACT {

@@ -1044,6 +1044,46 @@ func (app *App) SendMsg(msg *cotproto.TakMessage) {
 	}
 }
 
+// SendMsgToDestination sends a message to a specific destination using the RabbitFlow pattern
+func (app *App) SendMsgToDestination(msg *cotproto.TakMessage, dest model.SendItemDest) error {
+	app.logger.Debug("sending to specific destination", "dest", dest)
+	
+	// Find the RabbitFlow
+	var rabbitmq *client.RabbitFlow
+	for _, flow := range app.flows {
+		if flow.GetType() == "Rabbit" {
+			rabbitmq = flow.(*client.RabbitFlow)
+			break
+		}
+	}
+
+	if rabbitmq == nil {
+		return fmt.Errorf("no RabbitFlow found")
+	}
+
+	// Save current destinations
+	prevDest := rabbitmq.Destinations
+
+	// Set new destination
+	destinations := make([]model.SendItemDest, 1)
+	destinations[0] = dest
+	rabbitmq.Destinations = destinations
+
+	// Send the message
+	err := rabbitmq.SendCot(msg)
+
+	// Restore original destinations
+	rabbitmq.Destinations = prevDest
+
+	if err != nil {
+		app.logger.Error("destination send error", "error", err, "dest", dest)
+		return err
+	}
+
+	app.logger.Debug("successfully sent to destination", "dest", dest)
+	return nil
+}
+
 func (app *App) ProcessEvent(msg *cot.CotMessage) {
 	for _, prc := range app.eventProcessors {
 		if cot.MatchAnyPattern(msg.GetType(), prc.include...) {

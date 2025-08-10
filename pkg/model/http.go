@@ -40,6 +40,10 @@ type WebUnit struct {
 	ParentUID      string            `json:"parent_uid"`
 	Local          bool              `json:"local"`
 	Send           bool              `json:"send"`
+	SendMode       string            `json:"send_mode"`
+	SelectedSubnet string            `json:"selected_subnet"`
+	SelectedUrn    int32             `json:"selected_urn"`
+	SelectedIP     string            `json:"selected_ip"`
 	Missions       []string          `json:"missions"`
 	IPAddress      string            `json:"ip_address"`
 	URN            int32             `json:"urn"`
@@ -181,6 +185,10 @@ func (i *Item) ToWeb() *WebUnit {
 		Missions:       msg.GetDetail().GetDestMission(),
 		Local:          i.local,
 		Send:           i.send,
+		SendMode:       i.GetSendMode(),
+		SelectedSubnet: i.GetSelectedSubnet(),
+		SelectedUrn:    i.GetSelectedUrn(),
+		SelectedIP:     i.GetSelectedIP(),
 		Text:           msg.GetDetail().GetFirst("remarks").GetText(),
 		TakVersion:     "",
 		Status:         "",

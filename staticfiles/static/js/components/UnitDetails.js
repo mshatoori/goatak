@@ -8,6 +8,7 @@ Vue.component("UnitDetails", {
       editing: false,
       editingData: null,
       sharedState: store.state,
+      availableDestinations: null,
     };
   },
   mounted: function () {
@@ -34,10 +35,22 @@ Vue.component("UnitDetails", {
     getUnitName: function (u) {
       let res = u.callsign || "no name";
       if (u.parent_uid === this.config.uid) {
-        if (u.send === true) {
-          res = "+ " + res;
-        } else {
-          res = "* " + res;
+        // Use sendMode for visual indicators, fallback to send for backward compatibility
+        const sendMode = u.sendMode || (u.send ? "broadcast" : "none");
+        switch (sendMode) {
+          case "broadcast":
+            res = "+ " + res;
+            break;
+          case "subnet":
+            res = "~ " + res;
+            break;
+          case "direct":
+            res = "→ " + res;
+            break;
+          case "none":
+          default:
+            res = "* " + res;
+            break;
         }
       }
       return res;
@@ -60,7 +73,11 @@ Vue.component("UnitDetails", {
         lat: this.item.lat,
         lon: this.item.lon,
         text: this.item.text || "",
-        send: this.item.send || false,
+        send: this.item.send || false, // Keep for backward compatibility
+        sendMode: this.item.sendMode || (this.item.send ? "broadcast" : "none"),
+        selectedSubnet: this.item.selectedSubnet || "",
+        selectedUrn: this.item.selectedUrn || "",
+        selectedIpAddress: this.item.selectedIpAddress || "",
         web_sensor: this.item.web_sensor || "",
         parent_uid: this.item.parent_uid || "",
         parent_callsign: this.item.parent_callsign || "",
@@ -78,6 +95,9 @@ Vue.component("UnitDetails", {
       } else {
         this.editingData.root_sidc = this.item.root_sidc;
       }
+
+      // Fetch destinations data when starting to edit
+      this.fetchDestinations();
 
       this.editing = true;
       console.log("editing set to:", this.editing); // Added log
@@ -97,6 +117,11 @@ Vue.component("UnitDetails", {
           this.item[key] = this.editingData[key];
         }
       }
+
+      // Update send field for backward compatibility
+      this.item.send = this.editingData.sendMode === "broadcast" ||
+                      this.editingData.sendMode === "subnet" ||
+                      this.editingData.sendMode === "direct";
 
       // Calculate stale_time from last_seen + duration (in hours)
       if (this.editingData.stale_duration) {
@@ -128,6 +153,30 @@ Vue.component("UnitDetails", {
       this.editingData.root_sidc = this.getSidc(code);
       this.editingData.subtype = code;
     },
+    // Fetch destinations from API
+    fetchDestinations: function () {
+      fetch(window.baseUrl + "destinations")
+        .then(response => response.json())
+        .then(data => {
+          this.availableDestinations = data;
+        })
+        .catch(error => {
+          console.error("Error fetching destinations:", error);
+          this.availableDestinations = { subnets: [], contacts: [] };
+        });
+    },
+    // Handle URN selection to populate IP options
+    onUrnSelected: function () {
+      if (this.editingData.selectedUrn && this.availableContacts) {
+        const selectedContact = this.availableContacts.find(
+          contact => contact.urn.toString() === this.editingData.selectedUrn
+        );
+        if (selectedContact) {
+          // Reset IP selection when URN changes
+          this.editingData.selectedIpAddress = "";
+        }
+      }
+    },
   },
   computed: {
     renderedItem: function () {
@@ -142,6 +191,45 @@ Vue.component("UnitDetails", {
     },
     isContact: function () {
       return this.item && this.item.category === "contact";
+    },
+    availableSubnets: function () {
+      // Use ownAddresses as subnet options for broadcast to own networks
+      return this.availableDestinations ? this.availableDestinations.ownAddresses || [] : [];
+    },
+    availableContacts: function () {
+      // Group directDestinations by URN to create contact list
+      if (!this.availableDestinations || !this.availableDestinations.directDestinations) {
+        return [];
+      }
+      
+      const contactMap = new Map();
+      this.availableDestinations.directDestinations.forEach(dest => {
+        const urn = dest.urn.toString();
+        if (!contactMap.has(urn)) {
+          contactMap.set(urn, {
+            urn: dest.urn,
+            callsign: dest.name,
+            ip_address: dest.ip
+          });
+        } else {
+          // Append additional IPs
+          const existing = contactMap.get(urn);
+          existing.ip_address += "," + dest.ip;
+        }
+      });
+      
+      return Array.from(contactMap.values());
+    },
+    availableIps: function () {
+      if (this.editingData && this.editingData.selectedUrn && this.availableContacts) {
+        const selectedContact = this.availableContacts.find(
+          contact => contact.urn.toString() === this.editingData.selectedUrn
+        );
+        if (selectedContact && selectedContact.ip_address) {
+          return selectedContact.ip_address.split(",");
+        }
+      }
+      return [];
     },
   },
   template: html`
@@ -413,14 +501,128 @@ Vue.component("UnitDetails", {
               />
             </div>
           </div>
-          <div class="form-check mb-3">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              id="edit-send"
-              v-model="editingData.send"
-            />
-            <label class="form-check-label" for="edit-send"> ارسال </label>
+          <!-- Enhanced Destination Selection -->
+          <div class="form-group row mb-3">
+            <label class="col-sm-4 col-form-label">حالت ارسال</label>
+            <div class="col-sm-8">
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="sendMode"
+                  id="sendModeNone"
+                  value="none"
+                  v-model="editingData.sendMode"
+                />
+                <label class="form-check-label" for="sendModeNone">
+                  عدم ارسال
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="sendMode"
+                  id="sendModeBroadcast"
+                  value="broadcast"
+                  v-model="editingData.sendMode"
+                />
+                <label class="form-check-label" for="sendModeBroadcast">
+                  پخش عمومی
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="sendMode"
+                  id="sendModeSubnet"
+                  value="subnet"
+                  v-model="editingData.sendMode"
+                />
+                <label class="form-check-label" for="sendModeSubnet">
+                  ارسال به زیرشبکه
+                </label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="sendMode"
+                  id="sendModeDirect"
+                  value="direct"
+                  v-model="editingData.sendMode"
+                />
+                <label class="form-check-label" for="sendModeDirect">
+                  ارسال مستقیم
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subnet Selection (shown when sendMode === 'subnet') -->
+          <div class="form-group row mb-3" v-if="editingData.sendMode === 'subnet'">
+            <label for="edit-subnet" class="col-sm-4 col-form-label">زیرشبکه</label>
+            <div class="col-sm-8">
+              <select
+                class="form-select"
+                id="edit-subnet"
+                v-model="editingData.selectedSubnet"
+              >
+                <option value="" disabled>زیرشبکه را انتخاب کنید</option>
+                <option
+                  v-for="subnet in availableSubnets"
+                  :key="subnet"
+                  :value="subnet"
+                >
+                  {{ subnet }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Direct Destination Selection (shown when sendMode === 'direct') -->
+          <div v-if="editingData.sendMode === 'direct'">
+            <div class="form-group row mb-3">
+              <label for="edit-urn" class="col-sm-4 col-form-label">URN (مخاطب)</label>
+              <div class="col-sm-8">
+                <select
+                  class="form-select"
+                  id="edit-urn"
+                  v-model="editingData.selectedUrn"
+                  @change="onUrnSelected"
+                >
+                  <option value="" disabled>URN را انتخاب کنید</option>
+                  <option
+                    v-for="contact in availableContacts"
+                    :key="contact.urn"
+                    :value="contact.urn"
+                  >
+                    {{ contact.urn }} ({{ contact.callsign }})
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group row mb-3">
+              <label for="edit-ip" class="col-sm-4 col-form-label">آدرس IP</label>
+              <div class="col-sm-8">
+                <select
+                  class="form-select"
+                  id="edit-ip"
+                  v-model="editingData.selectedIpAddress"
+                  :disabled="!editingData.selectedUrn"
+                >
+                  <option value="" disabled>IP را انتخاب کنید</option>
+                  <option
+                    v-for="ip in availableIps"
+                    :key="ip"
+                    :value="ip"
+                  >
+                    {{ ip }}
+                  </option>
+                </select>
+              </div>
+            </div>
           </div>
           <div class="d-flex justify-content-end">
             <button

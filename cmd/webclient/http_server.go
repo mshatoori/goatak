@@ -91,6 +91,9 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.OPTIONS("/stack", optionsHandler())
 	srv.GET("/stack", getStackHandler())
 
+	srv.OPTIONS("/destinations", optionsHandler())
+	srv.GET("/destinations", getDestinationsHandler(app))
+
 	srv.RendererTemplateLeftDelim = "[["
 	srv.RendererTemplateRightDelim = "]]"
 
@@ -396,23 +399,59 @@ func addItemHandler(app *App) air.Handler {
 
 		msg := wu.ToMsg()
 
-		if wu.Send {
+		// Handle different send modes
+		switch wu.SendMode {
+		case "broadcast":
 			app.SendMsg(msg.GetTakMessage())
+		case "subnet":
+			if wu.SelectedSubnet != "" {
+				dest := model.SendItemDest{
+					Addr: wu.SelectedSubnet,
+					URN:  16777215, // Broadcast URN for subnet
+				}
+				if err := app.SendMsgToDestination(msg.GetTakMessage(), dest); err != nil {
+					app.logger.Error("failed to send to subnet", "error", err, "subnet", wu.SelectedSubnet)
+				}
+			}
+		case "direct":
+			if wu.SelectedIP != "" && wu.SelectedUrn != 0 {
+				dest := model.SendItemDest{
+					Addr: wu.SelectedIP,
+					URN:  int(wu.SelectedUrn),
+				}
+				if err := app.SendMsgToDestination(msg.GetTakMessage(), dest); err != nil {
+					app.logger.Error("failed to send to direct destination", "error", err, "ip", wu.SelectedIP, "urn", wu.SelectedUrn)
+				}
+			}
+		case "none":
+			// Don't send, local only
+		default:
+			// For backward compatibility, if SendMode is not set but Send is true, use broadcast
+			if wu.Send {
+				app.SendMsg(msg.GetTakMessage())
+			}
 		}
 
-		app.logger.Error("ERRRRRR", "msg", msg == nil)
-		app.logger.Error("ORRRRRR", "wu", wu)
+		app.logger.Debug("processing item", "uid", msg.GetUID(), "sendMode", wu.SendMode)
 
 		var u *model.Item
 		if u = app.items.Get(msg.GetUID()); u != nil {
 			u.Update(msg)
 			u.SetSend(wu.Send)
+			u.SetSendMode(wu.SendMode)
+			u.SetSelectedSubnet(wu.SelectedSubnet)
+			u.SetSelectedUrn(wu.SelectedUrn)
+			u.SetSelectedIP(wu.SelectedIP)
 			app.items.Store(u)
 			app.changeCb.AddMessage(u)
 		} else {
 			u = model.FromMsg(msg)
 			u.SetLocal(true)
 			u.SetSend(wu.Send)
+			u.SetSendMode(wu.SendMode)
+			u.SetSelectedSubnet(wu.SelectedSubnet)
+			u.SetSelectedUrn(wu.SelectedUrn)
+			u.SetSelectedIP(wu.SelectedIP)
 			app.items.Store(u)
 			app.changeCb.AddMessage(u)
 		}
@@ -786,5 +825,92 @@ func getNavigationDistanceHandler(app *App) air.Handler {
 			"success": true,
 			"data":    result,
 		})
+	}
+}
+
+func getDestinationsHandler(app *App) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		setCORSHeaders(res)
+
+		if app.dnsServiceProxy == nil {
+			res.Status = 500
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "DNS service proxy not initialized",
+			})
+		}
+
+		// Get our own addresses for subnet broadcast options
+		ownAddresses := make([]string, 0)
+		ownAddr, err := app.dnsServiceProxy.GetAddressByUrn(int(app.urn))
+		if err == nil && ownAddr != nil && ownAddr.IPAddress != nil {
+			// Handle comma-separated IP addresses pattern
+			ips := strings.Split(*ownAddr.IPAddress, ",")
+			for _, ip := range ips {
+				ip = strings.TrimSpace(ip)
+				if ip != "" {
+					ownAddresses = append(ownAddresses, ip)
+				}
+			}
+		}
+
+		// Get all addresses for direct destination options
+		directDestinations := make([]map[string]any, 0)
+		addresses, err := app.dnsServiceProxy.GetAddresses()
+		if err == nil {
+			// Group IP addresses by URN, excluding our own URN
+			urnToIPs := make(map[int32][]string)
+			urnToName := make(map[int32]string)
+
+			for _, addr := range addresses {
+				if addr.Urn == nil || addr.IPAddress == nil {
+					continue
+				}
+
+				// Skip addresses with our URN
+				if *addr.Urn == app.urn {
+					continue
+				}
+
+				urn := *addr.Urn
+				ip := *addr.IPAddress
+
+				// Handle comma-separated IP addresses pattern
+				ips := strings.Split(ip, ",")
+				for _, singleIP := range ips {
+					singleIP = strings.TrimSpace(singleIP)
+					if singleIP != "" {
+						urnToIPs[urn] = append(urnToIPs[urn], singleIP)
+					}
+				}
+
+				// Use UnitName if available, otherwise use URN as name
+				if addr.UnitName != nil && *addr.UnitName != "" {
+					urnToName[urn] = *addr.UnitName
+				} else if _, exists := urnToName[urn]; !exists {
+					urnToName[urn] = fmt.Sprintf("Node-%d", urn)
+				}
+			}
+
+			// Create direct destination entries for each unique URN
+			for urn, ips := range urnToIPs {
+				name := urnToName[urn]
+				for _, ip := range ips {
+					directDestinations = append(directDestinations, map[string]any{
+						"urn":  urn,
+						"ip":   ip,
+						"name": name,
+					})
+				}
+			}
+		}
+
+		response := map[string]any{
+			"success":            true,
+			"ownAddresses":       ownAddresses,
+			"directDestinations": directDestinations,
+		}
+
+		return res.WriteJSON(response)
 	}
 }
