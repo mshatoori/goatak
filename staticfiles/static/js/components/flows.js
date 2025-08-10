@@ -18,8 +18,12 @@ Vue.component("FlowsModal", {
       console.log("Creating Flow:", this.newFlow);
       store.createFlow({ ...this.newFlow });
     },
-    removeFlow: function () {
-      // TODO:
+    removeFlow: function (uid) {
+      console.log("Removing Flow:", uid);
+      store.removeFlow(uid).catch((error) => {
+        console.error("Failed to remove flow:", error);
+        // TODO: add user notification here if needed
+      });
     },
     flowDirectionText: function (direction) {
       switch (direction) {
@@ -86,6 +90,14 @@ Vue.component("FlowsModal", {
                   <span class="badge rounded-pill bg-success"
                     >{{ flowDirectionText(flow.direction) }}</span
                   >
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger ms-2"
+                    v-on:click="removeFlow(flow.uid)"
+                    title="حذف ارتباط"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
                 </div>
               </div>
               <div
@@ -93,7 +105,7 @@ Vue.component("FlowsModal", {
                 v-if="flow.type === 'Rabbit'"
               >
                 <div>
-                  <h5 class="mb-1">شناسه: {{ flow.uid }}</h5>
+                  <h5 class="mb-1">نام: {{ flow.title }}</h5>
                   <div>آدرس: {{ flow.addr }}</div>
                   <div v-if="flow.direction == 1 || flow.direction == 3">
                     صف دریافت: {{ flow.recvQueue }}
@@ -109,6 +121,14 @@ Vue.component("FlowsModal", {
                   <span class="badge rounded-pill bg-success"
                     >{{ flowDirectionText(flow.direction) }}</span
                   >
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-danger ms-2"
+                    v-on:click="removeFlow(flow.uid)"
+                    title="حذف ارتباط"
+                  >
+                    <i class="bi bi-trash"></i>
+                  </button>
                 </div>
               </div>
             </div>

@@ -128,6 +128,7 @@ func (m *CoTEventMutator) mutate(event *cotproto.CotEvent) bool {
 }
 
 type FlowConfig struct {
+	UID          string `mapstructure:"uid,omitempty"`
 	Title        string `mapstructure:"title,omitempty"`
 	Addr         string `mapstructure:"address"`
 	Port         int    `mapstructure:"port"`
@@ -523,7 +524,7 @@ func (app *App) loadFlowsFromDatabaseOrConfig(db *sql.DB, dbExists bool) {
 
 func (app *App) loadFlowsFromDatabase(db *sql.DB) {
 	app.logger.Info("Loading flows from database")
-	rows, err := db.Query("SELECT title, addr, port, type, direction, sendExchange, recvQueue FROM flows")
+	rows, err := db.Query("SELECT uid, title, addr, port, type, direction, sendExchange, recvQueue FROM flows")
 	if err != nil {
 		app.logger.Error("failed to query flows from database", "error", err)
 		app.loadFlowsFromConfig()
@@ -533,7 +534,7 @@ func (app *App) loadFlowsFromDatabase(db *sql.DB) {
 
 	for rows.Next() {
 		var flowConfig FlowConfig
-		if err := rows.Scan(&flowConfig.Title, &flowConfig.Addr, &flowConfig.Port, &flowConfig.Type, &flowConfig.Direction, &flowConfig.SendExchange, &flowConfig.RecvQueue); err != nil {
+		if err := rows.Scan(&flowConfig.UID, &flowConfig.Title, &flowConfig.Addr, &flowConfig.Port, &flowConfig.Type, &flowConfig.Direction, &flowConfig.SendExchange, &flowConfig.RecvQueue); err != nil {
 			app.logger.Error("failed to scan flow row", "error", err)
 			continue
 		}
@@ -814,8 +815,10 @@ func (app *App) addFlow(flowConfig FlowConfig) {
 	switch strings.ToLower(flowConfig.Type) {
 	case "udp":
 		udpConfig := &client.UDPFlowConfig{
-			Addr: flowConfig.Addr,
-			Port: flowConfig.Port,
+			UID:   flowConfig.UID,
+			Title: flowConfig.Title,
+			Addr:  flowConfig.Addr,
+			Port:  flowConfig.Port,
 		}
 
 		// Use direction from config if specified, otherwise fall back to legacy logic
@@ -835,6 +838,7 @@ func (app *App) addFlow(flowConfig FlowConfig) {
 		app.flows = append(app.flows, client.NewUDPFlow(udpConfig))
 	case "rabbit":
 		rabbitConfig := &client.RabbitFlowConfig{
+			UID:          flowConfig.UID,
 			Title:        flowConfig.Title,
 			Addr:         flowConfig.Addr,
 			SendExchange: flowConfig.SendExchange,

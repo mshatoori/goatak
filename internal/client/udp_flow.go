@@ -37,7 +37,7 @@ type CoTFlow interface {
 type UDPFlowConfig struct {
 	// User         *model.User
 	// Serial       string
-	// UID          string
+	UID string
 	// IsClient     bool
 	MessageCb func(msg *cot.CotMessage)
 	// RemoveCb     func(ch ClientHandler)
@@ -73,6 +73,11 @@ type UDPFlow struct {
 }
 
 func NewUDPFlow(config *UDPFlowConfig) *UDPFlow {
+	uid := uuid.NewString()
+	if len(config.UID) > 0 {
+		uid = config.UID
+	}
+
 	addr, err := net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", config.Addr, config.Port))
 	if err != nil {
 		return nil
@@ -83,7 +88,7 @@ func NewUDPFlow(config *UDPFlowConfig) *UDPFlow {
 		sendChan:  make(chan []byte, 10),
 		Addr:      addr,
 		Direction: config.Direction,
-		UID:       uuid.NewString(),
+		UID:       uid,
 		Title:     config.Title,
 	}
 

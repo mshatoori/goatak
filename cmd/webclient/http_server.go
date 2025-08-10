@@ -715,7 +715,7 @@ func deleteFlowHandler(app *App) air.Handler {
 					app.logger.Error("failed to delete flow from database", "error", err, "flow", flowConfig)
 					// Continue without deleting from DB, but log the error
 				} else {
-					app.logger.Info("Flow deleted from database", "flow", flowConfig)
+					app.logger.Info("Flow deleted from database", "flow", flowConfig, "uid", uid)
 				}
 			}
 		}

@@ -193,7 +193,20 @@ var store = {
   },
 
   removeFlow: function (uid) {
-    // TODO
+    return fetch(window.baseUrl + "/flows/" + uid, {
+      method: "DELETE",
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.text();
+        } else {
+          throw new Error(`Failed to delete flow: ${response.status}`);
+        }
+      })
+      .then(() => {
+        // Refresh the flows list after successful deletion
+        return this.fetchFlows();
+      });
   },
 
   createShape(shapeData, parentUID, parentCallsign, callback) {

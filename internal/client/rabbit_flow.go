@@ -30,7 +30,7 @@ const (
 type RabbitFlowConfig struct {
 	// User         *model.User
 	// Serial       string
-	// UID          string
+	UID string
 	// IsClient     bool
 	MessageCb func(msg *cot.CotMessage)
 	// RemoveCb     func(ch ClientHandler)
@@ -113,13 +113,18 @@ func (r *RabbitReader) Read(b []byte) (n int, err error) {
 }
 
 func NewRabbitFlow(config *RabbitFlowConfig) *RabbitFlow {
+	uid := uuid.NewString()
+	if len(config.UID) > 0 {
+		uid = config.UID
+	}
+
 	m := &RabbitFlow{
 		active:       1,
 		logger:       slog.Default(),
 		sendChan:     make(chan []byte, 10),
 		Addr:         config.Addr,
 		Direction:    config.Direction,
-		UID:          uuid.NewString(),
+		UID:          uid,
 		sendExchange: config.SendExchange,
 		recvQueue:    config.RecvQueue,
 		Title:        config.Title,
