@@ -585,14 +585,15 @@ func sendItemHandler(app *App) air.Handler {
 			return nil
 		}
 
-		item.GetMsg().GetTakMessage().CotEvent.Detail.Contact = &cotproto.Contact{
-			Endpoint: "*:-1:stcp",
-			Callsign: app.callsign,
-			ClientInfo: &cotproto.ClientInfo{
-				IpAddress: app.ipAddress,
-				Urn:       app.urn,
-			},
-		}
+		// TODO: REMOVE
+		// item.GetMsg().GetTakMessage().CotEvent.Detail.Contact = &cotproto.Contact{
+		// 	Endpoint: "*:-1:stcp",
+		// 	Callsign: app.callsign,
+		// 	ClientInfo: &cotproto.ClientInfo{
+		// 		IpAddress: app.ipAddress,
+		// 		Urn:       app.urn,
+		// 	},
+		// }
 
 		err := rabbitmq.SendCot(item.GetMsg().GetTakMessage())
 		if err != nil {

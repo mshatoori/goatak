@@ -1,6 +1,6 @@
-1. Fix infomarkers -> Just remove them! only on hover. Maybe add settings to have them.
+1. ~~Fix infomarkers -> Just remove them! only on hover. Maybe add settings to have them.~~
 1. Update details sidebar
-   1. Last Seen (stale) -> Add stale time to details edit sidebar
+   1. ~~Last Seen (stale) -> Add stale time to details edit sidebar~~
    1. Add URN in Contact info
 1. Proxy service (relay/router)
 1. Chat also should be debugged for this
@@ -13,7 +13,7 @@
 1. UI (Navbar for Tools)
 1. Measure between points
 
-1. Use DNS Service for getting contacts
+1. ~~Use DNS Service for getting contacts~~
 
 1. Send To Modal have 2 tabs:
 
