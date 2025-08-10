@@ -46,7 +46,7 @@ func (s *DnsServiceProxy) GetAddresses() ([]NodeAddress, error) {
 }
 
 // GetAddressByUrn fetches an address by its URN.
-func (s *DnsServiceProxy) GetAddressByUrn(urn int) (*NodeAddress, error) {
+func (s *DnsServiceProxy) GetAddressesByUrn(urn int) ([]NodeAddress, error) {
 	url := fmt.Sprintf("%s/Address/urn/%d", s.baseURL, urn)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -63,12 +63,12 @@ func (s *DnsServiceProxy) GetAddressByUrn(urn int) (*NodeAddress, error) {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
 
-	var address NodeAddress
-	if err := json.Unmarshal(body, &address); err != nil {
+	var addresses []NodeAddress
+	if err := json.Unmarshal(body, &addresses); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal response body: %w", err)
 	}
 
-	return &address, nil
+	return addresses, nil
 }
 
 // GetAddressByIp fetches an address by its IP address.

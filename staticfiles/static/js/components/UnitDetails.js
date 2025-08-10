@@ -35,9 +35,9 @@ Vue.component("UnitDetails", {
     getUnitName: function (u) {
       let res = u.callsign || "no name";
       if (u.parent_uid === this.config.uid) {
-        // Use sendMode for visual indicators, fallback to send for backward compatibility
-        const sendMode = u.sendMode || (u.send ? "broadcast" : "none");
-        switch (sendMode) {
+        // Use send_mode for visual indicators, fallback to send for backward compatibility
+        const send_mode = u.send_mode || (u.send ? "broadcast" : "none");
+        switch (send_mode) {
           case "broadcast":
             res = "+ " + res;
             break;
@@ -74,7 +74,8 @@ Vue.component("UnitDetails", {
         lon: this.item.lon,
         text: this.item.text || "",
         send: this.item.send || false, // Keep for backward compatibility
-        sendMode: this.item.sendMode || (this.item.send ? "broadcast" : "none"),
+        send_mode:
+          this.item.send_mode || (this.item.send ? "broadcast" : "none"),
         selectedSubnet: this.item.selectedSubnet || "",
         selectedUrn: this.item.selectedUrn || "",
         selectedIpAddress: this.item.selectedIpAddress || "",
@@ -119,9 +120,10 @@ Vue.component("UnitDetails", {
       }
 
       // Update send field for backward compatibility
-      this.item.send = this.editingData.sendMode === "broadcast" ||
-                      this.editingData.sendMode === "subnet" ||
-                      this.editingData.sendMode === "direct";
+      this.item.send =
+        this.editingData.send_mode === "broadcast" ||
+        this.editingData.send_mode === "subnet" ||
+        this.editingData.send_mode === "direct";
 
       // Calculate stale_time from last_seen + duration (in hours)
       if (this.editingData.stale_duration) {
@@ -156,11 +158,11 @@ Vue.component("UnitDetails", {
     // Fetch destinations from API
     fetchDestinations: function () {
       fetch(window.baseUrl + "destinations")
-        .then(response => response.json())
-        .then(data => {
+        .then((response) => response.json())
+        .then((data) => {
           this.availableDestinations = data;
         })
-        .catch(error => {
+        .catch((error) => {
           console.error("Error fetching destinations:", error);
           this.availableDestinations = { subnets: [], contacts: [] };
         });
@@ -169,7 +171,7 @@ Vue.component("UnitDetails", {
     onUrnSelected: function () {
       if (this.editingData.selectedUrn && this.availableContacts) {
         const selectedContact = this.availableContacts.find(
-          contact => contact.urn.toString() === this.editingData.selectedUrn
+          (contact) => contact.urn.toString() === this.editingData.selectedUrn
         );
         if (selectedContact) {
           // Reset IP selection when URN changes
@@ -194,22 +196,27 @@ Vue.component("UnitDetails", {
     },
     availableSubnets: function () {
       // Use ownAddresses as subnet options for broadcast to own networks
-      return this.availableDestinations ? this.availableDestinations.ownAddresses || [] : [];
+      return this.availableDestinations
+        ? this.availableDestinations.ownAddresses || []
+        : [];
     },
     availableContacts: function () {
       // Group directDestinations by URN to create contact list
-      if (!this.availableDestinations || !this.availableDestinations.directDestinations) {
+      if (
+        !this.availableDestinations ||
+        !this.availableDestinations.directDestinations
+      ) {
         return [];
       }
-      
+
       const contactMap = new Map();
-      this.availableDestinations.directDestinations.forEach(dest => {
+      this.availableDestinations.directDestinations.forEach((dest) => {
         const urn = dest.urn.toString();
         if (!contactMap.has(urn)) {
           contactMap.set(urn, {
             urn: dest.urn,
             callsign: dest.name,
-            ip_address: dest.ip
+            ip_address: dest.ip,
           });
         } else {
           // Append additional IPs
@@ -217,13 +224,22 @@ Vue.component("UnitDetails", {
           existing.ip_address += "," + dest.ip;
         }
       });
-      
+
       return Array.from(contactMap.values());
     },
     availableIps: function () {
-      if (this.editingData && this.editingData.selectedUrn && this.availableContacts) {
+      console.log(
+        this.editingData,
+        this.editingData.selectedUrn,
+        this.availableContacts
+      );
+      if (
+        this.editingData &&
+        this.editingData.selectedUrn &&
+        this.availableContacts
+      ) {
         const selectedContact = this.availableContacts.find(
-          contact => contact.urn.toString() === this.editingData.selectedUrn
+          (contact) => contact.urn == this.editingData.selectedUrn
         );
         if (selectedContact && selectedContact.ip_address) {
           return selectedContact.ip_address.split(",");
@@ -509,12 +525,12 @@ Vue.component("UnitDetails", {
                 <input
                   class="form-check-input"
                   type="radio"
-                  name="sendMode"
-                  id="sendModeNone"
+                  name="send_mode"
+                  id="send_modeNone"
                   value="none"
-                  v-model="editingData.sendMode"
+                  v-model="editingData.send_mode"
                 />
-                <label class="form-check-label" for="sendModeNone">
+                <label class="form-check-label" for="send_modeNone">
                   عدم ارسال
                 </label>
               </div>
@@ -522,12 +538,12 @@ Vue.component("UnitDetails", {
                 <input
                   class="form-check-input"
                   type="radio"
-                  name="sendMode"
-                  id="sendModeBroadcast"
+                  name="send_mode"
+                  id="send_modeBroadcast"
                   value="broadcast"
-                  v-model="editingData.sendMode"
+                  v-model="editingData.send_mode"
                 />
-                <label class="form-check-label" for="sendModeBroadcast">
+                <label class="form-check-label" for="send_modeBroadcast">
                   پخش عمومی
                 </label>
               </div>
@@ -535,12 +551,12 @@ Vue.component("UnitDetails", {
                 <input
                   class="form-check-input"
                   type="radio"
-                  name="sendMode"
-                  id="sendModeSubnet"
+                  name="send_mode"
+                  id="send_modeSubnet"
                   value="subnet"
-                  v-model="editingData.sendMode"
+                  v-model="editingData.send_mode"
                 />
-                <label class="form-check-label" for="sendModeSubnet">
+                <label class="form-check-label" for="send_modeSubnet">
                   ارسال به زیرشبکه
                 </label>
               </div>
@@ -548,21 +564,26 @@ Vue.component("UnitDetails", {
                 <input
                   class="form-check-input"
                   type="radio"
-                  name="sendMode"
-                  id="sendModeDirect"
+                  name="send_mode"
+                  id="send_modeDirect"
                   value="direct"
-                  v-model="editingData.sendMode"
+                  v-model="editingData.send_mode"
                 />
-                <label class="form-check-label" for="sendModeDirect">
+                <label class="form-check-label" for="send_modeDirect">
                   ارسال مستقیم
                 </label>
               </div>
             </div>
           </div>
 
-          <!-- Subnet Selection (shown when sendMode === 'subnet') -->
-          <div class="form-group row mb-3" v-if="editingData.sendMode === 'subnet'">
-            <label for="edit-subnet" class="col-sm-4 col-form-label">زیرشبکه</label>
+          <!-- Subnet Selection (shown when send_mode === 'subnet') -->
+          <div
+            class="form-group row mb-3"
+            v-if="editingData.send_mode === 'subnet'"
+          >
+            <label for="edit-subnet" class="col-sm-4 col-form-label"
+              >زیرشبکه</label
+            >
             <div class="col-sm-8">
               <select
                 class="form-select"
@@ -581,10 +602,12 @@ Vue.component("UnitDetails", {
             </div>
           </div>
 
-          <!-- Direct Destination Selection (shown when sendMode === 'direct') -->
-          <div v-if="editingData.sendMode === 'direct'">
+          <!-- Direct Destination Selection (shown when send_mode === 'direct') -->
+          <div v-if="editingData.send_mode === 'direct'">
             <div class="form-group row mb-3">
-              <label for="edit-urn" class="col-sm-4 col-form-label">URN (مخاطب)</label>
+              <label for="edit-urn" class="col-sm-4 col-form-label"
+                >URN (مخاطب)</label
+              >
               <div class="col-sm-8">
                 <select
                   class="form-select"
@@ -604,7 +627,9 @@ Vue.component("UnitDetails", {
               </div>
             </div>
             <div class="form-group row mb-3">
-              <label for="edit-ip" class="col-sm-4 col-form-label">آدرس IP</label>
+              <label for="edit-ip" class="col-sm-4 col-form-label"
+                >آدرس IP</label
+              >
               <div class="col-sm-8">
                 <select
                   class="form-select"
@@ -613,11 +638,7 @@ Vue.component("UnitDetails", {
                   :disabled="!editingData.selectedUrn"
                 >
                   <option value="" disabled>IP را انتخاب کنید</option>
-                  <option
-                    v-for="ip in availableIps"
-                    :key="ip"
-                    :value="ip"
-                  >
+                  <option v-for="ip in availableIps" :key="ip" :value="ip">
                     {{ ip }}
                   </option>
                 </select>

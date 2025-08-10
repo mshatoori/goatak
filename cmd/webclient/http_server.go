@@ -842,14 +842,20 @@ func getDestinationsHandler(app *App) air.Handler {
 
 		// Get our own addresses for subnet broadcast options
 		ownAddresses := make([]string, 0)
-		ownAddr, err := app.dnsServiceProxy.GetAddressByUrn(int(app.urn))
-		if err == nil && ownAddr != nil && ownAddr.IPAddress != nil {
-			// Handle comma-separated IP addresses pattern
-			ips := strings.Split(*ownAddr.IPAddress, ",")
-			for _, ip := range ips {
-				ip = strings.TrimSpace(ip)
-				if ip != "" {
-					ownAddresses = append(ownAddresses, ip)
+		ownAddrs, err := app.dnsServiceProxy.GetAddressesByUrn(int(app.urn))
+		app.logger.Info("GET ADDR BY URN", "ownAddrs", ownAddrs, "err", err)
+		if err == nil && ownAddrs != nil {
+			// Handle multiple addresses returned for our URN
+			for _, addr := range ownAddrs {
+				if addr.IPAddress != nil {
+					// Handle comma-separated IP addresses pattern
+					ips := strings.Split(*addr.IPAddress, ",")
+					for _, ip := range ips {
+						ip = strings.TrimSpace(ip)
+						if ip != "" {
+							ownAddresses = append(ownAddresses, ip)
+						}
+					}
 				}
 			}
 		}

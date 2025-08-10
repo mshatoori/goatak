@@ -66,3 +66,7 @@
 1. ~~Show name of polygons and routes on map~~
 
 1. ~~Use TransmissionProxy or host network for connecting to external sensors~~
+
+1. Persian Dates
+1. Stale input
+1. Remove Public Broadcast
