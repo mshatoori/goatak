@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/adrianmo/go-nmea"
@@ -25,6 +26,7 @@ const (
 )
 
 type RadarSensor struct {
+	active   int32
 	Addr     string
 	Conn     net.Conn
 	Logger   *slog.Logger
@@ -49,6 +51,7 @@ func NewRadarSensor(sensorModel *model.SensorModel, logger *slog.Logger) *RadarS
 		Interval: time.Second * time.Duration(sensorModel.Interval),
 		Ctx:      context.Background(),
 		Title:    sensorModel.Title,
+		active:   0,
 	}
 }
 
@@ -74,6 +77,8 @@ func (sensor *RadarSensor) Initialize() bool {
 
 	sensor.Ctx, sensor.cancelFunc = context.WithCancel(sensor.Ctx)
 	sensor.sendBuffer = make(map[int]*cotproto.CotEvent)
+
+	sensor.active = 1
 
 	return true
 }
@@ -104,8 +109,12 @@ func (sensor *RadarSensor) sendLoop(cb func(data any)) {
 }
 
 func (sensor *RadarSensor) Start(cb func(data any)) {
-	go sensor.sendLoop(cb)
-	go sensor.handleRead()
+	if sensor.active == 1 {
+		go sensor.sendLoop(cb)
+		go sensor.handleRead()
+	} else {
+		sensor.Logger.Error(fmt.Sprintf("RadarSensor inactive!"))
+	}
 }
 
 func (sensor *RadarSensor) handleRead() {
@@ -190,6 +199,12 @@ func (sensor *RadarSensor) GetUID() string {
 }
 
 func (sensor *RadarSensor) Stop() {
-	sensor.Conn.Close()
-	sensor.cancelFunc()
+	if atomic.CompareAndSwapInt32(&h.active, 1, 0) {
+		sensor.Conn.Close()
+		sensor.cancelFunc()
+	}
+}
+
+func (sensor *RadarSensor) IsActive() bool {
+	return atomic.LoadInt32(&sensor.active) == 1
 }
