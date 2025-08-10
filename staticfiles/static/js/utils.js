@@ -283,22 +283,6 @@ function distBea(p1, p2) {
   );
 }
 
-function formatDt(str) {
-  // Renamed the second dt to formatDt
-  let d = new Date(Date.parse(str));
-  return (
-    ("0" + d.getDate()).slice(-2) +
-    "-" +
-    ("0" + (d.getMonth() + 1)).slice(-2) +
-    "-" +
-    d.getFullYear() +
-    " " +
-    ("0" + d.getHours()).slice(-2) +
-    ":" +
-    ("0" + d.getMinutes()).slice(-2)
-  );
-}
-
 function sp(v) {
   return (v * 3.6).toFixed(1);
 }
@@ -412,7 +396,6 @@ Vue.prototype.Utils = {
   printCoords: printCoords,
   latlng: latlng,
   distBea: distBea,
-  dt: formatDt, // Renamed the second dt to formatDt
   sp: sp,
   toUri: toUri,
   uuidv4: uuidv4,

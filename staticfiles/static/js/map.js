@@ -276,18 +276,19 @@ let app = new Vue({
       console.log("config updated");
       const markerInfo = L.divIcon({
         className: "my-marker-info",
-        html:
-          "<div>" +
-          this.config.callsign +
-          "<br>" +
-          this.config.ip_address +
-          "<br>" +
-          this.config.urn +
-          "</div>",
+        html: "<div>" + this.config.callsign + "</div>",
         iconSize: null,
       });
 
-      this.myInfoMarker.setIcon(markerInfo);
+      if (!this.myInfoMarker) {
+        this.myInfoMarker = L.marker([this.config.lat, this.config.lon], {
+          icon: markerInfo,
+        });
+        this.myInfoMarker.addTo(this.map);
+      } else {
+        this.myInfoMarker.setLatLng([this.config.lat, this.config.lon]);
+        this.myInfoMarker.setIcon(markerInfo);
+      }
     },
     getConfig: function () {
       let vm = this;
@@ -310,30 +311,8 @@ let app = new Vue({
               })
             );
             vm.me.addTo(vm.map);
-            // vm.me.bindTooltip(popup(vm.me));
 
-            const markerInfo = L.divIcon({
-              className: "my-marker-info",
-              html:
-                "<div>" +
-                vm.config.callsign +
-                "<br>" +
-                vm.config.ip_address +
-                "<br>" +
-                vm.config.urn +
-                "</div>",
-              iconSize: null,
-            });
-
-            if (!vm.myInfoMarker) {
-              vm.myInfoMarker = L.marker([data.lat, data.lon], {
-                icon: markerInfo,
-              });
-              vm.myInfoMarker.addTo(vm.map);
-            }
-
-            vm.myInfoMarker.setLatLng([data.lat, data.lon]);
-            vm.myInfoMarker.setIcon(markerInfo);
+            vm.configUpdated();
           }
 
           layers = L.control.layers({}, null, { hideSingleBase: true });
@@ -926,8 +905,8 @@ let app = new Vue({
       unit.marker.addTo(this.getItemOverlay(unit));
 
       let markerHtml = "<div>" + unit.callsign;
-      if (unit.ip_address) markerHtml += "<br>" + unit.ip_address;
-      if (unit.urn) markerHtml += "<br>" + unit.urn;
+      // if (unit.ip_address) markerHtml += "<br>" + unit.ip_address;
+      if (unit.urn) markerHtml += "<br>URN#" + unit.urn;
       markerHtml += "</div>";
 
       const markerInfo = L.divIcon({
@@ -945,9 +924,6 @@ let app = new Vue({
       }
       unit.marker.setLatLng([unit.lat, unit.lon]);
       unit.marker.bindTooltip(popup(unit));
-
-      // if (this.navigationTarget && unit.uid === this.navigationTarget.uid)
-      //   this.updateNavigationLine();
     },
 
     setActiveItemUid: function (uid, follow) {
@@ -1166,45 +1142,6 @@ let app = new Vue({
         this.mode = "map";
         return;
       }
-      // if (this.modeIs("redx")) {
-      //   this.addOrMove("redx", e.latlng, "/static/icons/x.png");
-      //   return;
-      // }
-      // if (this.modeIs("dp1")) {
-      //   this.addOrMove("dp1", e.latlng, "/static/icons/spoi_icon.png");
-      //   return;
-      // }
-      // if (this.modeIs("me")) {
-      //   this.config.lat = e.latlng.lat;
-      //   this.config.lon = e.latlng.lng;
-      //   this.me.setLatLng(e.latlng);
-      //   const markerInfo = L.divIcon({
-      //     className: "my-marker-info",
-      //     html:
-      //       "<div>" +
-      //       this.config.callsign +
-      //       "<br>" +
-      //       this.config.ip_address +
-      //       "<br>" +
-      //       this.config.urn +
-      //       "</div>",
-      //     iconSize: null,
-      //   });
-      //   if (!this.myInfoMarker) {
-      //     this.myInfoMarker = L.marker([e.latlng.lat, e.latlng.lon], {
-      //       icon: markerInfo,
-      //     });
-      //     this.myInfoMarker.addTo(this.map);
-      //   }
-      //   this.myInfoMarker.setLatLng(e.latlng);
-      //   this.myInfoMarker.setIcon(markerInfo);
-      //   const requestOptions = {
-      //     method: "POST",
-      //     headers: { "Content-Type": "application/json" },
-      //     body: JSON.stringify({ lat: e.latlng.lat, lon: e.latlng.lng }),
-      //   };
-      //   fetch(window.baseUrl + " /pos", requestOptions);
-      // }
     },
 
     checkEmergency: function (

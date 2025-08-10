@@ -12,22 +12,22 @@ div.info {
 }
 
 .leaflet-marker-icon.my-marker-info.leaflet-zoom-animated.leaflet-interactive {
-  color: rgba(255, 0, 0, 0.3);
+  color: rgba(255, 0, 0, 0.8);
   font-family: "Vazirmatn", sans-serif;
   font-size: 13px;
-  margin-left: 16px;
-  margin-top: 10px;
-  border: black 1px solid;
+  margin-left: 5px;
+  margin-top: 5px;
+  /* border: black 1px solid;
   border-radius: 4px;
-  padding: 2px;
-  background: rgba(245, 222, 179, 0.3);
+  padding: 2px; 
+  background: rgba(245, 222, 179, 0.3); */
   width: max-content;
 }
 
-.leaflet-marker-icon.my-marker-info.leaflet-zoom-animated.leaflet-interactive:hover {
+/* .leaflet-marker-icon.my-marker-info.leaflet-zoom-animated.leaflet-interactive:hover {
   background: rgba(245, 222, 179, 0.8);
   color: rgba(255, 0, 0, 0.8);
-}
+} */
 
 .nav-item {
   border: 1px gray solid;
