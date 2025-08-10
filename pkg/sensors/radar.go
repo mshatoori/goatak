@@ -199,7 +199,7 @@ func (sensor *RadarSensor) GetUID() string {
 }
 
 func (sensor *RadarSensor) Stop() {
-	if atomic.CompareAndSwapInt32(&h.active, 1, 0) {
+	if atomic.CompareAndSwapInt32(&sensor.active, 1, 0) {
 		sensor.Conn.Close()
 		sensor.cancelFunc()
 	}
