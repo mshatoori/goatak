@@ -27,5 +27,14 @@ document.write(
   '<script src="/static/js/components/CasevacDetails.js"></script>'
 );
 
+// Load PredicateComponent (needed by FilterComponent)
+document.write('<script src="/static/js/components/PredicateComponent.js"></script>');
+
+// Load FilterComponent (needed by ResendingPanel)
+document.write('<script src="/static/js/components/FilterComponent.js"></script>');
+
+// Load ResendingPanel component
+document.write('<script src="/static/js/components/ResendingPanel.js"></script>');
+
 // Load the ItemDetails router component last
 document.write('<script src="/static/js/components/item.details.js"></script>');
