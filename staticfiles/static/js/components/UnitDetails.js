@@ -76,9 +76,9 @@ Vue.component("UnitDetails", {
         send: this.item.send || false, // Keep for backward compatibility
         send_mode:
           this.item.send_mode || (this.item.send ? "broadcast" : "none"),
-        selectedSubnet: this.item.selectedSubnet || "",
-        selectedUrn: this.item.selectedUrn || "",
-        selectedIpAddress: this.item.selectedIpAddress || "",
+        selected_subnet: this.item.selected_subnet || "",
+        selected_urn: this.item.selected_urn || "",
+        selected_ip: this.item.selected_ip || "",
         web_sensor: this.item.web_sensor || "",
         parent_uid: this.item.parent_uid || "",
         parent_callsign: this.item.parent_callsign || "",
@@ -138,6 +138,8 @@ Vue.component("UnitDetails", {
       this.item["type"] = "a-" + this.item["aff"] + "-" + this.item.subtype;
       this.item["sidc"] = store.sidcFromType(this.item["type"]);
 
+      this.item["selected_urn"] = parseInt(this.item["selected_urn"]) || 0;
+
       this.editing = false;
       this.editingData = null;
 
@@ -169,13 +171,13 @@ Vue.component("UnitDetails", {
     },
     // Handle URN selection to populate IP options
     onUrnSelected: function () {
-      if (this.editingData.selectedUrn && this.availableContacts) {
+      if (this.editingData.selected_urn && this.availableContacts) {
         const selectedContact = this.availableContacts.find(
-          (contact) => contact.urn.toString() === this.editingData.selectedUrn
+          (contact) => contact.urn.toString() === this.editingData.selected_urn
         );
         if (selectedContact) {
           // Reset IP selection when URN changes
-          this.editingData.selectedIpAddress = "";
+          this.editingData.selected_ip = "";
         }
       }
     },
@@ -230,16 +232,16 @@ Vue.component("UnitDetails", {
     availableIps: function () {
       console.log(
         this.editingData,
-        this.editingData.selectedUrn,
+        this.editingData.selected_urn,
         this.availableContacts
       );
       if (
         this.editingData &&
-        this.editingData.selectedUrn &&
+        this.editingData.selected_urn &&
         this.availableContacts
       ) {
         const selectedContact = this.availableContacts.find(
-          (contact) => contact.urn == this.editingData.selectedUrn
+          (contact) => contact.urn == this.editingData.selected_urn
         );
         if (selectedContact && selectedContact.ip_address) {
           return selectedContact.ip_address.split(",");
@@ -588,7 +590,7 @@ Vue.component("UnitDetails", {
               <select
                 class="form-select"
                 id="edit-subnet"
-                v-model="editingData.selectedSubnet"
+                v-model="editingData.selected_subnet"
               >
                 <option value="" disabled>زیرشبکه را انتخاب کنید</option>
                 <option
@@ -612,7 +614,7 @@ Vue.component("UnitDetails", {
                 <select
                   class="form-select"
                   id="edit-urn"
-                  v-model="editingData.selectedUrn"
+                  v-model="editingData.selected_urn"
                   @change="onUrnSelected"
                 >
                   <option value="" disabled>URN را انتخاب کنید</option>
@@ -634,8 +636,8 @@ Vue.component("UnitDetails", {
                 <select
                   class="form-select"
                   id="edit-ip"
-                  v-model="editingData.selectedIpAddress"
-                  :disabled="!editingData.selectedUrn"
+                  v-model="editingData.selected_ip"
+                  :disabled="!editingData.selected_urn"
                 >
                   <option value="" disabled>IP را انتخاب کنید</option>
                   <option v-for="ip in availableIps" :key="ip" :value="ip">
