@@ -8,40 +8,14 @@ import (
 
 	"github.com/aofei/air"
 	"github.com/google/uuid"
+	"github.com/kdudkov/goatak/internal/resend"
 )
 
-// ResendConfigDTO represents the data transfer object for ResendConfig
-type ResendConfigDTO struct {
-	UID         string             `json:"uid"`
-	Name        string             `json:"name"`
-	Enabled     bool               `json:"enabled"`
-	Source      *NetworkAddressDTO `json:"source,omitempty"`
-	Destination *NetworkAddressDTO `json:"destination"`
-	Filters     []FilterDTO        `json:"filters"`
-	CreatedAt   time.Time          `json:"created_at"`
-	UpdatedAt   time.Time          `json:"updated_at"`
-}
-
-// NetworkAddressDTO represents the data transfer object for NetworkAddress
-type NetworkAddressDTO struct {
-	Type       string `json:"type"` // "node" or "subnet"
-	IP         string `json:"ip"`
-	URN        int32  `json:"urn,omitempty"`
-	SubnetMask string `json:"subnet_mask,omitempty"` // Only for subnet type
-}
-
-// FilterDTO represents the data transfer object for Filter
-type FilterDTO struct {
-	ID         string         `json:"id"`
-	Predicates []PredicateDTO `json:"predicates"`
-}
-
-// PredicateDTO represents the data transfer object for Predicate
-type PredicateDTO struct {
-	ID    string `json:"id"`
-	Type  string `json:"type"` // "item_type", "side", "unit_type", "location_boundary"
-	Value string `json:"value"`
-}
+// Use the DTOs from the internal resend package
+type ResendConfigDTO = resend.ResendConfigDTO
+type NetworkAddressDTO = resend.NetworkAddressDTO
+type FilterDTO = resend.FilterDTO
+type PredicateDTO = resend.PredicateDTO
 
 // getResendConfigsHandler handles GET /api/resend/configs - Get all resend configurations
 func getResendConfigsHandler(app *App) air.Handler {
@@ -56,14 +30,15 @@ func getResendConfigsHandler(app *App) air.Handler {
 			})
 		}
 
-		configs, err := loadResendConfigsFromDatabase(app.DB)
-		if err != nil {
-			res.Status = 500
+		if app.resendService == nil {
+			res.Status = 503
 			return res.WriteJSON(map[string]any{
 				"success": false,
-				"error":   fmt.Sprintf("Failed to load resend configs: %v", err),
+				"error":   "Resend service not available",
 			})
 		}
+
+		configs := app.resendService.GetAllConfigurations()
 
 		return res.WriteJSON(map[string]any{
 			"success": true,
@@ -94,19 +69,20 @@ func getResendConfigHandler(app *App) air.Handler {
 			})
 		}
 
-		config, err := loadResendConfigFromDatabase(app.DB, uid)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				res.Status = 404
-				return res.WriteJSON(map[string]any{
-					"success": false,
-					"error":   "Resend config not found",
-				})
-			}
-			res.Status = 500
+		if app.resendService == nil {
+			res.Status = 503
 			return res.WriteJSON(map[string]any{
 				"success": false,
-				"error":   fmt.Sprintf("Failed to load resend config: %v", err),
+				"error":   "Resend service not available",
+			})
+		}
+
+		config, exists := app.resendService.GetConfiguration(uid)
+		if !exists {
+			res.Status = 404
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Resend config not found",
 			})
 		}
 
@@ -185,6 +161,11 @@ func createResendConfigHandler(app *App) air.Handler {
 
 		app.logger.Info("Resend config created", "uid", configDTO.UID, "name", configDTO.Name)
 
+		// Update resend service cache
+		if app.resendService != nil {
+			app.resendService.UpdateConfiguration(&configDTO)
+		}
+
 		return res.WriteJSON(map[string]any{
 			"success": true,
 			"data":    configDTO,
@@ -253,23 +234,18 @@ func updateResendConfigHandler(app *App) air.Handler {
 		}
 
 		// Check if config exists
-		_, err := loadResendConfigFromDatabase(app.DB, uid)
-		if err != nil {
-			if err == sql.ErrNoRows {
+		if app.resendService != nil {
+			_, exists := app.resendService.GetConfiguration(uid)
+			if !exists {
 				res.Status = 404
 				return res.WriteJSON(map[string]any{
 					"success": false,
 					"error":   "Resend config not found",
 				})
 			}
-			res.Status = 500
-			return res.WriteJSON(map[string]any{
-				"success": false,
-				"error":   fmt.Sprintf("Failed to check resend config: %v", err),
-			})
 		}
 
-		err = updateResendConfigInDatabase(app.DB, &configDTO)
+		err := updateResendConfigInDatabase(app.DB, &configDTO)
 		if err != nil {
 			res.Status = 500
 			return res.WriteJSON(map[string]any{
@@ -279,6 +255,11 @@ func updateResendConfigHandler(app *App) air.Handler {
 		}
 
 		app.logger.Info("Resend config updated", "uid", configDTO.UID, "name", configDTO.Name)
+
+		// Update resend service cache
+		if app.resendService != nil {
+			app.resendService.UpdateConfiguration(&configDTO)
+		}
 
 		return res.WriteJSON(map[string]any{
 			"success": true,
@@ -310,23 +291,26 @@ func deleteResendConfigHandler(app *App) air.Handler {
 		}
 
 		// Check if config exists
-		config, err := loadResendConfigFromDatabase(app.DB, uid)
-		if err != nil {
-			if err == sql.ErrNoRows {
+		var config *ResendConfigDTO
+		if app.resendService != nil {
+			var exists bool
+			config, exists = app.resendService.GetConfiguration(uid)
+			if !exists {
 				res.Status = 404
 				return res.WriteJSON(map[string]any{
 					"success": false,
 					"error":   "Resend config not found",
 				})
 			}
-			res.Status = 500
+		} else {
+			res.Status = 503
 			return res.WriteJSON(map[string]any{
 				"success": false,
-				"error":   fmt.Sprintf("Failed to check resend config: %v", err),
+				"error":   "Resend service not available",
 			})
 		}
 
-		err = deleteResendConfigFromDatabase(app.DB, uid)
+		err := deleteResendConfigFromDatabase(app.DB, uid)
 		if err != nil {
 			res.Status = 500
 			return res.WriteJSON(map[string]any{
@@ -336,6 +320,11 @@ func deleteResendConfigHandler(app *App) air.Handler {
 		}
 
 		app.logger.Info("Resend config deleted", "uid", uid, "name", config.Name)
+
+		// Remove from resend service cache
+		if app.resendService != nil {
+			app.resendService.DeleteConfiguration(uid)
+		}
 
 		return res.WriteJSON(map[string]any{
 			"success": true,

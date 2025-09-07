@@ -330,4 +330,4 @@ func (s *ResendService) Start() error {
 }
 ```
 
-This simplified architecture provides a clean, maintainable solution for implementing the resend functionality while integrating seamlessly with the existing GoATAK system.
+This architecture provides a clean, maintainable solution for implementing the resend functionality while integrating seamlessly with the existing GoATAK system.

@@ -34,6 +34,11 @@ func (app *App) InitMessageProcessors() {
 	app.AddEventProcessor("items", app.saveItemProcessor, "a-", "b-", "u-")
 	app.AddEventProcessor("tracking", app.trackingProcessor, "a-")
 
+	// Add resend processor LAST to avoid interference with other processors
+	if app.resendService != nil {
+		app.AddEventProcessor("resend", app.resendProcessor, ".-")
+	}
+
 	// u-rb-a Range & Bearing – Line
 	// u-r-b-c-c R&b - Circle
 	// u-d-c-c Drawing Shapes – Circle
@@ -199,4 +204,13 @@ func (app *App) trackingProcessor(msg *cot.CotMessage) {
 
 	// Broadcast tracking update to WebSocket clients
 	app.broadcastTrackingUpdate(msg.GetUID(), msg.GetCallsign(), lat, lon, alt, speed, course)
+}
+
+func (app *App) resendProcessor(msg *cot.CotMessage) {
+	if app.resendService == nil {
+		return
+	}
+
+	// Process the message through the resend service
+	app.resendService.ProcessMessage(msg)
 }

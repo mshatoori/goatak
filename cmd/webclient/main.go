@@ -20,6 +20,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/kdudkov/goatak/internal/resend"
 	"github.com/kdudkov/goatak/internal/tracking"
 	"github.com/kdudkov/goatak/internal/wshandler"
 	_ "modernc.org/sqlite"
@@ -98,6 +99,7 @@ type App struct {
 	DB              *sql.DB
 	trackingService *tracking.TrackingService
 	dnsServiceProxy *dnsproxy.DnsServiceProxy
+	resendService   *resend.ResendService
 }
 
 type CoTEventMutator struct {
@@ -287,6 +289,20 @@ func initFlowsSensorsAndConfig(app *App) {
 
 		// Start periodic cleanup of old tracking data
 		go app.startTrackingCleanup()
+	}
+
+	// Initialize resend service
+	app.resendService = resend.NewResendService(&resend.Config{
+		DB:                app.DB,
+		Logger:            app.logger.With("service", "resend"),
+		SendToDestination: app.SendMsgToDestination,
+	})
+	
+	// Start the resend service
+	if err := app.resendService.Start(); err != nil {
+		app.logger.Error("Failed to start resend service", "error", err)
+	} else {
+		app.logger.Info("Resend service started successfully")
 	}
 }
 
