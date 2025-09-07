@@ -480,20 +480,23 @@ func loadResendConfigsFromDatabase(db *sql.DB) ([]ResendConfigDTO, error) {
 		var sourceURN sql.NullInt32
 		var destURN sql.NullInt32
 		var destSubnetMask sql.NullString
+		var destType, destIP string
+
+		// Initialize destination to avoid nil pointer dereference
+		config.Destination = &NetworkAddressDTO{}
 
 		err := rows.Scan(&config.UID, &config.Name, &config.Enabled,
 			&sourceType, &sourceIP, &sourceURN, &sourceSubnetMask,
-			&config.Destination.Type, &config.Destination.IP, &destURN, &destSubnetMask,
+			&destType, &destIP, &destURN, &destSubnetMask,
 			&config.CreatedAt, &config.UpdatedAt)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan config row: %w", err)
 		}
 
-		// Set up destination
-		config.Destination = &NetworkAddressDTO{
-			Type: config.Destination.Type,
-			IP:   config.Destination.IP,
-		}
+		// Set destination values
+		config.Destination.Type = destType
+		config.Destination.IP = destIP
+
 		if destURN.Valid {
 			config.Destination.URN = destURN.Int32
 		}
@@ -535,6 +538,10 @@ func loadResendConfigFromDatabase(db *sql.DB, uid string) (*ResendConfigDTO, err
 	var sourceURN sql.NullInt32
 	var destURN sql.NullInt32
 	var destSubnetMask sql.NullString
+	var destType, destIP string
+
+	// Initialize destination to avoid nil pointer dereference
+	config.Destination = &NetworkAddressDTO{}
 
 	row := db.QueryRow(`SELECT uid, name, enabled, source_type, source_ip, source_urn, source_subnet_mask,
 		destination_type, destination_ip, destination_urn, destination_subnet_mask, created_at, updated_at
@@ -542,17 +549,15 @@ func loadResendConfigFromDatabase(db *sql.DB, uid string) (*ResendConfigDTO, err
 
 	err := row.Scan(&config.UID, &config.Name, &config.Enabled,
 		&sourceType, &sourceIP, &sourceURN, &sourceSubnetMask,
-		&config.Destination.Type, &config.Destination.IP, &destURN, &destSubnetMask,
+		&destType, &destIP, &destURN, &destSubnetMask,
 		&config.CreatedAt, &config.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
 
-	// Set up destination
-	config.Destination = &NetworkAddressDTO{
-		Type: config.Destination.Type,
-		IP:   config.Destination.IP,
-	}
+	// Set destination values
+	config.Destination.Type = destType
+	config.Destination.IP = destIP
 	if destURN.Valid {
 		config.Destination.URN = destURN.Int32
 	}
