@@ -2,423 +2,373 @@
 
 ## 1. Overview
 
-The **Resending Feature** is a prototype front-end implementation designed to manage message resending configurations within the GoATAK tactical system. This feature allows users to define complex filtering rules and destination mappings for automatically resending specific messages based on customizable criteria.
+The **Resending Feature** is a fully functional implementation that manages message resending configurations within the GoATAK tactical system. This feature allows users to define complex filtering rules and destination mappings for automatically resending specific CoT (Cursor on Target) messages based on customizable criteria.
 
 ### Purpose
 
 The Resending feature serves as a message routing and filtering system that enables:
-- **Selective Message Forwarding**: Route specific message types to designated outgoing flows
-- **Dynamic Filtering**: Apply complex filter logic using multiple predicates
-- **Configuration Management**: Create, edit, and manage multiple resending configurations
-- **Protocol Flexibility**: Support for various outgoing flow types (TCP, UDP, RabbitMQ)
+- **Selective Message Forwarding**: Route specific message types to designated network destinations
+- **Dynamic Filtering**: Apply complex filter logic using multiple predicates with AND/OR combinations
+- **Configuration Management**: Create, edit, and manage multiple resending configurations through a REST API
+- **Network Flexibility**: Support for unicast (individual nodes) and broadcast (subnet) destinations
+- **Real-time Processing**: Automatic message processing based on configured rules
 
-### Current Status
+### Architecture
 
-This is a **non-functional prototype** implemented purely in the front-end using Vue.js components with mock data. The feature demonstrates the complete user interface and workflow without backend integration.
+The implementation consists of:
+- **Backend API**: RESTful endpoints for CRUD operations on resend configurations
+- **Database Persistence**: SQLite-based storage with proper schema and relationships
+- **Frontend Components**: Vue.js components for configuration management
+- **Real-time Integration**: Seamless integration with the existing GoATAK message processing pipeline
 
-## 2. Architecture
+## 2. Backend API
 
-### Component Hierarchy
+### Endpoints
 
-```
-ResendingPanel (Main Container)
-├── FilterComponent (Per Filter)
-│   └── PredicateComponent (Per Predicate)
-└── Mock Data Management
-```
+#### GET `/api/resend/configs`
+Retrieves all resend configurations.
 
-### Integration Points
-
-- **Sidebar Integration**: Added as a new tab in the main sidebar (`sidebar.js`)
-- **Component Loading**: Managed through `index.js` for proper dependency ordering
-- **Styling**: Utilizes Bootstrap 5 classes and Persian RTL support
-- **State Management**: Uses Vue.js reactive data and event communication
-
-### File Organization
-
-```
-staticfiles/static/js/components/
-├── ResendingPanel.js       # Main panel component
-├── FilterComponent.js      # Filter management
-├── PredicateComponent.js   # Individual predicate logic
-├── sidebar.js             # Sidebar integration
-└── index.js              # Component loading order
-```
-
-## 3. Components Documentation
-
-### ResendingPanel.js
-
-**Purpose**: Main container component for managing resending configurations.
-
-#### Props
-- `config`: System configuration object
-- `map`: Leaflet map instance
-
-#### Data Properties
-```javascript
+**Response:**
+```json
 {
-  sharedState: store.state,           // Global state reference
-  editing: false,                     // Edit mode flag
-  editingData: null,                  // Current editing configuration
-  editingIndex: -1,                   // Index of editing configuration
-  resendingConfigs: [...],           // Array of configurations
-  outgoingFlows: [...],              // Available destination flows
-  newFilter: {...},                   // New filter form data
-  showNewConfigForm: false,           // New config form visibility
-  nextConfigId: 3,                    // ID counter for new configs
-  nextFilterId: 4                     // ID counter for new filters
-}
-```
-
-#### Key Methods
-- [`addConfig()`](staticfiles/static/js/components/ResendingPanel.js:43): Initialize new configuration creation
-- [`editConfig(index)`](staticfiles/static/js/components/ResendingPanel.js:55): Start editing existing configuration
-- [`saveConfig()`](staticfiles/static/js/components/ResendingPanel.js:61): Save configuration changes
-- [`deleteConfig(index)`](staticfiles/static/js/components/ResendingPanel.js:79): Remove configuration with confirmation
-- [`addFilter()`](staticfiles/static/js/components/ResendingPanel.js:84): Add new filter to current configuration
-- [`deleteFilter(filterIndex)`](staticfiles/static/js/components/ResendingPanel.js:96): Remove filter from configuration
-
-### FilterComponent.js
-
-**Purpose**: Manages individual filters within a resending configuration.
-
-#### Props
-- `filter`: Filter object containing name and predicates
-- `polygons`: Available polygon boundaries for location predicates
-
-#### Data Properties
-```javascript
-{
-  editing: false,                     // Filter name edit mode
-  editingName: "",                    // Temporary name during editing
-  newPredicate: {...},               // New predicate form data
-  predicateTypes: [...]              // Available predicate types
-}
-```
-
-#### Events Emitted
-- `update-filter`: Emitted when filter data changes
-- `delete-filter`: Emitted when filter should be removed
-
-#### Key Methods
-- [`startEditing()`](staticfiles/static/js/components/FilterComponent.js:20): Begin filter name editing
-- [`saveFilterName()`](staticfiles/static/js/components/FilterComponent.js:28): Save filter name changes
-- [`addPredicate()`](staticfiles/static/js/components/FilterComponent.js:41): Add new predicate to filter
-- [`updatePredicate(updatedPredicate)`](staticfiles/static/js/components/FilterComponent.js:56): Update existing predicate
-- [`deletePredicate(predicateId)`](staticfiles/static/js/components/FilterComponent.js:68): Remove predicate from filter
-
-### PredicateComponent.js
-
-**Purpose**: Handles individual predicate editing and display within filters.
-
-#### Props
-- `predicate`: Predicate object with type and value
-- `polygons`: Available polygon boundaries
-
-#### Data Properties
-```javascript
-{
-  editing: false,                     // Predicate edit mode
-  editingData: {...},                // Temporary editing data
-  itemTypes: [...],                  // Available item types
-  sides: [...],                      // Available sides (friendly, hostile, etc.)
-  unitTypes: [...],                  // Available unit types (air, ground, etc.)
-  predicateTypes: [...]              // All predicate type definitions
-}
-```
-
-#### Computed Properties
-- [`predicateTypeLabel`](staticfiles/static/js/components/PredicateComponent.js:37): Human-readable type label
-- [`predicateValueLabel`](staticfiles/static/js/components/PredicateComponent.js:41): Human-readable value label
-- [`availableValues`](staticfiles/static/js/components/PredicateComponent.js:59): Dynamic value options based on type
-
-#### Events Emitted
-- `update-predicate`: Emitted when predicate changes
-- `delete-predicate`: Emitted when predicate should be removed
-
-## 4. Feature Specifications
-
-### Resending Configuration Structure
-
-```javascript
-{
-  id: Number,                         // Unique identifier
-  name: String,                       // User-defined configuration name
-  destination: String,                // Selected outgoing flow name
-  filters: [                          // Array of filter objects
+  "success": true,
+  "data": [
     {
-      id: Number,                     // Unique filter identifier
-      name: String,                   // User-defined filter name
-      predicates: [                   // Array of predicate objects
-        {
-          id: Number,                 // Unique predicate identifier
-          type: String,               // Predicate type
-          value: String               // Predicate value
-        }
-      ]
+      "uid": "config-uuid",
+      "name": "Configuration Name",
+      "enabled": true,
+      "destination": {
+        "type": "node",
+        "ip": "192.168.1.100",
+        "urn": 12345,
+        "subnet_mask": null
+      },
+      "filters": [...],
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
     }
   ]
 }
 ```
 
-### Filter Logic
+#### POST `/api/resend/configs`
+Creates a new resend configuration.
 
-- **Multiple Filters**: Each configuration can contain multiple filters
-- **Filter Combination**: Filters are evaluated with OR logic (any filter match triggers resending)
-- **Predicate Combination**: Within each filter, predicates are combined with AND logic (all must match)
+**Request Body:**
+```json
+{
+  "name": "New Configuration",
+  "enabled": true,
+  "destination": {
+    "type": "node",
+    "ip": "192.168.1.100",
+    "urn": 12345
+  },
+  "filters": []
+}
+```
+
+#### GET `/api/resend/configs/:uid`
+Retrieves a specific resend configuration by UID.
+
+#### PUT `/api/resend/configs/:uid`
+Updates an existing resend configuration.
+
+#### DELETE `/api/resend/configs/:uid`
+Deletes a resend configuration.
+
+### Data Structures
+
+#### ResendConfig
+```json
+{
+  "uid": "string (UUID)",
+  "name": "string (required)",
+  "enabled": "boolean",
+  "destination": "NetworkAddressDTO",
+  "filters": "FilterDTO[]",
+  "created_at": "timestamp",
+  "updated_at": "timestamp"
+}
+```
+
+#### NetworkAddressDTO
+```json
+{
+  "type": "node|subnet",
+  "ip": "string (required)",
+  "urn": "int32 (optional)",
+  "subnet_mask": "string (optional, for subnet type)"
+}
+```
+
+#### FilterDTO
+```json
+{
+  "id": "string",
+  "name": "string",
+  "predicates": "PredicateDTO[]"
+}
+```
+
+#### PredicateDTO
+```json
+{
+  "id": "string",
+  "type": "item_type|side|unit_type|location_boundary",
+  "value": "string"
+}
+```
+
+## 3. Database Schema
+
+### Tables
+
+#### `resend_configs`
+Main configuration table storing resend settings.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| uid | TEXT PRIMARY KEY | Unique identifier |
+| name | TEXT NOT NULL | Configuration name |
+| enabled | BOOLEAN | Whether config is active |
+| source_type | TEXT | Source address type |
+| source_ip | TEXT | Source IP address |
+| source_urn | INTEGER | Source URN |
+| source_subnet_mask | TEXT | Source subnet mask |
+| destination_type | TEXT NOT NULL | Destination type (node/subnet) |
+| destination_ip | TEXT NOT NULL | Destination IP |
+| destination_urn | INTEGER | Destination URN |
+| destination_subnet_mask | TEXT | Destination subnet mask |
+| created_at | DATETIME | Creation timestamp |
+| updated_at | DATETIME | Last update timestamp |
+
+#### `resend_filters`
+Filter definitions associated with configurations.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | TEXT PRIMARY KEY | Filter identifier |
+| config_uid | TEXT | Parent config UID (FK) |
+| FOREIGN KEY | (config_uid) REFERENCES resend_configs(uid) ON DELETE CASCADE |
+
+#### `resend_predicates`
+Individual predicates within filters.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| id | TEXT PRIMARY KEY | Predicate identifier |
+| filter_id | TEXT | Parent filter ID (FK) |
+| type | TEXT NOT NULL | Predicate type |
+| value | TEXT NOT NULL | Predicate value |
+| FOREIGN KEY | (filter_id) REFERENCES resend_filters(id) ON DELETE CASCADE |
+
+## 4. Frontend Components
+
+### ResendingPanel.vue
+
+**Purpose**: Main container component for managing resending configurations.
+
+#### Key Features
+- **CRUD Operations**: Create, read, update, delete configurations
+- **Real-time Sync**: Automatic synchronization with backend API
+- **Error Handling**: Comprehensive error display and user feedback
+- **Loading States**: Visual feedback during API operations
+- **Form Validation**: Client-side validation with server-side confirmation
+
+#### Methods
+- `loadResendConfigs()`: Fetches all configurations from API
+- `saveConfigToBackend()`: Persists configuration changes
+- `deleteConfigFromBackend()`: Removes configuration from backend
+- `addConfig()`: Initializes new configuration form
+- `editConfig()`: Loads existing configuration for editing
+
+### FilterComponent.vue
+
+**Purpose**: Manages individual filters within configurations.
+
+#### Features
+- **Dynamic Predicates**: Add/remove predicates within filters
+- **Inline Editing**: Edit filter names without modal dialogs
+- **Type Validation**: Ensures predicate types match available options
+- **Real-time Updates**: Immediate synchronization with parent component
+
+### PredicateComponent.vue
+
+**Purpose**: Handles individual predicate editing and display.
+
+#### Features
+- **Type Selection**: Dropdown for predicate types
+- **Value Options**: Dynamic value options based on predicate type
+- **Inline Editing**: Edit predicates without leaving the filter view
+- **Validation**: Ensures required fields are completed
+
+## 5. Filter Logic
+
+### Filter Evaluation
+- **Filter Level**: Filters within a configuration are combined with OR logic
+- **Predicate Level**: Predicates within a filter are combined with AND logic
+- **Evaluation Order**: All predicates in a filter must match for the filter to pass
 
 ### Predicate Types
 
 #### Item Type (`item_type`)
-Filters messages based on the type of tactical item:
-- `unit`: Military units and personnel
-- `drawing`: Map drawings and annotations
-- `contact`: Contact reports
-- `alert`: Alert and emergency messages
+Filters messages based on tactical item classification:
+- `unit`: Military units and personnel (CoT type starts with "a-")
+- `drawing`: Map drawings and annotations (CoT type starts with "u-d" or "b-m-d")
+- `contact`: Contact reports with endpoint information
+- `alert`: Alert messages (CoT type starts with "b-a-")
 
 #### Side (`side`)
 Filters messages based on military affiliation:
-- `friendly`: Allied forces
-- `hostile`: Enemy forces
-- `neutral`: Neutral entities
-- `unknown`: Unidentified entities
+- `friendly`: Allied forces (CoT type starts with "a-f-")
+- `hostile`: Enemy forces (CoT type starts with "a-h-")
+- `neutral`: Neutral entities (other "a-" types)
+- `unknown`: Unidentified entities (CoT type starts with "a-u-")
 
 #### Unit Type (`unit_type`)
-Filters messages based on operational domain:
-- `air`: Airborne units and aircraft
-- `ground`: Ground-based units and vehicles
-- `sea`: Naval and maritime units
-- `space`: Space-based assets
+Filters messages based on operational domain using MIL-STD-2525 battle dimensions:
+- `air`: Airborne units (battle dimension "a" or "A")
+- `ground`: Ground-based units (battle dimension "g" or "G")
+- `sea`: Naval units (battle dimension "s", "S", "n", or "N")
+- `space`: Space-based assets (battle dimension "p" or "P")
 
 #### Location Boundary (`location_boundary`)
 Filters messages based on geographic boundaries:
 - Uses polygon IDs from the map system
-- Matches against message coordinates
+- Matches against message coordinates (latitude/longitude)
 - Supports complex geographic filtering
 
-### Outgoing Flow Types
+## 6. Network Destinations
 
-The system supports multiple destination protocols:
-- **TCP**: Traditional TCP socket connections
-- **UDP**: UDP datagram connections  
-- **RabbitMQ**: Message queue integration
+### Destination Types
 
-## 5. UI/UX Details
-
-### Persian Language Implementation
-
-The entire interface is implemented in Persian (Farsi) with RTL (Right-to-Left) support:
-- All labels, buttons, and messages are in Persian
-- Proper RTL layout using Bootstrap RTL classes
-- Persian typography using Vazirmatn font family
-- Cultural appropriate confirmation dialogs
-
-### Bootstrap Styling
-
-The feature extensively uses Bootstrap 5 components:
-- **Cards**: For configuration and filter containers
-- **Forms**: For input fields and selectors
-- **Buttons**: With appropriate sizing and color schemes
-- **Badges**: For type indicators and status display
-- **Icons**: Bootstrap Icons for visual clarity
-
-### Responsive Design
-
-- **Flexible Layout**: Adapts to different screen sizes
-- **Grid System**: Uses Bootstrap grid for form layouts
-- **Mobile Friendly**: Touch-appropriate button sizes
-- **Collapsible Elements**: Sidebar integration with collapse support
-
-### User Interaction Patterns
-
-#### Configuration Management
-1. **View Mode**: List of existing configurations with basic info
-2. **Add Mode**: Form for creating new configurations
-3. **Edit Mode**: Inline editing of existing configurations
-4. **Delete Confirmation**: Safe deletion with user confirmation
-
-#### Filter Management
-1. **Inline Addition**: Quick filter addition with name input
-2. **Predicate Management**: Add/remove predicates within filters
-3. **Type-based Validation**: Dynamic value options based on predicate type
-
-#### Navigation Flow
-1. Sidebar tab activation
-2. Configuration list view
-3. Add/Edit configuration form
-4. Filter and predicate management
-5. Save/Cancel operations
-
-## 6. Integration Details
-
-### Sidebar Integration
-
-Added to [`sidebar.js`](staticfiles/static/js/components/sidebar.js:267) as a new tab:
-
-```javascript
-// Tab content area
-<div class="tab-pane fade" id="v-pills-resending">
-  <resending-panel :config="config" :map="map"></resending-panel>
-</div>
-
-// Tab button
-<button class="nav-link" id="v-pills-resending-tab" 
-        v-on:click="switchTab('resending')">
-  بازارسال
-</button>
+#### Node Destination (`node`)
+Sends messages to a specific network node:
+```json
+{
+  "type": "node",
+  "ip": "192.168.1.100",
+  "urn": 12345
+}
 ```
 
-### Component Loading Order
+#### Subnet Destination (`subnet`)
+Broadcasts messages to an entire subnet:
+```json
+{
+  "type": "subnet",
+  "ip": "192.168.1.0",
+  "subnet_mask": "255.255.255.0"
+}
+```
 
-Managed in [`index.js`](staticfiles/static/js/components/index.js:30) with proper dependency resolution:
+## 7. Integration Details
+
+### HTTP Server Integration
+Routes are registered in `cmd/webclient/http_server.go`:
+
+```go
+srv.OPTIONS("/api/resend/configs", optionsHandler())
+srv.GET("/api/resend/configs", getResendConfigsHandler(app))
+srv.POST("/api/resend/configs", createResendConfigHandler(app))
+srv.OPTIONS("/api/resend/configs/:uid", optionsHandler())
+srv.GET("/api/resend/configs/:uid", getResendConfigHandler(app))
+srv.PUT("/api/resend/configs/:uid", updateResendConfigHandler(app))
+srv.DELETE("/api/resend/configs/:uid", deleteResendConfigHandler(app))
+```
+
+### Database Integration
+Tables are created automatically in `cmd/webclient/database.go`:
+
+```go
+func createResendTables(db *sql.DB) error {
+    // Creates resend_configs, resend_filters, resend_predicates tables
+}
+```
+
+### Component Loading
+Components are loaded in `staticfiles/static/js/components/index.js`:
 
 ```javascript
-// Load dependencies first
 document.write('<script src="/static/js/components/PredicateComponent.js"></script>');
 document.write('<script src="/static/js/components/FilterComponent.js"></script>');
 document.write('<script src="/static/js/components/ResendingPanel.js"></script>');
 ```
 
-### Event Communication
+## 8. Usage Examples
 
-The components use Vue.js event system for communication:
-- **Parent → Child**: Props for data passing
-- **Child → Parent**: Custom events for state changes
-- **Sibling Communication**: Through parent component mediation
-
-## 7. Mock Data Reference
-
-### Sample Configuration
-
+### Creating a Configuration
 ```javascript
+const config = {
+  name: "Air Unit Forwarding",
+  enabled: true,
+  destination: {
+    type: "node",
+    ip: "192.168.1.200",
+    urn: 54321
+  },
+  filters: [{
+    id: "filter-1",
+    name: "Air Units Only",
+    predicates: [
+      { id: "pred-1", type: "item_type", value: "unit" },
+      { id: "pred-2", type: "unit_type", value: "air" },
+      { id: "pred-3", type: "side", value: "friendly" }
+    ]
+  }]
+};
+```
+
+### API Usage
+```javascript
+// Create configuration
+fetch('/api/resend/configs', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(config)
+});
+
+// Get all configurations
+fetch('/api/resend/configs')
+  .then(response => response.json())
+  .then(data => console.log(data.data));
+```
+
+## 9. Error Handling
+
+### API Error Responses
+```json
 {
-  id: 1,
-  name: "پیکربندی ۱",
-  destination: "جریان خروجی ۱",
-  filters: [
-    {
-      id: 1,
-      name: "فیلتر واحدها",
-      predicates: [
-        {
-          id: 1,
-          type: "item_type",
-          value: "unit"
-        },
-        {
-          id: 2,
-          type: "side",
-          value: "friendly"
-        }
-      ]
-    }
-  ]
+  "success": false,
+  "error": "Configuration name is required"
 }
 ```
 
-### Available Outgoing Flows
+### Frontend Error States
+- **Loading States**: Spinner during API operations
+- **Error Messages**: User-friendly error display
+- **Validation Errors**: Form validation with visual feedback
+- **Network Errors**: Automatic retry logic for transient failures
 
-```javascript
-[
-  { id: 1, name: "جریان خروجی ۱", type: "TCP" },
-  { id: 2, name: "جریان خروجی ۲", type: "UDP" },
-  { id: 3, name: "جریان خروجی ۳", type: "RabbitMQ" }
-]
-```
+## 10. Future Enhancements
 
-### Predicate Value Options
-
-#### Item Types
-```javascript
-[
-  { value: 'unit', label: 'واحد' },
-  { value: 'drawing', label: 'نقشه' },
-  { value: 'contact', label: 'مخاطب' },
-  { value: 'alert', label: 'هشدار' }
-]
-```
-
-#### Sides
-```javascript
-[
-  { value: 'friendly', label: 'دوست' },
-  { value: 'hostile', label: 'دشمن' },
-  { value: 'neutral', label: 'خنثی' },
-  { value: 'unknown', label: 'نامشخص' }
-]
-```
-
-#### Unit Types
-```javascript
-[
-  { value: 'air', label: 'هوایی' },
-  { value: 'ground', label: 'زمینی' },
-  { value: 'sea', label: 'دریایی' },
-  { value: 'space', label: 'فضایی' }
-]
-```
-
-## 8. Future Development
-
-### Backend Integration Requirements
-
-To make this feature functional, the following backend components would be needed:
-
-#### Message Processing Engine
-- **Real-time Message Monitoring**: Monitor incoming CoT messages
-- **Filter Evaluation**: Implement the AND/OR logic for filter evaluation
-- **Message Routing**: Route matching messages to configured destinations
-
-#### Configuration Persistence
-- **Database Schema**: Store configurations, filters, and predicates
-- **CRUD API**: RESTful endpoints for configuration management
-- **Validation Logic**: Server-side validation of filter rules
-
-#### Flow Management
-- **Connection Management**: Maintain outgoing flow connections
-- **Protocol Handlers**: TCP, UDP, and RabbitMQ connection handlers
-- **Error Handling**: Connection failure and retry logic
-
-#### Performance Optimization
-- **Filter Caching**: Cache compiled filter rules for performance
-- **Message Queuing**: Handle high-volume message processing
-- **Monitoring**: Track resending statistics and performance metrics
-
-### Potential Enhancements
-
-#### Advanced Filtering
-- **Temporal Filters**: Time-based message filtering
-- **Content Filters**: Message content pattern matching
-- **Source Filters**: Filter by message origin
-- **Priority Filters**: Filter by message priority levels
-
-#### User Experience Improvements
-- **Drag & Drop**: Reorder filters and predicates
-- **Template System**: Predefined configuration templates
-- **Bulk Operations**: Multi-select and bulk actions
-- **Import/Export**: Configuration backup and sharing
-
-#### System Integration
-- **Audit Logging**: Track all resending activities
-- **Real-time Dashboard**: Live monitoring of resending activities
-- **Alert System**: Notifications for configuration issues
-- **Performance Metrics**: Statistics and analytics
-
-#### Advanced Features
-- **Conditional Logic**: Complex boolean expressions
+### Advanced Features
 - **Message Transformation**: Modify messages before resending
 - **Rate Limiting**: Control resending frequency
 - **Load Balancing**: Distribute across multiple destinations
+- **Audit Logging**: Track all resending activities
 
-### Implementation Roadmap
+### Performance Optimizations
+- **Filter Caching**: Cache compiled filter rules
+- **Batch Processing**: Handle high-volume message processing
+- **Monitoring**: Track resending statistics and performance
 
-1. **Phase 1**: Backend API development and basic message processing
-2. **Phase 2**: Configuration persistence and flow management
-3. **Phase 3**: Advanced filtering and performance optimization
-4. **Phase 4**: Enhanced UI features and system integration
-5. **Phase 5**: Analytics, monitoring, and advanced capabilities
+### User Experience
+- **Bulk Operations**: Multi-select and bulk actions
+- **Template System**: Predefined configuration templates
+- **Import/Export**: Configuration backup and sharing
 
 ---
 
-*This documentation covers the complete Resending feature implementation as of the current prototype version. The feature provides a solid foundation for tactical message routing and filtering capabilities within the GoATAK system.*
+*This documentation covers the complete Resending feature implementation with full backend API integration and frontend components. The feature provides a robust foundation for tactical message routing and filtering within the GoATAK system.*

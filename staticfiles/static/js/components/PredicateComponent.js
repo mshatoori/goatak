@@ -94,8 +94,7 @@ Vue.component("PredicateComponent", {
           value: this.editingData.value
         };
         this.$emit('update-predicate', updatedPredicate);
-        this.editing = false;
-        this.editingData = { type: "", value: "" };
+        this.cancelEditing();
       }
     },
     deletePredicate: function () {
@@ -116,15 +115,15 @@ Vue.component("PredicateComponent", {
           <span class="fw-semibold">{{ predicateValueLabel }}</span>
         </div>
         <div>
-          <button 
-            type="button" 
+          <button
+            type="button"
             class="btn btn-sm btn-outline-secondary me-1"
             v-on:click="startEditing"
           >
             <i class="bi bi-pencil"></i>
           </button>
-          <button 
-            type="button" 
+          <button
+            type="button"
             class="btn btn-sm btn-outline-danger"
             v-on:click="deletePredicate"
           >
@@ -132,21 +131,21 @@ Vue.component("PredicateComponent", {
           </button>
         </div>
       </div>
-      
+
       <div v-else>
         <form @submit.prevent="savePredicate">
           <div class="row g-2 mb-2">
             <div class="col-md-6">
               <label class="form-label form-label-sm">نوع شرط:</label>
-              <select 
-                class="form-select form-select-sm" 
+              <select
+                class="form-select form-select-sm"
                 v-model="editingData.type"
                 @change="onTypeChange"
               >
                 <option value="" disabled>نوع شرط را انتخاب کنید</option>
-                <option 
-                  v-for="type in predicateTypes" 
-                  :key="type.value" 
+                <option
+                  v-for="type in predicateTypes"
+                  :key="type.value"
                   :value="type.value"
                 >
                   {{ type.label }}
@@ -155,39 +154,39 @@ Vue.component("PredicateComponent", {
             </div>
             <div class="col-md-6">
               <label class="form-label form-label-sm">مقدار:</label>
-              <select 
+              <select
                 v-if="editingData.type && availableValues.length > 0"
-                class="form-select form-select-sm" 
+                class="form-select form-select-sm"
                 v-model="editingData.value"
               >
                 <option value="" disabled>مقدار را انتخاب کنید</option>
-                <option 
-                  v-for="option in availableValues" 
-                  :key="option.value" 
+                <option
+                  v-for="option in availableValues"
+                  :key="option.value"
                   :value="option.value"
                 >
                   {{ option.label }}
                 </option>
               </select>
-              <input 
+              <input
                 v-else
-                type="text" 
-                class="form-control form-control-sm" 
+                type="text"
+                class="form-control form-control-sm"
                 v-model="editingData.value"
                 placeholder="مقدار را وارد کنید"
               />
             </div>
           </div>
           <div class="d-flex justify-content-end gap-1">
-            <button 
-              type="button" 
+            <button
+              type="button"
               class="btn btn-sm btn-secondary"
               v-on:click="cancelEditing"
             >
               <i class="bi bi-x"></i> لغو
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               class="btn btn-sm btn-success"
               :disabled="!editingData.type || !editingData.value"
             >
