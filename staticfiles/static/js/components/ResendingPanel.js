@@ -23,16 +23,13 @@ Vue.component("ResendingPanel", {
         { id: "polygon-2", name: "منطقه عملیاتی ۲" },
         { id: "polygon-3", name: "منطقه ممنوعه" },
       ],
-      // Mock outgoing flows data (should come from backend)
-      outgoingFlows: [
-        { id: 1, name: "جریان خروجی ۱", type: "TCP" },
-        { id: 2, name: "جریان خروجی ۲", type: "UDP" },
-        { id: 3, name: "جریان خروجی ۳", type: "RabbitMQ" },
-      ],
+      // Destinations data for enhanced selection
+      availableDestinations: null,
     };
   },
   mounted: function () {
     this.loadResendConfigs();
+    this.fetchDestinations();
   },
   computed: {
     stepTitle() {
@@ -42,6 +39,57 @@ Vue.component("ResendingPanel", {
         3: "مدیریت فیلترها",
       };
       return titles[this.currentStep] || "";
+    },
+
+    availableSubnets: function () {
+      // Use ownAddresses as subnet options for broadcast to own networks
+      return this.availableDestinations
+        ? this.availableDestinations.ownAddresses || []
+        : [];
+    },
+
+    availableContacts: function () {
+      // Group directDestinations by URN to create contact list
+      if (
+        !this.availableDestinations ||
+        !this.availableDestinations.directDestinations
+      ) {
+        return [];
+      }
+
+      const contactMap = new Map();
+      this.availableDestinations.directDestinations.forEach((dest) => {
+        const urn = dest.urn.toString();
+        if (!contactMap.has(urn)) {
+          contactMap.set(urn, {
+            urn: dest.urn,
+            callsign: dest.name,
+            ip_address: dest.ip,
+          });
+        } else {
+          // Append additional IPs
+          const existing = contactMap.get(urn);
+          existing.ip_address += "," + dest.ip;
+        }
+      });
+
+      return Array.from(contactMap.values());
+    },
+
+    availableIps: function () {
+      if (
+        this.editingData &&
+        this.editingData.selected_urn &&
+        this.availableContacts
+      ) {
+        const selectedContact = this.availableContacts.find(
+          (contact) => contact.urn == this.editingData.selected_urn
+        );
+        if (selectedContact && selectedContact.ip_address) {
+          return selectedContact.ip_address.split(",");
+        }
+      }
+      return [];
     },
   },
   methods: {
@@ -138,8 +186,14 @@ Vue.component("ResendingPanel", {
           type: "node",
           ip: "",
           urn: 0,
+          subnet_mask: "",
         },
         filters: [],
+        // Enhanced destination selection fields
+        send_mode: "direct", // "subnet" or "direct"
+        selected_subnet: "",
+        selected_urn: "",
+        selected_ip: "",
       };
       this.editingIndex = -1;
       this.editing = true;
@@ -157,9 +211,33 @@ Vue.component("ResendingPanel", {
         console.error("Config not found at index:", index);
         return;
       }
-      this.editingData = JSON.parse(
-        JSON.stringify(this.resendingConfigs[index])
-      );
+
+      const config = this.resendingConfigs[index];
+
+      // Create a reactive editingData object
+      this.editingData = {
+        uid: config.uid,
+        name: config.name,
+        enabled: config.enabled,
+        destination: config.destination
+          ? { ...config.destination }
+          : {
+              type: "node",
+              ip: "",
+              urn: 0,
+              subnet_mask: "",
+            },
+        filters: config.filters ? [...config.filters] : [],
+        // Enhanced destination selection fields
+        send_mode: "direct", // Default, will be set by loadEnhancedSelectionFromDestination
+        selected_subnet: "",
+        selected_urn: "",
+        selected_ip: "",
+      };
+
+      // Load enhanced selection from destination
+      this.loadEnhancedSelectionFromDestination();
+
       this.editingIndex = index;
       this.editing = true;
       this.showNewConfigForm = false;
@@ -168,10 +246,26 @@ Vue.component("ResendingPanel", {
     },
 
     async saveConfig() {
-      if (!this.editingData.name || !this.editingData.destination.ip) {
-        this.error = "نام پیکربندی و آدرس IP مقصد الزامی هستند";
+      if (!this.editingData.name) {
+        this.error = "نام پیکربندی الزامی است";
         return;
       }
+
+      // Validate destination based on send_mode
+      if (this.editingData.send_mode === "direct") {
+        if (!this.editingData.selected_urn || !this.editingData.selected_ip) {
+          this.error = "برای ارسال مستقیم، URN و آدرس IP الزامی هستند";
+          return;
+        }
+      } else if (this.editingData.send_mode === "subnet") {
+        if (!this.editingData.selected_subnet) {
+          this.error = "برای ارسال به زیرشبکه، انتخاب زیرشبکه الزامی است";
+          return;
+        }
+      }
+
+      // Map enhanced selection to destination DTO
+      this.mapEnhancedSelectionToDestination();
 
       try {
         await this.saveConfigToBackend(this.editingData);
@@ -240,7 +334,14 @@ Vue.component("ResendingPanel", {
         case 1:
           return this.editingData.name.trim() !== "";
         case 2:
-          return this.editingData.destination.ip.trim() !== "";
+          if (this.editingData.send_mode === "direct") {
+            return (
+              this.editingData.selected_urn && this.editingData.selected_ip
+            );
+          } else if (this.editingData.send_mode === "subnet") {
+            return this.editingData.selected_subnet;
+          }
+          return false;
         case 3:
           return true;
         default:
@@ -314,6 +415,66 @@ Vue.component("ResendingPanel", {
       }
       return `${filter.predicates.length} شرط`;
     },
+
+    // Enhanced destination selection methods
+    fetchDestinations: function () {
+      fetch(window.baseUrl + "destinations")
+        .then((response) => response.json())
+        .then((data) => {
+          this.availableDestinations = data;
+        })
+        .catch((error) => {
+          console.error("Error fetching destinations:", error);
+          this.availableDestinations = {
+            ownAddresses: [],
+            directDestinations: [],
+          };
+        });
+    },
+
+    onUrnSelected: function () {
+      if (this.editingData.selected_urn && this.availableContacts) {
+        const selectedContact = this.availableContacts.find(
+          (contact) => contact.urn.toString() === this.editingData.selected_urn
+        );
+        if (selectedContact) {
+          // Reset IP selection when URN changes
+          this.editingData.selected_ip = "";
+        }
+      }
+    },
+
+    mapEnhancedSelectionToDestination: function () {
+      if (this.editingData.send_mode === "direct") {
+        this.editingData.destination = {
+          type: "node",
+          ip: this.editingData.selected_ip,
+          urn: parseInt(this.editingData.selected_urn) || 0,
+          subnet_mask: "",
+        };
+      } else if (this.editingData.send_mode === "subnet") {
+        this.editingData.destination = {
+          type: "subnet",
+          ip: this.editingData.selected_subnet,
+          urn: 0,
+          subnet_mask: "255.255.255.0", // Default subnet mask
+        };
+      }
+    },
+
+    loadEnhancedSelectionFromDestination: function () {
+      if (this.editingData.destination) {
+        if (this.editingData.destination.type === "node") {
+          this.editingData.send_mode = "direct";
+          this.editingData.selected_ip = this.editingData.destination.ip;
+          this.editingData.selected_urn =
+            this.editingData.destination.urn.toString();
+        } else if (this.editingData.destination.type === "subnet") {
+          this.editingData.send_mode = "subnet";
+          this.editingData.selected_subnet = this.editingData.destination.ip;
+        }
+      }
+    },
   },
   template: html`
     <div class="container-fluid" id="resending-panel-container">
@@ -376,39 +537,30 @@ Vue.component("ResendingPanel", {
               </div>
 
               <!-- Progress Steps -->
-              <div class="card-body pb-2">
-                <div class="row mb-4">
+              <div class="card-body pb-1">
+                <div class="row mb-2">
                   <div class="col-12">
-                    <div class="progress mb-2" style="height: 4px;">
+                    <div class="progress mb-1" style="height: 2px;">
                       <div
                         class="progress-bar"
                         :style="{ width: (currentStep / totalSteps) * 100 + '%' }"
                       ></div>
                     </div>
                     <div class="d-flex justify-content-between">
-                      <small class="text-muted"
-                        >مرحله {{ currentStep }} از {{ totalSteps }}</small
-                      >
-                      <small class="fw-bold text-primary"
-                        >{{ stepTitle }}</small
-                      >
+                      <small class="text-muted">{{ currentStep }}/{{ totalSteps }}</small>
+                      <small class="fw-bold text-primary">{{ stepTitle }}</small>
                     </div>
                   </div>
                 </div>
 
                 <!-- Step 1: Basic Information -->
                 <div v-show="currentStep === 1" class="step-content">
-                  <div class="row g-3">
+                  <div class="row g-2">
                     <div class="col-md-12">
-                      <label class="form-label fw-bold">نام</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="editingData.name"
-                      />
+                      <label class="form-label fw-bold mb-1">نام</label>
+                      <input type="text" class="form-control" v-model="editingData.name" />
                     </div>
                     <div class="col-md-12">
-                      <label class="form-label fw-bold">وضعیت</label>
                       <div class="form-check form-switch">
                         <input
                           class="form-check-input"
@@ -417,144 +569,119 @@ Vue.component("ResendingPanel", {
                           v-model="editingData.enabled"
                         />
                         <label class="form-check-label" for="config-enabled">
-                          <span v-if="editingData.enabled" class="text-success">
-                            <i class="bi bi-check-circle-fill"></i> فعال
-                          </span>
-                          <span v-else class="text-warning">
-                            <i class="bi bi-pause-circle-fill"></i> غیرفعال
-                          </span>
+                          <span v-if="editingData.enabled" class="text-success">فعال</span>
+                          <span v-else class="text-warning">غیرفعال</span>
                         </label>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <!-- Step 2: Destination Settings -->
+                <!-- Step 2: Enhanced Destination Settings -->
                 <div v-show="currentStep === 2" class="step-content">
-                  <h6 class="fw-bold mb-3">
-                    <i class="bi bi-send"></i> تنظیمات مقصد
-                  </h6>
-                  <div class="row g-3">
-                    <div class="col-md-12">
-                      <label class="form-label fw-bold">نوع مقصد</label>
-                      <select
-                        class="form-select"
-                        v-model="editingData.destination.type"
-                      >
-                        <option value="node">
-                          <i class="bi bi-pc-display"></i>تک مخاطب
-                        </option>
-                        <option value="subnet">
-                          <i class="bi bi-diagram-3"></i>broadcast
+                  <div class="fw-bold mb-2">حالت ارسال</div>
+                  <div class="form-check">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="send_mode"
+                      id="send_modeSubnet"
+                      value="subnet"
+                      v-model="editingData.send_mode"
+                    />
+                    <label class="form-check-label" for="send_modeSubnet">زیرشبکه</label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input
+                      class="form-check-input"
+                      type="radio"
+                      name="send_mode"
+                      id="send_modeDirect"
+                      value="direct"
+                      v-model="editingData.send_mode"
+                    />
+                    <label class="form-check-label" for="send_modeDirect">مستقیم</label>
+                  </div>
+
+                  <!-- Subnet Selection -->
+                  <div v-if="editingData.send_mode === 'subnet'" class="mb-2">
+                    <label for="edit-subnet" class="form-label fw-bold mb-1">زیرشبکه</label>
+                    <select class="form-select" id="edit-subnet" v-model="editingData.selected_subnet">
+                      <option value="" disabled>انتخاب زیرشبکه</option>
+                      <option v-for="subnet in availableSubnets" :key="subnet" :value="subnet">
+                        {{ subnet }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Direct Destination Selection -->
+                  <div v-if="editingData.send_mode === 'direct'">
+                    <div class="mb-2">
+                      <label for="edit-urn" class="form-label fw-bold mb-1">URN</label>
+                      <select class="form-select" id="edit-urn" v-model="editingData.selected_urn" @change="onUrnSelected">
+                        <option value="" disabled>انتخاب URN</option>
+                        <option v-for="contact in availableContacts" :key="contact.urn" :value="contact.urn">
+                          {{ contact.urn }} ({{ contact.callsign }})
                         </option>
                       </select>
                     </div>
-                    <div class="col-md-12">
-                      <label class="form-label fw-bold">آدرس IP</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="editingData.destination.ip"
-                        placeholder="192.168.1.100"
-                      />
-                    </div>
-                    <div
-                      class="col-md-12"
-                      v-if="editingData.destination.type === 'node'"
-                    >
-                      <label class="form-label fw-bold">URN</label>
-                      <input
-                        type="number"
-                        class="form-control"
-                        v-model.number="editingData.destination.urn"
-                        placeholder="12"
-                        min="0"
-                      />
+                    <div class="mb-2">
+                      <label for="edit-ip" class="form-label fw-bold mb-1">آدرس IP</label>
+                      <select class="form-select" id="edit-ip" v-model="editingData.selected_ip" :disabled="!editingData.selected_urn">
+                        <option value="" disabled>انتخاب IP</option>
+                        <option v-for="ip in availableIps" :key="ip" :value="ip">{{ ip }}</option>
+                      </select>
                     </div>
                   </div>
                 </div>
 
                 <!-- Step 3: Filters Management -->
                 <div v-show="currentStep === 3" class="step-content">
-                  <div
-                    class="d-flex justify-content-between align-items-center mb-3"
-                  >
-                    <h6 class="fw-bold mb-0">
-                      <i class="bi bi-funnel"></i> مدیریت فیلترها
-                    </h6>
-                    <span class="badge bg-secondary"
-                      >{{ editingData.filters.length }} فیلتر</span
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-bold">فیلترها ({{ editingData.filters.length }})</span>
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-sm"
+                      v-on:click="addFilter"
                     >
-                  </div>
-
-                  <!-- Add New Filter -->
-                  <div class="card border-dashed mb-3">
-                    <div class="card-body">
-                      <div class="row g-2 align-items-end">
-                        <div class="col">
-                          <label class="form-label fw-bold"
-                            >افزودن فیلتر جدید</label
-                          >
-                        </div>
-                        <div class="col-auto">
-                          <button
-                            type="button"
-                            class="btn btn-outline-primary"
-                            v-on:click="addFilter"
-                          >
-                            <i class="bi bi-plus"></i> افزودن فیلتر
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                      <i class="bi bi-plus"></i> افزودن
+                    </button>
                   </div>
 
                   <!-- Existing Filters -->
-                  <div
-                    v-if="editingData.filters && editingData.filters.length > 0"
-                  >
+                  <div v-if="editingData.filters && editingData.filters.length > 0">
                     <div
                       v-for="filter in editingData.filters"
                       :key="filter.id"
-                      class="card mb-3"
+                      class="mb-1"
                     >
-                      <div class="card-header">
-                        <div
-                          class="d-flex justify-content-between align-items-center"
-                        >
-                          <div class="d-flex align-items-center">
-                            <button
-                              type="button"
-                              class="btn btn-sm btn-outline-secondary me-2"
-                              @click="toggleFilterExpansion(filter.id)"
-                            >
-                              <i
-                                :class="expandedFilters[filter.id] ? 'bi bi-chevron-down' : 'bi bi-chevron-right'"
-                              ></i>
-                            </button>
-                            <div>
-                              <h6 class="mb-0">
-                                فیلتر #{{ editingData.filters.indexOf(filter) +
-                                1 }}
-                              </h6>
-                              <small class="text-muted"
-                                >{{ getFilterSummary(filter) }}</small
-                              >
-                            </div>
-                          </div>
+                      <!-- Filter Header -->
+                      <div class="d-flex justify-content-between align-items-center py-1 px-2 bg-light rounded">
+                        <div class="d-flex align-items-center">
                           <button
                             type="button"
-                            class="btn btn-sm btn-outline-danger"
-                            @click="deleteFilterById(filter.id)"
+                            class="btn btn-sm p-1 me-2"
+                            @click="toggleFilterExpansion(filter.id)"
                           >
-                            <i class="bi bi-trash"></i>
+                            <i
+                              :class="expandedFilters[filter.id] ? 'bi bi-chevron-down' : 'bi bi-chevron-right'"
+                            ></i>
                           </button>
+                          <span class="small fw-bold">
+                            فیلتر #{{ editingData.filters.indexOf(filter) + 1 }}
+                          </span>
+                          <span class="small text-muted ms-2">({{ getFilterSummary(filter) }})</span>
                         </div>
+                        <button
+                          type="button"
+                          class="btn btn-sm p-1 text-danger"
+                          @click="deleteFilterById(filter.id)"
+                        >
+                          <i class="bi bi-trash"></i>
+                        </button>
                       </div>
-                      <div
-                        class="card-body"
-                        v-show="expandedFilters[filter.id]"
-                      >
+                      <!-- Filter Content -->
+                      <div class="px-2 py-1" v-show="expandedFilters[filter.id]">
                         <filter-component
                           :filter="filter"
                           :polygons="mockPolygons"
@@ -564,12 +691,8 @@ Vue.component("ResendingPanel", {
                     </div>
                   </div>
 
-                  <div v-else class="text-center py-4">
-                    <i
-                      class="bi bi-funnel text-muted"
-                      style="font-size: 3rem;"
-                    ></i>
-                    <p class="text-muted mt-2">هنوز فیلتری اضافه نشده</p>
+                  <div v-else class="text-center py-2 text-muted small">
+                    هنوز فیلتری اضافه نشده
                   </div>
                 </div>
 
@@ -584,7 +707,7 @@ Vue.component("ResendingPanel", {
                       v-show="currentStep > 1"
                       @click="prevStep"
                     >
-                      <i class="bi bi-arrow-right"></i> مرحله قبل
+                      <i class="bi bi-arrow-right"></i>
                     </button>
                   </div>
                   <div>
@@ -609,9 +732,9 @@ Vue.component("ResendingPanel", {
                       type="button"
                       class="btn btn-success"
                       v-on:click="saveConfig"
-                      :disabled="!editingData.name || !editingData.destination.ip"
+                      :disabled="!editingData.name"
                     >
-                      <i class="bi bi-check-lg"></i> ذخیره پیکربندی
+                      <i class="bi bi-check-lg"></i> ذخیره
                     </button>
                   </div>
                 </div>
@@ -692,8 +815,8 @@ Vue.component("ResendingPanel", {
                         v-if="config.destination"
                         class="badge bg-light text-dark ms-2"
                       >
-                        {{ config.destination.type === 'node' ? 'گره' : 'شبکه'
-                        }}
+                        {{ config.destination.type === 'node' ? 'مستقیم' :
+                        'زیرشبکه' }}
                       </span>
                     </div>
                   </div>
