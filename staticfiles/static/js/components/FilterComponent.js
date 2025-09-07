@@ -2,74 +2,56 @@ Vue.component("FilterComponent", {
   props: ["filter", "polygons"],
   data: function () {
     return {
-      editing: false,
-      editingName: "",
       newPredicate: {
         type: "",
-        value: ""
+        value: "",
       },
       predicateTypes: [
-        { value: 'item_type', label: 'نوع آیتم' },
-        { value: 'side', label: 'طرف' },
-        { value: 'unit_type', label: 'نوع واحد' },
-        { value: 'location_boundary', label: 'محدوده مکانی' }
+        { value: "item_type", label: "نوع آیتم" },
+        { value: "side", label: "طرف" },
+        { value: "unit_type", label: "نوع واحد" },
+        { value: "location_boundary", label: "محدوده مکانی" },
       ],
       itemTypes: [
-        { value: 'unit', label: 'واحد' },
-        { value: 'drawing', label: 'نقشه' },
-        { value: 'contact', label: 'مخاطب' },
-        { value: 'alert', label: 'هشدار' }
+        { value: "unit", label: "واحد" },
+        { value: "drawing", label: "نقشه" },
+        { value: "contact", label: "مخاطب" },
+        { value: "alert", label: "هشدار" },
       ],
       sides: [
-        { value: 'friendly', label: 'دوست' },
-        { value: 'hostile', label: 'دشمن' },
-        { value: 'neutral', label: 'خنثی' },
-        { value: 'unknown', label: 'نامشخص' }
+        { value: "friendly", label: "دوست" },
+        { value: "hostile", label: "دشمن" },
+        { value: "neutral", label: "خنثی" },
+        { value: "unknown", label: "نامشخص" },
       ],
       unitTypes: [
-        { value: 'air', label: 'هوایی' },
-        { value: 'ground', label: 'زمینی' },
-        { value: 'sea', label: 'دریایی' },
-        { value: 'space', label: 'فضایی' }
-      ]
+        { value: "air", label: "هوایی" },
+        { value: "ground", label: "زمینی" },
+        { value: "sea", label: "دریایی" },
+        { value: "space", label: "فضایی" },
+      ],
     };
   },
   computed: {
     availableValues: function () {
       switch (this.newPredicate.type) {
-        case 'item_type':
+        case "item_type":
           return this.itemTypes;
-        case 'side':
+        case "side":
           return this.sides;
-        case 'unit_type':
+        case "unit_type":
           return this.unitTypes;
-        case 'location_boundary':
-          return this.polygons.map(p => ({ value: p.id, label: p.name }));
+        case "location_boundary":
+          return this.polygons.map((p) => ({ value: p.id, label: p.name }));
         default:
           return [];
       }
-    }
+    },
   },
   methods: {
-    startEditing: function () {
-      this.editing = true;
-      this.editingName = this.filter.name;
-    },
-    cancelEditing: function () {
-      this.editing = false;
-      this.editingName = "";
-    },
-    saveFilterName: function () {
-      if (this.editingName.trim()) {
-        const updatedFilter = { ...this.filter, name: this.editingName.trim() };
-        this.$emit('update-filter', updatedFilter);
-        this.editing = false;
-        this.editingName = "";
-      }
-    },
     deleteFilter: function () {
       if (confirm("آیا از حذف این فیلتر مطمئن هستید؟")) {
-        this.$emit('delete-filter', this.filter.id);
+        this.$emit("delete-filter", this.filter.id);
       }
     },
     addPredicate: function () {
@@ -77,210 +59,169 @@ Vue.component("FilterComponent", {
         const predicate = {
           id: this.generateId(),
           type: this.newPredicate.type,
-          value: this.newPredicate.value
+          value: this.newPredicate.value,
         };
         const updatedFilter = {
           ...this.filter,
-          predicates: [...(this.filter.predicates || []), predicate]
+          predicates: [...(this.filter.predicates || []), predicate],
         };
-        this.$emit('update-filter', updatedFilter);
+        this.$emit("update-filter", updatedFilter);
         this.newPredicate = { type: "", value: "" };
       }
     },
     updatePredicate: function (updatedPredicate) {
-      const predicateIndex = this.filter.predicates.findIndex(p => p.id === updatedPredicate.id);
+      const predicateIndex = this.filter.predicates.findIndex(
+        (p) => p.id === updatedPredicate.id
+      );
       if (predicateIndex !== -1) {
         const updatedPredicates = [...this.filter.predicates];
         updatedPredicates[predicateIndex] = updatedPredicate;
         const updatedFilter = {
           ...this.filter,
-          predicates: updatedPredicates
+          predicates: updatedPredicates,
         };
-        this.$emit('update-filter', updatedFilter);
+        this.$emit("update-filter", updatedFilter);
       }
     },
     deletePredicate: function (predicateId) {
-      const updatedPredicates = this.filter.predicates.filter(p => p.id !== predicateId);
+      const updatedPredicates = this.filter.predicates.filter(
+        (p) => p.id !== predicateId
+      );
       const updatedFilter = {
         ...this.filter,
-        predicates: updatedPredicates
+        predicates: updatedPredicates,
       };
-      this.$emit('update-filter', updatedFilter);
+      this.$emit("update-filter", updatedFilter);
     },
     generateId: function () {
       return Date.now().toString() + Math.random().toString(36).substr(2, 9);
     },
     getPredicateTypeLabel: function (type) {
-      const predicateType = this.predicateTypes.find(pt => pt.value === type);
+      const predicateType = this.predicateTypes.find((pt) => pt.value === type);
       return predicateType ? predicateType.label : type;
     },
     getPredicateValueLabel: function (predicate) {
       switch (predicate.type) {
-        case 'item_type':
-          const itemType = this.itemTypes.find(item => item.value === predicate.value);
+        case "item_type":
+          const itemType = this.itemTypes.find(
+            (item) => item.value === predicate.value
+          );
           return itemType ? itemType.label : predicate.value;
-        case 'side':
-          const side = this.sides.find(s => s.value === predicate.value);
+        case "side":
+          const side = this.sides.find((s) => s.value === predicate.value);
           return side ? side.label : predicate.value;
-        case 'unit_type':
-          const unitType = this.unitTypes.find(unit => unit.value === predicate.value);
+        case "unit_type":
+          const unitType = this.unitTypes.find(
+            (unit) => unit.value === predicate.value
+          );
           return unitType ? unitType.label : predicate.value;
-        case 'location_boundary':
-          const polygon = this.polygons.find(p => p.id.toString() === predicate.value.toString());
+        case "location_boundary":
+          const polygon = this.polygons.find(
+            (p) => p.id.toString() === predicate.value.toString()
+          );
           return polygon ? polygon.name : predicate.value;
         default:
           return predicate.value;
       }
-    }
+    },
   },
   template: html`
-    <div class="card mb-3">
-      <div class="card-header">
-        <div class="d-flex justify-content-between align-items-center">
-          <div class="flex-grow-1">
-            <div v-if="!editing" class="d-flex align-items-center">
-              <h6 class="mb-0 me-2">{{ filter.name }}</h6>
+    <div>
+      <!-- Existing Predicates -->
+      <div
+        v-if="filter.predicates && filter.predicates.length > 0"
+        class="mb-3"
+      >
+        <h6 class="mb-2">شرایط:</h6>
+        <div class="list-group">
+          <div
+            v-for="predicate in filter.predicates"
+            :key="predicate.id"
+            class="list-group-item d-flex justify-content-between align-items-center"
+          >
+            <div>
+              <span class="badge bg-primary me-2"
+                >{{ getPredicateTypeLabel(predicate.type) }}</span
+              >
+              <span class="fw-semibold"
+                >{{ getPredicateValueLabel(predicate) }}</span
+              >
+            </div>
+            <div>
               <button
                 type="button"
-                class="btn btn-sm btn-outline-secondary"
-                v-on:click="startEditing"
+                class="btn btn-sm btn-outline-secondary me-1"
+                @click="editPredicate(predicate)"
               >
                 <i class="bi bi-pencil"></i>
               </button>
-            </div>
-            <div v-else class="d-flex align-items-center">
-              <input
-                type="text"
-                class="form-control form-control-sm me-2"
-                v-model="editingName"
-                @keyup.enter="saveFilterName"
-                @keyup.escape="cancelEditing"
-                placeholder="نام فیلتر"
-              />
               <button
                 type="button"
-                class="btn btn-sm btn-success me-1"
-                v-on:click="saveFilterName"
-                :disabled="!editingName.trim()"
+                class="btn btn-sm btn-outline-danger"
+                @click="deletePredicate(predicate.id)"
               >
-                <i class="bi bi-check"></i>
-              </button>
-              <button
-                type="button"
-                class="btn btn-sm btn-secondary"
-                v-on:click="cancelEditing"
-              >
-                <i class="bi bi-x"></i>
+                <i class="bi bi-trash"></i>
               </button>
             </div>
           </div>
-          <button
-            type="button"
-            class="btn btn-sm btn-outline-danger"
-            v-on:click="deleteFilter"
-          >
-            <i class="bi bi-trash"></i>
-          </button>
         </div>
       </div>
 
-      <div class="card-body">
-        <!-- Existing Predicates -->
-        <div v-if="filter.predicates && filter.predicates.length > 0" class="mb-3">
-          <h6 class="mb-2">شرایط:</h6>
-          <div class="list-group">
-            <div
-              v-for="predicate in filter.predicates"
-              :key="predicate.id"
-              class="list-group-item d-flex justify-content-between align-items-center"
+      <!-- Add New Predicate -->
+      <div class="border-top pt-3">
+        <h6 class="mb-2">افزودن شرط جدید:</h6>
+        <div class="row g-2">
+          <div class="col-md-5">
+            <select
+              class="form-select form-select-sm"
+              v-model="newPredicate.type"
             >
-              <div>
-                <span class="badge bg-primary me-2">{{ getPredicateTypeLabel(predicate.type) }}</span>
-                <span class="fw-semibold">{{ getPredicateValueLabel(predicate) }}</span>
-              </div>
-              <div>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary me-1"
-                  @click="editPredicate(predicate)"
-                >
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-danger"
-                  @click="deletePredicate(predicate.id)"
-                >
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </div>
+              <option value="" disabled>نوع شرط را انتخاب کنید</option>
+              <option
+                v-for="type in predicateTypes"
+                :key="type.value"
+                :value="type.value"
+              >
+                {{ type.label }}
+              </option>
+            </select>
           </div>
-        </div>
-
-        <!-- No Predicates Message -->
-        <div v-else class="mb-3">
-          <p class="text-muted mb-0">
-            <i class="bi bi-info-circle"></i> هیچ شرطی تعریف نشده
-          </p>
-        </div>
-
-        <!-- Add New Predicate -->
-        <div class="border-top pt-3">
-          <h6 class="mb-2">افزودن شرط جدید:</h6>
-          <div class="row g-2">
-            <div class="col-md-5">
-              <select
-                class="form-select form-select-sm"
-                v-model="newPredicate.type"
+          <div class="col-md-5">
+            <select
+              v-if="newPredicate.type && availableValues.length > 0"
+              class="form-select form-select-sm"
+              v-model="newPredicate.value"
+            >
+              <option value="" disabled>مقدار را انتخاب کنید</option>
+              <option
+                v-for="option in availableValues"
+                :key="option.value"
+                :value="option.value"
               >
-                <option value="" disabled>نوع شرط را انتخاب کنید</option>
-                <option
-                  v-for="type in predicateTypes"
-                  :key="type.value"
-                  :value="type.value"
-                >
-                  {{ type.label }}
-                </option>
-              </select>
-            </div>
-            <div class="col-md-5">
-              <select
-                v-if="newPredicate.type && availableValues.length > 0"
-                class="form-select form-select-sm"
-                v-model="newPredicate.value"
-              >
-                <option value="" disabled>مقدار را انتخاب کنید</option>
-                <option
-                  v-for="option in availableValues"
-                  :key="option.value"
-                  :value="option.value"
-                >
-                  {{ option.label }}
-                </option>
-              </select>
-              <input
-                v-else
-                type="text"
-                class="form-control form-control-sm"
-                v-model="newPredicate.value"
-                placeholder="مقدار را وارد کنید"
-                @keyup.enter="addPredicate"
-              />
-            </div>
-            <div class="col-md-2">
-              <button
-                type="button"
-                class="btn btn-sm btn-success w-100"
-                v-on:click="addPredicate"
-                :disabled="!newPredicate.type || !newPredicate.value"
-              >
-                <i class="bi bi-plus"></i>
-              </button>
-            </div>
+                {{ option.label }}
+              </option>
+            </select>
+            <input
+              v-else
+              type="text"
+              class="form-control form-control-sm"
+              v-model="newPredicate.value"
+              placeholder="مقدار را وارد کنید"
+              @keyup.enter="addPredicate"
+            />
+          </div>
+          <div class="col-md-2">
+            <button
+              type="button"
+              class="btn btn-sm btn-success w-100"
+              v-on:click="addPredicate"
+              :disabled="!newPredicate.type || !newPredicate.value"
+            >
+              <i class="bi bi-plus"></i>
+            </button>
           </div>
         </div>
       </div>
     </div>
-  `
+  `,
 });

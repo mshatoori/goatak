@@ -13,7 +13,6 @@ Vue.component("ResendingPanel", {
       currentStep: 1,
       totalSteps: 3,
       newFilter: {
-        name: "",
         predicates: [],
       },
       expandedConfigs: {},
@@ -139,7 +138,6 @@ Vue.component("ResendingPanel", {
           type: "node",
           ip: "",
           urn: 0,
-          subnet_mask: "",
         },
         filters: [],
       };
@@ -147,7 +145,7 @@ Vue.component("ResendingPanel", {
       this.editing = true;
       this.showNewConfigForm = true;
       this.currentStep = 1;
-      this.newFilter = { name: "", predicates: [] };
+      this.newFilter = { predicates: [] };
     },
 
     editConfig: function (index) {
@@ -166,7 +164,7 @@ Vue.component("ResendingPanel", {
       this.editing = true;
       this.showNewConfigForm = false;
       this.currentStep = 1;
-      this.newFilter = { name: "", predicates: [] };
+      this.newFilter = { predicates: [] };
     },
 
     async saveConfig() {
@@ -191,7 +189,7 @@ Vue.component("ResendingPanel", {
       this.editingIndex = -1;
       this.showNewConfigForm = false;
       this.currentStep = 1;
-      this.newFilter = { name: "", predicates: [] };
+      this.newFilter = { predicates: [] };
       this.error = null;
     },
 
@@ -269,16 +267,13 @@ Vue.component("ResendingPanel", {
 
     // Filter management methods
     addFilter: function () {
-      if (this.newFilter.name) {
-        const filter = {
-          id: this.generateId(),
-          name: this.newFilter.name,
-          predicates: [],
-        };
-        this.editingData.filters.push(filter);
-        this.newFilter.name = "";
-        this.$set(this.expandedFilters, filter.id, true);
-      }
+      const filter = {
+        id: this.generateId(),
+        predicates: [],
+      };
+      this.editingData.filters.push(filter);
+      this.newFilter = { predicates: [] };
+      this.$set(this.expandedFilters, filter.id, true);
     },
 
     updateFilter: function (updatedFilter) {
@@ -310,9 +305,6 @@ Vue.component("ResendingPanel", {
 
     getDestinationDisplayText: function (destination) {
       if (!destination) return "";
-      if (destination.type === "subnet") {
-        return `${destination.ip}/${destination.subnet_mask || "24"}`;
-      }
       return destination.ip;
     },
 
@@ -328,8 +320,7 @@ Vue.component("ResendingPanel", {
       <!-- Header -->
       <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h4 class="mb-0">مدیریت ارسال مجدد</h4>
-          <small class="text-muted">پیکربندی قوانین ارسال مجدد پیام‌ها</small>
+          <h4 class="mb-0">ارسال مجدد</h4>
         </div>
         <button
           type="button"
@@ -408,19 +399,15 @@ Vue.component("ResendingPanel", {
                 <!-- Step 1: Basic Information -->
                 <div v-show="currentStep === 1" class="step-content">
                   <div class="row g-3">
-                    <div class="col-md-8">
-                      <label class="form-label fw-bold">نام پیکربندی</label>
+                    <div class="col-md-12">
+                      <label class="form-label fw-bold">نام</label>
                       <input
                         type="text"
-                        class="form-control form-control-lg"
+                        class="form-control"
                         v-model="editingData.name"
-                        placeholder="نام مناسب برای این پیکربندی وارد کنید"
                       />
-                      <div class="form-text">
-                        نامی که بتوانید پیکربندی را به راحتی شناسایی کنید
-                      </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-12">
                       <label class="form-label fw-bold">وضعیت</label>
                       <div class="form-check form-switch">
                         <input
@@ -438,9 +425,6 @@ Vue.component("ResendingPanel", {
                           </span>
                         </label>
                       </div>
-                      <div class="form-text">
-                        پیکربندی فعال بلافاصله اعمال می‌شود
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -451,21 +435,21 @@ Vue.component("ResendingPanel", {
                     <i class="bi bi-send"></i> تنظیمات مقصد
                   </h6>
                   <div class="row g-3">
-                    <div class="col-md-3">
+                    <div class="col-md-12">
                       <label class="form-label fw-bold">نوع مقصد</label>
                       <select
                         class="form-select"
                         v-model="editingData.destination.type"
                       >
                         <option value="node">
-                          <i class="bi bi-pc-display"></i> گره مجزا
+                          <i class="bi bi-pc-display"></i>تک مخاطب
                         </option>
                         <option value="subnet">
-                          <i class="bi bi-diagram-3"></i> شبکه فرعی
+                          <i class="bi bi-diagram-3"></i>broadcast
                         </option>
                       </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-12">
                       <label class="form-label fw-bold">آدرس IP</label>
                       <input
                         type="text"
@@ -475,43 +459,18 @@ Vue.component("ResendingPanel", {
                       />
                     </div>
                     <div
-                      class="col-md-3"
+                      class="col-md-12"
                       v-if="editingData.destination.type === 'node'"
                     >
-                      <label class="form-label fw-bold"
-                        >URN <small class="text-muted">(اختیاری)</small></label
-                      >
+                      <label class="form-label fw-bold">URN</label>
                       <input
                         type="number"
                         class="form-control"
                         v-model.number="editingData.destination.urn"
-                        placeholder="12345"
+                        placeholder="12"
                         min="0"
                       />
                     </div>
-                    <div
-                      class="col-md-2"
-                      v-if="editingData.destination.type === 'subnet'"
-                    >
-                      <label class="form-label fw-bold">ماسک شبکه</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        v-model="editingData.destination.subnet_mask"
-                        placeholder="24"
-                      />
-                    </div>
-                  </div>
-
-                  <div class="alert alert-info mt-3">
-                    <i class="bi bi-info-circle"></i>
-                    <strong>راهنما:</strong>
-                    <span v-if="editingData.destination.type === 'node'">
-                      پیام‌ها به یک گره مشخص ارسال می‌شوند
-                    </span>
-                    <span v-else>
-                      پیام‌ها به تمام گره‌های شبکه فرعی پخش می‌شوند
-                    </span>
                   </div>
                 </div>
 
@@ -536,22 +495,14 @@ Vue.component("ResendingPanel", {
                           <label class="form-label fw-bold"
                             >افزودن فیلتر جدید</label
                           >
-                          <input
-                            type="text"
-                            class="form-control"
-                            placeholder="نام فیلتر"
-                            v-model="newFilter.name"
-                            @keyup.enter="addFilter"
-                          />
                         </div>
                         <div class="col-auto">
                           <button
                             type="button"
                             class="btn btn-outline-primary"
                             v-on:click="addFilter"
-                            :disabled="!newFilter.name"
                           >
-                            <i class="bi bi-plus"></i> افزودن
+                            <i class="bi bi-plus"></i> افزودن فیلتر
                           </button>
                         </div>
                       </div>
@@ -583,7 +534,8 @@ Vue.component("ResendingPanel", {
                             </button>
                             <div>
                               <h6 class="mb-0">
-                                {{ filter.name || 'بدون نام' }}
+                                فیلتر #{{ editingData.filters.indexOf(filter) +
+                                1 }}
                               </h6>
                               <small class="text-muted"
                                 >{{ getFilterSummary(filter) }}</small
@@ -607,7 +559,6 @@ Vue.component("ResendingPanel", {
                           :filter="filter"
                           :polygons="mockPolygons"
                           @update-filter="updateFilter"
-                          @delete-filter="deleteFilterById"
                         ></filter-component>
                       </div>
                     </div>
@@ -619,9 +570,6 @@ Vue.component("ResendingPanel", {
                       style="font-size: 3rem;"
                     ></i>
                     <p class="text-muted mt-2">هنوز فیلتری اضافه نشده</p>
-                    <small class="text-muted"
-                      >فیلترها برای انتخاب پیام‌های مناسب استفاده می‌شوند</small
-                    >
                   </div>
                 </div>
 
@@ -682,7 +630,7 @@ Vue.component("ResendingPanel", {
             <div
               v-for="(config, index) in resendingConfigs"
               :key="config.uid || index"
-              class="col-lg-6 col-xl-4 mb-4"
+              class="col-12 mb-4"
             >
               <div class="card h-100 shadow-sm">
                 <div
@@ -770,7 +718,7 @@ Vue.component("ResendingPanel", {
                       class="border-top pt-2"
                     >
                       <div
-                        v-for="filter in config.filters.slice(0, 2)"
+                        v-for="(filter, filterIndex) in config.filters.slice(0, 2)"
                         :key="filter.id"
                         class="mb-2"
                       >
@@ -778,7 +726,7 @@ Vue.component("ResendingPanel", {
                           class="d-flex justify-content-between align-items-center"
                         >
                           <small class="fw-bold"
-                            >{{ filter.name || 'بدون نام' }}</small
+                            >فیلتر #{{ filterIndex + 1 }}</small
                           >
                           <small class="text-muted"
                             >{{ getFilterSummary(filter) }}</small
@@ -800,27 +748,17 @@ Vue.component("ResendingPanel", {
                     </small>
                   </div>
                 </div>
-
-                <div class="card-footer bg-transparent">
-                  <small class="text-muted">
-                    <i class="bi bi-clock"></i>
-                    ایجاد: {{ new
-                    Date(config.created_at).toLocaleDateString('fa-IR') }}
-                  </small>
-                </div>
               </div>
             </div>
           </div>
 
           <!-- Empty State -->
           <div v-else class="text-center py-5">
-            <div class="mb-4">
+            <div class="mb-1">
               <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
             </div>
             <h5 class="text-muted mb-2">هیچ پیکربندی‌ای وجود ندارد</h5>
-            <p class="text-muted mb-4">
-              برای شروع، اولین پیکربندی خود را ایجاد کنید
-            </p>
+
             <button
               type="button"
               class="btn btn-primary btn-lg"
