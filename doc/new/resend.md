@@ -21,3 +21,18 @@ When adding a predicate, user can use between between 4 different type of predic
 - Side (friendly, hostile, etc.)
 - Unit Type (Air, Ground, etc.)
 - Location Boundary (implement with Polygons, i.e. select from the list of polygons)
+
+# Changes in the Flows and resend predicates...
+
+ResendConfig:
+
+- Source: should we include this?
+- Destination: ResendDestination
+- Filter+Predicates:
+
+ResendDestination:
+
+<!-- - Source: which radio to use // CHOOSE WHEN SENDING  -->
+
+- UnicastDestination: IP/URN
+- Broadcast: boolean

@@ -88,6 +88,15 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.POST("/api/tracking/config/:uid", updateTrackingConfigHandler(app))
 	srv.OPTIONS("/api/tracking/settings", optionsHandler())
 
+	// Resend configuration API endpoints
+	srv.OPTIONS("/api/resend/configs", optionsHandler())
+	srv.GET("/api/resend/configs", getResendConfigsHandler(app))
+	srv.POST("/api/resend/configs", createResendConfigHandler(app))
+	srv.OPTIONS("/api/resend/configs/:uid", optionsHandler())
+	srv.GET("/api/resend/configs/:uid", getResendConfigHandler(app))
+	srv.PUT("/api/resend/configs/:uid", updateResendConfigHandler(app))
+	srv.DELETE("/api/resend/configs/:uid", deleteResendConfigHandler(app))
+
 	srv.OPTIONS("/stack", optionsHandler())
 	srv.GET("/stack", getStackHandler())
 

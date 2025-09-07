@@ -67,6 +67,11 @@ func (app *App) createDatabaseTables(db *sql.DB) error {
 		return fmt.Errorf("failed to create config table: %w", err)
 	}
 
+	// Create resend tables
+	if err := createResendTables(db); err != nil {
+		return fmt.Errorf("failed to create resend tables: %w", err)
+	}
+
 	return nil
 }
 
