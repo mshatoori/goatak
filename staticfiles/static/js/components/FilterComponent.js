@@ -14,7 +14,7 @@ Vue.component("FilterComponent", {
       ],
       itemTypes: [
         { value: "unit", label: "واحد" },
-        { value: "drawing", label: "نقشه" },
+        { value: "drawing", label: "مسیر/ناحیه" },
         { value: "contact", label: "مخاطب" },
         { value: "alert", label: "هشدار" },
       ],
@@ -128,7 +128,10 @@ Vue.component("FilterComponent", {
   template: html`
     <div>
       <!-- Existing Predicates -->
-      <div v-if="filter.predicates && filter.predicates.length > 0" class="mb-2">
+      <div
+        v-if="filter.predicates && filter.predicates.length > 0"
+        class="mb-2"
+      >
         <div class="small fw-bold mb-1">شرایط:</div>
         <div class="d-flex flex-wrap gap-1 mb-2">
           <div
@@ -136,7 +139,9 @@ Vue.component("FilterComponent", {
             :key="predicate.id"
             class="d-flex align-items-center bg-light rounded px-2 py-1 small"
           >
-            <span class="badge bg-primary badge-sm me-1">{{ getPredicateTypeLabel(predicate.type) }}</span>
+            <span class="badge bg-primary badge-sm me-1"
+              >{{ getPredicateTypeLabel(predicate.type) }}</span
+            >
             <span class="me-2">{{ getPredicateValueLabel(predicate) }}</span>
             <button
               type="button"
@@ -163,9 +168,16 @@ Vue.component("FilterComponent", {
         <div class="small fw-bold mb-1">افزودن شرط:</div>
         <div class="row g-1">
           <div class="col-5">
-            <select class="form-select form-select-sm" v-model="newPredicate.type">
+            <select
+              class="form-select form-select-sm"
+              v-model="newPredicate.type"
+            >
               <option value="" disabled>نوع</option>
-              <option v-for="type in predicateTypes" :key="type.value" :value="type.value">
+              <option
+                v-for="type in predicateTypes"
+                :key="type.value"
+                :value="type.value"
+              >
                 {{ type.label }}
               </option>
             </select>
@@ -177,7 +189,11 @@ Vue.component("FilterComponent", {
               v-model="newPredicate.value"
             >
               <option value="" disabled>مقدار</option>
-              <option v-for="option in availableValues" :key="option.value" :value="option.value">
+              <option
+                v-for="option in availableValues"
+                :key="option.value"
+                :value="option.value"
+              >
                 {{ option.label }}
               </option>
             </select>
