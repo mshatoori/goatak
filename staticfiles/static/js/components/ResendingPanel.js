@@ -15,7 +15,7 @@ Vue.component("ResendingPanel", {
       newFilter: {
         predicates: [],
       },
-      expandedConfigs: {},
+      expConfigs: {},
       expandedFilters: {},
       // Mock polygons data for FilterComponent (should come from backend)
       mockPolygons: [
@@ -247,7 +247,7 @@ Vue.component("ResendingPanel", {
 
     async saveConfig() {
       if (!this.editingData.name) {
-        this.error = "نام پیکربندی الزامی است";
+        this.error = "نام بازارسال الزامی است";
         return;
       }
 
@@ -288,7 +288,7 @@ Vue.component("ResendingPanel", {
     },
 
     async deleteConfig(index) {
-      if (!confirm("آیا از حذف این پیکربندی مطمئن هستید؟")) {
+      if (!confirm("آیا از حذف این بازارسال مطمئن هستید؟")) {
         return;
       }
 
@@ -351,11 +351,7 @@ Vue.component("ResendingPanel", {
 
     // Toggle functions
     toggleConfigExpansion(configId) {
-      this.$set(
-        this.expandedConfigs,
-        configId,
-        !this.expandedConfigs[configId]
-      );
+      this.$set(this.expConfigs, configId, !this.expConfigs[configId]);
     },
 
     toggleFilterExpansion(filterId) {
@@ -477,418 +473,492 @@ Vue.component("ResendingPanel", {
     },
   },
   template: html`
-    <div class="container-fluid" id="resending-panel-container">
+    <div class="card">
       <!-- Header -->
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h4 class="mb-0">ارسال مجدد</h4>
+      <div class="card-header">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h5 class="mb-0">بازارسال</h5>
+          </div>
+          <button
+            type="button"
+            class="btn btn-primary"
+            v-on:click="addConfig"
+            v-if="!editing"
+            :disabled="loading"
+          >
+            <i class="bi bi-plus-lg"></i>
+          </button>
         </div>
-        <button
-          type="button"
-          class="btn btn-primary"
-          v-on:click="addConfig"
-          v-if="!editing"
-          :disabled="loading"
+      </div>
+
+      <!-- Card Body -->
+      <div class="card-body">
+        <!-- Error Message -->
+        <div
+          v-if="error"
+          class="alert alert-danger alert-dismissible mb-4"
+          role="alert"
         >
-          <i class="bi bi-plus-lg"></i> پیکربندی جدید
-        </button>
-      </div>
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          {{ error }}
+          <button
+            type="button"
+            class="btn-close"
+            v-on:click="error = null"
+          ></button>
+        </div>
 
-      <!-- Error Message -->
-      <div
-        v-if="error"
-        class="alert alert-danger alert-dismissible mb-4"
-        role="alert"
-      >
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        {{ error }}
-        <button
-          type="button"
-          class="btn-close"
-          v-on:click="error = null"
-        ></button>
-      </div>
+        <!-- Loading State -->
+        <div v-if="loading" class="text-center py-5">
+          <div class="spinner-border text-primary mb-3" role="status"></div>
+          <p class="text-muted">در حال بارگذاری بازارسال‌ها...</p>
+        </div>
 
-      <!-- Loading State -->
-      <div v-if="loading" class="text-center py-5">
-        <div class="spinner-border text-primary mb-3" role="status"></div>
-        <p class="text-muted">در حال بارگذاری پیکربندی‌ها...</p>
-      </div>
-
-      <!-- Main Content -->
-      <div v-if="!loading">
-        <!-- Configuration Form -->
-        <div v-if="editing" class="row">
-          <div class="col-12">
-            <div class="card shadow-sm">
-              <div class="card-header bg-primary text-white">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 class="mb-0">
-                    <i class="bi bi-gear-fill"></i>
-                    {{ showNewConfigForm ? 'پیکربندی جدید' : 'ویرایش پیکربندی'
-                    }}
-                  </h5>
-                  <button
-                    type="button"
-                    class="btn-close btn-close-white"
-                    v-on:click="cancelEditing"
-                  ></button>
-                </div>
-              </div>
-
-              <!-- Progress Steps -->
-              <div class="card-body pb-1">
-                <div class="row mb-2">
-                  <div class="col-12">
-                    <div class="progress mb-1" style="height: 2px;">
-                      <div
-                        class="progress-bar"
-                        :style="{ width: (currentStep / totalSteps) * 100 + '%' }"
-                      ></div>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                      <small class="text-muted">{{ currentStep }}/{{ totalSteps }}</small>
-                      <small class="fw-bold text-primary">{{ stepTitle }}</small>
-                    </div>
+        <!-- Main Content -->
+        <div v-if="!loading">
+          <!-- Configuration Form -->
+          <div v-if="editing" class="row">
+            <div class="col-12">
+              <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                  <div
+                    class="d-flex justify-content-between align-items-center"
+                  >
+                    <h5 class="mb-0">
+                      <i class="bi bi-gear-fill"></i>
+                      {{ showNewConfigForm ? 'بازارسال جدید' : 'ویرایش بازارسال'
+                      }}
+                    </h5>
+                    <button
+                      type="button"
+                      class="btn-close btn-close-white"
+                      v-on:click="cancelEditing"
+                    ></button>
                   </div>
                 </div>
 
-                <!-- Step 1: Basic Information -->
-                <div v-show="currentStep === 1" class="step-content">
-                  <div class="row g-2">
-                    <div class="col-md-12">
-                      <label class="form-label fw-bold mb-1">نام</label>
-                      <input type="text" class="form-control" v-model="editingData.name" />
-                    </div>
-                    <div class="col-md-12">
-                      <div class="form-check form-switch">
-                        <input
-                          class="form-check-input"
-                          type="checkbox"
-                          id="config-enabled"
-                          v-model="editingData.enabled"
-                        />
-                        <label class="form-check-label" for="config-enabled">
-                          <span v-if="editingData.enabled" class="text-success">فعال</span>
-                          <span v-else class="text-warning">غیرفعال</span>
-                        </label>
+                <!-- Progress Steps -->
+                <div class="card-body pb-1">
+                  <div class="row mb-2">
+                    <div class="col-12">
+                      <div class="progress mb-1" style="height: 2px;">
+                        <div
+                          class="progress-bar"
+                          :style="{ width: (currentStep / totalSteps) * 100 + '%' }"
+                        ></div>
+                      </div>
+                      <div class="d-flex justify-content-between">
+                        <small class="text-muted"
+                          >{{ currentStep }}/{{ totalSteps }}</small
+                        >
+                        <small class="fw-bold text-primary"
+                          >{{ stepTitle }}</small
+                        >
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Step 2: Enhanced Destination Settings -->
-                <div v-show="currentStep === 2" class="step-content">
-                  <div class="fw-bold mb-2">حالت ارسال</div>
-                  <div class="form-check">
-                    <input
-                      class="form-check-input"
-                      type="radio"
-                      name="send_mode"
-                      id="send_modeSubnet"
-                      value="subnet"
-                      v-model="editingData.send_mode"
-                    />
-                    <label class="form-check-label" for="send_modeSubnet">زیرشبکه</label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input
-                      class="form-check-input"
-                      type="radio"
-                      name="send_mode"
-                      id="send_modeDirect"
-                      value="direct"
-                      v-model="editingData.send_mode"
-                    />
-                    <label class="form-check-label" for="send_modeDirect">مستقیم</label>
-                  </div>
-
-                  <!-- Subnet Selection -->
-                  <div v-if="editingData.send_mode === 'subnet'" class="mb-2">
-                    <label for="edit-subnet" class="form-label fw-bold mb-1">زیرشبکه</label>
-                    <select class="form-select" id="edit-subnet" v-model="editingData.selected_subnet">
-                      <option value="" disabled>انتخاب زیرشبکه</option>
-                      <option v-for="subnet in availableSubnets" :key="subnet" :value="subnet">
-                        {{ subnet }}
-                      </option>
-                    </select>
+                  <!-- Step 1: Basic Information -->
+                  <div v-show="currentStep === 1" class="step-content">
+                    <div class="row g-2">
+                      <div class="col-md-12">
+                        <label class="form-label fw-bold mb-1">نام</label>
+                        <input
+                          type="text"
+                          class="form-control"
+                          v-model="editingData.name"
+                        />
+                      </div>
+                      <div class="col-md-12">
+                        <div class="form-check form-switch">
+                          <input
+                            class="form-check-input"
+                            type="checkbox"
+                            id="config-enabled"
+                            v-model="editingData.enabled"
+                          />
+                          <label class="form-check-label" for="config-enabled">
+                            <span
+                              v-if="editingData.enabled"
+                              class="text-success"
+                              >فعال</span
+                            >
+                            <span v-else class="text-warning">غیرفعال</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  <!-- Direct Destination Selection -->
-                  <div v-if="editingData.send_mode === 'direct'">
-                    <div class="mb-2">
-                      <label for="edit-urn" class="form-label fw-bold mb-1">URN</label>
-                      <select class="form-select" id="edit-urn" v-model="editingData.selected_urn" @change="onUrnSelected">
-                        <option value="" disabled>انتخاب URN</option>
-                        <option v-for="contact in availableContacts" :key="contact.urn" :value="contact.urn">
-                          {{ contact.urn }} ({{ contact.callsign }})
+                  <!-- Step 2: Enhanced Destination Settings -->
+                  <div v-show="currentStep === 2" class="step-content">
+                    <div class="fw-bold mb-2">حالت ارسال</div>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="send_mode"
+                        id="send_modeSubnet"
+                        value="subnet"
+                        v-model="editingData.send_mode"
+                      />
+                      <label class="form-check-label" for="send_modeSubnet"
+                        >زیرشبکه</label
+                      >
+                    </div>
+                    <div class="form-check mb-2">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="send_mode"
+                        id="send_modeDirect"
+                        value="direct"
+                        v-model="editingData.send_mode"
+                      />
+                      <label class="form-check-label" for="send_modeDirect"
+                        >مستقیم</label
+                      >
+                    </div>
+
+                    <!-- Subnet Selection -->
+                    <div v-if="editingData.send_mode === 'subnet'" class="mb-2">
+                      <label for="edit-subnet" class="form-label fw-bold mb-1"
+                        >زیرشبکه</label
+                      >
+                      <select
+                        class="form-select"
+                        id="edit-subnet"
+                        v-model="editingData.selected_subnet"
+                      >
+                        <option value="" disabled>انتخاب زیرشبکه</option>
+                        <option
+                          v-for="subnet in availableSubnets"
+                          :key="subnet"
+                          :value="subnet"
+                        >
+                          {{ subnet }}
                         </option>
                       </select>
                     </div>
-                    <div class="mb-2">
-                      <label for="edit-ip" class="form-label fw-bold mb-1">آدرس IP</label>
-                      <select class="form-select" id="edit-ip" v-model="editingData.selected_ip" :disabled="!editingData.selected_urn">
-                        <option value="" disabled>انتخاب IP</option>
-                        <option v-for="ip in availableIps" :key="ip" :value="ip">{{ ip }}</option>
-                      </select>
+
+                    <!-- Direct Destination Selection -->
+                    <div v-if="editingData.send_mode === 'direct'">
+                      <div class="mb-2">
+                        <label for="edit-urn" class="form-label fw-bold mb-1"
+                          >URN</label
+                        >
+                        <select
+                          class="form-select"
+                          id="edit-urn"
+                          v-model="editingData.selected_urn"
+                          @change="onUrnSelected"
+                        >
+                          <option value="" disabled>انتخاب URN</option>
+                          <option
+                            v-for="contact in availableContacts"
+                            :key="contact.urn"
+                            :value="contact.urn"
+                          >
+                            {{ contact.urn }} ({{ contact.callsign }})
+                          </option>
+                        </select>
+                      </div>
+                      <div class="mb-2">
+                        <label for="edit-ip" class="form-label fw-bold mb-1"
+                          >آدرس IP</label
+                        >
+                        <select
+                          class="form-select"
+                          id="edit-ip"
+                          v-model="editingData.selected_ip"
+                          :disabled="!editingData.selected_urn"
+                        >
+                          <option value="" disabled>انتخاب IP</option>
+                          <option
+                            v-for="ip in availableIps"
+                            :key="ip"
+                            :value="ip"
+                          >
+                            {{ ip }}
+                          </option>
+                        </select>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Step 3: Filters Management -->
-                <div v-show="currentStep === 3" class="step-content">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="fw-bold">فیلترها ({{ editingData.filters.length }})</span>
-                    <button
-                      type="button"
-                      class="btn btn-primary btn-sm"
-                      v-on:click="addFilter"
-                    >
-                      <i class="bi bi-plus"></i> افزودن
-                    </button>
-                  </div>
-
-                  <!-- Existing Filters -->
-                  <div v-if="editingData.filters && editingData.filters.length > 0">
+                  <!-- Step 3: Filters Management -->
+                  <div v-show="currentStep === 3" class="step-content">
                     <div
-                      v-for="filter in editingData.filters"
-                      :key="filter.id"
-                      class="mb-1"
+                      class="d-flex justify-content-between align-items-center mb-2"
                     >
-                      <!-- Filter Header -->
-                      <div class="d-flex justify-content-between align-items-center py-1 px-2 bg-light rounded">
-                        <div class="d-flex align-items-center">
+                      <span class="fw-bold"
+                        >فیلترها ({{ editingData.filters.length }})</span
+                      >
+                      <button
+                        type="button"
+                        class="btn btn-primary btn-sm"
+                        v-on:click="addFilter"
+                      >
+                        <i class="bi bi-plus"></i> افزودن
+                      </button>
+                    </div>
+
+                    <!-- Existing Filters -->
+                    <div
+                      v-if="editingData.filters && editingData.filters.length > 0"
+                    >
+                      <div
+                        v-for="filter in editingData.filters"
+                        :key="filter.id"
+                        class="mb-1"
+                      >
+                        <!-- Filter Header -->
+                        <div
+                          class="d-flex justify-content-between align-items-center py-1 px-2 bg-light rounded"
+                        >
+                          <div class="d-flex align-items-center">
+                            <button
+                              type="button"
+                              class="btn btn-sm p-1 me-2"
+                              @click="toggleFilterExpansion(filter.id)"
+                            >
+                              <i
+                                :class="expandedFilters[filter.id] ? 'bi bi-chevron-down' : 'bi bi-chevron-right'"
+                              ></i>
+                            </button>
+                            <span class="small fw-bold">
+                              فیلتر #{{ editingData.filters.indexOf(filter) + 1
+                              }}
+                            </span>
+                            <span class="small text-muted ms-2"
+                              >({{ getFilterSummary(filter) }})</span
+                            >
+                          </div>
                           <button
                             type="button"
-                            class="btn btn-sm p-1 me-2"
-                            @click="toggleFilterExpansion(filter.id)"
+                            class="btn btn-sm p-1 text-danger"
+                            @click="deleteFilterById(filter.id)"
                           >
-                            <i
-                              :class="expandedFilters[filter.id] ? 'bi bi-chevron-down' : 'bi bi-chevron-right'"
-                            ></i>
+                            <i class="bi bi-trash"></i>
                           </button>
-                          <span class="small fw-bold">
-                            فیلتر #{{ editingData.filters.indexOf(filter) + 1 }}
-                          </span>
-                          <span class="small text-muted ms-2">({{ getFilterSummary(filter) }})</span>
                         </div>
-                        <button
-                          type="button"
-                          class="btn btn-sm p-1 text-danger"
-                          @click="deleteFilterById(filter.id)"
+                        <!-- Filter Content -->
+                        <div
+                          class="px-2 py-1"
+                          v-show="expandedFilters[filter.id]"
                         >
-                          <i class="bi bi-trash"></i>
-                        </button>
+                          <filter-component
+                            :filter="filter"
+                            :polygons="mockPolygons"
+                            @update-filter="updateFilter"
+                          ></filter-component>
+                        </div>
                       </div>
-                      <!-- Filter Content -->
-                      <div class="px-2 py-1" v-show="expandedFilters[filter.id]">
-                        <filter-component
-                          :filter="filter"
-                          :polygons="mockPolygons"
-                          @update-filter="updateFilter"
-                        ></filter-component>
-                      </div>
+                    </div>
+
+                    <div v-else class="text-center py-2 text-muted small">
+                      هنوز فیلتری اضافه نشده
                     </div>
                   </div>
 
-                  <div v-else class="text-center py-2 text-muted small">
-                    هنوز فیلتری اضافه نشده
-                  </div>
-                </div>
-
-                <!-- Navigation Buttons -->
-                <div
-                  class="d-flex justify-content-between mt-4 pt-3 border-top"
-                >
-                  <div>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary"
-                      v-show="currentStep > 1"
-                      @click="prevStep"
-                    >
-                      <i class="bi bi-arrow-right"></i>
-                    </button>
-                  </div>
-                  <div>
-                    <button
-                      type="button"
-                      class="btn btn-outline-secondary me-2"
-                      v-on:click="cancelEditing"
-                    >
-                      لغو
-                    </button>
-                    <button
-                      v-if="currentStep < totalSteps"
-                      type="button"
-                      class="btn btn-primary"
-                      @click="nextStep"
-                      :disabled="!canProceedToNextStep()"
-                    >
-                      مرحله بعد <i class="bi bi-arrow-left"></i>
-                    </button>
-                    <button
-                      v-else
-                      type="button"
-                      class="btn btn-success"
-                      v-on:click="saveConfig"
-                      :disabled="!editingData.name"
-                    >
-                      <i class="bi bi-check-lg"></i> ذخیره
-                    </button>
+                  <!-- Navigation Buttons -->
+                  <div
+                    class="d-flex justify-content-between mt-4 pt-3 border-top"
+                  >
+                    <div>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        v-show="currentStep > 1"
+                        @click="prevStep"
+                      >
+                        <i class="bi bi-arrow-right"></i>
+                      </button>
+                    </div>
+                    <div>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary me-2"
+                        v-on:click="cancelEditing"
+                      >
+                        لغو
+                      </button>
+                      <button
+                        v-if="currentStep < totalSteps"
+                        type="button"
+                        class="btn btn-primary"
+                        @click="nextStep"
+                        :disabled="!canProceedToNextStep()"
+                      >
+                        مرحله بعد <i class="bi bi-arrow-left"></i>
+                      </button>
+                      <button
+                        v-else
+                        type="button"
+                        class="btn btn-success"
+                        v-on:click="saveConfig"
+                        :disabled="!editingData.name"
+                      >
+                        <i class="bi bi-check-lg"></i> ذخیره
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Configuration List -->
-        <div v-if="!editing">
-          <!-- Existing Configurations -->
-          <div
-            v-if="resendingConfigs && resendingConfigs.length > 0"
-            class="row"
-          >
+          <!-- Configuration List -->
+          <div v-if="!editing">
+            <!-- Existing Configurations -->
             <div
-              v-for="(config, index) in resendingConfigs"
-              :key="config.uid || index"
-              class="col-12 mb-4"
+              v-if="resendingConfigs && resendingConfigs.length > 0"
+              class="row"
             >
-              <div class="card h-100 shadow-sm">
-                <div
-                  class="card-header d-flex justify-content-between align-items-start"
-                >
-                  <div class="flex-grow-1">
-                    <h6 class="card-title mb-1">{{ config.name }}</h6>
-                    <div class="d-flex align-items-center">
-                      <span v-if="config.enabled" class="badge bg-success me-2">
-                        <i class="bi bi-check-circle"></i> فعال
-                      </span>
-                      <span v-else class="badge bg-warning me-2">
-                        <i class="bi bi-pause-circle"></i> غیرفعال
-                      </span>
-                      <small class="text-muted"
-                        >{{ config.filters ? config.filters.length : 0 }}
-                        فیلتر</small
-                      >
-                    </div>
-                  </div>
-                  <div class="dropdown">
-                    <button
-                      class="btn btn-sm btn-outline-secondary dropdown-toggle"
-                      data-bs-toggle="dropdown"
-                    >
-                      <i class="bi bi-three-dots"></i>
-                    </button>
-                    <ul class="dropdown-menu">
-                      <li>
-                        <button
-                          class="dropdown-item"
-                          @click="editConfig(index)"
+              <div
+                v-for="(config, index) in resendingConfigs"
+                :key="config.uid || index"
+                class="col-12 mb-4"
+              >
+                <div class="card h-100 shadow-sm">
+                  <div
+                    class="card-header d-flex justify-content-between align-items-start"
+                  >
+                    <div class="flex-grow-1">
+                      <h6 class="card-title mb-1">{{ config.name }}</h6>
+                      <div class="d-flex align-items-center">
+                        <span
+                          v-if="config.enabled"
+                          class="badge bg-success me-2"
                         >
-                          <i class="bi bi-pencil"></i> ویرایش
-                        </button>
-                      </li>
-                      <li>
-                        <button
-                          class="dropdown-item text-danger"
-                          @click="deleteConfig(index)"
+                          <i class="bi bi-check-circle"></i> فعال
+                        </span>
+                        <span v-else class="badge bg-warning me-2">
+                          <i class="bi bi-pause-circle"></i> غیرفعال
+                        </span>
+                        <small class="text-muted"
+                          >{{ config.filters ? config.filters.length : 0 }}
+                          فیلتر</small
                         >
-                          <i class="bi bi-trash"></i> حذف
-                        </button>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div class="card-body">
-                  <div class="mb-3">
-                    <small class="text-muted d-block">مقصد:</small>
-                    <div class="d-flex align-items-center">
-                      <i class="bi bi-send me-1"></i>
-                      <code class="small"
-                        >{{ getDestinationDisplayText(config.destination)
-                        }}</code
-                      >
-                      <span
-                        v-if="config.destination"
-                        class="badge bg-light text-dark ms-2"
-                      >
-                        {{ config.destination.type === 'node' ? 'مستقیم' :
-                        'زیرشبکه' }}
-                      </span>
+                      </div>
                     </div>
-                  </div>
-
-                  <div v-if="config.filters && config.filters.length > 0">
-                    <small class="text-muted d-block mb-2">فیلترها:</small>
-                    <div class="mb-2">
+                    <div class="dropdown">
                       <button
-                        type="button"
-                        class="btn btn-sm btn-outline-primary w-100"
-                        @click="toggleConfigExpansion(config.uid || index)"
+                        class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                        data-bs-toggle="dropdown"
                       >
-                        <i
-                          :class="expandedConfigs[config.uid || index] ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"
-                        ></i>
-                        {{ expandedConfigs[config.uid || index] ? 'بستن جزئیات'
-                        : 'نمایش جزئیات' }}
+                        <i class="bi bi-three-dots"></i>
                       </button>
+                      <ul class="dropdown-menu">
+                        <li>
+                          <button
+                            class="dropdown-item"
+                            @click="editConfig(index)"
+                          >
+                            <i class="bi bi-pencil"></i> ویرایش
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            class="dropdown-item text-danger"
+                            @click="deleteConfig(index)"
+                          >
+                            <i class="bi bi-trash"></i> حذف
+                          </button>
+                        </li>
+                      </ul>
                     </div>
-                    <div
-                      v-show="expandedConfigs[config.uid || index]"
-                      class="border-top pt-2"
-                    >
+                  </div>
+
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <small class="text-muted d-block">مقصد:</small>
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-send me-1"></i>
+                        <code class="small"
+                          >{{ getDestinationDisplayText(config.destination)
+                          }}</code
+                        >
+                        <span
+                          v-if="config.destination"
+                          class="badge bg-light text-dark ms-2"
+                        >
+                          {{ config.destination.type === 'node' ? 'مستقیم' :
+                          'زیرشبکه' }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div v-if="config.filters && config.filters.length > 0">
+                      <small class="text-muted d-block mb-2">فیلترها:</small>
+                      <div class="mb-2">
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-primary w-100"
+                          @click="toggleConfigExpansion(config.uid || index)"
+                        >
+                          <i
+                            :class="expConfigs[config.uid || index] ? 'bi bi-chevron-up' : 'bi bi-chevron-down'"
+                          ></i>
+                          {{ expConfigs[config.uid || index] ? 'بستن جزئیات' :
+                          'نمایش جزئیات' }}
+                        </button>
+                      </div>
                       <div
-                        v-for="(filter, filterIndex) in config.filters.slice(0, 2)"
-                        :key="filter.id"
-                        class="mb-2"
+                        v-show="expConfigs[config.uid || index]"
+                        class="border-top pt-2"
                       >
                         <div
-                          class="d-flex justify-content-between align-items-center"
+                          v-for="(filter, filterIndex) in config.filters.slice(0, 2)"
+                          :key="filter.id"
+                          class="mb-2"
                         >
-                          <small class="fw-bold"
-                            >فیلتر #{{ filterIndex + 1 }}</small
+                          <div
+                            class="d-flex justify-content-between align-items-center"
                           >
-                          <small class="text-muted"
-                            >{{ getFilterSummary(filter) }}</small
-                          >
+                            <small class="fw-bold"
+                              >فیلتر #{{ filterIndex + 1 }}</small
+                            >
+                            <small class="text-muted"
+                              >{{ getFilterSummary(filter) }}</small
+                            >
+                          </div>
                         </div>
+                        <small
+                          v-if="config.filters.length > 2"
+                          class="text-muted"
+                        >
+                          و {{ config.filters.length - 2 }} فیلتر دیگر...
+                        </small>
                       </div>
-                      <small
-                        v-if="config.filters.length > 2"
-                        class="text-muted"
-                      >
-                        و {{ config.filters.length - 2 }} فیلتر دیگر...
+                    </div>
+                    <div v-else>
+                      <small class="text-muted">
+                        <i class="bi bi-info-circle"></i> بدون فیلتر - همه
+                        پیام‌ها ارسال می‌شوند
                       </small>
                     </div>
                   </div>
-                  <div v-else>
-                    <small class="text-muted">
-                      <i class="bi bi-info-circle"></i> بدون فیلتر - همه پیام‌ها
-                      ارسال می‌شوند
-                    </small>
-                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Empty State -->
-          <div v-else class="text-center py-5">
-            <div class="mb-1">
-              <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+            <!-- Empty State -->
+            <div v-else class="text-center py-5">
+              <div class="mb-1">
+                <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+              </div>
+              <h5 class="text-muted mb-2">هیچ بازارسالی وجود ندارد</h5>
+
+              <button
+                type="button"
+                class="btn btn-primary btn-lg"
+                @click="addConfig"
+              >
+                <i class="bi bi-plus-lg"></i> ایجاد بازارسال جدید
+              </button>
             </div>
-            <h5 class="text-muted mb-2">هیچ پیکربندی‌ای وجود ندارد</h5>
-
-            <button
-              type="button"
-              class="btn btn-primary btn-lg"
-              @click="addConfig"
-            >
-              <i class="bi bi-plus-lg"></i> ایجاد پیکربندی جدید
-            </button>
           </div>
         </div>
       </div>
