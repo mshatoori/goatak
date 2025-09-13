@@ -10,10 +10,12 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"net"
 	"strconv"
 	"sync/atomic"
 	"time"
 
+	"github.com/kdudkov/goatak/internal/dnsproxy"
 	"github.com/kdudkov/goatak/pkg/model"
 	amqp "github.com/rabbitmq/amqp091-go"
 
@@ -44,6 +46,7 @@ type RabbitFlowConfig struct {
 	Title        string
 	Destinations []model.SendItemDest
 	ClientInfo   *cotproto.ClientInfo
+	DNSProxy     *dnsproxy.DnsServiceProxy
 }
 
 type RabbitFlow struct {
@@ -72,6 +75,7 @@ type RabbitFlow struct {
 	msgCounter   int
 	Destinations []model.SendItemDest
 	ClientInfo   *cotproto.ClientInfo
+	dnsProxy     *dnsproxy.DnsServiceProxy
 }
 
 type RabbitReader struct {
@@ -131,6 +135,7 @@ func NewRabbitFlow(config *RabbitFlowConfig) *RabbitFlow {
 		msgCounter:   0,
 		Destinations: config.Destinations,
 		ClientInfo:   config.ClientInfo,
+		dnsProxy:     config.DNSProxy,
 	}
 
 	var err error = nil
@@ -465,11 +470,16 @@ func (h *RabbitFlow) Stop() {
 }
 
 func (h *RabbitFlow) SendCot(msg *cotproto.TakMessage) error {
-	h.logger.Debug(fmt.Sprintf("RabbitFlow SendCot version: %d", h.GetVersion()))
+	return h.SendCotToDestinations(msg, h.Destinations)
+}
+
+func (h *RabbitFlow) SendCotToDestinations(msg *cotproto.TakMessage, destinations []model.SendItemDest) error {
+	h.logger.Debug(fmt.Sprintf("RabbitFlow SendCotToDestinations version: %d", h.GetVersion()))
 	if h.Direction&OUTGOING == 0 {
 		h.logger.Debug("RabbitFlow Ignoring write")
 		return nil
 	}
+
 	switch h.GetVersion() {
 	case 0:
 		//h.logger.Debug("RabbitFlow SendCot v0")
@@ -488,7 +498,7 @@ func (h *RabbitFlow) SendCot(msg *cotproto.TakMessage) error {
 			return err
 		}
 
-		if h.tryAddPacket(h.wrapMessage(buf, msg)) {
+		if h.tryAddPacket(h.wrapMessage(buf, msg, destinations)) {
 			return nil
 		}
 	}
@@ -509,7 +519,83 @@ func (h *RabbitFlow) tryAddPacket(msg []byte) bool {
 	return true
 }
 
-func (h *RabbitFlow) wrapMessage(buf []byte, _msg *cotproto.TakMessage) []byte {
+// selectSourceForDestinations gets this node's addresses from DNSProxy (by URN).
+// Uses the IP that is in the same network (mask 255.255.255.0) as the destination IP addresses,
+// if such an IP exists. If not, defaults to `clientInfo.GetIpAddress()`
+func (h *RabbitFlow) selectSourceForDestinations(destinations []model.SendItemDest) model.SendItemDest {
+	clientInfo := h.ClientInfo
+	defaultResult := model.SendItemDest{
+		URN:  int(clientInfo.GetUrn()),
+		Addr: clientInfo.GetIpAddress(),
+	}
+
+	// If no DNS proxy is configured, return default
+	if h.dnsProxy == nil {
+		return defaultResult
+	}
+
+	// Get addresses for this node's URN from DNSProxy
+	nodeAddresses, err := h.dnsProxy.GetAddressesByUrn(int(clientInfo.GetUrn()))
+	if err != nil {
+		h.logger.Warn("Failed to get addresses from DNSProxy", "urn", clientInfo.GetUrn(), "error", err)
+		return defaultResult
+	}
+
+	// If no addresses found, return default
+	if len(nodeAddresses) == 0 {
+		return defaultResult
+	}
+
+	// Try to find an IP address that is in the same network as any destination
+	for _, dest := range destinations {
+		destIP := net.ParseIP(dest.Addr)
+		if destIP == nil {
+			continue
+		}
+
+		// Check each node address to see if it's in the same /24 network as this destination
+		for _, nodeAddr := range nodeAddresses {
+			if nodeAddr.IPAddress == nil {
+				continue
+			}
+			
+			nodeIP := net.ParseIP(*nodeAddr.IPAddress)
+			if nodeIP == nil {
+				continue
+			}
+
+			// Check if both IPs are in the same /24 network (255.255.255.0 mask)
+			if h.sameNetwork(nodeIP, destIP, net.CIDRMask(24, 32)) {
+				return model.SendItemDest{
+					URN:  int(clientInfo.GetUrn()),
+					Addr: *nodeAddr.IPAddress,
+				}
+			}
+		}
+	}
+
+	// No matching network found, return default
+	return defaultResult
+}
+
+// sameNetwork checks if two IP addresses are in the same network given a subnet mask
+func (h *RabbitFlow) sameNetwork(ip1, ip2 net.IP, mask net.IPMask) bool {
+	// Ensure both IPs are the same version (IPv4 or IPv6)
+	ip1 = ip1.To4()
+	ip2 = ip2.To4()
+	
+	if ip1 == nil || ip2 == nil {
+		return false
+	}
+
+	// Apply mask to both IPs and compare
+	network1 := ip1.Mask(mask)
+	network2 := ip2.Mask(mask)
+	
+	return network1.Equal(network2)
+}
+
+func (h *RabbitFlow) wrapMessage(buf []byte, _msg *cotproto.TakMessage, destinations []model.SendItemDest) []byte {
 	var newBuffer bytes.Buffer
 	clientInfo := h.ClientInfo
 
@@ -519,16 +605,13 @@ func (h *RabbitFlow) wrapMessage(buf []byte, _msg *cotproto.TakMessage) []byte {
 		MessageNumber:  5,
 		MessageSubtype: nil,
 		PayLoadData:    base64.StdEncoding.EncodeToString(buf),
-		Source: model.SendItemDest{
-			URN:  int(clientInfo.GetUrn()),
-			Addr: clientInfo.GetIpAddress(),
-		},
-		Destinations: h.Destinations,
-		CommandId:    "00000000-0000-0000-0000-000000000001",
-		CreationDate: "2023-06-11T14:27:43.7958539+03:30",
-		Version:      "1.0",
-		Type:         SEND_VMF_COMMAND,
-		SourceSystem: "SA",
+		Source:         h.selectSourceForDestinations(destinations),
+		Destinations:   destinations,
+		CommandId:      "00000000-0000-0000-0000-000000000001",
+		CreationDate:   "2023-06-11T14:27:43.7958539+03:30",
+		Version:        "1.0",
+		Type:           SEND_VMF_COMMAND,
+		SourceSystem:   "SA",
 	}
 
 	err := json.NewEncoder(&newBuffer).Encode(rabbitMsg)
