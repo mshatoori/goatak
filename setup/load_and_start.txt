@@ -1,0 +1,11 @@
+# Set version before running script
+# Example:
+# $version = "v21"
+$version = ""
+
+docker load -i "goatak-client-$version.tar"
+docker tag "ghcr.io/mshatoori/goatak-client:$version" ghcr.io/mshatoori/goatak-client:latest
+docker load -i goatak-gpsd-v1.tar
+docker load -i goatak-maps-v1.tar
+
+docker compose up
