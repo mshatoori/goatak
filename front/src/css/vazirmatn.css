@@ -1,0 +1,12 @@
+@font-face {
+  font-family: 'Vazirmatn';
+  src: url('/fonts/Vazirmatn-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+}
+* {
+  font-family: 'Vazirmatn', sans-serif;
+}
+html {
+  direction: rtl;
+}
