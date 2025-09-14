@@ -23,10 +23,10 @@ const (
 )
 
 type Item struct {
-	mx       sync.RWMutex
-	uid      string
-	class    string
-	online   bool
+	mx             sync.RWMutex
+	uid            string
+	class          string
+	online         bool
 	lastSeen       time.Time
 	local          bool
 	send           bool
@@ -35,8 +35,8 @@ type Item struct {
 	selectedUrn    int32
 	selectedIP     string
 	track          []*Pos
-	msg      *cot.CotMessage
-	lastSent time.Time
+	msg            *cot.CotMessage
+	lastSent       time.Time
 }
 
 func (i *Item) String() string {
@@ -157,7 +157,7 @@ func (i *Item) SetSendMode(sendMode string) {
 func (i *Item) GetSendMode() string {
 	i.mx.RLock()
 	defer i.mx.RUnlock()
-	
+
 	// For backward compatibility, if sendMode is empty but send is true, return "broadcast"
 	if i.sendMode == "" && i.send {
 		return "broadcast"
@@ -231,7 +231,7 @@ func (i *Item) ShouldSend() bool {
 
 	recentlySent := time.Since(i.lastSent) < ResendObject
 
-	return i.send && !recentlySent
+	return i.send && i.sendMode != "none" && !recentlySent
 }
 
 func (i *Item) SetLastSent() {

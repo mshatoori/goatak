@@ -447,6 +447,7 @@ func addItemHandler(app *App) air.Handler {
 		if u = app.items.Get(msg.GetUID()); u != nil {
 			u.Update(msg)
 			u.SetSend(wu.Send)
+			u.SetLastSent()
 			u.SetSendMode(wu.SendMode)
 			u.SetSelectedSubnet(wu.SelectedSubnet)
 			u.SetSelectedUrn(wu.SelectedUrn)
@@ -457,6 +458,7 @@ func addItemHandler(app *App) air.Handler {
 			u = model.FromMsg(msg)
 			u.SetLocal(true)
 			u.SetSend(wu.Send)
+			u.SetLastSent()
 			u.SetSendMode(wu.SendMode)
 			u.SetSelectedSubnet(wu.SelectedSubnet)
 			u.SetSelectedUrn(wu.SelectedUrn)
@@ -545,31 +547,16 @@ func sendItemHandler(app *App) air.Handler {
 			}
 		}
 
-		prevDest := rabbitmq.Destinations
-		rabbitmq.Destinations = destinations
-
 		uid := getStringParam(req, "uid")
 		item := app.items.Get(uid)
 		if item == nil {
 			return nil
 		}
 
-		// TODO: REMOVE
-		// item.GetMsg().GetTakMessage().CotEvent.Detail.Contact = &cotproto.Contact{
-		// 	Endpoint: "*:-1:stcp",
-		// 	Callsign: app.callsign,
-		// 	ClientInfo: &cotproto.ClientInfo{
-		// 		IpAddress: app.ipAddress,
-		// 		Urn:       app.urn,
-		// 	},
-		// }
-
-		err := rabbitmq.SendCot(item.GetMsg().GetTakMessage())
+		err := rabbitmq.SendCotToDestinations(item.GetMsg().GetTakMessage(), destinations)
 		if err != nil {
 			return err
 		}
-
-		rabbitmq.Destinations = prevDest
 
 		return res.WriteJSON("OK")
 	}

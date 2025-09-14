@@ -64,19 +64,10 @@ func (app *App) SendMsgToDestination(msg *cotproto.TakMessage, dest model.SendIt
 		return fmt.Errorf("no RabbitFlow found")
 	}
 
-	// Save current destinations
-	prevDest := rabbitmq.Destinations
-
-	// Set new destination
 	destinations := make([]model.SendItemDest, 1)
 	destinations[0] = dest
-	rabbitmq.Destinations = destinations
 
-	// Send the message
-	err := rabbitmq.SendCot(msg)
-
-	// Restore original destinations
-	rabbitmq.Destinations = prevDest
+	err := rabbitmq.SendCotToDestinations(msg, destinations)
 
 	if err != nil {
 		app.logger.Error("destination send error", "error", err, "dest", dest)
@@ -204,7 +195,36 @@ func (app *App) myPosSender(ctx context.Context) {
 func (app *App) sendMyPoints() {
 	app.items.ForEach(func(item *model.Item) bool {
 		if item.ShouldSend() {
-			app.SendMsg(item.GetMsg().GetTakMessage())
+			// Handle different send modes
+			switch item.GetSendMode() {
+			case "broadcast":
+				app.SendMsg(item.GetMsg().GetTakMessage())
+			case "subnet":
+				if item.GetSelectedSubnet() != "" {
+					dest := model.SendItemDest{
+						Addr: item.GetSelectedSubnet(),
+						URN:  16777215, // Broadcast URN for subnet
+					}
+					if err := app.SendMsgToDestination(item.GetMsg().GetTakMessage(), dest); err != nil {
+						app.logger.Error("failed to send to subnet", "error", err, "subnet", item.GetSelectedSubnet())
+					}
+				}
+			case "direct":
+				if item.GetSelectedIP() != "" && item.GetSelectedUrn() != 0 {
+					dest := model.SendItemDest{
+						Addr: item.GetSelectedIP(),
+						URN:  int(item.GetSelectedUrn()),
+					}
+					if err := app.SendMsgToDestination(item.GetMsg().GetTakMessage(), dest); err != nil {
+						app.logger.Error("failed to send to direct destination", "error", err, "ip", item.GetSelectedIP(), "urn", item.GetSelectedUrn())
+					}
+				}
+			case "none":
+				// Don't send, local only
+			default:
+				// For backward compatibility
+				app.SendMsg(item.GetMsg().GetTakMessage())
+			}
 			item.SetLastSent()
 		}
 
