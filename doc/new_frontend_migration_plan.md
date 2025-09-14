@@ -5,6 +5,7 @@
 This plan outlines an incremental migration of the current GoATK front-end from Vue2/Bootstrap/embedded static files to a modern, decoupled setup using Vue3, Vuetify, Vite, and TypeScript. The goal is to match all existing functionality exactly—no additions, removals, or behavioral changes—while improving maintainability, performance, separation of concerns, and type safety.
 
 ### Key Changes
+
 - **Framework**: Vue3 with Composition API (replaces Vue2 options API).
 - **UI Library**: Vuetify 3 (replaces Bootstrap for components like navbars, modals, sidebars; supports RTL for Persian).
 - **Build System**: Vite (fast dev server, bundling, hot reload; outputs to `dist/` for static serving by Go backend).
@@ -12,13 +13,14 @@ This plan outlines an incremental migration of the current GoATK front-end from 
 - **Mapping**: Retain Leaflet + Leaflet.Draw (integrate via Vue wrappers if needed, e.g., vue2-leaflet but updated for Vue3).
 - **Symbols**: Retain MilSymbol.js (load as module).
 - **Real-Time**: Retain WebSocket integration (use native WebSocket or Vue composable).
-- **Decoupling**: Serve front-end independently (no Go involvement in static files). Connect to back-end APIs/WS via configurable base URL (e.g., http://localhost:8080).
+- **Decoupling**: Serve front-end independently (no Go involvement in static files). Connect to back-end APIs/WS via configurable base URL (e.g., http://localhost:8081).
 - **Assets**: Migrate icons to `front/public/icons/`, fonts/CSS to Vuetify theme config. No changes to backend APIs/WS endpoints.
 - **RTL/Persian**: Configure Vuetify with RTL direction and Vazirmatn font.
 - **Language**: TypeScript for type safety, with interfaces for data models (e.g., Unit, Pos).
 - **Phases**: Each phase builds a usable subset, testable via dev server and integration with backend. Phases are sequential; complete testing before proceeding.
 
 ### Project Structure (New)
+
 ```
 front/
 ├── src/
@@ -38,6 +40,7 @@ front/
 ```
 
 ### Dependencies
+
 - Core: `vue@^3.4`, `vuetify@^3.4`, `vite@^5`, `pinia@^2`.
 - Mapping: `leaflet@^1.9`, `leaflet-draw@^1.0`.
 - Utils: `milsymbol@^2`, `@vueuse/core` (for reactive WS).
@@ -47,22 +50,24 @@ front/
 Backend changes (final phase): No backend changes for static serving; optionally add CORS headers to allow requests from front-end origin.
 
 ### General Migration Guidelines
+
 - Preserve data flow: Fetch initial state from `/config`, CRUD via `/unit` etc., WS at `/ws` for updates.
 - Components: Refactor to single-file .vue (template/script/style) with <script setup lang="ts">.
 - Interactivity: Use Vue refs for Leaflet map instance.
-- Testing: Each phase: Run `npm run dev` (proxy backend at localhost:8080), verify features manually against current app.
 - No new features: Match UI/behavior pixel-for-pixel where possible (e.g., sidebar collapse animation via Vuetify transitions).
 - Use TypeScript: Define interfaces (e.g., interface UserPos { lat: number; lng: number; }), type props/emits, useRef<T> for refs. Ensure Leaflet types via @types/leaflet.
 
 ## Phase 1: Project Setup and Basic Map Display
+
 **Goal**: Create project skeleton with interactive map showing user position (from `/pos`). Usable: Basic navigation/zoom, no items.
 
 **Steps**:
+
 1. Create `front/` dir, init Vite project: `npm create vue@latest front -- --template vue-ts`.
 2. Install deps: `npm i vuetify leaflet leaflet-draw milsymbol pinia @vueuse/core`.
 3. Install TS deps: `npm install -D typescript @types/node @types/leaflet vite-tsconfig-paths`.
 4. Configure Vuetify: Create `plugins/vuetify.ts` with RTL theme (Vazirmatn font via CSS import).
-5. Setup Vite: Proxy `/api/*` to backend (e.g., `http://localhost:8080`), alias for utils in vite.config.ts.
+5. Setup Vite: Proxy `/api/*` to backend (e.g., `http://localhost:8081`), alias for utils in vite.config.ts.
 6. Create `vite.config.ts`: Same content as vite.config.js but with .ts extension.
 7. Create `main.ts`: Mount App.vue with TypeScript.
 8. Add `src/css/vazirmatn.css` (remains CSS).
@@ -71,42 +76,63 @@ Backend changes (final phase): No backend changes for static serving; optionally
 11. Create `components/MapView.vue` with <script setup lang="ts">, onMounted(async () => { await fetchUserPos(); }).
 12. Build/test: `npm run dev`, verify map loads, position updates, basic interactions.
 
+**Legacy Files**:
+
+- staticfiles/static/js/map.js (core map init, events, WS)
+- staticfiles/static/js/store.js (initial state)
+- staticfiles/static/css/leaflet.css
+- staticfiles/static/icons/self.png
+- staticfiles/static/architecture_summary.md
+
 **Files Created/Updated**:
+
 - `package.json`, `vite.config.ts`, `main.ts` (mount App.vue).
 - `src/App.vue`, `src/components/MapView.vue`.
 - `src/composables/useMap.ts`.
 
 **Integration/Testing**:
+
 - Proxy backend APIs.
 - Manual: Map centers on user pos, zoom/pan works, no errors in console.
 - Success Criteria: Identical to current map.html without items.
 
 ## Phase 2: Units and Items CRUD
+
 **Goal**: Display/edit units/points (markers, popups). Usable: Add/view/delete units via map clicks/forms.
 
 **Steps**:
+
 1. Setup Pinia: Install, create `stores/itemsStore.ts` (state: Map<uid, item>, actions: fetch/create/update/delete via fetch to `/unit`) with defineStore<ItemsState>().
 2. In `MapView.vue`: On mount, fetch `/unit`, `/types` (SIDC hierarchy); add markers/labels (MilSymbol icons, callsign popups) with <script setup lang="ts">.
-3. Implement click handlers: Add unit/point modes (toggle via toolbar), create item via store, add marker.
-4. Create `components/UnitDetails.vue`: Vuetify form (v-form, v-text-field for callsign/type/lat/lon), emit save/delete with typed props/emits.
-5. Context menu on markers: Edit/delete/send (Vuetify v-menu).
-6. Draggable markers update pos via store.
-7. Migrate utils: SIDC from type, coord formatting in .ts files.
-8. Add interface examples: interface Item { uid: string; type: string; lat: number; lng: number; callsign: string; }.
+3. Implement click handlers: Add unit/point modes (toggle via toolbar), create item via store, add marker. Create components/UnitDetails.vue and PointDetails.vue: Vuetify forms in v-dialog modal, emit save/delete. Context menu on markers: Edit/delete/send (v-menu).
+4. Draggable markers update pos via store.
+5. Migrate utils: SIDC from type, coord formatting in .ts files.
+6. Add interface examples: interface Item { uid: string; type: string; lat: number; lng: number; callsign: string; }.
+
+**Legacy Files**:
+
+- staticfiles/static/js/components/item.details.js (UnitDetails)
+- staticfiles/static/js/components/PointDetails.js
+- staticfiles/static/js/map.js (unit CRUD, markers)
+- staticfiles/static/js/store.js (CRUD actions)
 
 **Files**:
+
 - `stores/itemsStore.ts`.
 - `components/UnitDetails.vue`, `PointDetails.vue` with <script setup lang="ts">.
 - Update `MapView.vue`, `useMap.ts` (addItem/removeItem with types).
 
 **Testing**:
+
 - Add unit via click, edit form, delete; verify API calls, markers update.
 - Match current: Icons, popups, drag behavior.
 
 ## Phase 3: Drawings and Tools
+
 **Goal**: Enable drawing (polygons/routes), labels, tools toolbar. Usable: Draw/edit shapes on map.
 
 **Steps**:
+
 1. Integrate Leaflet.Draw: Add draw controls (polyline/polygon/marker), handlers for created/edited shapes with types from @types/leaflet.
 2. On draw: Create drawing item via store (`/unit` POST), add labels (text at centroid/midpoint, rotatable).
 3. Zoom handler: Scale/rotate labels dynamically.
@@ -114,34 +140,50 @@ Backend changes (final phase): No backend changes for static serving; optionally
 5. Context menu: Delete drawing, add text.
 6. Migrate drawing logic from current map.js with TS syntax: import { ref } from 'vue'; type annotations.
 
-**Files**:
+**Legacy Files**:
+
+- staticfiles/static/js/map.js (drawing logic, Leaflet.Draw)
+- staticfiles/static/js/components/DrawingDetails.js
+- staticfiles/static/css/leaflet.draw.css
+  **Files**:
 - `components/DrawingDetails.vue` with <script setup lang="ts"> (edit text/rotation).
 - Update `MapView.vue`, `itemsStore.ts` (handle drawing types).
 
 **Testing**:
+
 - Draw polygon, edit vertices/text, zoom to see label changes; matches current drawing UX.
 
 ## Phase 4: Sidebar and Overlays
+
 **Goal**: Add collapsible sidebar with overlays tab, userinfo. Usable: Toggle layers, view user config.
 
 **Steps**:
+
 1. In `App.vue`: Add v-navigation-drawer (collapsible, RTL), tabs via v-tabs (overlays/userinfo) with <script setup lang="ts">.
 2. `components/Sidebar.vue`: Overlays checkboxes (v-checkbox-group for layers: units/points/etc., show counts from store) with typed props.
 3. Userinfo tab: Form for config (beacon toggle → `/config` PUT), emergency button.
 4. Reactive: Sidebar updates on store changes (e.g., item counts).
 5. Migrate sidebar.js logic to .ts.
 
-**Files**:
+**Legacy Files**:
+
+- staticfiles/static/js/components/sidebar.js
+- staticfiles/static/js/components/overlays.js
+- staticfiles/static/css/main.css (sidebar styles)
+  **Files**:
 - `components/Sidebar.vue`, `OverlaysList.vue` with <script setup lang="ts">.
 - `composables/useSidebar.ts`.
 
 **Testing**:
+
 - Toggle layers (hide/show markers), edit userinfo; sidebar collapses/expands smoothly.
 
 ## Phase 5: Modals and Basic UI Elements
+
 **Goal**: Implement core modals (alarms, send, chat). Usable: Manage alarms, send units.
 
 **Steps**:
+
 1. Navbar: v-app-bar with badges (v-badge for counts: alarms/sensors/etc.).
 2. `components/AlarmsModal.vue`: v-dialog list (v-list-item per alarm, focus/zoom on click) with <script setup lang="ts">.
 3. `SendModal.vue`: Form for URN/IP, forward via `/unit/{uid}/send/` with typed emits.
@@ -149,69 +191,102 @@ Backend changes (final phase): No backend changes for static serving; optionally
 5. Toast notifications (Vuetify v-snackbar for feedback).
 6. Migrate alarms.js, send.js to TS syntax.
 
-**Files**:
+**Legacy Files**:
+
+- staticfiles/static/js/components/alarms.js
+- staticfiles/static/js/components/send.js
+- staticfiles/static/js/components/index.js (modals)
+- staticfiles/static/js/bootstrap.bundle.min.js (modal JS)
+  **Files**:
 - `components/AlarmsModal.vue`, `SendModal.vue`, `ChatModal.vue` with <script setup lang="ts">.
 - Update navbar in `App.vue`.
 
 **Testing**:
+
 - Trigger alarm (simulate via backend), open modal, zoom; send unit, see toast.
 
 ## Phase 6: Real-Time Integration
+
 **Goal**: Add WebSocket for live updates. Usable: Real-time unit changes, no polling.
 
 **Steps**:
+
 1. `composables/useWebSocket.ts`: Connect to `/ws`, handle messages (unit/update/delete/chat), dispatch to stores with async (): Promise<void>.
 2. On mount: WS connect after initial fetch.
 3. Reactive markers/labels on WS events.
 4. Fallback: Keep 5s polling if WS fails.
 5. Migrate WS logic from map.js/messaging.go with type annotations.
 
-**Files**:
+**Legacy Files**:
+
+- staticfiles/static/js/map.js (WS connection)
+- staticfiles/static/js/store.js (update methods)
+  **Files**:
 - `composables/useWebSocket.ts`.
 - Update stores (add subscribe method with types).
 
 **Testing**:
+
 - Simulate backend pushes (e.g., add unit via another client), verify live updates.
 
 ## Phase 7: Advanced Features (Navigation, Tracking, Sensors/Flows)
+
 **Goal**: Add navigation lines, tracking trails, sensors/flows modals. Usable: Full tactical features.
 
 **Steps**:
+
 1. Navigation: On toggle, draw dashed polyline from user to target (store action with L.LatLng types).
 2. Tracking: `TrackingManager.vue` for trails (polylines, color/length config), toggle global/per-unit with <script setup lang="ts">.
 3. SensorsModal/FlowsModal: v-dialog forms for CRUD (`/sensors`, `/flows`), navbar badges.
 4. CotLog: Simple accordion list of events.
 5. Migrate tracking/service.go interop, sensorsmodal.js, flows.js to TS.
 
-**Files**:
+**Legacy Files**:
+
+- staticfiles/static/js/components/NavigationInfo.js
+- staticfiles/static/js/components/flows.js
+- staticfiles/static/js/components/sensorsmodal.js
+- staticfiles/static/js/map.js (navigation/tracking)
+  **Files**:
 - `components/NavigationInfo.vue`, `TrackingControl.vue` with <script setup lang="ts">.
 - `components/SensorsModal.vue`, `FlowsModal.vue`, `CotLog.vue`.
 - Update stores with interfaces.
 
 **Testing**:
+
 - Enable tracking on unit, see trail; add sensor, verify counts.
 
 ## Phase 8: Resending, Filters, and CASEVAC/Reports
+
 **Goal**: Complete resending panel, detail forms for CASEVAC/reports. Usable: Full app parity.
 
 **Steps**:
+
 1. ResendingPanel: Tab in sidebar with FilterComponent (v-select for types), forward button with typed props.
 2. Detail components: CasevacDetails (priority/litter fields), ReportDetails with interfaces.
 3. HierarchySelector/PredicateComponent: Dropdowns for SIDC filtering in .ts.
-4. Emergency: Beacon types (b-a-o-*) on button press.
+4. Emergency: Beacon types (b-a-o-\*) on button press.
 5. Migrate ResendingPanel.js, CasevacDetails.js, etc. to TS syntax.
 
-**Files**:
+**Legacy Files**:
+
+- staticfiles/static/js/components/ResendingPanel.js
+- staticfiles/static/js/components/CasevacDetails.js
+- staticfiles/static/js/components/FilterComponent.js
+  **Files**:
 - `components/ResendingPanel.vue`, `CasevacDetails.vue`, `FilterComponent.vue` with <script setup lang="ts">.
 - Update item details routing in sidebar.
 
 **Testing**:
+
 - Filter/resend units; create CASEVAC, verify form/API.
 
 ## Phase 9: Integration and Deployment
+
 **Goal**: Decouple and deploy. Usable: Production build served independently.
 
 **Steps**:
+
 1. Build: `npm run build` → `dist/` (minified JS/CSS). Serve via `npm run preview` (Vite), nginx, or CDN.
 2. Configure front-end: Set BACKEND_URL env var or const for API/WS (e.g., in vite.config.ts or composables). Use full URLs for fetch/WS (e.g., `${BACKEND_URL}/unit`).
 3. Config: In dev, proxy via Vite; in prod, direct full URLs, ensure back-end CORS allows front-end origin (e.g., http://localhost:5173).
@@ -219,8 +294,14 @@ Backend changes (final phase): No backend changes for static serving; optionally
 5. Testing: Full e2e manual against current app; add unit tests (Vitest) for stores/composables.
 6. Backend cleanup: Remove static file routes, templates dir, and embedding from cmd/webclient/http_server.go and main.go. Delete staticfiles/static/ after migration.
 7. Update project README: Separate front/back run instructions (e.g., back-end: go run; front-end: cd front && npm run dev; prod: build front, serve dist/ separately).
+   **Legacy Files**:
+
+- staticfiles/static/js/components/ (all)
+- cmd/webclient/templates/ (old HTML)
+- staticfiles/static/ (all assets)
 
 **Risks/Migration Notes**:
+
 - Leaflet Vue3 interop: Use imperative refs; test draw events.
 - MilSymbol: Ensure SIDC parsing matches.
 - RTL Conflicts: Test Vuetify RTL with Leaflet (custom CSS overrides).
@@ -229,6 +310,5 @@ Backend changes (final phase): No backend changes for static serving; optionally
 - CORS: Configure Go to allow origins from front-end server (e.g., via middleware in http_server.go).
 - Separate Deploys: Front/back as independent services (e.g., Docker for each).
 - TypeScript Strictness: Start with 'strict: true' in tsconfig; gradually type Leaflet imperative code and API responses from protobuf-derived models if available.
-- Time Estimate: 2-3 days/phase, total 3-4 weeks.
-
-This plan ensures incremental progress with no downtime.
+- Feature parity: Make sure to read the legacy code, whether included here or not, before implementing the new version.
+- Minimum UI/UX changes: Don't make drastic UI/UX changes. Only change UI/UX if it makes sense to use Vuetify components to replace a badly implemented UI in legacy code.

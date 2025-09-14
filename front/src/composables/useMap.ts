@@ -1,5 +1,5 @@
-import { ref, onMounted, onUnmounted } from 'vue'
-import L, { LatLng, Map, Marker } from 'leaflet'
+import { ref, type Ref, onMounted, onUnmounted } from 'vue'
+import L, { LatLng, Map, Marker, type LayerGroup } from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
 interface UserPos {
@@ -10,6 +10,9 @@ interface UserPos {
 export function useMap(mapRef: Ref<HTMLDivElement | null>) {
   const map = ref<Map | null>(null)
   const userMarker = ref<Marker | null>(null)
+  const unitsLayer = ref<LayerGroup>(L.layerGroup())
+  const pointsLayer = ref<LayerGroup>(L.layerGroup())
+  const drawingLayer = ref<LayerGroup>(L.layerGroup())
 
   onMounted(() => {
     if (mapRef.value) {
@@ -59,7 +62,11 @@ export function useMap(mapRef: Ref<HTMLDivElement | null>) {
         return div
       }
       coordDisplay.addTo(map.value!)
-
+  
+      unitsLayer.value.addTo(map.value!)
+      pointsLayer.value.addTo(map.value!)
+      drawingLayer.value.addTo(map.value!)
+  
       console.log('Map initialized:', map.value)
     } else {
       console.error('mapRef is null in onMounted')
@@ -89,5 +96,41 @@ export function useMap(mapRef: Ref<HTMLDivElement | null>) {
     }
   }
 
-  return { map, userMarker, fetchUserPos }
+  const toggleUnits = (show: boolean) => {
+    if (!map.value) return
+    if (show) {
+      map.value.addLayer(unitsLayer.value)
+    } else {
+      map.value.removeLayer(unitsLayer.value)
+    }
+  }
+  
+  const togglePoints = (show: boolean) => {
+    if (!map.value) return
+    if (show) {
+      map.value.addLayer(pointsLayer.value)
+    } else {
+      map.value.removeLayer(pointsLayer.value)
+    }
+  }
+
+  const toggleDrawings = (show: boolean) => {
+    if (!map.value) return
+    if (show) {
+      map.value.addLayer(drawingLayer.value)
+    } else {
+      map.value.removeLayer(drawingLayer.value)
+    }
+  }
+  
+  const toggleLayer = (layerGroup: LayerGroup, visible: boolean) => {
+    if (!map.value) return
+    if (visible) {
+      map.value.addLayer(layerGroup)
+    } else {
+      map.value.removeLayer(layerGroup)
+    }
+  }
+  
+  return { map, userMarker, fetchUserPos, unitsLayer, pointsLayer, drawingLayer, toggleUnits, togglePoints, toggleDrawings, toggleLayer }
 }

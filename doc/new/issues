@@ -1,0 +1,6 @@
+Many many issues with phase 1 & 2:
+
+1. The location shown on map for the user is wrong (differs from the location taken from API)
+2. The icons should not be draggable! They are not in the legacy code.
+3. Map tiles are not loaded from the correct source. The source of map tiles should be taken from `/config` endpoint. See `http_server.go`
+4. Unit don't have the correct milSymbol icons. They are shown similar to self icon! Fix it.
