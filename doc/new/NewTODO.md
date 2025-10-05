@@ -2,7 +2,7 @@
 1. Update details sidebar
    1. ~~Last Seen (stale) -> Add stale time to details edit sidebar~~
    1. Add URN in Contact info
-1. Proxy service (relay/router)
+1. ~~Proxy service (relay/router)~~
 1. Chat also should be debugged for this
 1. Smarter zoom levels
 
