@@ -1311,6 +1311,10 @@ let app = new Vue({
       new bootstrap.Modal(document.getElementById("alarms-modal")).show();
     },
 
+    openResending: function () {
+      new bootstrap.Modal(document.getElementById("resending-modal")).show();
+    },
+
     getStatus: function (uid) {
       return this.ts && this.sharedState.items.get(uid)?.status;
     },

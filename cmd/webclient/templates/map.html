@@ -55,6 +55,18 @@
               >
             </a>
           </li>
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="#"
+              id="navbarResendingMenuLink"
+              role="button"
+              v-on:click="openResending()"
+            >
+              <i class="bi bi-arrow-repeat"></i>
+              بازارسال
+            </a>
+          </li>
           <li class="nav-item dropdown">
             <a
               class="nav-link dropdown-toggle"
@@ -281,4 +293,5 @@
   <alarms-modal :map="map"></alarms-modal>
   <send-modal></send-modal>
   <sensors-modal></sensors-modal>
+  <resending-modal :config="config" :map="map"></resending-modal>
 </div>

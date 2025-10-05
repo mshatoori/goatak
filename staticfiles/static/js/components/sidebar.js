@@ -264,19 +264,6 @@ Vue.component("Sidebar", {
           </div>
         </div> -->
 
-        <!-- Resending Panel Tab -->
-        <div
-          class="tab-pane fade"
-          id="v-pills-resending"
-          role="tabpanel"
-          aria-labelledby="v-pills-resending-tab"
-        >
-          <resending-panel
-            :config="config"
-            :map="map"
-          ></resending-panel>
-        </div>
-
         <!-- New Dynamic Item Details Tab -->
         <div
           class="tab-pane fade"
@@ -329,19 +316,6 @@ Vue.component("Sidebar", {
           data-bs-target="#v-pills-userinfo"
         >
           اطلاعات من
-        </button>
-        <button
-          class="nav-link"
-          id="v-pills-resending-tab"
-          type="button"
-          role="tab"
-          aria-controls="v-pills-resending"
-          aria-selected="false"
-          v-on:click="switchTab('resending')"
-          data-bs-toggle="pill"
-          data-bs-target="#v-pills-resending"
-        >
-          بازارسال
         </button>
         <!--<button
           class="nav-link"
