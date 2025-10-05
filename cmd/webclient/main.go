@@ -212,9 +212,7 @@ func (app *App) Init() {
 		app.remoteAPI.SetTLS(app.getTLSConfig())
 	}
 
-	// Initialize DNS service proxy
-	dnsServiceURL := viper.GetString("dns_service.url")
-	app.dnsServiceProxy = dnsproxy.NewDnsServiceProxy(dnsServiceURL)
+	app.InitServices()
 
 	app.ch = make(chan []byte, 20)
 	app.InitMessageProcessors()
@@ -239,6 +237,25 @@ func (app *App) Init() {
 
 	// Load contacts from DNS service
 	app.loadContactsFromDNS()
+}
+
+func (app *App) InitServices() {
+	dnsServiceURL := viper.GetString("dns_service.url")
+	app.dnsServiceProxy = dnsproxy.NewDnsServiceProxy(dnsServiceURL)
+
+	// Initialize resend service
+	app.resendService = resend.NewResendService(&resend.Config{
+		DB:                app.DB,
+		Logger:            app.logger.With("service", "resend"),
+		SendToDestination: app.SendMsgToDestination,
+	})
+
+	// Start the resend service
+	if err := app.resendService.Start(); err != nil {
+		app.logger.Error("Failed to start resend service", "error", err)
+	} else {
+		app.logger.Info("Resend service started successfully")
+	}
 }
 
 func initFlowsSensorsAndConfig(app *App) {
@@ -289,20 +306,6 @@ func initFlowsSensorsAndConfig(app *App) {
 
 		// Start periodic cleanup of old tracking data
 		go app.startTrackingCleanup()
-	}
-
-	// Initialize resend service
-	app.resendService = resend.NewResendService(&resend.Config{
-		DB:                app.DB,
-		Logger:            app.logger.With("service", "resend"),
-		SendToDestination: app.SendMsgToDestination,
-	})
-	
-	// Start the resend service
-	if err := app.resendService.Start(); err != nil {
-		app.logger.Error("Failed to start resend service", "error", err)
-	} else {
-		app.logger.Info("Resend service started successfully")
 	}
 }
 
