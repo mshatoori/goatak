@@ -491,27 +491,23 @@ Vue.component("ResendingPanel", {
     },
   },
   template: html`
-    <div class="card">
+    <div>
       <!-- Header -->
-      <div class="card-header">
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h5 class="mb-0">بازارسال</h5>
-          </div>
-          <button
-            type="button"
-            class="btn btn-primary"
-            v-on:click="addConfig"
-            v-if="!editing"
-            :disabled="loading"
-          >
-            <i class="bi bi-plus-lg"></i>
-          </button>
-        </div>
+      <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+        <h5 class="mb-0">بازارسال</h5>
+        <button
+          type="button"
+          class="btn btn-primary"
+          v-on:click="addConfig"
+          v-if="!editing"
+          :disabled="loading"
+        >
+          <i class="bi bi-plus-lg"></i>
+        </button>
       </div>
 
-      <!-- Card Body -->
-      <div class="card-body">
+      <!-- Body -->
+      <div class="p-3">
         <!-- Error Message -->
         <div
           v-if="error"

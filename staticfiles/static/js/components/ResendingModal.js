@@ -21,7 +21,7 @@ Vue.component("ResendingModal", {
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body p-0">
             <resending-panel :config="config" :map="map"></resending-panel>
           </div>
         </div>
