@@ -47,7 +47,7 @@ Vue.component("ResendingPanel", {
           });
         }
       });
-      return polygons;
+      return this.sharedState.ts && polygons;
     },
 
     availableSubnets: function () {
