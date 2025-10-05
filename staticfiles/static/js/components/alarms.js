@@ -10,17 +10,7 @@ Vue.component("AlarmsModal", {
     },
     dt: function (str) {
       let d = new Date(Date.parse(str));
-      return (
-        ("0" + d.getDate()).slice(-2) +
-        "-" +
-        ("0" + (d.getMonth() + 1)).slice(-2) +
-        "-" +
-        d.getFullYear() +
-        " " +
-        ("0" + d.getHours()).slice(-2) +
-        ":" +
-        ("0" + d.getMinutes()).slice(-2)
-      );
+      return d.toLocaleString("fa-IR");
     },
     readableType: function (alarmType) {
       return {
