@@ -13,10 +13,12 @@ Vue.component("FilterComponent", {
         { value: "location_boundary", label: "محدوده مکانی" },
       ],
       itemTypes: [
-        { value: "unit", label: "واحد" },
-        { value: "drawing", label: "مسیر/ناحیه" },
         { value: "contact", label: "مخاطب" },
+        { value: "unit", label: "نیرو" },
         { value: "alert", label: "هشدار" },
+        { value: "point", label: "نقطه" },
+        { value: "polygon", label: "ناحیه" },
+        { value: "route", label: "مسیر" },
       ],
       sides: [
         { value: "friendly", label: "دوست" },

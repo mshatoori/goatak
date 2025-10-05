@@ -93,9 +93,9 @@ func (f *ResendFilter) Evaluate(msg *cot.CotMessage) bool {
 	return true
 }
 
-// ItemTypePredicate filters by item type (unit, drawing, contact, alert)
+// ItemTypePredicate filters by item type (contact, unit, alert, point, polygon, route)
 type ItemTypePredicate struct {
-	ItemType string // "unit", "drawing", "contact", "alert"
+	ItemType string // "contact", "unit", "alert", "point", "polygon", "route"
 }
 
 // Evaluate checks if the CoT message matches the item type
@@ -106,18 +106,24 @@ func (p *ItemTypePredicate) Evaluate(msg *cot.CotMessage) bool {
 
 	cotType := msg.GetType()
 	switch p.ItemType {
-	case "unit":
-		// Units are CoT messages starting with "a-" (atoms)
-		return strings.HasPrefix(cotType, "a-")
-	case "drawing":
-		// Drawings are CoT messages starting with "u-d" or "b-m-d"
-		return strings.HasPrefix(cotType, "u-d") || strings.HasPrefix(cotType, "b-m-d")
 	case "contact":
 		// Contacts are units with endpoint information
 		return msg.IsContact()
+	case "unit":
+		// Units are CoT messages starting with "a-" (atoms)
+		return strings.HasPrefix(cotType, "a-")
 	case "alert":
 		// Alerts are CoT messages starting with "b-a-"
 		return strings.HasPrefix(cotType, "b-a-")
+	case "point":
+		// Points are user points starting with "u-p-"
+		return strings.HasPrefix(cotType, "b-m-")
+	case "polygon":
+		// Polygons are drawing polygons starting with "u-d-p-"
+		return strings.HasPrefix(cotType, "u-d-p-")
+	case "route":
+		// Routes are user routes starting with "u-r-"
+		return strings.HasPrefix(cotType, "u-r-")
 	default:
 		return false
 	}
@@ -152,8 +158,7 @@ func (p *SidePredicate) Evaluate(msg *cot.CotMessage) bool {
 		// Neutral could be "a-n-" or other non-friendly/hostile "a-" types
 		return strings.HasPrefix(cotType, "a-n-") ||
 			(strings.HasPrefix(cotType, "a-") &&
-				!strings.HasPrefix(cotType, "a-u-") &&
-				!strings.HasPrefix(cotType, "a-f-") &&
+				!strings.HasPrefix(cotType, "a-u-") && !strings.HasPrefix(cotType, "a-f-") && //如果您使用的是Go 1.20及以上版本，可以使用这些更简洁的符号
 				!strings.HasPrefix(cotType, "a-h-"))
 	case "unknown":
 		// Unknown could be determined by lack of specific classification
