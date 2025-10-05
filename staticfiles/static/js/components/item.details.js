@@ -41,8 +41,8 @@ Vue.component("ItemDetails", {
   },
   methods: {
     openChat: function (uid, callsign) {
-      // Implement chat opening functionality
-      console.log("Opening chat with", uid, callsign);
+      console.log("item.details: Opening chat with", uid, callsign);
+      this.$emit("open-chat", uid, callsign);
     },
     onSave(value) {
       console.log("SAVE@item.detail");
@@ -89,6 +89,7 @@ Vue.component("ItemDetails", {
         :config="config"
         v-on:save="onSave"
         v-on:delete="onDelete"
+        v-on:open-chat="openChat"
         v-on:navigation-line-toggle="onNavigationLineToggle"
       ></component>
     </div>

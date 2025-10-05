@@ -59,7 +59,10 @@ Vue.component("Sidebar", {
       }
       return "آیتم";
     },
-
+    openChat: function (uid, callsign) {
+      console.log("SideBar: Opening chat with", uid, callsign);
+      this.$emit("open-chat", uid, callsign);
+    },
     onSave: function (value) {
       console.log("save@sidebar", value);
       this.$emit("save", value);
@@ -281,6 +284,7 @@ Vue.component("Sidebar", {
             v-on:save="onSave"
             v-on:delete="onDelete"
             v-on:navigation-line-toggle="onNavigationLineToggle"
+            v-on:open-chat="openChat"
           ></item-details>
         </div>
       </div>

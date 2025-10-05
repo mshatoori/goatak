@@ -149,8 +149,8 @@ Vue.component("UnitDetails", {
       this.$emit("delete", this.item.uid);
     },
     openChat: function (uid, callsign) {
-      // Implement chat opening functionality
-      console.log("Opening chat with", uid, callsign);
+      console.log("UnitDetails: Opening chat with", uid, callsign);
+      this.$emit("open-chat", uid, callsign);
     },
     // Method to handle navigation between subtype levels
     setFormRootSidc: function (code) {
@@ -286,6 +286,14 @@ Vue.component("UnitDetails", {
             <i class="bi bi-trash3-fill"></i>
           </button>
         </span>
+        <span class="pull-right" v-if="isContact"
+          ><button
+            type="button"
+            class="btn btn-sm btn-primary"
+            v-on:click.stop="openChat(item.uid, item.callsign);"
+          >
+            <i class="bi bi-chat-text-fill"></i></button
+        ></span>
       </div>
 
       <!-- Unit View (non-editing mode) -->
