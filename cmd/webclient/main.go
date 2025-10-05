@@ -369,40 +369,40 @@ func (app *App) Run(ctx context.Context) {
 
 	go app.myPosSender(ctx)
 
-	for ctx.Err() == nil {
-		conn, err := app.connect()
-		if err != nil {
-			app.logger.Error("connect error", "error", err)
-			time.Sleep(time.Second * 5)
+	// for ctx.Err() == nil {
+	// 	conn, err := app.connect()
+	// 	if err != nil {
+	// 		app.logger.Error("connect error", "error", err)
+	// 		time.Sleep(time.Second * 5)
 
-			continue
-		}
+	// 		continue
+	// 	}
 
-		app.SetConnected(true)
-		app.logger.Info("connected")
+	// 	app.SetConnected(true)
+	// 	app.logger.Info("connected")
 
-		wg := new(sync.WaitGroup)
-		wg.Add(1)
+	// 	wg := new(sync.WaitGroup)
+	// 	wg.Add(1)
 
-		ctx1, cancel1 := context.WithCancel(ctx)
+	// 	ctx1, cancel1 := context.WithCancel(ctx)
 
-		app.cl = client.NewConnClientHandler(fmt.Sprintf("%s:%s", app.host, app.tcpPort), conn, &client.HandlerConfig{
-			MessageCb: app.ProcessEvent,
-			RemoveCb: func(ch client.ClientHandler) {
-				app.SetConnected(false)
-				wg.Done()
-				cancel1()
-				app.logger.Info("disconnected")
-			},
-			IsClient: true,
-			UID:      app.uid,
-		})
+	// 	app.cl = client.NewConnClientHandler(fmt.Sprintf("%s:%s", app.host, app.tcpPort), conn, &client.HandlerConfig{
+	// 		MessageCb: app.ProcessEvent,
+	// 		RemoveCb: func(ch client.ClientHandler) {
+	// 			app.SetConnected(false)
+	// 			wg.Done()
+	// 			cancel1()
+	// 			app.logger.Info("disconnected")
+	// 		},
+	// 		IsClient: true,
+	// 		UID:      app.uid,
+	// 	})
 
-		go app.cl.Start()
-		go app.periodicGetter(ctx1)
+	// 	go app.cl.Start()
+	// 	go app.periodicGetter(ctx1)
 
-		wg.Wait()
-	}
+	// 	wg.Wait()
+	// }
 }
 
 func (app *App) SetConnected(connected bool) {
