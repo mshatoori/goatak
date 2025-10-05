@@ -2,10 +2,19 @@ package resend
 
 import (
 	"log/slog"
+	"strconv"
 	"strings"
 
+	"github.com/kdudkov/goatak/internal/geo"
+	"github.com/kdudkov/goatak/internal/repository"
 	"github.com/kdudkov/goatak/pkg/cot"
+	"github.com/kdudkov/goatak/pkg/model"
 )
+
+// Point represents a geographic coordinate
+type Point struct {
+	lat, lon float64
+}
 
 type NetworkAddress interface {
 	IsBroadcast() bool
@@ -115,15 +124,15 @@ func (p *ItemTypePredicate) Evaluate(msg *cot.CotMessage) bool {
 	case "alert":
 		// Alerts are CoT messages starting with "b-a-"
 		return strings.HasPrefix(cotType, "b-a-")
+	case "polygon":
+		// Polygons are drawing polygons starting with "u-d-f"
+		return strings.HasPrefix(cotType, "u-d-f")
+	case "route":
+		// Routes are user routes starting with "b-m-r"
+		return strings.HasPrefix(cotType, "b-m-r")
 	case "point":
 		// Points are user points starting with "u-p-"
 		return strings.HasPrefix(cotType, "b-m-")
-	case "polygon":
-		// Polygons are drawing polygons starting with "u-d-p-"
-		return strings.HasPrefix(cotType, "u-d-p-")
-	case "route":
-		// Routes are user routes starting with "u-r-"
-		return strings.HasPrefix(cotType, "u-r-")
 	default:
 		return false
 	}
@@ -221,11 +230,12 @@ func (p *UnitTypePredicate) GetType() string {
 // LocationBoundaryPredicate filters by location boundary using polygons
 type LocationBoundaryPredicate struct {
 	PolygonID string
+	items     repository.ItemsRepository
 }
 
 // Evaluate checks if the CoT message's location is within the polygon boundary
 func (p *LocationBoundaryPredicate) Evaluate(msg *cot.CotMessage) bool {
-	if msg == nil {
+	if msg == nil || p.items == nil {
 		return false
 	}
 
@@ -234,17 +244,82 @@ func (p *LocationBoundaryPredicate) Evaluate(msg *cot.CotMessage) bool {
 		return false // No location data
 	}
 
-	// TODO: Implement polygon boundary checking
-	// This would require:
-	// 1. Loading polygon data by PolygonID
-	// 2. Performing point-in-polygon calculation
-	// For now, return false as placeholder
-	return false
+	// Get the polygon item by ID
+	polygonItem := p.items.Get(p.PolygonID)
+	if polygonItem == nil {
+		return false // Polygon not found
+	}
+
+	// Extract polygon points from the item's CoT message
+	polygonPoints := p.extractPolygonPoints(polygonItem)
+	if len(polygonPoints) < 3 {
+		return false // Not a valid polygon
+	}
+
+	// Extract lats and lons for IsPointInPolygon
+	lats := make([]float64, len(polygonPoints))
+	lons := make([]float64, len(polygonPoints))
+	for i, point := range polygonPoints {
+		lats[i] = point.lat
+		lons[i] = point.lon
+	}
+
+	// Check if the point is inside the polygon
+	return geo.IsPointInPolygon(lat, lon, lats, lons)
 }
 
 // GetType returns the predicate type
 func (p *LocationBoundaryPredicate) GetType() string {
 	return "location_boundary"
+}
+
+// extractPolygonPoints extracts polygon points from a drawing item's CoT message
+func (p *LocationBoundaryPredicate) extractPolygonPoints(item *model.Item) []struct{ lat, lon float64 } {
+	msg := item.GetMsg()
+	if msg == nil {
+		return nil
+	}
+
+	detail := msg.GetDetail()
+	if detail == nil {
+		return nil
+	}
+
+	// Get all link elements that contain drawing points
+	links := detail.GetAll("link")
+	if len(links) == 0 {
+		return nil
+	}
+
+	var points []struct{ lat, lon float64 }
+
+	// Parse coordinates from link elements
+	for _, link := range links {
+		pointStr := link.GetAttr("point")
+		if pointStr == "" {
+			continue
+		}
+
+		// Parse point format: "lat,lon,elevation"
+		coords := strings.Split(pointStr, ",")
+		if len(coords) < 2 {
+			continue
+		}
+
+		lat, err := strconv.ParseFloat(coords[0], 64)
+		if err != nil {
+			continue
+		}
+
+		lon, err := strconv.ParseFloat(coords[1], 64)
+		if err != nil {
+			continue
+		}
+
+		points = append(points, struct{ lat, lon float64 }{lat, lon})
+	}
+
+	return points
 }
 
 type ResendConfig struct {

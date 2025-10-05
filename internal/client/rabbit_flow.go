@@ -11,7 +11,6 @@ import (
 	"io"
 	"log/slog"
 	"net"
-	"strconv"
 	"sync/atomic"
 	"time"
 
@@ -98,21 +97,21 @@ type RabbitMsg struct {
 }
 
 func (r *RabbitReader) Read(b []byte) (n int, err error) {
-	println("RABBIT READER REEEEADING")
+	// println("RABBIT READER REEEEADING")
 	d := <-r.deliveryChannel
-	println("RABBIT READER REEEEAD:" + d.MessageId)
+	// println("RABBIT READER REEEEAD:" + d.MessageId)
 	var newBuffer bytes.Buffer
 	newBuffer.Write(d.Body)
 	var rabbitMsg RabbitMsg
 	err = json.NewDecoder(&newBuffer).Decode(&rabbitMsg)
 	n = 0
 	if err != nil {
-		println("RABBIT READER ERROR:" + err.Error())
+		// println("RABBIT READER ERROR:" + err.Error())
 		return
 	}
 
 	n, err = base64.StdEncoding.Decode(b, []byte(rabbitMsg.PayLoadData))
-	println("RABBIT READER RETURNS: " + strconv.Itoa(n))
+	// println("RABBIT READER RETURNS: " + strconv.Itoa(n))
 	return
 }
 
@@ -558,7 +557,7 @@ func (h *RabbitFlow) selectSourceForDestinations(destinations []model.SendItemDe
 			if nodeAddr.IPAddress == nil {
 				continue
 			}
-			
+
 			nodeIP := net.ParseIP(*nodeAddr.IPAddress)
 			if nodeIP == nil {
 				continue
@@ -583,7 +582,7 @@ func (h *RabbitFlow) sameNetwork(ip1, ip2 net.IP, mask net.IPMask) bool {
 	// Ensure both IPs are the same version (IPv4 or IPv6)
 	ip1 = ip1.To4()
 	ip2 = ip2.To4()
-	
+
 	if ip1 == nil || ip2 == nil {
 		return false
 	}
@@ -591,7 +590,7 @@ func (h *RabbitFlow) sameNetwork(ip1, ip2 net.IP, mask net.IPMask) bool {
 	// Apply mask to both IPs and compare
 	network1 := ip1.Mask(mask)
 	network2 := ip2.Mask(mask)
-	
+
 	return network1.Equal(network2)
 }
 

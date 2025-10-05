@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/kdudkov/goatak/internal/repository"
 	"github.com/kdudkov/goatak/pkg/cot"
 	"github.com/kdudkov/goatak/pkg/cotproto"
 	"github.com/kdudkov/goatak/pkg/model"
@@ -24,6 +25,7 @@ type Config struct {
 	DB                *sql.DB
 	Logger            *slog.Logger
 	SendToDestination func(msg *cotproto.TakMessage, dest model.SendItemDest) error
+	ItemsRepository   repository.ItemsRepository
 }
 
 // NewResendService creates a new ResendService instance
@@ -44,7 +46,7 @@ func NewResendService(config *Config) *ResendService {
 		db:            config.DB,
 		logger:        config.Logger,
 		configManager: NewConfigManager(config.Logger.With("component", "config_manager")),
-		filterEngine:  NewFilterEngine(config.Logger.With("component", "filter_engine")),
+		filterEngine:  NewFilterEngine(config.Logger.With("component", "filter_engine"), config.ItemsRepository),
 		router:        NewMessageRouter(config.SendToDestination, config.Logger.With("component", "router")),
 	}
 

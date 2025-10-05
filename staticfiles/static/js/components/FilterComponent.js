@@ -34,6 +34,16 @@ Vue.component("FilterComponent", {
       ],
     };
   },
+  mounted: function () {
+    // Listen for the event to add pending predicates before save
+    this.$root.$on("add-pending-predicates", () => {
+      this.addPendingPredicateIfExists();
+    });
+  },
+  beforeDestroy: function () {
+    // Clean up the event listener
+    this.$root.$off("add-pending-predicates");
+  },
   computed: {
     availableValues: function () {
       switch (this.newPredicate.type) {
@@ -69,6 +79,12 @@ Vue.component("FilterComponent", {
         };
         this.$emit("update-filter", updatedFilter);
         this.newPredicate = { type: "", value: "" };
+      }
+    },
+    addPendingPredicateIfExists: function () {
+      // Check if there's a pending predicate that hasn't been added yet
+      if (this.newPredicate.type && this.newPredicate.value) {
+        this.addPredicate();
       }
     },
     updatePredicate: function (updatedPredicate) {

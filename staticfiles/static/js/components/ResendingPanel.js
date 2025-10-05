@@ -17,12 +17,6 @@ Vue.component("ResendingPanel", {
       },
       expConfigs: {},
       expandedFilters: {},
-      // Mock polygons data for FilterComponent (should come from backend)
-      mockPolygons: [
-        { id: "polygon-1", name: "منطقه عملیاتی ۱" },
-        { id: "polygon-2", name: "منطقه عملیاتی ۲" },
-        { id: "polygon-3", name: "منطقه ممنوعه" },
-      ],
       // Destinations data for enhanced selection
       availableDestinations: null,
     };
@@ -39,6 +33,21 @@ Vue.component("ResendingPanel", {
         3: "مدیریت فیلترها",
       };
       return titles[this.currentStep] || "";
+    },
+
+    // Get polygons from store items
+    availablePolygons: function () {
+      const polygons = [];
+      this.sharedState.items.forEach((item) => {
+        // Filter items with type starting with "u-d-f" (polygon types)
+        if (item.type && item.type.startsWith("u-d-f")) {
+          polygons.push({
+            id: item.uid,
+            name: item.callsign || item.uid,
+          });
+        }
+      });
+      return polygons;
     },
 
     availableSubnets: function () {
@@ -83,7 +92,7 @@ Vue.component("ResendingPanel", {
         this.availableContacts
       ) {
         const selectedContact = this.availableContacts.find(
-          (contact) => contact.urn == this.editingData.selected_urn
+          (contact) => contact.urn.toString() === this.editingData.selected_urn
         );
         if (selectedContact && selectedContact.ip_address) {
           return selectedContact.ip_address.split(",");
@@ -246,6 +255,9 @@ Vue.component("ResendingPanel", {
     },
 
     async saveConfig() {
+      // Check and add any pending predicates before saving
+      this.addPendingPredicates();
+
       if (!this.editingData.name) {
         this.error = "نام بازارسال الزامی است";
         return;
@@ -275,6 +287,12 @@ Vue.component("ResendingPanel", {
         // Error is already set in saveConfigToBackend
         console.error("Failed to save config:", error);
       }
+    },
+
+    addPendingPredicates: function () {
+      // This method will be called before saving to add any pending predicates
+      // We'll emit an event that FilterComponents can listen to
+      this.$root.$emit("add-pending-predicates");
     },
 
     cancelEditing: function () {
@@ -750,7 +768,7 @@ Vue.component("ResendingPanel", {
                         >
                           <filter-component
                             :filter="filter"
-                            :polygons="mockPolygons"
+                            :polygons="availablePolygons"
                             @update-filter="updateFilter"
                           ></filter-component>
                         </div>

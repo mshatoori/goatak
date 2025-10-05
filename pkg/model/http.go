@@ -59,35 +59,35 @@ type WebUnit struct {
 }
 
 type CasevacDetail struct {
-	Title string `json:"title,omitempty"`
-	Casevac bool `json:"casevac"`
-	Freq float64 `json:"freq"`
-	Urgent int `json:"urgent"`
-	Priority int `json:"priority"`
-	Routine int `json:"routine"`
-	Hoist bool `json:"hoist"`
-	ExtractionEquipment bool `json:"extraction_equipment"`
-	Ventilator bool `json:"ventilator"`
-	EquipmentOther bool `json:"equipment_other"`
-	EquipmentDetail string `json:"equipment_detail,omitempty"`
-	Litter int `json:"litter"`
-	Ambulatory int `json:"ambulatory"`
-	Security int `json:"security"`
-	HlzMarking int `json:"hlz_marking"`
-	UsMilitary int `json:"us_military"`
-	UsCivilian int `json:"us_civilian"`
-	NonusMilitary int `json:"nonus_military"`
-	NonusCivilian int `json:"nonus_civilian"`
-	Epw int `json:"epw"`
-	Child int `json:"child"`
-	TerrainSlope bool `json:"terrain_slope"`
-	TerrainRough bool `json:"terrain_rough"`
-	Obstacles string `json:"obstacles,omitempty"`
-	TerrainSlopeDir string `json:"terrain_slope_dir,omitempty"`
-	MedlineRemarks string `json:"medline_remarks,omitempty"`
-	ZoneProtSelection string `json:"zone_prot_selection,omitempty"`
-	ZoneProtectedCoord string `json:"zone_protected_coord,omitempty"`
-	ZoneProtMarker string `json:"zone_prot_marker,omitempty"`
+	Title               string  `json:"title,omitempty"`
+	Casevac             bool    `json:"casevac"`
+	Freq                float64 `json:"freq"`
+	Urgent              int     `json:"urgent"`
+	Priority            int     `json:"priority"`
+	Routine             int     `json:"routine"`
+	Hoist               bool    `json:"hoist"`
+	ExtractionEquipment bool    `json:"extraction_equipment"`
+	Ventilator          bool    `json:"ventilator"`
+	EquipmentOther      bool    `json:"equipment_other"`
+	EquipmentDetail     string  `json:"equipment_detail,omitempty"`
+	Litter              int     `json:"litter"`
+	Ambulatory          int     `json:"ambulatory"`
+	Security            int     `json:"security"`
+	HlzMarking          int     `json:"hlz_marking"`
+	UsMilitary          int     `json:"us_military"`
+	UsCivilian          int     `json:"us_civilian"`
+	NonusMilitary       int     `json:"nonus_military"`
+	NonusCivilian       int     `json:"nonus_civilian"`
+	Epw                 int     `json:"epw"`
+	Child               int     `json:"child"`
+	TerrainSlope        bool    `json:"terrain_slope"`
+	TerrainRough        bool    `json:"terrain_rough"`
+	Obstacles           string  `json:"obstacles,omitempty"`
+	TerrainSlopeDir     string  `json:"terrain_slope_dir,omitempty"`
+	MedlineRemarks      string  `json:"medline_remarks,omitempty"`
+	ZoneProtSelection   string  `json:"zone_prot_selection,omitempty"`
+	ZoneProtectedCoord  string  `json:"zone_protected_coord,omitempty"`
+	ZoneProtMarker      string  `json:"zone_prot_marker,omitempty"`
 }
 
 type Contact struct {
@@ -236,7 +236,7 @@ func (i *Item) ToWeb() *WebUnit {
 		}
 	}
 
-	println(i.msg.Detail.String())
+	// println(i.msg.Detail.String())
 
 	if links := i.msg.Detail.GetAll("link"); len(links) > 0 {
 		linksList := make([]string, 0)
@@ -252,7 +252,7 @@ func (i *Item) ToWeb() *WebUnit {
 				w.From = link.GetAttr("uid")
 			}
 		}
-		println(linksList)
+		// println(linksList)
 		w.Links = linksList
 	}
 
@@ -348,34 +348,34 @@ func (w *WebUnit) ToMsg() *cot.CotMessage {
 
 	if w.Category == REPORT && strings.HasPrefix(w.Type, "b-r-f-h-c") && w.CasevacDetail != nil {
 		medevacAttrs := map[string]string{
-			"casevac": fmt.Sprintf("%t", w.CasevacDetail.Casevac),
-			"freq": fmt.Sprintf("%f", w.CasevacDetail.Freq),
-			"urgent": fmt.Sprintf("%d", w.CasevacDetail.Urgent),
-			"priority": fmt.Sprintf("%d", w.CasevacDetail.Priority),
-			"routine": fmt.Sprintf("%d", w.CasevacDetail.Routine),
-			"hoist": fmt.Sprintf("%t", w.CasevacDetail.Hoist),
+			"casevac":              fmt.Sprintf("%t", w.CasevacDetail.Casevac),
+			"freq":                 fmt.Sprintf("%f", w.CasevacDetail.Freq),
+			"urgent":               fmt.Sprintf("%d", w.CasevacDetail.Urgent),
+			"priority":             fmt.Sprintf("%d", w.CasevacDetail.Priority),
+			"routine":              fmt.Sprintf("%d", w.CasevacDetail.Routine),
+			"hoist":                fmt.Sprintf("%t", w.CasevacDetail.Hoist),
 			"extraction_equipment": fmt.Sprintf("%t", w.CasevacDetail.ExtractionEquipment),
-			"ventilator": fmt.Sprintf("%t", w.CasevacDetail.Ventilator),
-			"equipment_other": fmt.Sprintf("%t", w.CasevacDetail.EquipmentOther),
-			"equipment_detail": w.CasevacDetail.EquipmentDetail,
-			"litter": fmt.Sprintf("%d", w.CasevacDetail.Litter),
-			"ambulatory": fmt.Sprintf("%d", w.CasevacDetail.Ambulatory),
-			"security": fmt.Sprintf("%d", w.CasevacDetail.Security),
-			"hlz_marking": fmt.Sprintf("%d", w.CasevacDetail.HlzMarking),
-			"us_military": fmt.Sprintf("%d", w.CasevacDetail.UsMilitary),
-			"us_civilian": fmt.Sprintf("%d", w.CasevacDetail.UsCivilian),
-			"nonus_military": fmt.Sprintf("%d", w.CasevacDetail.NonusMilitary),
-			"nonus_civilian": fmt.Sprintf("%d", w.CasevacDetail.NonusCivilian),
-			"epw": fmt.Sprintf("%d", w.CasevacDetail.Epw),
-			"child": fmt.Sprintf("%d", w.CasevacDetail.Child),
-			"terrain_slope": fmt.Sprintf("%t", w.CasevacDetail.TerrainSlope),
-			"terrain_rough": fmt.Sprintf("%t", w.CasevacDetail.TerrainRough),
-			"obstacles": w.CasevacDetail.Obstacles,
-			"terrain_slope_dir": w.CasevacDetail.TerrainSlopeDir,
-			"medline_remarks": w.CasevacDetail.MedlineRemarks,
-			"zone_prot_selection": w.CasevacDetail.ZoneProtSelection,
+			"ventilator":           fmt.Sprintf("%t", w.CasevacDetail.Ventilator),
+			"equipment_other":      fmt.Sprintf("%t", w.CasevacDetail.EquipmentOther),
+			"equipment_detail":     w.CasevacDetail.EquipmentDetail,
+			"litter":               fmt.Sprintf("%d", w.CasevacDetail.Litter),
+			"ambulatory":           fmt.Sprintf("%d", w.CasevacDetail.Ambulatory),
+			"security":             fmt.Sprintf("%d", w.CasevacDetail.Security),
+			"hlz_marking":          fmt.Sprintf("%d", w.CasevacDetail.HlzMarking),
+			"us_military":          fmt.Sprintf("%d", w.CasevacDetail.UsMilitary),
+			"us_civilian":          fmt.Sprintf("%d", w.CasevacDetail.UsCivilian),
+			"nonus_military":       fmt.Sprintf("%d", w.CasevacDetail.NonusMilitary),
+			"nonus_civilian":       fmt.Sprintf("%d", w.CasevacDetail.NonusCivilian),
+			"epw":                  fmt.Sprintf("%d", w.CasevacDetail.Epw),
+			"child":                fmt.Sprintf("%d", w.CasevacDetail.Child),
+			"terrain_slope":        fmt.Sprintf("%t", w.CasevacDetail.TerrainSlope),
+			"terrain_rough":        fmt.Sprintf("%t", w.CasevacDetail.TerrainRough),
+			"obstacles":            w.CasevacDetail.Obstacles,
+			"terrain_slope_dir":    w.CasevacDetail.TerrainSlopeDir,
+			"medline_remarks":      w.CasevacDetail.MedlineRemarks,
+			"zone_prot_selection":  w.CasevacDetail.ZoneProtSelection,
 			"zone_protected_coord": w.CasevacDetail.ZoneProtectedCoord,
-			"zone_prot_marker": w.CasevacDetail.ZoneProtMarker,
+			"zone_prot_marker":     w.CasevacDetail.ZoneProtMarker,
 		}
 		if w.CasevacDetail.Title != "" {
 			medevacAttrs["title"] = w.CasevacDetail.Title

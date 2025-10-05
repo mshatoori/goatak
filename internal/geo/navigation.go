@@ -205,7 +205,15 @@ func calculateDrawingDistance(item *model.Item, userLat, userLon float64) (*Navi
 
 	// For polygons with 3 or more points, check if user is inside
 	if len(drawingPoints) > 2 {
-		if isPointInPolygon(userLat, userLon, drawingPoints) {
+		// Extract lats and lons for IsPointInPolygon
+		lats := make([]float64, len(drawingPoints))
+		lons := make([]float64, len(drawingPoints))
+		for i, p := range drawingPoints {
+			lats[i] = p.lat
+			lons[i] = p.lon
+		}
+
+		if IsPointInPolygon(userLat, userLon, lats, lons) {
 			// User is inside the polygon, return zero distance
 			return &NavigationResult{
 				ClosestPoint: struct {
@@ -302,19 +310,18 @@ func closestPointOnSegment(userLat, userLon, lat1, lon1, lat2, lon2 float64) (fl
 	return closestLat, closestLon
 }
 
-// isPointInPolygon determines if a point is inside a polygon using the ray casting algorithm
-func isPointInPolygon(userLat, userLon float64, polygon []struct{ lat, lon float64 }) bool {
-	if len(polygon) < 3 {
+// IsPointInPolygon determines if a point is inside a polygon using the ray casting algorithm
+func IsPointInPolygon(userLat, userLon float64, lats, lons []float64) bool {
+	if len(lats) != len(lons) || len(lats) < 3 {
 		return false // Not a valid polygon
 	}
 
 	x, y := userLon, userLat
-	n := len(polygon)
 	inside := false
 
-	p1x, p1y := polygon[0].lon, polygon[0].lat
-	for i := 1; i <= n; i++ {
-		p2x, p2y := polygon[i%n].lon, polygon[i%n].lat
+	p1x, p1y := lons[0], lats[0]
+	for i := 1; i <= len(lats); i++ {
+		p2x, p2y := lons[i%len(lats)], lats[i%len(lats)]
 
 		if y > math.Min(p1y, p2y) {
 			if y <= math.Max(p1y, p2y) {

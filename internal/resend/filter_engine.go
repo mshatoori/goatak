@@ -4,18 +4,21 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/kdudkov/goatak/internal/repository"
 	"github.com/kdudkov/goatak/pkg/cot"
 )
 
 // FilterEngine evaluates message filters
 type FilterEngine struct {
 	logger *slog.Logger
+	items  repository.ItemsRepository
 }
 
 // NewFilterEngine creates a new FilterEngine
-func NewFilterEngine(logger *slog.Logger) *FilterEngine {
+func NewFilterEngine(logger *slog.Logger, items repository.ItemsRepository) *FilterEngine {
 	return &FilterEngine{
 		logger: logger,
+		items:  items,
 	}
 }
 
@@ -91,7 +94,7 @@ func (f *FilterEngine) EvaluatePredicate(msg *cot.CotMessage, predicate Predicat
 		p := &UnitTypePredicate{UnitType: predicate.Value}
 		return p.Evaluate(msg)
 	case "location_boundary":
-		p := &LocationBoundaryPredicate{PolygonID: predicate.Value}
+		p := &LocationBoundaryPredicate{PolygonID: predicate.Value, items: f.items}
 		return p.Evaluate(msg)
 	default:
 		f.logger.Warn("Unknown predicate type", "type", predicate.Type, "value", predicate.Value)
@@ -180,7 +183,7 @@ func (f *FilterEngine) convertDTOToPredicate(dto PredicateDTO) Predicate {
 	case "unit_type":
 		return &UnitTypePredicate{UnitType: dto.Value}
 	case "location_boundary":
-		return &LocationBoundaryPredicate{PolygonID: dto.Value}
+		return &LocationBoundaryPredicate{PolygonID: dto.Value, items: f.items}
 	default:
 		f.logger.Warn("Unknown predicate type", "type", dto.Type)
 		return nil
