@@ -33,14 +33,14 @@ Vue.component("NavigationInfo", {
     },
     bearingDisplay: function () {
       if (!this.hasValidData) return "N/A";
-      return `${this.navigationData.bearing.toFixed(1)}°T`;
+      return `${formatNumber(this.navigationData.bearing.toFixed(1))}°T`;
     },
     distanceDisplay: function () {
       if (!this.hasValidData) return "N/A";
       const distance = this.navigationData.distance;
       return distance < 10000
-        ? `${distance.toFixed(0)}m`
-        : `${(distance / 1000).toFixed(1)}km`;
+        ? `${formatNumber(distance.toFixed(0))}m`
+        : `${formatNumber((distance / 1000).toFixed(1))}km`;
     },
   },
   watch: {

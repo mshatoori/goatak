@@ -102,11 +102,11 @@ function getMilIcon(item, withText) {
   if (withText) {
     // opts['uniqueDesignation'] = item.callsign;
     if (item.speed > 0) {
-      opts["speed"] = (item.speed * 3.6).toFixed(1) + " km/h";
+      opts["speed"] = formatNumber(item.speed * 3.6, 1) + " km/h";
       opts["direction"] = item.course;
     }
     if (item.sidc.charAt(2) === "A") {
-      opts["altitudeDepth"] = item.hae.toFixed(0) + " m";
+      opts["altitudeDepth"] = formatNumber(item.hae, 0) + " m";
     }
   }
 
@@ -185,6 +185,9 @@ function printCoords(lat, lng) {
   const lngMin = Math.floor((absLng - lngDeg) * 60);
   const lngSec = Math.round(((absLng - lngDeg) * 60 - lngMin) * 60);
 
+  // Format numbers with Persian locale
+  const format = n => n.toLocaleString('fa-IR');
+
   // Handle seconds overflow
   let finalLatMin = latMin;
   let finalLatDeg = latDeg;
@@ -216,20 +219,20 @@ function printCoords(lat, lng) {
 
   // Format: DD°MM′SS″N DDD°MM′SS″W
   const latStr =
-    finalLatDeg +
+    format(finalLatDeg) +
     "°" +
-    finalLatMin.toString().padStart(2, "0") +
+    format(finalLatMin).padStart(2, "۰") +
     "′" +
-    finalLatSec.toString().padStart(2, "0") +
+    format(finalLatSec).padStart(2, "۰") +
     "″" +
     latHemisphere;
 
   const lngStr =
-    finalLngDeg +
+    format(finalLngDeg) +
     "°" +
-    finalLngMin.toString().padStart(2, "0") +
+    format(finalLngMin).padStart(2, "۰") +
     "′" +
-    finalLngSec.toString().padStart(2, "0") +
+    format(finalLngSec).padStart(2, "۰") +
     "″" +
     lngHemisphere;
 
@@ -266,15 +269,22 @@ function distBea(p1, p2) {
   let distance = R * c;
   return (
     (distance < 10000
-      ? distance.toFixed(0) + "m "
-      : (distance / 1000).toFixed(1) + "km ") +
-    brng.toFixed(1) +
+      ? formatNumber(distance, 0) + "m "
+      : formatNumber(distance / 1000, 1) + "km ") +
+    formatNumber(brng, 1) +
     "°T"
   );
 }
 
 function sp(v) {
-  return (v * 3.6).toFixed(1);
+  return formatNumber(v * 3.6, 1);
+}
+
+function formatNumber(num, decimals = 0) {
+  return num.toLocaleString('fa-IR', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  });
 }
 
 function toUri(s) {
@@ -294,9 +304,9 @@ function popup(item) {
   let v = "<b>" + item.callsign + "</b><br/>";
   if (item.team) v += item.team + " " + item.role + "<br/>";
   if (item.speed && item.speed > 0)
-    v += "Speed: " + item.speed.toFixed(0) + " m/s<br/>";
+    v += "Speed: " + formatNumber(item.speed, 0) + " m/s<br/>";
   if (item.sidc.charAt(2) === "A") {
-    v += "hae: " + item.hae.toFixed(0) + " m<br/>";
+    v += "hae: " + formatNumber(item.hae, 0) + " m<br/>";
   }
   v +=
     '<span dir="ltr">' + latLongToIso6709(item.lat, item.lon) + "</span><br/>";

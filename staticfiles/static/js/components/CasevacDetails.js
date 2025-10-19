@@ -219,19 +219,19 @@ Vue.component("CasevacDetails", {
               <div class="col">
                 <div class="mb-3">
                   <label class="form-label fw-bold">بحرانی:</label>
-                  <div>{{ item.casevac_detail?.urgent || 0 }}</div>
+                  <div>{{ formatNumber(item.casevac_detail?.urgent || 0) }}</div>
                 </div>
               </div>
               <div class="col">
                 <div class="mb-3">
                   <label class="form-label fw-bold">بااولویت:</label>
-                  <div>{{ item.casevac_detail?.priority || 0 }}</div>
+                  <div>{{ formatNumber(item.casevac_detail?.priority || 0) }}</div>
                 </div>
               </div>
               <div class="col">
                 <div class="mb-3">
                   <label class="form-label fw-bold">روتین:</label>
-                  <div>{{ item.casevac_detail?.routine || 0 }}</div>
+                  <div>{{ formatNumber(item.casevac_detail?.routine || 0) }}</div>
                 </div>
               </div>
             </div>
@@ -266,7 +266,7 @@ Vue.component("CasevacDetails", {
               <div class="col">
                 <div class="mb-3">
                   <label class="form-label fw-bold">تعداد برانکارد:</label>
-                  <div>{{ item.casevac_detail?.litter || 0 }}</div>
+                  <div>{{ formatNumber(item.casevac_detail?.litter || 0) }}</div>
                 </div>
               </div>
               <div class="col">
@@ -274,7 +274,7 @@ Vue.component("CasevacDetails", {
                   <label class="form-label fw-bold"
                     >تعداد بیماران قابل حمل:</label
                   >
-                  <div>{{ item.casevac_detail?.ambulatory || 0 }}</div>
+                  <div>{{ formatNumber(item.casevac_detail?.ambulatory || 0) }}</div>
                 </div>
               </div>
             </div>
@@ -288,7 +288,7 @@ Vue.component("CasevacDetails", {
               <div class="col">
                 <div class="mb-3">
                   <label class="form-label fw-bold">تعداد نظامی خودی:</label>
-                  <div>{{ item.casevac_detail?.us_military || 0 }}</div>
+                  <div>{{ formatNumber(item.casevac_detail?.us_military || 0) }}</div>
                 </div>
               </div>
             </div>
@@ -296,7 +296,7 @@ Vue.component("CasevacDetails", {
               <div class="col">
                 <div class="mb-3">
                   <label class="form-label fw-bold">تعداد غیرنظامی خودی:</label>
-                  <div>{{ item.casevac_detail?.us_civilian || 0 }}</div>
+                  <div>{{ formatNumber(item.casevac_detail?.us_civilian || 0) }}</div>
                 </div>
               </div>
               <div class="col">
@@ -304,7 +304,7 @@ Vue.component("CasevacDetails", {
                   <label class="form-label fw-bold"
                     >تعداد نظامی غیر خودی:</label
                   >
-                  <div>{{ item.casevac_detail?.nonus_military || 0 }}</div>
+                  <div>{{ formatNumber(item.casevac_detail?.nonus_military || 0) }}</div>
                 </div>
               </div>
             </div>
@@ -314,13 +314,13 @@ Vue.component("CasevacDetails", {
                   <label class="form-label fw-bold"
                     >تعداد غیرنظامی غیر خودی:</label
                   >
-                  <div>{{ item.casevac_detail?.nonus_civilian || 0 }}</div>
+                  <div>{{ formatNumber(item.casevac_detail?.nonus_civilian || 0) }}</div>
                 </div>
               </div>
               <div class="col">
                 <div class="mb-3">
                   <label class="form-label fw-bold">تعداد اسیران جنگی:</label>
-                  <div>{{ item.casevac_detail?.epw || 0 }}</div>
+                  <div>{{ formatNumber(item.casevac_detail?.epw || 0) }}</div>
                 </div>
               </div>
             </div>
@@ -328,7 +328,7 @@ Vue.component("CasevacDetails", {
               <div class="col">
                 <div class="mb-3">
                   <label class="form-label fw-bold">تعداد کودکان:</label>
-                  <div>{{ item.casevac_detail?.child || 0 }}</div>
+                  <div>{{ formatNumber(item.casevac_detail?.child || 0) }}</div>
                 </div>
               </div>
             </div>
@@ -377,7 +377,7 @@ Vue.component("CasevacDetails", {
 
         <div class="mb-3">
           <label class="form-label fw-bold">فرکانس تماس:</label>
-          <div>{{ item.casevac_detail?.freq || 0 }}</div>
+          <div>{{ formatNumber(item.casevac_detail?.freq || 0) }}</div>
         </div>
 
         <!-- Navigation Info Component -->
