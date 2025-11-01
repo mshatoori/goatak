@@ -1,4 +1,4 @@
-Vue.component("PredicateComponent", {
+const PredicateComponent = {
   props: ["predicate", "polygons"],
   data: function () {
     return {
@@ -107,7 +107,7 @@ Vue.component("PredicateComponent", {
       this.editingData.value = "";
     }
   },
-  template: html`
+  template: `
     <div class="list-group-item">
       <div v-if="!editing" class="d-flex justify-content-between align-items-center">
         <div>
@@ -197,4 +197,6 @@ Vue.component("PredicateComponent", {
       </div>
     </div>
   `
-});
+};
+
+export default PredicateComponent;

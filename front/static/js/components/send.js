@@ -1,4 +1,7 @@
-Vue.component("SendModal", {
+import store from '../store.js';
+
+
+const SendModal = {
   data: function () {
     return {
       selectedUrn: "",
@@ -68,7 +71,7 @@ Vue.component("SendModal", {
       });
     },
   },
-  template: html`
+  template: `
     <div>
       <div
         class="modal fade"
@@ -191,4 +194,5 @@ Vue.component("SendModal", {
       </div>
     </div>
   `,
-});
+};
+export default SendModal;

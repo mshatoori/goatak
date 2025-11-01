@@ -1,4 +1,8 @@
-Vue.component("Sidebar", {
+// Import utilities and store
+import '../utils.js'
+import store from '../store.js';
+
+export default {
   data: function () {
     return {
       sharedState: store.state,
@@ -147,7 +151,7 @@ Vue.component("Sidebar", {
     "trackingManager",
   ],
   inject: ["getTool", "removeTool"],
-  template: html`
+  template: `
     <div class="d-flex align-items-start h-100">
       <div
         class="tab-content flex-grow-1 h-100"
@@ -240,8 +244,8 @@ Vue.component("Sidebar", {
                 </div>
               </li>
               <li v-if="getTool('redx')" class="mt-1 list-group-item">
-                <span class="badge bg-danger">نشان</span>: {{
-                Utils.printCoordsll(getTool('redx').getLatLng()) }}
+                <span class="badge bg-danger">نشان</span>: {{{
+                Utils.printCoordsll(getTool('redx').getLatLng()) }}}}
                 <span
                   class="badge rounded-pill bg-success"
                   style="cursor:default;"
@@ -256,8 +260,8 @@ Vue.component("Sidebar", {
                 >
               </li>
               <li v-if="coords" class="mt-1 list-group-item">
-                <span class="badge bg-secondary">نشانگر</span>: {{
-                Utils.printCoordsll(coords) }}
+                <span class="badge bg-secondary">نشانگر</span>: {{{
+                Utils.printCoordsll(coords) }}}}
                 <span v-if="getTool('redx')"
                   >({{ Utils.distBea(getTool('redx').getLatLng(), coords) }} از
                   نشانگر)</span
@@ -364,4 +368,4 @@ Vue.component("Sidebar", {
       </div>
     </div>
   `,
-});
+};

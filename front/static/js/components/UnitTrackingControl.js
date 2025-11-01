@@ -1,10 +1,7 @@
-/**
- * UnitTrackingControl Vue Component
- *
- * Provides unit-specific tracking controls that can be embedded in unit detail views
- * Allows enabling/disabling tracking per unit and configuring trail appearance
- */
-Vue.component("unit-tracking-control", {
+
+import store from '../store.js';
+
+const UnitTrackingControl = {
   props: ["unit", "trackingManager"],
   data: function () {
     return {
@@ -201,7 +198,7 @@ Vue.component("unit-tracking-control", {
     },
   },
 
-  template: html`
+  template: `
     <div class="unit-tracking-control">
       <div class="card mt-3">
         <div
@@ -365,4 +362,6 @@ Vue.component("unit-tracking-control", {
       </div>
     </div>
   `,
-});
+};
+
+export default UnitTrackingControl;

@@ -1,4 +1,4 @@
-Vue.component("ResendingPanel", {
+const ResendingPanel = {
   props: ["config", "map"],
   data: function () {
     return {
@@ -468,7 +468,7 @@ Vue.component("ResendingPanel", {
       }
     },
   },
-  template: html`
+  template: `
     <div>
       <!-- Error Message -->
       <div v-if="error" class="alert alert-danger m-3">
@@ -650,4 +650,6 @@ Vue.component("ResendingPanel", {
       </div>
     </div>
   `,
-});
+};
+
+export default ResendingPanel;

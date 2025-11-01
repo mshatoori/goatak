@@ -25,8 +25,9 @@ tasks/
 setup/*.tar
 setup/config.sqlite3
 setup/tiles/
-frontend/node_modules/
-frontend/.vite/
+front/node_modules/
+front/.vite/
+front/dist/
 .aider*
 .env
 

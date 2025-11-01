@@ -588,10 +588,4 @@ class TrackingManager {
   }
 }
 
-// Make TrackingManager globally accessible
-window.TrackingManager = TrackingManager;
-
-// Export for module systems
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = TrackingManager;
-}
+export default TrackingManager;

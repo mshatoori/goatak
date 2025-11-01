@@ -1,4 +1,4 @@
-Vue.component("ResendingModal", {
+const ResendingModal = {
   props: ["config", "map"],
   template: `
     <div
@@ -28,4 +28,6 @@ Vue.component("ResendingModal", {
       </div>
     </div>
   `,
-});
+};
+
+export default ResendingModal;

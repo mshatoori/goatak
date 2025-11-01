@@ -1,16 +1,18 @@
-FROM nginx:alpine
+FROM node:alpine as build
 
-# Copy static files to /usr/share/nginx/html/static
-COPY static/ /usr/share/nginx/html/static/
+WORKDIR /app
 
-# Copy templates to /usr/share/nginx/html/templates
-COPY templates/ /usr/share/nginx/html/templates/
+# Copy package files
+COPY package*.json ./
 
-# Copy custom nginx.conf to /etc/nginx/nginx.conf
-COPY nginx.conf /etc/nginx/nginx.conf
+# Install dependencies
+RUN npm install
 
-# Expose port 80
-EXPOSE 80
+# Copy source files
+COPY . .
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Expose the development server port
+EXPOSE 5173
+
+# Start the development server
+CMD ["npm", "run", "dev", "--", "--host"]

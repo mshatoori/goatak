@@ -1,4 +1,4 @@
-Vue.component("OverlaysList", {
+const OverlaysList = {
   data: function () {
     return {
       sharedState: store.state,
@@ -84,4 +84,6 @@ Vue.component("OverlaysList", {
       </div>
     </div>
   `,
-});
+};
+
+export default OverlaysList;

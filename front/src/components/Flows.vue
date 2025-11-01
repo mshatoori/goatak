@@ -1,57 +1,5 @@
-import store from "../store";
-
-const FlowsModal = {
-  data: function () {
-    return {
-      newFlow: {
-        type: "UDP",
-        title: "",
-        addr: "",
-        port: "",
-        direction: 1,
-        recvQueue: "",
-        sendExchange: "",
-      },
-      sharedState: store.state,
-    };
-  },
-  methods: {
-    createFlow: function () {
-      console.log("Creating Flow:", this.newFlow);
-      store.createFlow({ ...this.newFlow });
-    },
-    removeFlow: function (uid) {
-      console.log("Removing Flow:", uid);
-      store.removeFlow(uid).catch((error) => {
-        console.error("Failed to remove flow:", error);
-        // TODO: add user notification here if needed
-      });
-    },
-    flowDirectionText: function (direction) {
-      switch (direction) {
-        case 1:
-          return "ورودی";
-        case 2:
-          return "خروجی";
-        case 3:
-          return "دوطرفه";
-      }
-    },
-    flowTypeText: function (type) {
-      switch (type) {
-        case "UDP":
-          return "UDP";
-        case "Rabbit":
-          return "RabbitMQ";
-      }
-    },
-  },
-  computed: {
-    allFlows: function () {
-      return this.sharedState.flows;
-    },
-  },
-  template: ` <div
+<template>
+  <div
     class="modal fade"
     id="flows-modal"
     data-bs-backdrop="static"
@@ -336,6 +284,66 @@ const FlowsModal = {
         </div>
       </div>
     </div>
-  </div>`,
+  </div>
+</template>
+
+<script>
+import store from '../../store.js';
+
+export default {
+  name: 'Flows',
+  data() {
+    return {
+      newFlow: {
+        type: "UDP",
+        title: "",
+        addr: "",
+        port: "",
+        direction: 1,
+        recvQueue: "",
+        sendExchange: "",
+      },
+      sharedState: store.state,
+    };
+  },
+  methods: {
+    createFlow: function () {
+      console.log("Creating Flow:", this.newFlow);
+      store.createFlow({ ...this.newFlow });
+    },
+    removeFlow: function (uid) {
+      console.log("Removing Flow:", uid);
+      store.removeFlow(uid).catch((error) => {
+        console.error("Failed to remove flow:", error);
+        // TODO: add user notification here if needed
+      });
+    },
+    flowDirectionText: function (direction) {
+      switch (direction) {
+        case 1:
+          return "ورودی";
+        case 2:
+          return "خروجی";
+        case 3:
+          return "دوطرفه";
+      }
+    },
+    flowTypeText: function (type) {
+      switch (type) {
+        case "UDP":
+          return "UDP";
+        case "Rabbit":
+          return "RabbitMQ";
+      }
+    },
+  },
+  computed: {
+    allFlows: function () {
+      return this.sharedState.flows;
+    },
+  },
 };
-export default FlowsModal;
+</script>
+
+<style>
+</style>

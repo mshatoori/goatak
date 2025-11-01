@@ -1,50 +1,234 @@
-let app = new Vue({
-  el: "#app",
-  data: {
-    map: null,
-    layers: null,
-    overlays: null,
-    conn: null,
-    units: new Map(),
-    outgoing_flows: new Map(),
-    incoming_flows: new Map(),
-    sensors: new Map(),
-    messages: [],
-    seenMessages: new Set(),
-    ts: 0,
-    locked_unit_uid: "",
-    activeItemUid: null,
-    config: null,
-    tools: new Map(),
-    me: null,
-    coords: null,
-    point_num: 1,
-    unit_num: 1,
-    coord_format: "d",
-    form_unit: {},
-    chatroom: "",
-    chat_uid: "",
-    chat_msg: "",
+<template>
+  <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">سامانه آگاهی وضعیتی تاکتیکی
+        <span v-if="config">{{ config.version }}</span>
+      </a>
+      <span class="badge rounded-pill bg-primary"
+        :class="{ 'bg-success': connected(), 'bg-secondary': !connected() }">.</span>
+      <span class="flex-grow-1"></span>
+      <div class="NOT-collapse NOT-navbar-collapse" id="navbarCollapse">
+        <ul class="navbar-nav mb-2 mb-md-0">
+          <li class="nav-item">
+            <a class="nav-link" href="#" id="navbarAlarmsMenuLink" role="button" v-on:click="openAlarms()">
+              <i :class="{ 'alarm-active': countByCategory('alarm') > 0 }" class="bi bi-exclamation-diamond-fill"></i>
+              {{ countByCategory('alarm') }}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" id="navbarSensorsMenuLink" role="button" v-on:click="openSensors()">
+              سنسورها<span class="badge rounded-pill bg-success">{{ sensorsCount() }}</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" id="navbarFlowsMenuLink" role="button" v-on:click="openFlows()">
+              ارتباطات
+              <span class="badge rounded-pill bg-success">{{ flowsCount() }}</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" id="navbarResendingMenuLink" role="button" v-on:click="openResending()">
+              <i class="bi bi-arrow-repeat"></i>
+              بازارسال
+            </a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+              مخاطبین
+              <span class="badge rounded-pill bg-success">{{ contactsNum() }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+              <li v-for="u in byCategory('contact')">
+                <a class="dropdown-item" href="#" v-on:click="setActiveItemUid(u.uid, true)">
+                  <img :src="getImg(u)" />
+                  <span v-if="u.lat === 0 && u.lon === 0">* </span>{{
+                    u.callsign }}<span v-if="u.status">
+                    ({{ u.status }})</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink2" role="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+              نیروها
+              <span class="badge rounded-pill bg-success">{{ countByCategory('unit') }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink2">
+              <li v-for="u in byCategory('unit')">
+                <a class="dropdown-item" href="#" v-on:click="setActiveItemUid(u.uid, true)">
+                  {{ getUnitName(u) }}
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink3" role="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+              نقاط
+              <span class="badge rounded-pill bg-success">{{ countByCategory('point') }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink3">
+              <li v-for="u in byCategory('point')">
+                <a class="dropdown-item" href="#" v-on:click="setActiveItemUid(u.uid, true)">
+                  {{ getUnitName(u) }}
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink4" role="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+              پیام‌ها
+              <span class="badge rounded-pill bg-success">{{ msgNum() }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink4">
+              <li v-for="m in Object.values(messages)">
+                <a class="dropdown-item" href="#" v-on:click="openChat(m.uid, m.from)">
+                  {{ m.from }}
+                  <span class="badge rounded-pill bg-success">{{ msgNum1(m.uid) }}</span>
+                </a>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
 
-    sharedState: store.state,
-    casevacLocation: null,
-    casevacMarker: null,
+  <div class="container-fluid vh-100 mh-100" style="padding-top: 4rem">
+    <div class="row h-100" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+      <div id="map" class="col h-100" style="cursor: crosshair"></div>
 
-    sidebarCollapsed: false, // Track sidebar collapse state
-    beacon_active: false,
+      <div class="col-auto p-0 h-100" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+        <sidebar :toggle-overlay="toggleOverlay" :config="config" :check-emergency="checkEmergency"
+          :config-updated="configUpdated" :coords="coords" :active-item="activeItem" :locked_unit_uid="locked_unit_uid"
+          :map="map" :tracking-manager="trackingManager" v-on:open-chat="openChat" v-on:save="saveItem"
+          v-on:delete="deleteItem" v-on:collapsed="updateSidebarCollapsed"
+          v-on:navigation-line-toggle="handleNavigationLineToggle"></sidebar>
+      </div>
+    </div>
+  </div>
 
-    // Navigation line state
-    navigationLine: null,
-    navigationLineActive: false,
-    navigationTarget: null,
+  <!-- Modal -->
+  <div class="modal fade" id="messages" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel">
+            پیام‌های چت {{ chatroom }}
+            <span v-if="getStatus(chat_uid)" class="badge"
+              :class="getStatus(chat_uid) == 'Online' ? 'text-bg-success' : 'text-bg-secondary'">
+              {{ getStatus(chat_uid) }}</span>
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div v-for="m in getMessages()" class="alert alert-secondary">
+            <span class="badge text-bg-secondary">{{ dt(m.time) }}</span>
+            <span class="badge" :class="m.from_uid == config.uid ? 'text-bg-success' : 'text-bg-info'">{{ m.from ||
+              m.from_uid }}</span>
+            {{ m.text }}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <form @submit.prevent="sendMessage">
+            <input type="text" class="form-control" id="message-text" v-model="chat_msg" />
+          </form>
+          <button type="button" class="btn btn-primary" v-on:click="sendMessage">
+            ارسال پیام
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            خروج
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    // Tracking manager
-    trackingManager: null,
+  <flows-modal></flows-modal>
+  <alarms-modal :map="map"></alarms-modal>
+  <send-modal></send-modal>
+  <sensors-modal></sensors-modal>
+  <resending-modal :config="config" :map="map"></resending-modal>
+  <tracking-control :map="map" :tracking-manager="trackingManager"></tracking-control>
+</template>
 
-    // Zoom update throttling
-    zoomUpdateTimeout: null,
+<script>
+import TrackingManager from "../static/js/components/TrackingManager.js";
+import store from "../static/js/store.js"
+import {  getIconUri,
+  getMilIcon,
+  getIcon,
+  circle,
+  dt,
+  printCoordsll,
+  printCoords,
+  latlng,
+  distBea,
+  sp,
+  toUri,
+  uuidv4,
+  popup,
+  latLongToIso6709,
+  needIconUpdate,
+  humanReadableType,
+  createMapItem,
+  LocationControl,
+  ToolsControl,
+  html} from "../static/js/utils.js";
+
+export default {
+  name: 'App',
+  data() {
+    return {
+      map: null,
+      layers: null,
+      overlays: null,
+      conn: null,
+      units: new Map(),
+      outgoing_flows: new Map(),
+      incoming_flows: new Map(),
+      sensors: new Map(),
+      messages: [],
+      seenMessages: new Set(),
+      ts: 0,
+      locked_unit_uid: "",
+      activeItemUid: null,
+      config: null,
+      tools: new Map(),
+      me: null,
+      coords: null,
+      point_num: 1,
+      unit_num: 1,
+      coord_format: "d",
+      form_unit: {},
+      chatroom: "",
+      chat_uid: "",
+      chat_msg: "",
+
+      sharedState: store.state,
+      casevacLocation: null,
+      casevacMarker: null,
+
+      sidebarCollapsed: false, // Track sidebar collapse state
+      beacon_active: false,
+
+      // Navigation line state
+      navigationLine: null,
+      navigationLineActive: false,
+      navigationTarget: null,
+
+      // Tracking manager
+      trackingManager: null,
+
+      // Zoom update throttling
+      zoomUpdateTimeout: null,
+    };
   },
-  provide: function () {
+  provide() {
     return {
       map: this.map,
       latlng: this.latlng,
@@ -118,7 +302,7 @@ let app = new Vue({
       trailOpacity: 0.7,
     });
 
-    vm = this;
+    let vm = this; // Changed from `app = this` to `vm = this` to avoid global variable
 
     const drawStart = function (event) {
       vm.inDrawMode = true;
@@ -238,7 +422,6 @@ let app = new Vue({
     this.map.on("mousemove", this.mouseMove);
     this.map.on("zoomanim", this.onMapZoom);
   },
-
   computed: {
     activeItem: function () {
       return this.activeItemUid
@@ -315,7 +498,7 @@ let app = new Vue({
             vm.configUpdated();
           }
 
-          layers = L.control.layers({}, null, { hideSingleBase: true });
+          let layers = L.control.layers({}, null, { hideSingleBase: true });
           layers.addTo(vm.map);
 
           let first = true;
@@ -329,7 +512,8 @@ let app = new Vue({
               opts["subdomains"] = i.parts;
             }
 
-            var lz = null;
+            var lz1 = null;
+            var lz2 = null;
 
             if (first) {
               opts["bounds"] = L.latLngBounds(
@@ -350,7 +534,7 @@ let app = new Vue({
               opts["maxNativeZoom"] = 5;
             }
 
-            l = L.tileLayer(i.url, opts);
+            let l = L.tileLayer(i.url, opts);
 
             layers.addBaseLayer(l, i.name);
 
@@ -502,6 +686,7 @@ let app = new Vue({
       } else if (item.category === "route") {
         item.marker = L.polyline(latlngs, {
           color: item.color,
+          interactive: true, // Make polyline interactive for click events
         });
         item.marker.on("click", (e) => {
           this.setActiveItemUid(item.uid, false);
@@ -784,7 +969,7 @@ let app = new Vue({
           this.map.setView([item.lat, item.lon]);
         }
       }
-      vm.addContextMenuToMarker(item);
+      this.addContextMenuToMarker(item); // Changed vm.addContextMenuToMarker to this.addContextMenuToMarker
     },
 
     processUnits: function (results) {
@@ -877,7 +1062,7 @@ let app = new Vue({
     updateUnitMarker: function (unit, draggable, updateIcon) {
       if (unit.lon === 0 && unit.lat === 0) {
         if (unit.marker) {
-          this.getItemOverlay(item).removeLayer(unit.marker);
+          this.getItemOverlay(unit).removeLayer(unit.marker); // Changed item to unit
           unit.marker = null;
         }
         return;
@@ -893,12 +1078,12 @@ let app = new Vue({
 
       unit.marker = L.marker([unit.lat, unit.lon], { draggable: draggable });
       unit.marker.on("click", function (e) {
-        app.setActiveItemUid(unit.uid, false);
+        vm.setActiveItemUid(unit.uid, false); // Changed app.setActiveItemUid to vm.setActiveItemUid
       });
       if (draggable) {
         unit.marker.on("dragend", function (e) {
-          unit.lat = marker.getLatLng().lat;
-          unit.lon = marker.getLatLng().lng;
+          unit.lat = unit.marker.getLatLng().lat; // Changed marker to unit.marker
+          unit.lon = unit.marker.getLatLng().lng; // Changed marker to unit.marker
         });
       }
       unit.marker.setIcon(getIcon(unit, true));
@@ -1636,25 +1821,7 @@ let app = new Vue({
       return this.trackingManager.getAllTrails();
     },
 
-    onMapZoom: function () {
-      // Throttle zoom updates to improve performance during zoom animations
-      if (this.zoomUpdateTimeout) {
-        clearTimeout(this.zoomUpdateTimeout);
-      }
-
-      this.zoomUpdateTimeout = setTimeout(() => {
-        // Update all drawing and route labels when zoom changes
-        this.sharedState.items.forEach((item) => {
-          if (
-            (item.category === "drawing" || item.category === "route") &&
-            item.textLabel
-          ) {
-            this.updateDrawingTextLabel(item);
-          }
-        });
-      }, 8); // Reduced throttling since we're just updating styles
-    },
-
+    // Update drawing and route labels method
     updateDrawingTextLabel: function (item) {
       // Only update the style of existing text label instead of recreating it
       if (item.textLabel) {
@@ -1682,5 +1849,26 @@ let app = new Vue({
         }
       }
     },
+
+    // Zoom update method
+    onMapZoom: function () {
+      // Throttle zoom updates to improve performance during zoom animations
+      if (this.zoomUpdateTimeout) {
+        clearTimeout(this.zoomUpdateTimeout);
+      }
+
+      this.zoomUpdateTimeout = setTimeout(() => {
+        // Update all drawing and route labels when zoom changes
+        this.sharedState.items.forEach((item) => {
+          if (
+            (item.category === "drawing" || item.category === "route") &&
+            item.textLabel
+          ) {
+            this.updateDrawingTextLabel(item);
+          }
+        });
+      }, 8); // Reduced throttling since we're just updating styles
+    },
   },
-});
+};
+</script>

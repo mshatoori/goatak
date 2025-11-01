@@ -1,4 +1,4 @@
-var store = {
+const store = {
   debug: true,
   state: {
     items: new Map(),
@@ -257,7 +257,7 @@ var store = {
 
     let cont = false;
 
-    for (;;) {
+    for (; ;) {
       cont = false;
       for (const k of curr.next) {
         if (k.code === s) {
@@ -282,7 +282,7 @@ var store = {
       return null;
     }
 
-    for (;;) {
+    for (; ;) {
       let found = false;
       for (const k of curr.next) {
         if (k.code === s) {
@@ -330,3 +330,5 @@ var store = {
     return sidc.toUpperCase();
   },
 };
+
+export default store;

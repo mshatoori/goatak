@@ -292,7 +292,7 @@ Components are loaded in `front/static/js/components/index.js`:
 
 ```javascript
 document.write('<script src="/static/js/components/PredicateComponent.js"></script>');
-document.write('<script src="/static/js/components/FilterComponent.js"></script>');
+document.write('<script src="/src/components/FilterComponent.vue"></script>');
 document.write('<script src="/static/js/components/ResendingPanel.js"></script>');
 ```
 

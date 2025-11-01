@@ -1,116 +1,4 @@
-const DrawingDetails = {
-  props: ["item", "coords", "map", "locked_unit_uid", "config"],
-  // components: {
-  //   NavigationInfo: Vue.component("NavigationInfo"),
-  // },
-  data: function () {
-    return {
-      editing: false,
-      editingData: null,
-      sharedState: store.state,
-    };
-  },
-  mounted: function () {
-    // Automatically start editing if this is a new item
-    if (this.item && this.item.isNew === true) {
-      this.$nextTick(() => this.startEditing());
-    }
-  },
-  watch: {
-    item: function (newVal, oldVal) {
-      if (newVal && newVal.uid !== oldVal.uid) {
-        if (newVal.isNew) {
-          this.$nextTick(() => this.startEditing());
-        }
-      }
-    },
-  },
-  computed: {
-    isPolygon() {
-      return this.item && this.item.type === "u-d-f";
-    },
-    isRoute() {
-      return this.item && this.item.category === "route";
-    },
-  },
-  methods: {
-    mapToUnit: function (unit) {
-      if (unit && unit.lat && unit.lon) {
-        this.map.setView([unit.lat, unit.lon]);
-      }
-    },
-    startEditing: function () {
-      // Use a structured deep copy to avoid circular references
-      this.editingData = {
-        uid: this.item.uid,
-        category: this.item.category,
-        callsign: this.item.callsign,
-        type: this.item.type || "",
-        lat: this.item.lat,
-        lon: this.item.lon,
-        points: this.item.points || [],
-        color: this.item.color || "blue",
-        text: this.item.text || "",
-        send: this.item.send || false,
-        web_sensor: this.item.web_sensor || "",
-        parent_uid: this.item.parent_uid || "",
-        parent_callsign: this.item.parent_callsign || "",
-      };
-
-      // Copy polygon-specific properties if they exist
-      if (this.isPolygon) {
-        this.editingData.geofence = this.item.geofence || false;
-        this.editingData.geofence_aff = this.item.geofence_aff || "All";
-      }
-
-      this.editing = true;
-    },
-    cancelEditing: function () {
-      this.editing = false;
-      this.editingData = null;
-
-      if (this.item.isNew) {
-        this.deleteItem();
-      }
-    },
-    saveEditing: function () {
-      // Update the item with the edited data
-      for (const key in this.editingData) {
-        this.item[key] = this.editingData[key];
-      }
-
-      this.editing = false;
-      this.editingData = null;
-
-      this.$emit("save", this.item);
-    },
-    deleteItem: function () {
-      this.$emit("delete", this.item.uid);
-    },
-    colorName: function (color) {
-      switch (color) {
-        case "white":
-          return "سفید";
-        case "gray":
-          return "خاکستری";
-        case "red":
-          return "قرمز";
-        case "blue":
-          return "آبی";
-        case "green":
-          return "سبز";
-        case "yellow":
-          return "زرد";
-        case "orange":
-          return "نارنجی";
-        case "purple":
-          return "بنفش";
-        case "black":
-          return "سیاه";
-      }
-    },
-  },
-  template: `
+<template>
     <div class="card">
       <!-- Header -->
       <div class="card-header">
@@ -331,7 +219,126 @@ const DrawingDetails = {
         </form>
       </div>
     </div>
-  `,
-};
+</template>
 
-export default DrawingDetails;
+<script>
+import store from '../../store.js';
+import Utils from '../../utils.js'; // Assuming Utils is also needed
+
+export default {
+  props: ["item", "coords", "map", "locked_unit_uid", "config"],
+  // components: {
+  //   NavigationInfo: Vue.component("NavigationInfo"),
+  // },
+  data: function () {
+    return {
+      editing: false,
+      editingData: null,
+      sharedState: store.state,
+    };
+  },
+  mounted: function () {
+    // Automatically start editing if this is a new item
+    if (this.item && this.item.isNew === true) {
+      this.$nextTick(() => this.startEditing());
+    }
+  },
+  watch: {
+    item: function (newVal, oldVal) {
+      if (newVal && newVal.uid !== oldVal.uid) {
+        if (newVal.isNew) {
+          this.$nextTick(() => this.startEditing());
+        }
+      }
+    },
+  },
+  computed: {
+    isPolygon() {
+      return this.item && this.item.type === "u-d-f";
+    },
+    isRoute() {
+      return this.item && this.item.category === "route";
+    },
+  },
+  methods: {
+    mapToUnit: function (unit) {
+      if (unit && unit.lat && unit.lon) {
+        this.map.setView([unit.lat, unit.lon]);
+      }
+    },
+    startEditing: function () {
+      // Use a structured deep copy to avoid circular references
+      this.editingData = {
+        uid: this.item.uid,
+        category: this.item.category,
+        callsign: this.item.callsign,
+        type: this.item.type || "",
+        lat: this.item.lat,
+        lon: this.item.lon,
+        points: this.item.points || [],
+        color: this.item.color || "blue",
+        text: this.item.text || "",
+        send: this.item.send || false,
+        web_sensor: this.item.web_sensor || "",
+        parent_uid: this.item.parent_uid || "",
+        parent_callsign: this.item.parent_callsign || "",
+      };
+
+      // Copy polygon-specific properties if they exist
+      if (this.isPolygon) {
+        this.editingData.geofence = this.item.geofence || false;
+        this.editingData.geofence_aff = this.item.geofence_aff || "All";
+      }
+
+      this.editing = true;
+    },
+    cancelEditing: function () {
+      this.editing = false;
+      this.editingData = null;
+
+      if (this.item.isNew) {
+        this.deleteItem();
+      }
+    },
+    saveEditing: function () {
+      // Update the item with the edited data
+      for (const key in this.editingData) {
+        this.item[key] = this.editingData[key];
+      }
+
+      this.editing = false;
+      this.editingData = null;
+
+      this.$emit("save", this.item);
+    },
+    deleteItem: function () {
+      this.$emit("delete", this.item.uid);
+    },
+    colorName: function (color) {
+      switch (color) {
+        case "white":
+          return "سفید";
+        case "gray":
+          return "خاکستری";
+        case "red":
+          return "قرمز";
+        case "blue":
+          return "آبی";
+        case "green":
+          return "سبز";
+        case "yellow":
+          return "زرد";
+        case "orange":
+          return "نارنجی";
+        case "purple":
+          return "بنفش";
+        case "black":
+          return "سیاه";
+      }
+    },
+  },
+};
+</script>
+
+<style>
+</style>

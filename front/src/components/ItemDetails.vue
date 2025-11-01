@@ -1,7 +1,46 @@
-import store from '../store.js';
+<template>
+  <div>
+    <!-- Contact Chat Button -->
+    <div v-if="isContact" class="card">
+      <div class="card-header">
+        <span class="pull-left fw-bold">{{ item.callsign || "تماس" }}</span>
+        <span class="pull-right">
+          <button
+            type="button"
+            class="btn btn-sm btn-primary"
+            @click.stop="openChat(item.uid, item.callsign);"
+          >
+            <i class="bi bi-chat-text-fill"></i>
+          </button>
+        </span>
+      </div>
+      <div class="card-body">
+        <p>برای شروع گفتگو با این تماس، روی دکمه چت کلیک کنید.</p>
+      </div>
+    </div>
 
+    <!-- Dynamic Component for Item Type -->
+    <component
+      v-if="componentType && !isContact"
+      :is="componentType"
+      :item="item"
+      :coords="coords"
+      :map="map"
+      :locked_unit_uid="locked_unit_uid"
+      :config="config"
+      @save="onSave"
+      @delete="onDelete"
+      @open-chat="openChat"
+      @navigation-line-toggle="onNavigationLineToggle"
+    ></component>
+  </div>
+</template>
 
-const ItemDetails = {
+<script>
+import store from '../../store.js';
+
+export default {
+  name: 'ItemDetails',
   props: ["item", "coords", "map", "locked_unit_uid", "config"],
   computed: {
     isCasevac() {
@@ -60,43 +99,8 @@ const ItemDetails = {
       this.$emit("navigation-line-toggle", event);
     },
   },
-  template: `
-    <div>
-      <!-- Contact Chat Button -->
-      <div v-if="isContact" class="card">
-        <div class="card-header">
-          <span class="pull-left fw-bold">{{ item.callsign || "تماس" }}</span>
-          <span class="pull-right">
-            <button
-              type="button"
-              class="btn btn-sm btn-primary"
-              v-on:click.stop="openChat(item.uid, item.callsign);"
-            >
-              <i class="bi bi-chat-text-fill"></i>
-            </button>
-          </span>
-        </div>
-        <div class="card-body">
-          <p>برای شروع گفتگو با این تماس، روی دکمه چت کلیک کنید.</p>
-        </div>
-      </div>
-
-      <!-- Dynamic Component for Item Type -->
-      <component
-        v-if="componentType && !isContact"
-        :is="componentType"
-        :item="item"
-        :coords="coords"
-        :map="map"
-        :locked_unit_uid="locked_unit_uid"
-        :config="config"
-        v-on:save="onSave"
-        v-on:delete="onDelete"
-        v-on:open-chat="openChat"
-        v-on:navigation-line-toggle="onNavigationLineToggle"
-      ></component>
-    </div>
-  `,
 };
+</script>
 
-export default ItemDetails;
+<style>
+</style>

@@ -1,4 +1,7 @@
-Vue.component("UserInfo", {
+import store from '../store.js';
+
+
+const UserInfo = {
   data: function () {
     return {
       sharedState: store.state,
@@ -193,4 +196,6 @@ Vue.component("UserInfo", {
       </div>
     </div>
   `,
-});
+};
+
+export default UserInfo;

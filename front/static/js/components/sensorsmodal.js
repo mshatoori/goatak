@@ -1,4 +1,7 @@
-Vue.component("SensorsModal", {
+import store from '../store.js';
+
+
+const SensorsModal = {
   data: function () {
     return {
       newSensor: {
@@ -129,4 +132,6 @@ Vue.component("SensorsModal", {
             </div>
         </div>
     </div>`,
-});
+};
+
+export default SensorsModal;

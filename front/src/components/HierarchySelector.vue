@@ -1,7 +1,84 @@
-import store from '../store.js';
+<template>
+  <div class="hierarchy-selector card">
+    <div class="card-body">
+      <!-- Loading State -->
+      <div v-if="isLoading" class="d-flex align-items-center text-muted">
+        <div class="spinner-border spinner-border-sm me-2" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <span>بارگذاری نوع...</span>
+      </div>
 
+      <!-- Error State -->
+      <div v-else-if="error" class="alert alert-danger p-2" role="alert">
+        خطا در بارگذاری نوع: {{ error }}
+      </div>
 
-const HierarchySelector = {
+      <!-- Hierarchy Navigation -->
+      <div v-else-if="hierarchyData">
+        <!-- Breadcrumb Trail -->
+        <nav aria-label="breadcrumb" class="breadcrumb-nav mb-3">
+          <ol class="breadcrumb mb-0">
+            <li
+              v-for="(node, index) in selectedPath"
+              :key="node.code"
+              class="breadcrumb-item"
+              :class="{ active: index === selectedPath.length - 1 }"
+            >
+              <button
+                v-if="index < selectedPath.length - 1"
+                type="button"
+                class="btn btn-link p-0 text-decoration-none"
+                @click="navigateToNode(node, index)"
+              >
+                {{ node.name }} {{ node.code ? `(${node.code})` : '#' }}
+              </button>
+              <span v-else aria-current="page">
+                {{ node.name }} {{ node.code ? `(${node.code})` : '#' }}
+              </span>
+            </li>
+          </ol>
+        </nav>
+
+        <!-- Child Options List -->
+        <ul v-if="canGoForward" class="list-group child-options">
+          <li
+            v-for="option in childOptions"
+            :key="option.code"
+            class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+            @click="selectChild(option)"
+            role="button"
+          >
+            <span
+              >{{ option.name }} {{ option.code ? `(${option.code})` : ''
+              }}</span
+            >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-chevron-left"
+              viewBox="0 0 16 16"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"
+              />
+            </svg>
+          </li>
+        </ul>
+      </div>
+      <div v-else class="text-muted">برای شروع نوعی را انتخاب کنید.</div>
+    </div>
+  </div>
+</template>
+
+<script>
+import store from '../../store.js';
+
+export default {
+  name: 'HierarchySelector',
   props: {
     value: {
       type: String,
@@ -266,156 +343,8 @@ const HierarchySelector = {
   mounted: function () {
     this.fetchHierarchy();
   },
-  template: `
-    <div class="hierarchy-selector card">
-      <div class="card-body">
-        <!-- Loading State -->
-        <div v-if="isLoading" class="d-flex align-items-center text-muted">
-          <div class="spinner-border spinner-border-sm me-2" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-          <span>بارگذاری نوع...</span>
-        </div>
-
-        <!-- Error State -->
-        <div v-else-if="error" class="alert alert-danger p-2" role="alert">
-          خطا در بارگذاری نوع: {{ error }}
-        </div>
-
-        <!-- Hierarchy Navigation -->
-        <div v-else-if="hierarchyData">
-          <!-- Breadcrumb Trail -->
-          <nav aria-label="breadcrumb" class="breadcrumb-nav mb-3">
-            <ol class="breadcrumb mb-0">
-              <li
-                v-for="(node, index) in selectedPath"
-                :key="node.code"
-                class="breadcrumb-item"
-                :class="{ active: index === selectedPath.length - 1 }"
-              >
-                <button
-                  v-if="index < selectedPath.length - 1"
-                  type="button"
-                  class="btn btn-link p-0 text-decoration-none"
-                  @click="navigateToNode(node, index)"
-                >
-                  {{ node.name }} {{ node.code ? \`(\${node.code})\` : '#' }}
-                </button>
-                <span v-else aria-current="page">
-                  {{ node.name }} {{ node.code ? \`(\${node.code})\` : '#' }}
-                </span>
-              </li>
-            </ol>
-          </nav>
-
-          <!-- Child Options List -->
-          <ul v-if="canGoForward" class="list-group child-options">
-            <li
-              v-for="option in childOptions"
-              :key="option.code"
-              class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-              @click="selectChild(option)"
-              role="button"
-            >
-              <span
-                >{{ option.name }} {{ option.code ? \`(\${option.code})\` : ''
-                }}</span
-              >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                class="bi bi-chevron-left"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0"
-                />
-              </svg>
-            </li>
-          </ul>
-        </div>
-        <div v-else class="text-muted">برای شروع نوعی را انتخاب کنید.</div>
-      </div>
-    </div>
-  `,
 };
+</script>
 
-// Add CSS styles to the document
-(function () {
-  const style = document.createElement("style");
-  style.textContent = `
-    .hierarchy-selector {
-      min-height: 24px; /* Ensure minimum height for loading/empty states */
-    }
-
-    .breadcrumb-nav .breadcrumb {
-      background-color: transparent; /* Remove default Bootstrap breadcrumb background */
-      padding: 0; /* Remove default padding */
-      margin-bottom: 0.5rem; /* Add some space below */
-    }
-
-    .breadcrumb-item + .breadcrumb-item::before {
-      content: ">"; /* Use > as separator */
-      color: var(--bs-secondary-color); /* Style separator */
-    }
-
-    /* Hide separator before the active (last) breadcrumb item */
-    .breadcrumb-item.active::before {
-      content: none;
-    }
-
-    .breadcrumb-item button.btn-link {
-      font-size: inherit; /* Match surrounding text size */
-      color: var(--bs-link-color); /* Use standard link color */
-      text-decoration: none; /* Remove underline */
-      vertical-align: baseline; /* Align properly with text */
-    }
-
-    .breadcrumb-item button.btn-link:hover {
-      text-decoration: underline; /* Underline on hover */
-    }
-
-    .breadcrumb-item.active {
-      color: var(--bs-emphasis-color); /* Make active item more prominent */
-      font-weight: 500; /* Slightly bolder */
-    }
-
-    .child-options {
-      max-height: 250px; /* Adjust height as needed */
-      overflow-y: auto;
-    }
-
-    .child-options .list-group-item {
-      cursor: pointer;
-      padding: 0.5rem 0.75rem; /* Slightly smaller padding */
-      border-color: var(--bs-border-color-translucent); /* Lighter border */
-    }
-    .child-options .list-group-item:hover {
-      background-color: var(--bs-tertiary-bg); /* Subtle hover effect */
-    }
-
-    .child-options .list-group-item svg {
-      color: var(--bs-secondary-color); /* Chevron color */
-      transition: transform 0.2s ease-in-out;
-    }
-    .child-options .list-group-item:hover svg {
-      /* Adjust transform for RTL, move slightly left on hover */
-      transform: translateX(-3px);
-    }
-
-    .card-body {
-      padding: 0.75rem; /* Adjust card padding */
-    }
-
-    /* Ensure consistent alignment and spacing for loading state */
-    .loading-state {
-      padding: 0.5rem 0;
-    }
-  `;
-  document.head.appendChild(style);
-})();
-
-export default HierarchySelector;
+<style>
+</style>

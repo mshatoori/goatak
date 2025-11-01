@@ -1,46 +1,5 @@
-import store from "../store";
-
-const AlarmsModal = {
-  data: function () {
-    return {
-      sharedState: store.state,
-    };
-  },
-  methods: {
-    silentAlarm: function () {
-      // TODO:
-    },
-    dt: function (str) {
-      let d = new Date(Date.parse(str));
-      return d.toLocaleString("fa-IR");
-    },
-    readableType: function (alarmType) {
-      return {
-        "b-a-g": "ورود به ژئوفنس",
-        "b-a-o-tbl": "هشدار",
-        "b-a-o-opn": "مواجهه با دشمن",
-        "b-a-o-pan": "تلفات",
-      }[alarmType];
-    },
-    focus: function (alarm) {
-      this.map.setView([alarm.lat, alarm.lon], 12);
-      var myModalEl = document.getElementById("alarms-modal");
-      var modal = bootstrap.Modal.getInstance(myModalEl);
-      modal.hide();
-    },
-  },
-  props: ["map"], // TODO: Change this to only alarms
-  computed: {
-    alarms: function () {
-      let res = [];
-      this.sharedState.ts &&
-        this.sharedState.items.forEach(function (u) {
-          if (u.category === "alarm") res.push(u);
-        });
-      return res;
-    },
-  },
-  template: ` <div
+<template>
+  <div
     class="modal fade"
     id="alarms-modal"
     data-bs-backdrop="static"
@@ -90,7 +49,7 @@ const AlarmsModal = {
                 <span
                   class="badge rounded-pill bg-success"
                   style="cursor:default;"
-                  v-on:click="focus(alarm)"
+                  @click="focus(alarm)"
                   ><i class="bi bi-geo"></i
                 ></span>
               </p>
@@ -102,6 +61,55 @@ const AlarmsModal = {
         </div>
       </div>
     </div>
-  </div>`,
+  </div>
+</template>
+
+<script>
+import store from '../../static/js/store.js';
+
+export default {
+  name: 'Alarms',
+  props: ['map'], // TODO: Change this to only alarms
+  data() {
+    return {
+      sharedState: store.state,
+    };
+  },
+  computed: {
+    alarms() {
+      let res = [];
+      this.sharedState.ts &&
+        this.sharedState.items.forEach(function (u) {
+          if (u.category === "alarm") res.push(u);
+        });
+      return res;
+    },
+  },
+  methods: {
+    silentAlarm() {
+      // TODO:
+    },
+    dt(str) {
+      let d = new Date(Date.parse(str));
+      return d.toLocaleString("fa-IR");
+    },
+    readableType(alarmType) {
+      return {
+        "b-a-g": "ورود به ژئوفنس",
+        "b-a-o-tbl": "هشدار",
+        "b-a-o-opn": "مواجهه با دشمن",
+        "b-a-o-pan": "تلفات",
+      }[alarmType];
+    },
+    focus(alarm) {
+      this.map.setView([alarm.lat, alarm.lon], 12);
+      var myModalEl = document.getElementById("alarms-modal");
+      var modal = bootstrap.Modal.getInstance(myModalEl);
+      modal.hide();
+    },
+  },
 };
-export default AlarmsModal;
+</script>
+
+<style>
+</style>

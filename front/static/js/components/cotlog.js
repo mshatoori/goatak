@@ -1,5 +1,4 @@
-// const var html = String.raw;
-Vue.component("CotLog", {
+const CotLog = {
   data: function () {
     return {
       sharedState: store.state,
@@ -23,4 +22,6 @@ Vue.component("CotLog", {
         </div>
       </div>
     </div>`,
-});
+};
+
+export default CotLog;

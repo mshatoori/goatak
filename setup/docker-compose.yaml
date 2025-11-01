@@ -30,7 +30,11 @@ services:
       context: ../front
       dockerfile: Dockerfile
     ports:
-      - "8081:80"
+      - "5173:5173"
+    volumes:
+      - ../front:/app
+    stdin_open: true
+    tty: true
     networks:
       - mmhs
 

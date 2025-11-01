@@ -1,159 +1,4 @@
-Vue.component("CasevacDetails", {
-  props: ["item", "coords", "map", "locked_unit_uid", "config"],
-  components: {
-    NavigationInfo: Vue.component("NavigationInfo"),
-  },
-  data: function () {
-    return {
-      editing: false,
-      editingData: null,
-      sharedState: store.state,
-    };
-  },
-  mounted: function () {
-    // Automatically start editing if this is a new item
-    if (this.item && this.item.isNew === true) {
-      this.$nextTick(() => this.startEditing());
-    }
-  },
-  watch: {
-    item: function (newVal, oldVal) {
-      if (newVal && newVal.uid !== oldVal.uid) {
-        if (newVal.isNew) {
-          this.$nextTick(() => this.startEditing());
-        }
-      }
-    },
-  },
-  methods: {
-    mapToUnit: function (unit) {
-      if (unit && unit.lat && unit.lon) {
-        this.map.setView([unit.lat, unit.lon]);
-      }
-    },
-    startEditing: function () {
-      // Fix for cyclic object value error - create a structured deep copy instead of JSON.parse/stringify
-      this.editingData = {
-        uid: this.item.uid,
-        category: this.item.category,
-        callsign: this.item.callsign,
-        type: this.item.type,
-        lat: this.item.lat,
-        lon: this.item.lon,
-        remarks: this.item.remarks || "",
-        casevac_detail: {},
-      };
-
-      // Copy casevac_detail properties individually to avoid circular references
-      if (this.item.casevac_detail) {
-        const detail = this.item.casevac_detail;
-        this.editingData.casevac_detail = {
-          casevac: detail.casevac || true,
-          freq: detail.freq || 0,
-          urgent: detail.urgent || 0,
-          priority: detail.priority || 0,
-          routine: detail.routine || 0,
-          hoist: detail.hoist || false,
-          extraction_equipment: detail.extraction_equipment || false,
-          ventilator: detail.ventilator || false,
-          equipment_other: detail.equipment_other || false,
-          equipment_detail: detail.equipment_detail || "",
-          litter: detail.litter || 0,
-          ambulatory: detail.ambulatory || 0,
-          security: detail.security || 0,
-          hlz_marking: detail.hlz_marking || 0,
-          us_military: detail.us_military || 0,
-          us_civilian: detail.us_civilian || 0,
-          nonus_military: detail.nonus_military || 0,
-          nonus_civilian: detail.nonus_civilian || 0,
-          epw: detail.epw || 0,
-          child: detail.child || 0,
-        };
-      } else {
-        this.editingData.casevac_detail = {
-          casevac: true,
-          freq: 0,
-          urgent: 0,
-          priority: 0,
-          routine: 0,
-          hoist: false,
-          extraction_equipment: false,
-          ventilator: false,
-          equipment_other: false,
-          equipment_detail: "",
-          litter: 0,
-          ambulatory: 0,
-          security: 0,
-          hlz_marking: 0,
-          us_military: 0,
-          us_civilian: 0,
-          nonus_military: 0,
-          nonus_civilian: 0,
-          epw: 0,
-          child: 0,
-        };
-      }
-
-      this.editing = true;
-    },
-    cancelEditing: function () {
-      this.editing = false;
-      this.editingData = null;
-
-      if (this.item.isNew) {
-        this.deleteItem();
-      }
-    },
-    deleteItem: function () {
-      this.$emit("delete", this.item.uid);
-    },
-    saveEditing: function () {
-      // Validate form fields if necessary
-      if (!this.validateForm()) {
-        return;
-      }
-
-      // Update the item object with the new values from the form fields
-      this.item.casevac_detail = {
-        title: this.editingData.casevac_detail.title,
-        priority: this.editingData.casevac_detail.priority,
-        urgent: this.editingData.casevac_detail.urgent,
-        routine: this.editingData.casevac_detail.routine,
-        hoist: this.editingData.casevac_detail.hoist,
-        extraction_equipment:
-          this.editingData.casevac_detail.extraction_equipment,
-        ventilator: this.editingData.casevac_detail.ventilator,
-        equipment_other: this.editingData.casevac_detail.equipment_other,
-        equipment_detail: this.editingData.casevac_detail.equipment_detail,
-        litter: this.editingData.casevac_detail.litter,
-        ambulatory: this.editingData.casevac_detail.ambulatory,
-        security: this.editingData.casevac_detail.security,
-        hlz_marking: this.editingData.casevac_detail.hlz_marking,
-        us_military: this.editingData.casevac_detail.us_military,
-        us_civilian: this.editingData.casevac_detail.us_civilian,
-        nonus_military: this.editingData.casevac_detail.nonus_military,
-        nonus_civilian: this.editingData.casevac_detail.nonus_civilian,
-        epw: this.editingData.casevac_detail.epw,
-        child: this.editingData.casevac_detail.child,
-        freq: this.editingData.casevac_detail.freq,
-      };
-
-      // If `type` and `category` are editable, update them as well
-      this.item.type = this.editingData.type;
-      this.item.category = this.editingData.category;
-      this.item.remarks = this.editingData.remarks;
-
-      // Emit the save event with the updated item object
-      this.$emit("save", this.item);
-      this.editing = false;
-    },
-    validateForm: function () {
-      // Add any necessary form validation logic here
-      // For now, we'll just return true to allow saving
-      return true;
-    },
-  },
-  template: html`
+<template>
     <div class="card">
       <!-- Header -->
       <div class="card-header">
@@ -694,5 +539,174 @@ Vue.component("CasevacDetails", {
         </form>
       </div>
     </div>
-  `,
-});
+</template>
+
+<script>
+import store from '../store.js';
+import NavigationInfo from './NavigationInfo.vue'; // Updated path for NavigationInfo
+import * as Utils from '../../static/js/utils.js'; // Assuming Utils is used for printCoords and formatNumber
+
+export default {
+  props: ["item", "coords", "map", "locked_unit_uid", "config"],
+  components: {
+    NavigationInfo,
+  },
+  data: function () {
+    return {
+      editing: false,
+      editingData: null,
+      sharedState: store.state,
+      Utils: Utils, // Make Utils available in the template
+    };
+  },
+  mounted: function () {
+    // Automatically start editing if this is a new item
+    if (this.item && this.item.isNew === true) {
+      this.$nextTick(() => this.startEditing());
+    }
+  },
+  watch: {
+    item: function (newVal, oldVal) {
+      if (newVal && newVal.uid !== oldVal.uid) {
+        if (newVal.isNew) {
+          this.$nextTick(() => this.startEditing());
+        }
+      }
+    },
+  },
+  methods: {
+    mapToUnit: function (unit) {
+      if (unit && unit.lat && unit.lon) {
+        this.map.setView([unit.lat, unit.lon]);
+      }
+    },
+    startEditing: function () {
+      // Fix for cyclic object value error - create a structured deep copy instead of JSON.parse/stringify
+      this.editingData = {
+        uid: this.item.uid,
+        category: this.item.category,
+        callsign: this.item.callsign,
+        type: this.item.type,
+        lat: this.item.lat,
+        lon: this.item.lon,
+        remarks: this.item.remarks || "",
+        casevac_detail: {},
+      };
+
+      // Copy casevac_detail properties individually to avoid circular references
+      if (this.item.casevac_detail) {
+        const detail = this.item.casevac_detail;
+        this.editingData.casevac_detail = {
+          casevac: detail.casevac || true,
+          freq: detail.freq || 0,
+          urgent: detail.urgent || 0,
+          priority: detail.priority || 0,
+          routine: detail.routine || 0,
+          hoist: detail.hoist || false,
+          extraction_equipment: detail.extraction_equipment || false,
+          ventilator: detail.ventilator || false,
+          equipment_other: detail.equipment_other || false,
+          equipment_detail: detail.equipment_detail || "",
+          litter: detail.litter || 0,
+          ambulatory: detail.ambulatory || 0,
+          security: detail.security || 0,
+          hlz_marking: detail.hlz_marking || 0,
+          us_military: detail.us_military || 0,
+          us_civilian: detail.us_civilian || 0,
+          nonus_military: detail.nonus_military || 0,
+          nonus_civilian: detail.nonus_civilian || 0,
+          epw: detail.epw || 0,
+          child: detail.child || 0,
+        };
+      } else {
+        this.editingData.casevac_detail = {
+          casevac: true,
+          freq: 0,
+          urgent: 0,
+          priority: 0,
+          routine: 0,
+          hoist: false,
+          extraction_equipment: false,
+          ventilator: false,
+          equipment_other: false,
+          equipment_detail: "",
+          litter: 0,
+          ambulatory: 0,
+          security: 0,
+          hlz_marking: 0,
+          us_military: 0,
+          us_civilian: 0,
+          nonus_military: 0,
+          nonus_civilian: 0,
+          epw: 0,
+          child: 0,
+        };
+      }
+
+      this.editing = true;
+    },
+    cancelEditing: function () {
+      this.editing = false;
+      this.editingData = null;
+
+      if (this.item.isNew) {
+        this.deleteItem();
+      }
+    },
+    deleteItem: function () {
+      this.$emit("delete", this.item.uid);
+    },
+    saveEditing: function () {
+      // Validate form fields if necessary
+      if (!this.validateForm()) {
+        return;
+      }
+
+      // Update the item object with the new values from the form fields
+      this.item.casevac_detail = {
+        title: this.editingData.casevac_detail.title,
+        priority: this.editingData.casevac_detail.priority,
+        urgent: this.editingData.casevac_detail.urgent,
+        routine: this.editingData.casevac_detail.routine,
+        hoist: this.editingData.casevac_detail.hoist,
+        extraction_equipment:
+          this.editingData.casevac_detail.extraction_equipment,
+        ventilator: this.editingData.casevac_detail.ventilator,
+        equipment_other: this.editingData.casevac_detail.equipment_other,
+        equipment_detail: this.editingData.casevac_detail.equipment_detail,
+        litter: this.editingData.casevac_detail.litter,
+        ambulatory: this.editingData.casevac_detail.ambulatory,
+        security: this.editingData.casevac_detail.security,
+        hlz_marking: this.editingData.casevac_detail.hlz_marking,
+        us_military: this.editingData.casevac_detail.us_military,
+        us_civilian: this.editingData.casevac_detail.us_civilian,
+        nonus_military: this.editingData.casevac_detail.nonus_military,
+        nonus_civilian: this.editingData.casevac_detail.nonus_civilian,
+        epw: this.editingData.casevac_detail.epw,
+        child: this.editingData.casevac_detail.child,
+        freq: this.editingData.casevac_detail.freq,
+      };
+
+      // If `type` and `category` are editable, update them as well
+      this.item.type = this.editingData.type;
+      this.item.category = this.editingData.category;
+      this.item.remarks = this.editingData.remarks;
+
+      // Emit the save event with the updated item object
+      this.$emit("save", this.item);
+      this.editing = false;
+    },
+    validateForm: function () {
+      // Add any necessary form validation logic here
+      // For now, we'll just return true to allow saving
+      return true;
+    },
+    formatNumber: function (value) {
+      return Utils.formatNumber(value);
+    },
+  },
+};
+</script>
+
+<style>
+</style>

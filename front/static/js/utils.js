@@ -386,23 +386,28 @@ function humanReadableType(type) {
   return type;
 }
 
-Vue.prototype.Utils = {
-  getIconUri: getIconUri,
-  getMilIcon: getMilIcon,
-  getIcon: getIcon,
-  circle: circle,
-  dt: dt,
-  printCoordsll: printCoordsll,
-  printCoords: printCoords,
-  latlng: latlng,
-  distBea: distBea,
-  sp: sp,
-  toUri: toUri,
-  uuidv4: uuidv4,
-  popup: popup,
-  latLongToIso6709: latLongToIso6709,
-  needIconUpdate: needIconUpdate,
-  humanReadableType: humanReadableType,
+// Export all utility functions
+export {
+  getIconUri,
+  getMilIcon,
+  getIcon,
+  circle,
+  dt,
+  printCoordsll,
+  printCoords,
+  latlng,
+  distBea,
+  sp,
+  toUri,
+  uuidv4,
+  popup,
+  latLongToIso6709,
+  needIconUpdate,
+  humanReadableType,
+  createMapItem,
+  LocationControl,
+  ToolsControl,
+  html,
 };
 
 L.Marker.RotatedMarker = L.Marker.extend({

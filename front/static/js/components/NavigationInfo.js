@@ -1,4 +1,7 @@
-Vue.component("NavigationInfo", {
+import store from '../store.js';
+
+
+const NavigationInfo = {
   props: ["targetItem", "userPosition"],
   data: function () {
     return {
@@ -404,7 +407,7 @@ Vue.component("NavigationInfo", {
   beforeDestroy: function () {
     // Component cleanup
   },
-  template: html`
+  template: `
     <div class="card mt-2">
       <div class="card-header">
         <h6 class="mb-0">
@@ -498,4 +501,6 @@ Vue.component("NavigationInfo", {
       </div>
     </div>
   `,
-});
+};
+
+export default NavigationInfo;

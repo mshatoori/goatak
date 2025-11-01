@@ -8,18 +8,13 @@
 
 // Load HierarchySelector component (needed by UnitDetails)
 document.write(
-  '<script src="/static/js/components/HierarchySelector.js"></script>'
+  '<script src="/src/components/HierarchySelector.vue"></script>'
 );
 
-// Load UnitDetails component
-document.write('<script src="/static/js/components/UnitDetails.js"></script>');
 
-// Load PointDetails component
-document.write('<script src="/static/js/components/PointDetails.js"></script>');
 
 // Load DrawingDetails component
 document.write(
-  '<script src="/static/js/components/DrawingDetails.js"></script>'
 );
 
 // Load CasevacDetails component
@@ -31,10 +26,10 @@ document.write(
 document.write('<script src="/static/js/components/PredicateComponent.js"></script>');
 
 // Load FilterComponent (needed by ResendingPanel)
-document.write('<script src="/static/js/components/FilterComponent.js"></script>');
+document.write('<script src="/src/components/FilterComponent.vue"></script>');
 
 // Load ResendingPanel component
 document.write('<script src="/static/js/components/ResendingPanel.js"></script>');
 
 // Load the ItemDetails router component last
-document.write('<script src="/static/js/components/item.details.js"></script>');
+document.write('<script src="/src/components/ItemDetails.vue"></script>');

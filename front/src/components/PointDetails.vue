@@ -1,116 +1,4 @@
-const PointDetails = {
-  props: ["item", "coords", "map", "locked_unit_uid", "config"],
-  // components: {
-  //   NavigationInfo: Vue.component("NavigationInfo"),
-  // },
-  data: function () {
-    return {
-      editing: false,
-      editingData: null,
-      sharedState: store.state,
-    };
-  },
-  mounted: function () {
-    // Automatically start editing if this is a new item
-    if (this.item && this.item.isNew === true) {
-      this.$nextTick(() => this.startEditing());
-    }
-  },
-  watch: {
-    item: function (newVal, oldVal) {
-      if (newVal && newVal.uid !== oldVal.uid) {
-        if (newVal.isNew) {
-          this.$nextTick(() => this.startEditing());
-        }
-      }
-    },
-  },
-  computed: {
-    renderedItem: function () {
-      if (this.editing) return this.editingData;
-      return this.item;
-    },
-  },
-  methods: {
-    mapToUnit: function (unit) {
-      if (unit && unit.lat && unit.lon) {
-        this.map.setView([unit.lat, unit.lon]);
-      }
-    },
-    startEditing: function () {
-      // Use a structured deep copy to avoid circular references
-      this.editingData = {
-        uid: this.item.uid,
-        category: this.item.category,
-        callsign: this.item.callsign,
-        type: this.item.type || "",
-        lat: this.item.lat,
-        lon: this.item.lon,
-        text: this.item.text || "",
-        send: this.item.send || false,
-        web_sensor: this.item.web_sensor || "",
-        color: this.item.color || "",
-        parent_uid: this.item.parent_uid || "",
-        parent_callsign: this.item.parent_callsign || "",
-      };
-
-      this.editing = true;
-    },
-    cancelEditing: function () {
-      this.editing = false;
-      this.editingData = null;
-
-      if (this.item.isNew) {
-        this.deleteItem();
-      }
-    },
-    saveEditing: function () {
-      // Update the item with the edited data
-      for (const key in this.editingData) {
-        this.item[key] = this.editingData[key];
-      }
-
-      this.$emit("save", this.item);
-      this.editing = false;
-      this.editingData = null;
-    },
-    deleteItem: function () {
-      this.$emit("delete", this.item.uid);
-    },
-    colorName: function (color) {
-      switch (color) {
-        case "red":
-          return "قرمز";
-        case "blue":
-          return "آبی";
-        case "green":
-          return "سبز";
-        case "yellow":
-          return "زرد";
-        case "orange":
-          return "نارنجی";
-        case "purple":
-          return "بنفش";
-        case "black":
-          return "سیاه";
-      }
-    },
-    typeName: function (type) {
-      switch (type) {
-        case "b-m-p-s-m":
-          return "محل";
-        case "b-m-p-w-GOTO":
-          return "نشانگر مسیر";
-        case "b-m-p-s-p-op":
-          return "نقطه دیده‌بانی";
-        case "b-m-p-a":
-          return "نقطه هدف";
-        default:
-          return type; // Return the original type if no mapping found
-      }
-    },
-  },
-  template: `
+<template>
     <div class="card">
       <!-- Header -->
       <div class="card-header">
@@ -424,7 +312,129 @@ const PointDetails = {
         </form>
       </div>
     </div>
-  `,
-};
+</template>
 
-export default PointDetails;
+<script>
+import store from '../../store.js';
+import { getIconUri } from '../../utils.js'; // Assuming getIconUri is from utils.js
+import * as Utils from '../../utils.js'; // Assuming Utils is from utils.js
+
+export default {
+  props: ["item", "coords", "map", "locked_unit_uid", "config"],
+  // components: {
+  //   NavigationInfo: Vue.component("NavigationInfo"),
+  // },
+  data: function () {
+    return {
+      editing: false,
+      editingData: null,
+      sharedState: store.state,
+    };
+  },
+  mounted: function () {
+    // Automatically start editing if this is a new item
+    if (this.item && this.item.isNew === true) {
+      this.$nextTick(() => this.startEditing());
+    }
+  },
+  watch: {
+    item: function (newVal, oldVal) {
+      if (newVal && newVal.uid !== oldVal.uid) {
+        if (newVal.isNew) {
+          this.$nextTick(() => this.startEditing());
+        }
+      }
+    },
+  },
+  computed: {
+    renderedItem: function () {
+      if (this.editing) return this.editingData;
+      return this.item;
+    },
+  },
+  methods: {
+    mapToUnit: function (unit) {
+      if (unit && unit.lat && unit.lon) {
+        this.map.setView([unit.lat, unit.lon]);
+      }
+    },
+    startEditing: function () {
+      // Use a structured deep copy to avoid circular references
+      this.editingData = {
+        uid: this.item.uid,
+        category: this.item.category,
+        callsign: this.item.callsign,
+        type: this.item.type || "",
+        lat: this.item.lat,
+        lon: this.item.lon,
+        text: this.item.text || "",
+        send: this.item.send || false,
+        web_sensor: this.item.web_sensor || "",
+        color: this.item.color || "",
+        parent_uid: this.item.parent_uid || "",
+        parent_callsign: this.item.parent_callsign || "",
+      };
+
+      this.editing = true;
+    },
+    cancelEditing: function () {
+      this.editing = false;
+      this.editingData = null;
+
+      if (this.item.isNew) {
+        this.deleteItem();
+      }
+    },
+    saveEditing: function () {
+      // Update the item with the edited data
+      for (const key in this.editingData) {
+        this.item[key] = this.editingData[key];
+      }
+
+      this.$emit("save", this.item);
+      this.editing = false;
+      this.editingData = null;
+    },
+    deleteItem: function () {
+      this.$emit("delete", this.item.uid);
+    },
+    colorName: function (color) {
+      switch (color) {
+        case "red":
+          return "قرمز";
+        case "blue":
+          return "آبی";
+        case "green":
+          return "سبز";
+        case "yellow":
+          return "زرد";
+        case "orange":
+          return "نارنجی";
+        case "purple":
+          return "بنفش";
+        case "black":
+          return "سیاه";
+      }
+    },
+    typeName: function (type) {
+      switch (type) {
+        case "b-m-p-s-m":
+          return "محل";
+        case "b-m-p-w-GOTO":
+          return "نشانگر مسیر";
+        case "b-m-p-s-p-op":
+          return "نقطه دیده‌بانی";
+        case "b-m-p-a":
+          return "نقطه هدف";
+        default:
+          return type; // Return the original type if no mapping found
+      }
+    },
+    getIconUri: getIconUri, // Make getIconUri available in the template
+    Utils: Utils, // Make Utils available in the template
+  },
+};
+</script>
+
+<style>
+</style>

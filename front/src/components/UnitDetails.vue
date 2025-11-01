@@ -1,259 +1,4 @@
-
-import store from '../store.js';
-
-const UnitDetails = {
-  props: ["item", "coords", "map", "locked_unit_uid", "config"],
-  // components: {
-  //   NavigationInfo: Vue.component("NavigationInfo"),
-  // },
-  data: function () {
-    return {
-      editing: false,
-      editingData: null,
-      sharedState: store.state,
-      availableDestinations: null,
-    };
-  },
-  mounted: function () {
-    // Automatically start editing if this is a new item
-    if (this.item && this.item.isNew) {
-      this.$nextTick(() => this.startEditing());
-    }
-  },
-  watch: {
-    item: function (newVal, oldVal) {
-      if (newVal && newVal.uid !== oldVal.uid) {
-        if (newVal.isNew) {
-          this.$nextTick(() => this.startEditing());
-        }
-      }
-    },
-  },
-  methods: {
-    getSidc: (s) => store.getSidc(s),
-    getRootSidc: (s) => store.getRootSidc(s),
-    milImg: function (item) {
-      return getMilIcon(item, false).uri;
-    },
-    getUnitName: function (u) {
-      let res = u.callsign || "no name";
-      if (u.parent_uid === this.config.uid) {
-        // Use send_mode for visual indicators, fallback to send for backward compatibility
-        const send_mode = u.send_mode || (u.send ? "broadcast" : "none");
-        switch (send_mode) {
-          case "broadcast":
-            res = "+ " + res;
-            break;
-          case "subnet":
-            res = "~ " + res;
-            break;
-          case "direct":
-            res = "→ " + res;
-            break;
-          case "none":
-          default:
-            res = "* " + res;
-            break;
-        }
-      }
-      return res;
-    },
-    mapToUnit: function (unit) {
-      if (unit && unit.lat && unit.lon) {
-        this.map.setView([unit.lat, unit.lon]);
-      }
-    },
-    startEditing: function () {
-      console.log("startEditing called for item:", this.item); // Added log
-      // Use a structured deep copy to avoid circular references
-      this.editingData = {
-        uid: this.item.uid,
-        category: this.item.category,
-        callsign: this.item.callsign,
-        type: this.item.type,
-        aff: this.item.type.substring(2, 3),
-        subtype: this.item.type.substring(4),
-        lat: this.item.lat,
-        lon: this.item.lon,
-        text: this.item.text || "",
-        send: this.item.send || false, // Keep for backward compatibility
-        send_mode:
-          this.item.send_mode || (this.item.send ? "broadcast" : "none"),
-        selected_subnet: this.item.selected_subnet || "",
-        selected_urn: this.item.selected_urn || "",
-        selected_ip: this.item.selected_ip || "",
-        web_sensor: this.item.web_sensor || "",
-        parent_uid: this.item.parent_uid || "",
-        parent_callsign: this.item.parent_callsign || "",
-        isNew: this.item.isNew || false, // Include isNew flag
-        stale_duration: 24, // Default duration in hours
-      };
-
-      console.log("Editing Data:", this.editingData); // Added log
-
-      // Initialize root_sidc and subtype if not present
-      if (!this.item.root_sidc) {
-        this.editingData.root_sidc = this.getSidc(
-          this.editingData.subtype || ""
-        );
-      } else {
-        this.editingData.root_sidc = this.item.root_sidc;
-      }
-
-      // Fetch destinations data when starting to edit
-      this.fetchDestinations();
-
-      this.editing = true;
-      console.log("editing set to:", this.editing); // Added log
-    },
-    cancelEditing: function () {
-      this.editing = false;
-      this.editingData = null;
-
-      if (this.item.isNew) {
-        this.deleteItem();
-      }
-    },
-    saveEditing: function () {
-      // Update the item with the edited data
-      for (const key in this.editingData) {
-        if (key !== "stale_duration") {
-          this.item[key] = this.editingData[key];
-        }
-      }
-
-      // Update send field for backward compatibility
-      this.item.send =
-        this.editingData.send_mode === "broadcast" ||
-        this.editingData.send_mode === "subnet" ||
-        this.editingData.send_mode === "direct";
-
-      // Calculate stale_time from last_seen + duration (in hours)
-      if (this.editingData.stale_duration) {
-        const lastSeen = new Date(this.item.last_seen || new Date());
-        const staleDurationMs =
-          this.editingData.stale_duration * 60 * 60 * 1000; // Convert hours to milliseconds
-        this.item.stale_time = new Date(
-          lastSeen.getTime() + staleDurationMs
-        ).toISOString();
-      }
-
-      this.item["type"] = "a-" + this.item["aff"] + "-" + this.item.subtype;
-      this.item["sidc"] = store.sidcFromType(this.item["type"]);
-
-      this.item["selected_urn"] = parseInt(this.item["selected_urn"]) || 0;
-
-      this.editing = false;
-      this.editingData = null;
-
-      this.$emit("save", this.item);
-    },
-    deleteItem: function () {
-      this.$emit("delete", this.item.uid);
-    },
-    openChat: function (uid, callsign) {
-      console.log("UnitDetails: Opening chat with", uid, callsign);
-      this.$emit("open-chat", uid, callsign);
-    },
-    // Method to handle navigation between subtype levels
-    setFormRootSidc: function (code) {
-      this.editingData.root_sidc = this.getSidc(code);
-      this.editingData.subtype = code;
-    },
-    // Fetch destinations from API
-    fetchDestinations: function () {
-      fetch(window.baseUrl + "destinations")
-        .then((response) => response.json())
-        .then((data) => {
-          this.availableDestinations = data;
-        })
-        .catch((error) => {
-          console.error("Error fetching destinations:", error);
-          this.availableDestinations = { subnets: [], contacts: [] };
-        });
-    },
-    // Handle URN selection to populate IP options
-    onUrnSelected: function () {
-      if (this.editingData.selected_urn && this.availableContacts) {
-        const selectedContact = this.availableContacts.find(
-          (contact) => contact.urn.toString() === this.editingData.selected_urn
-        );
-        if (selectedContact) {
-          // Reset IP selection when URN changes
-          this.editingData.selected_ip = "";
-        }
-      }
-    },
-  },
-  computed: {
-    renderedItem: function () {
-      if (this.editing)
-        return {
-          ...this.editingData,
-          sidc: store.sidcFromType(
-            "a-" + this.editingData["aff"] + "-" + this.editingData.subtype
-          ),
-        };
-      return this.item;
-    },
-    isContact: function () {
-      return this.item && this.item.category === "contact";
-    },
-    availableSubnets: function () {
-      // Use ownAddresses as subnet options for broadcast to own networks
-      return this.availableDestinations
-        ? this.availableDestinations.ownAddresses || []
-        : [];
-    },
-    availableContacts: function () {
-      // Group directDestinations by URN to create contact list
-      if (
-        !this.availableDestinations ||
-        !this.availableDestinations.directDestinations
-      ) {
-        return [];
-      }
-
-      const contactMap = new Map();
-      this.availableDestinations.directDestinations.forEach((dest) => {
-        const urn = dest.urn.toString();
-        if (!contactMap.has(urn)) {
-          contactMap.set(urn, {
-            urn: dest.urn,
-            callsign: dest.name,
-            ip_address: dest.ip,
-          });
-        } else {
-          // Append additional IPs
-          const existing = contactMap.get(urn);
-          existing.ip_address += "," + dest.ip;
-        }
-      });
-
-      return Array.from(contactMap.values());
-    },
-    availableIps: function () {
-      console.log(
-        this.editingData,
-        this.editingData.selected_urn,
-        this.availableContacts
-      );
-      if (
-        this.editingData &&
-        this.editingData.selected_urn &&
-        this.availableContacts
-      ) {
-        const selectedContact = this.availableContacts.find(
-          (contact) => contact.urn == this.editingData.selected_urn
-        );
-        if (selectedContact && selectedContact.ip_address) {
-          return selectedContact.ip_address.split(",");
-        }
-      }
-      return [];
-    },
-  },
-  template: `
+<template>
     <div class="card">
       <!-- Header -->
       <div class="card-header">
@@ -677,7 +422,281 @@ const UnitDetails = {
         </form>
       </div>
     </div>
-  `,
-};
+</template>
 
-export default UnitDetails;
+<script>
+import store from '../store.js';
+import { getMilIcon, humanReadableType, printCoords, distBea, latlng, sp, dt, formatNumber } from '../utils.js';
+import NavigationInfo from './NavigationInfo.vue';
+import UnitTrackingControl from './UnitTrackingControl.vue';
+import HierarchySelector from './HierarchySelector.vue';
+
+export default {
+  props: ["item", "coords", "map", "locked_unit_uid", "config"],
+  components: {
+    NavigationInfo,
+    UnitTrackingControl,
+    HierarchySelector,
+  },
+  data: function () {
+    return {
+      editing: false,
+      editingData: null,
+      sharedState: store.state,
+      availableDestinations: null,
+    };
+  },
+  mounted: function () {
+    // Automatically start editing if this is a new item
+    if (this.item && this.item.isNew) {
+      this.$nextTick(() => this.startEditing());
+    }
+  },
+  watch: {
+    item: function (newVal, oldVal) {
+      if (newVal && newVal.uid !== oldVal.uid) {
+        if (newVal.isNew) {
+          this.$nextTick(() => this.startEditing());
+        }
+      }
+    },
+  },
+  methods: {
+    getSidc: (s) => store.getSidc(s),
+    getRootSidc: (s) => store.getRootSidc(s),
+    milImg: function (item) {
+      return getMilIcon(item, false).uri;
+    },
+    getUnitName: function (u) {
+      let res = u.callsign || "no name";
+      if (u.parent_uid === this.config.uid) {
+        // Use send_mode for visual indicators, fallback to send for backward compatibility
+        const send_mode = u.send_mode || (u.send ? "broadcast" : "none");
+        switch (send_mode) {
+          case "broadcast":
+            res = "+ " + res;
+            break;
+          case "subnet":
+            res = "~ " + res;
+            break;
+          case "direct":
+            res = "→ " + res;
+            break;
+          case "none":
+          default:
+            res = "* " + res;
+            break;
+        }
+      }
+      return res;
+    },
+    mapToUnit: function (unit) {
+      if (unit && unit.lat && unit.lon) {
+        this.map.setView([unit.lat, unit.lon]);
+      }
+    },
+    startEditing: function () {
+      console.log("startEditing called for item:", this.item); // Added log
+      // Use a structured deep copy to avoid circular references
+      this.editingData = {
+        uid: this.item.uid,
+        category: this.item.category,
+        callsign: this.item.callsign,
+        type: this.item.type,
+        aff: this.item.type.substring(2, 3),
+        subtype: this.item.type.substring(4),
+        lat: this.item.lat,
+        lon: this.item.lon,
+        text: this.item.text || "",
+        send: this.item.send || false, // Keep for backward compatibility
+        send_mode:
+          this.item.send_mode || (this.item.send ? "broadcast" : "none"),
+        selected_subnet: this.item.selected_subnet || "",
+        selected_urn: this.item.selected_urn || "",
+        selected_ip: this.item.selected_ip || "",
+        web_sensor: this.item.web_sensor || "",
+        parent_uid: this.item.parent_uid || "",
+        parent_callsign: this.item.parent_callsign || "",
+        isNew: this.item.isNew || false, // Include isNew flag
+        stale_duration: 24, // Default duration in hours
+      };
+
+      console.log("Editing Data:", this.editingData); // Added log
+
+      // Initialize root_sidc and subtype if not present
+      if (!this.item.root_sidc) {
+        this.editingData.root_sidc = this.getSidc(
+          this.editingData.subtype || ""
+        );
+      } else {
+        this.editingData.root_sidc = this.item.root_sidc;
+      }
+
+      // Fetch destinations data when starting to edit
+      this.fetchDestinations();
+
+      this.editing = true;
+      console.log("editing set to:", this.editing); // Added log
+    },
+    cancelEditing: function () {
+      this.editing = false;
+      this.editingData = null;
+
+      if (this.item.isNew) {
+        this.deleteItem();
+      }
+    },
+    saveEditing: function () {
+      // Update the item with the edited data
+      for (const key in this.editingData) {
+        if (key !== "stale_duration") {
+          this.item[key] = this.editingData[key];
+        }
+      }
+
+      // Update send field for backward compatibility
+      this.item.send =
+        this.editingData.send_mode === "broadcast" ||
+        this.editingData.send_mode === "subnet" ||
+        this.editingData.send_mode === "direct";
+
+      // Calculate stale_time from last_seen + duration (in hours)
+      if (this.editingData.stale_duration) {
+        const lastSeen = new Date(this.item.last_seen || new Date());
+        const staleDurationMs =
+          this.editingData.stale_duration * 60 * 60 * 1000; // Convert hours to milliseconds
+        this.item.stale_time = new Date(
+          lastSeen.getTime() + staleDurationMs
+        ).toISOString();
+      }
+
+      this.item["type"] = "a-" + this.item["aff"] + "-" + this.item.subtype;
+      this.item["sidc"] = store.sidcFromType(this.item["type"]);
+
+      this.item["selected_urn"] = parseInt(this.item["selected_urn"]) || 0;
+
+      this.editing = false;
+      this.editingData = null;
+
+      this.$emit("save", this.item);
+    },
+    deleteItem: function () {
+      this.$emit("delete", this.item.uid);
+    },
+    openChat: function (uid, callsign) {
+      console.log("UnitDetails: Opening chat with", uid, callsign);
+      this.$emit("open-chat", uid, callsign);
+    },
+    // Method to handle navigation between subtype levels
+    setFormRootSidc: function (code) {
+      this.editingData.root_sidc = this.getSidc(code);
+      this.editingData.subtype = code;
+    },
+    // Fetch destinations from API
+    fetchDestinations: function () {
+      fetch(window.baseUrl + "destinations")
+        .then((response) => response.json())
+        .then((data) => {
+          this.availableDestinations = data;
+        })
+        .catch((error) => {
+          console.error("Error fetching destinations:", error);
+          this.availableDestinations = { subnets: [], contacts: [] };
+        });
+    },
+    // Handle URN selection to populate IP options
+    onUrnSelected: function () {
+      if (this.editingData.selected_urn && this.availableContacts) {
+        const selectedContact = this.availableContacts.find(
+          (contact) => contact.urn.toString() === this.editingData.selected_urn
+        );
+        if (selectedContact) {
+          // Reset IP selection when URN changes
+          this.editingData.selected_ip = "";
+        }
+      }
+    },
+    // Expose Utils functions to the template
+    Utils: {
+      humanReadableType,
+      printCoords,
+      distBea,
+      latlng,
+      sp,
+      dt,
+    },
+    formatNumber,
+  },
+  computed: {
+    renderedItem: function () {
+      if (this.editing)
+        return {
+          ...this.editingData,
+          sidc: store.sidcFromType(
+            "a-" + this.editingData["aff"] + "-" + this.editingData.subtype
+          ),
+        };
+      return this.item;
+    },
+    isContact: function () {
+      return this.item && this.item.category === "contact";
+    },
+    availableSubnets: function () {
+      // Use ownAddresses as subnet options for broadcast to own networks
+      return this.availableDestinations
+        ? this.availableDestinations.ownAddresses || []
+        : [];
+    },
+    availableContacts: function () {
+      // Group directDestinations by URN to create contact list
+      if (
+        !this.availableDestinations ||
+        !this.availableDestinations.directDestinations
+      ) {
+        return [];
+      }
+
+      const contactMap = new Map();
+      this.availableDestinations.directDestinations.forEach((dest) => {
+        const urn = dest.urn.toString();
+        if (!contactMap.has(urn)) {
+          contactMap.set(urn, {
+            urn: dest.urn,
+            callsign: dest.name,
+            ip_address: dest.ip,
+          });
+        } else {
+          // Append additional IPs
+          const existing = contactMap.get(urn);
+          existing.ip_address += "," + dest.ip;
+        }
+      });
+
+      return Array.from(contactMap.values());
+    },
+    availableIps: function () {
+      console.log(
+        this.editingData,
+        this.editingData.selected_urn,
+        this.availableContacts
+      );
+      if (
+        this.editingData &&
+        this.editingData.selected_urn &&
+        this.availableContacts
+      ) {
+        const selectedContact = this.availableContacts.find(
+          (contact) => contact.urn == this.editingData.selected_urn
+        );
+        if (selectedContact && selectedContact.ip_address) {
+          return selectedContact.ip_address.split(",");
+        }
+      }
+      return [];
+    },
+  },
+};
+</script>
+
+<style>
+</style>

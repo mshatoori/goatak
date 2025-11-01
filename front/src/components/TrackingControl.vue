@@ -1,217 +1,4 @@
-/**
- * TrackingControl Vue Component
- *
- * Provides user interface controls for managing trail tracking functionality
- * including global tracking settings, unit-specific configurations, and trail management
- */
-Vue.component("tracking-control", {
-  props: ["map", "trackingManager"],
-  data: function () {
-    return {
-      globalTrackingEnabled: true,
-      defaultTrailLength: 50,
-      defaultUpdateInterval: 30,
-      defaultTrailColor: "#FF0000",
-      defaultTrailWidth: 2,
-      defaultTrailOpacity: 0.7,
-      activeTrails: [],
-      showAdvancedSettings: false,
-      exportFormat: "json",
-      importData: "",
-      importFormat: "json",
-      selectedUnitForImport: "",
-      refreshInterval: null,
-    };
-  },
-  mounted: function () {
-    this.refreshActiveTrails();
-    // Refresh active trails every 5 seconds
-    this.refreshInterval = setInterval(() => {
-      this.refreshActiveTrails();
-    }, 5000);
-  },
-  beforeDestroy: function () {
-    if (this.refreshInterval) {
-      clearInterval(this.refreshInterval);
-    }
-  },
-  methods: {
-    toggleGlobalTracking: function () {
-      if (this.trackingManager) {
-        this.trackingManager.setTrackingEnabled(this.globalTrackingEnabled);
-        console.log(
-          `Global tracking ${
-            this.globalTrackingEnabled ? "enabled" : "disabled"
-          }`
-        );
-      }
-    },
-
-    updateDefaultSettings: function () {
-      // Update default settings for new trails
-      if (this.trackingManager) {
-        this.trackingManager.defaultConfig = {
-          ...this.trackingManager.defaultConfig,
-          trailLength: this.defaultTrailLength,
-          updateInterval: this.defaultUpdateInterval * 1000,
-          trailColor: this.defaultTrailColor,
-          trailWidth: this.defaultTrailWidth,
-          trailOpacity: this.defaultTrailOpacity,
-        };
-        console.log("Default tracking settings updated");
-      }
-    },
-
-    refreshActiveTrails: function () {
-      if (this.trackingManager) {
-        this.activeTrails = this.trackingManager.getAllTrails();
-      }
-    },
-
-    clearAllTrails: function () {
-      if (
-        this.trackingManager &&
-        confirm("آیا از پاک کردن تمام ردها مطمئن هستید؟")
-      ) {
-        this.trackingManager.clearAllTrails();
-        this.refreshActiveTrails();
-        console.log("All trails cleared");
-      }
-    },
-
-    removeTrail: function (unitUid) {
-      if (this.trackingManager && confirm(`آیا رد برای ${unitUid} حذف شود؟`)) {
-        this.trackingManager.removeTrail(unitUid);
-        this.refreshActiveTrails();
-        console.log(`Trail removed for ${unitUid}`);
-      }
-    },
-
-    updateTrailConfig: function (unitUid, config) {
-      if (this.trackingManager) {
-        this.trackingManager.setTrailConfig(unitUid, config);
-        this.refreshActiveTrails();
-        console.log(`Trail config updated for ${unitUid}`);
-      }
-    },
-
-    exportTrail: function (unitUid) {
-      if (this.trackingManager) {
-        const data = this.trackingManager.exportTrailData(
-          unitUid,
-          this.exportFormat
-        );
-        if (data) {
-          this.downloadFile(
-            data,
-            `trail_${unitUid}.${this.exportFormat}`,
-            this.getContentType(this.exportFormat)
-          );
-        }
-      }
-    },
-
-    exportAllTrails: function () {
-      if (this.trackingManager) {
-        const allTrails = this.trackingManager.getAllTrails();
-        const exportData = {
-          exportedAt: new Date().toISOString(),
-          trails: allTrails,
-        };
-
-        const data = JSON.stringify(exportData, null, 2);
-        this.downloadFile(
-          data,
-          `all_trails_${new Date().toISOString().split("T")[0]}.json`,
-          "application/json"
-        );
-      }
-    },
-
-    importTrail: function () {
-      if (
-        this.trackingManager &&
-        this.importData &&
-        this.selectedUnitForImport
-      ) {
-        try {
-          const success = this.trackingManager.importTrailData(
-            this.selectedUnitForImport,
-            this.importData,
-            this.importFormat
-          );
-
-          if (success) {
-            this.importData = "";
-            this.selectedUnitForImport = "";
-            this.refreshActiveTrails();
-            alert("داده‌های رد با موفقیت وارد شد");
-          } else {
-            alert("ورود داده‌های رد با شکست مواجه شد");
-          }
-        } catch (error) {
-          console.error("Import error:", error);
-          alert("خطا در ورود داده‌های رد: " + error.message);
-        }
-      }
-    },
-
-    downloadFile: function (data, filename, contentType) {
-      const blob = new Blob([data], { type: contentType });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    },
-
-    getContentType: function (format) {
-      switch (format) {
-        case "json":
-          return "application/json";
-        case "csv":
-          return "text/csv";
-        case "gpx":
-          return "application/gpx+xml";
-        default:
-          return "text/plain";
-      }
-    },
-
-    formatTrailInfo: function (trail) {
-      const positions = trail.positions.length;
-      const duration =
-        positions > 1
-          ? new Date(trail.positions[trail.positions.length - 1].timestamp) -
-            new Date(trail.positions[0].timestamp)
-          : 0;
-      const durationStr =
-        duration > 0 ? `${Math.round(duration / 60000)}m` : "نامشخص";
-
-      return `${positions} نقطه، ${durationStr}`;
-    },
-
-    getTrailDistance: function (trail) {
-      if (trail.positions.length < 2) return 0;
-
-      let totalDistance = 0;
-      for (let i = 1; i < trail.positions.length; i++) {
-        const p1 = L.latLng(
-          trail.positions[i - 1].lat,
-          trail.positions[i - 1].lon
-        );
-        const p2 = L.latLng(trail.positions[i].lat, trail.positions[i].lon);
-        totalDistance += p1.distanceTo(p2);
-      }
-
-      return (totalDistance / 1000).toFixed(1); // km
-    },
-  },
-
-  template: html`
+<template>
     <div class="tracking-control">
       <div class="card">
         <div
@@ -480,5 +267,218 @@ Vue.component("tracking-control", {
         </div>
       </div>
     </div>
-  `,
-});
+  </template>
+
+  <script>
+  export default {
+    props: ["map", "trackingManager"],
+    data: function () {
+      return {
+        globalTrackingEnabled: true,
+        defaultTrailLength: 50,
+        defaultUpdateInterval: 30,
+        defaultTrailColor: "#FF0000",
+        defaultTrailWidth: 2,
+        defaultTrailOpacity: 0.7,
+        activeTrails: [],
+        showAdvancedSettings: false,
+        exportFormat: "json",
+        importData: "",
+        importFormat: "json",
+        selectedUnitForImport: "",
+        refreshInterval: null,
+      };
+    },
+    mounted: function () {
+      this.refreshActiveTrails();
+      // Refresh active trails every 5 seconds
+      this.refreshInterval = setInterval(() => {
+        this.refreshActiveTrails();
+      }, 5000);
+    },
+    beforeDestroy: function () {
+      if (this.refreshInterval) {
+        clearInterval(this.refreshInterval);
+      }
+    },
+    methods: {
+      toggleGlobalTracking: function () {
+        if (this.trackingManager) {
+          this.trackingManager.setTrackingEnabled(this.globalTrackingEnabled);
+          console.log(
+            `Global tracking ${
+              this.globalTrackingEnabled ? "enabled" : "disabled"
+            }`
+          );
+        }
+      },
+
+      updateDefaultSettings: function () {
+        // Update default settings for new trails
+        if (this.trackingManager) {
+          this.trackingManager.defaultConfig = {
+            ...this.trackingManager.defaultConfig,
+            trailLength: this.defaultTrailLength,
+            updateInterval: this.defaultUpdateInterval * 1000,
+            trailColor: this.defaultTrailColor,
+            trailWidth: this.defaultTrailWidth,
+            trailOpacity: this.defaultTrailOpacity,
+          };
+          console.log("Default tracking settings updated");
+        }
+      },
+
+      refreshActiveTrails: function () {
+        if (this.trackingManager) {
+          this.activeTrails = this.trackingManager.getAllTrails();
+        }
+      },
+
+      clearAllTrails: function () {
+        if (
+          this.trackingManager &&
+          confirm("آیا از پاک کردن تمام ردها مطمئن هستید؟")
+        ) {
+          this.trackingManager.clearAllTrails();
+          this.refreshActiveTrails();
+          console.log("All trails cleared");
+        }
+      },
+
+      removeTrail: function (unitUid) {
+        if (this.trackingManager && confirm(`آیا رد برای ${unitUid} حذف شود؟`)) {
+          this.trackingManager.removeTrail(unitUid);
+          this.refreshActiveTrails();
+          console.log(`Trail removed for ${unitUid}`);
+        }
+      },
+
+      updateTrailConfig: function (unitUid, config) {
+        if (this.trackingManager) {
+          this.trackingManager.setTrailConfig(unitUid, config);
+          this.refreshActiveTrails();
+          console.log(`Trail config updated for ${unitUid}`);
+        }
+      },
+
+      exportTrail: function (unitUid) {
+        if (this.trackingManager) {
+          const data = this.trackingManager.exportTrailData(
+            unitUid,
+            this.exportFormat
+          );
+          if (data) {
+            this.downloadFile(
+              data,
+              `trail_${unitUid}.${this.exportFormat}`,
+              this.getContentType(this.exportFormat)
+            );
+          }
+        }
+      },
+
+      exportAllTrails: function () {
+        if (this.trackingManager) {
+          const allTrails = this.trackingManager.getAllTrails();
+          const exportData = {
+            exportedAt: new Date().toISOString(),
+            trails: allTrails,
+          };
+
+          const data = JSON.stringify(exportData, null, 2);
+          this.downloadFile(
+            data,
+            `all_trails_${new Date().toISOString().split("T")[0]}.json`,
+            "application/json"
+          );
+        }
+      },
+
+      importTrail: function () {
+        if (
+          this.trackingManager &&
+          this.importData &&
+          this.selectedUnitForImport
+        ) {
+          try {
+            const success = this.trackingManager.importTrailData(
+              this.selectedUnitForImport,
+              this.importData,
+              this.importFormat
+            );
+
+            if (success) {
+              this.importData = "";
+              this.selectedUnitForImport = "";
+              this.refreshActiveTrails();
+              alert("داده‌های رد با موفقیت وارد شد");
+            } else {
+              alert("ورود داده‌های رد با شکست مواجه شد");
+            }
+          } catch (error) {
+            console.error("Import error:", error);
+            alert("خطا در ورود داده‌های رد: " + error.message);
+          }
+        }
+      },
+
+      downloadFile: function (data, filename, contentType) {
+        const blob = new Blob([data], { type: contentType });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      },
+
+      getContentType: function (format) {
+        switch (format) {
+          case "json":
+            return "application/json";
+          case "csv":
+            return "text/csv";
+          case "gpx":
+            return "application/gpx+xml";
+          default:
+            return "text/plain";
+        }
+      },
+
+      formatTrailInfo: function (trail) {
+        const positions = trail.positions.length;
+        const duration =
+          positions > 1
+            ? new Date(trail.positions[trail.positions.length - 1].timestamp) -
+              new Date(trail.positions[0].timestamp)
+            : 0;
+        const durationStr =
+          duration > 0 ? `${Math.round(duration / 60000)}m` : "نامشخص";
+
+        return `${positions} نقطه، ${durationStr}`;
+      },
+
+      getTrailDistance: function (trail) {
+        if (trail.positions.length < 2) return 0;
+
+        let totalDistance = 0;
+        for (let i = 1; i < trail.positions.length; i++) {
+          const p1 = L.latLng(
+            trail.positions[i - 1].lat,
+            trail.positions[i - 1].lon
+          );
+          const p2 = L.latLng(trail.positions[i].lat, trail.positions[i].lon);
+          totalDistance += p1.distanceTo(p2);
+        }
+
+        return (totalDistance / 1000).toFixed(1); // km
+      },
+    },
+  };
+  </script>
+
+  <style>
+  /* Add your styles here */
+  </style>
