@@ -288,7 +288,7 @@ func createResendTables(db *sql.DB) error {
 ```
 
 ### Component Loading
-Components are loaded in `staticfiles/static/js/components/index.js`:
+Components are loaded in `front/static/js/components/index.js`:
 
 ```javascript
 document.write('<script src="/static/js/components/PredicateComponent.js"></script>');

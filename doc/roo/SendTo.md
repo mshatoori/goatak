@@ -19,7 +19,7 @@ Based on my comprehensive analysis of the codebase, I'll now design an enhanced 
 
 **Replace Simple Checkbox with Destination Selection Interface**
 
-Instead of the current simple checkbox in [`UnitDetails.js`](staticfiles/static/js/components/UnitDetails.js:416-424):
+Instead of the current simple checkbox in [`UnitDetails.js`](front/static/js/components/UnitDetails.js:416-424):
 
 ```html
 <!-- Current: Simple checkbox -->

@@ -13,7 +13,7 @@ Make sure to consider every angle of this task before implementing it. Don't mes
 We added a new item type to the service in the backend (`pkg/model/http.go` and `pkg/cot/util.go`). The new item type is called "Casevac" (code="b-r-f-h-c"). It is in the category/class "Report" (prefix="b-r-").
 You used `new_item.md` for information how to implement this.
 
-You tried to implement the frontend in the `staticfiles/static/js/casevacform.js`. However you didn't include all of fields as input in the front-end.
+You tried to implement the frontend in the `front/static/js/casevacform.js`. However you didn't include all of fields as input in the front-end.
 Include `security` field from `CasevacDetail`, in the front-end form.
 These are the possible values and their label in English:
 
@@ -34,4 +34,4 @@ In the sidebar component of the front-end, whenever the `current_unit` prop chan
 I want to merge the current unit tab and the casevac tab, so that all of the items would be inputed/viewed in the same sidebar tab. However this also requires that the input (adding/editing) process for other items (routes, polygons, points, and units) would change from modal form to sidebar tab, just like casevac. That way, we could have one single tab that would (depending on the type of the item being added/viewed/edited) select the correct vue component to show on that tab.
 
 Please do this refactor with great care.
-You can look at the backend code if needed, but all of the changes should be confined to `staticfiles/static/` directory.
+You can look at the backend code if needed, but all of the changes should be confined to `front/static/` directory.

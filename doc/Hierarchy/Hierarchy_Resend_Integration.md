@@ -707,7 +707,7 @@ Response: 200 OK
 Extend the existing resend configuration UI to support hierarchy predicates:
 
 ```javascript
-// staticfiles/static/js/components/ResendingModal.js - Add hierarchy predicates
+// front/static/js/components/ResendingModal.js - Add hierarchy predicates
 
 const hierarchyPredicateTypes = [
   { value: 'org_unit', label: 'Organization Unit', hasOptions: true },

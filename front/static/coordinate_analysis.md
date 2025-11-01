@@ -3,7 +3,7 @@
 ## Current Coordinate Data Structures
 
 ### 1. Base Item Coordinate Structure
-All map items in GoATAK follow a consistent coordinate structure defined in [`createMapItem()`](staticfiles/static/js/utils.js:518):
+All map items in GoATAK follow a consistent coordinate structure defined in [`createMapItem()`](front/static/js/utils.js:518):
 
 ```javascript
 const baseItem = {
@@ -42,7 +42,7 @@ const baseItem = {
 ### 3. User Location Tracking
 
 #### Current User Position
-The user's position is tracked in the main [`app.config`](staticfiles/static/js/map.js:262) object:
+The user's position is tracked in the main [`app.config`](front/static/js/map.js:262) object:
 
 ```javascript
 vm.config = {
@@ -55,12 +55,12 @@ vm.config = {
 ```
 
 #### User Marker Management
-- **Self Marker**: [`vm.me`](staticfiles/static/js/map.js:267) - RotatedMarker with course rotation
-- **Info Marker**: [`vm.myInfoMarker`](staticfiles/static/js/map.js:290) - Shows callsign/IP/URN
-- **Updates**: Position updated via [`processMe()`](staticfiles/static/js/map.js:538) from WebSocket
+- **Self Marker**: [`vm.me`](front/static/js/map.js:267) - RotatedMarker with course rotation
+- **Info Marker**: [`vm.myInfoMarker`](front/static/js/map.js:290) - Shows callsign/IP/URN
+- **Updates**: Position updated via [`processMe()`](front/static/js/map.js:538) from WebSocket
 
 #### Mouse Cursor Tracking
-Real-time cursor position tracked in [`app.coords`](staticfiles/static/js/map.js:731):
+Real-time cursor position tracked in [`app.coords`](front/static/js/map.js:731):
 
 ```javascript
 mouseMove: function (e) {
@@ -71,7 +71,7 @@ mouseMove: function (e) {
 ## Current Distance/Bearing Calculations
 
 ### 1. Core Calculation Function
-The main distance/bearing calculation is implemented in [`Utils.distBea()`](staticfiles/static/js/utils.js:192):
+The main distance/bearing calculation is implemented in [`Utils.distBea()`](front/static/js/utils.js:192):
 
 ```javascript
 function distBea(p1, p2) {
@@ -132,14 +132,14 @@ All detail components show distance/bearing to cursor position:
 #### Coordinate Formatting
 Two coordinate display functions are available:
 
-1. **Decimal Degrees**: [`Utils.printCoords(lat, lng)`](staticfiles/static/js/utils.js:184)
+1. **Decimal Degrees**: [`Utils.printCoords(lat, lng)`](front/static/js/utils.js:184)
    ```javascript
    function printCoords(lat, lng) {
      return lat.toFixed(6) + "," + lng.toFixed(6);
    }
    ```
 
-2. **ISO 6709 Format**: [`Utils.latLongToIso6709(lat, lon)`](staticfiles/static/js/utils.js:272)
+2. **ISO 6709 Format**: [`Utils.latLongToIso6709(lat, lon)`](front/static/js/utils.js:272)
    ```javascript
    // Returns: "35°35'25.27"N 51°23'45.67"E"
    ```
@@ -153,7 +153,7 @@ Two coordinate display functions are available:
 - **Distance**: Meters (displayed as m/km based on magnitude)
 
 #### Leaflet Integration
-- **LatLng Objects**: Created via [`Utils.latlng(lat, lon)`](staticfiles/static/js/utils.js:188)
+- **LatLng Objects**: Created via [`Utils.latlng(lat, lon)`](front/static/js/utils.js:188)
 - **Map Coordinates**: Direct Leaflet coordinate system integration
 - **Projections**: Handled automatically by Leaflet
 
@@ -184,7 +184,7 @@ const navigationData = {
 ### 2. Calculation Integration Points
 
 #### Real-time Updates
-Hook into existing mouse movement handler in [`map.js:731`](staticfiles/static/js/map.js:731):
+Hook into existing mouse movement handler in [`map.js:731`](front/static/js/map.js:731):
 
 ```javascript
 mouseMove: function (e) {
@@ -195,7 +195,7 @@ mouseMove: function (e) {
 ```
 
 #### User Position Updates
-Hook into [`processMe()`](staticfiles/static/js/map.js:538) for user position changes:
+Hook into [`processMe()`](front/static/js/map.js:538) for user position changes:
 
 ```javascript
 processMe: function (u) {

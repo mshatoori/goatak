@@ -282,7 +282,7 @@ func (app *App) processTrackingUpdate(msg *cot.CotMessage) {
 #### 5.1.1 Tracking Control Component
 
 ```javascript
-// staticfiles/static/js/components/TrackingControl.js
+// front/static/js/components/TrackingControl.js
 Vue.component('tracking-control', {
     template: `
         <div class="tracking-control">
@@ -338,7 +338,7 @@ Vue.component('tracking-control', {
 #### 5.1.2 Unit Tracking Component
 
 ```javascript
-// staticfiles/static/js/components/UnitTracking.js
+// front/static/js/components/UnitTracking.js
 Vue.component('unit-tracking', {
     props: ['unit'],
     template: `
@@ -397,7 +397,7 @@ Vue.component('unit-tracking', {
 #### 5.2.1 Trail Visualization
 
 ```javascript
-// staticfiles/static/js/tracking.js
+// front/static/js/tracking.js
 class TrackingManager {
     constructor(map) {
         this.map = map;

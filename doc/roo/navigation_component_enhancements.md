@@ -254,7 +254,7 @@ The test file provides comprehensive testing capabilities:
 
 ## Files Modified
 
-- **`staticfiles/static/js/components/NavigationInfo.js`**: Main component enhancement
+- **`front/static/js/components/NavigationInfo.js`**: Main component enhancement
 - **`test_navigation_enhanced.html`**: Comprehensive test page
 - **`doc/navigation_component_enhancements.md`**: This documentation
 

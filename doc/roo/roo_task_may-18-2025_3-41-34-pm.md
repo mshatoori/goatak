@@ -1,26 +1,26 @@
 **User:**
 
 <task>
-'staticfiles/static/' (see below for folder content) In the sidebar component of the front-end, whenever the `current_unit` prop changes, the current unit tab becomes active. So whenever the `current_unit` prop is a casevac (i.e. has type: "b-r-f-h-c") instead of the detailed data that is in a casevac item (i.e. fields that are inputed in the `casevacform` component) some general data about the casevac item is shown which are not helpful.
+'front/static/' (see below for folder content) In the sidebar component of the front-end, whenever the `current_unit` prop changes, the current unit tab becomes active. So whenever the `current_unit` prop is a casevac (i.e. has type: "b-r-f-h-c") instead of the detailed data that is in a casevac item (i.e. fields that are inputed in the `casevacform` component) some general data about the casevac item is shown which are not helpful.
 
 I want to merge the current unit tab and the casevac tab, so that all of the items would be inputed/viewed in the same sidebar tab. However this also requires that the input (adding/editing) process for other items (routes, polygons, points, and units) would change from modal form to sidebar tab, just like casevac. That way, we could have one single tab that would (depending on the type of the item being added/viewed/edited) select the correct vue component to show on that tab.
 
 Please do this refactor with great care.
-You can look at the backend code if needed, but all of the changes should be confined to `staticfiles/static/` directory.
+You can look at the backend code if needed, but all of the changes should be confined to `front/static/` directory.
 Don't try to excecute commands or use the browser to verify your changes.
 </task>
 
-<folder_content path="staticfiles/static/">
+<folder_content path="front/static/">
 ├── css/
 ├── icons/
 └── js/
 </folder_content>
 <environment_details>
 # VSCode Visible Files
-C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\staticfiles\static\js\components\casevacform.js,C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\staticfiles\static\js\components\casevacform.js,staticfiles\static\js\mp.js
+C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\front\static\js\components\casevacform.js,C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\front\static\js\components\casevacform.js,front\static\js\mp.js
 
 # VSCode Open Tabs
-.gitignore,staticfiles/static/js/store.js,staticfiles/static/js/map.js,staticfiles/static/js/bootstrap.bundle.min.js,staticfiles/static/js/components/sidebar.js,staticfiles/static/js/utils.js,cmd/webclient/templates/header.html,staticfiles/static/js/components/alarms.js,staticfiles/static/js/components/casevacform.js,pkg/model/http.go,pkg/cot/util.go,staticfiles/static/js/components/cotlog.js,staticfiles/static/js/components/drawing.edit.modal.js,staticfiles/static/js/components/flows.js,staticfiles/static/js/components/overlays.js,staticfiles/static/js/components/send.js,staticfiles/static/js/components/sensorsmodal.js,staticfiles/static/js/components/userinfo.js
+.gitignore,front/static/js/store.js,front/static/js/map.js,front/static/js/bootstrap.bundle.min.js,front/static/js/components/sidebar.js,front/static/js/utils.js,cmd/webclient/templates/header.html,front/static/js/components/alarms.js,front/static/js/components/casevacform.js,pkg/model/http.go,pkg/cot/util.go,front/static/js/components/cotlog.js,front/static/js/components/drawing.edit.modal.js,front/static/js/components/flows.js,front/static/js/components/overlays.js,front/static/js/components/send.js,front/static/js/components/sensorsmodal.js,front/static/js/components/userinfo.js
 
 # Current Time
 5/18/2025, 2:43:01 PM (Asia/Tehran, UTC+3:30)
@@ -182,64 +182,64 @@ setup/tiles/fonts/Noto Sans Regular/64512-64767.pbf
 setup/tiles/fonts/Noto Sans Regular/64768-65023.pbf
 setup/tiles/fonts/Noto Sans Regular/65024-65279.pbf
 setup/tiles/fonts/Noto Sans Regular/65280-65535.pbf
-staticfiles/
-staticfiles/renderer.go
-staticfiles/static.go
-staticfiles/static/css/bootstrap-icons.min.css
-staticfiles/static/css/bootstrap.min.css
-staticfiles/static/css/bootstrap.rtl.min.css
-staticfiles/static/css/leaflet.css
-staticfiles/static/css/leaflet.draw.css
-staticfiles/static/css/main.css
-staticfiles/static/css/Vazirmatn-font-face.css
-staticfiles/static/css/fonts/bootstrap-icons.woff
-staticfiles/static/css/fonts/bootstrap-icons.woff2
-staticfiles/static/css/fonts/Vazirmatn-Black.woff2
-staticfiles/static/css/fonts/Vazirmatn-Bold.woff2
-staticfiles/static/css/fonts/Vazirmatn-ExtraBold.woff2
-staticfiles/static/css/fonts/Vazirmatn-ExtraLight.woff2
-staticfiles/static/css/fonts/Vazirmatn-Light.woff2
-staticfiles/static/css/fonts/Vazirmatn-Medium.woff2
-staticfiles/static/css/fonts/Vazirmatn-Regular.woff2
-staticfiles/static/css/fonts/Vazirmatn-SemiBold.woff2
-staticfiles/static/css/fonts/Vazirmatn-Thin.woff2
-staticfiles/static/css/images/spritesheet.png
-staticfiles/static/css/images/spritesheet.svg
-staticfiles/static/icons/aimpoint.png
-staticfiles/static/icons/b-a-o-opn.png
-staticfiles/static/icons/b-a-o-pan.png
-staticfiles/static/icons/b-a-o-tbl.png
-staticfiles/static/icons/b-m-p-s-p-i.png
-staticfiles/static/icons/b.png
-staticfiles/static/icons/binos.png
-staticfiles/static/icons/casevac.svg
-staticfiles/static/icons/close.png
-staticfiles/static/icons/coord_lock.png
-staticfiles/static/icons/coord_unlock.png
-staticfiles/static/icons/f.png
-staticfiles/static/icons/green_flag.png
-staticfiles/static/icons/h.png
-staticfiles/static/icons/n.png
-staticfiles/static/icons/red-cross.png
-staticfiles/static/icons/self.png
-staticfiles/static/icons/spi1_icon.png
-staticfiles/static/icons/spi2_icon.png
-staticfiles/static/icons/spi3_icon.png
-staticfiles/static/icons/spoi_icon.png
-staticfiles/static/icons/u.png
-staticfiles/static/icons/x.png
-staticfiles/static/js/bootstrap.bundle.min.js
-staticfiles/static/js/leaflet.draw.js
-staticfiles/static/js/components/alarms.js
-staticfiles/static/js/components/casevacform.js
-staticfiles/static/js/components/cotlog.js
-staticfiles/static/js/components/drawing.edit.modal.js
-staticfiles/static/js/components/flows.js
-staticfiles/static/js/components/overlays.js
-staticfiles/static/js/components/send.js
-staticfiles/static/js/components/sensorsmodal.js
-staticfiles/static/js/components/sidebar.js
-staticfiles/static/js/components/userinfo.js
+front/
+front/renderer.go
+front/static.go
+front/static/css/bootstrap-icons.min.css
+front/static/css/bootstrap.min.css
+front/static/css/bootstrap.rtl.min.css
+front/static/css/leaflet.css
+front/static/css/leaflet.draw.css
+front/static/css/main.css
+front/static/css/Vazirmatn-font-face.css
+front/static/css/fonts/bootstrap-icons.woff
+front/static/css/fonts/bootstrap-icons.woff2
+front/static/css/fonts/Vazirmatn-Black.woff2
+front/static/css/fonts/Vazirmatn-Bold.woff2
+front/static/css/fonts/Vazirmatn-ExtraBold.woff2
+front/static/css/fonts/Vazirmatn-ExtraLight.woff2
+front/static/css/fonts/Vazirmatn-Light.woff2
+front/static/css/fonts/Vazirmatn-Medium.woff2
+front/static/css/fonts/Vazirmatn-Regular.woff2
+front/static/css/fonts/Vazirmatn-SemiBold.woff2
+front/static/css/fonts/Vazirmatn-Thin.woff2
+front/static/css/images/spritesheet.png
+front/static/css/images/spritesheet.svg
+front/static/icons/aimpoint.png
+front/static/icons/b-a-o-opn.png
+front/static/icons/b-a-o-pan.png
+front/static/icons/b-a-o-tbl.png
+front/static/icons/b-m-p-s-p-i.png
+front/static/icons/b.png
+front/static/icons/binos.png
+front/static/icons/casevac.svg
+front/static/icons/close.png
+front/static/icons/coord_lock.png
+front/static/icons/coord_unlock.png
+front/static/icons/f.png
+front/static/icons/green_flag.png
+front/static/icons/h.png
+front/static/icons/n.png
+front/static/icons/red-cross.png
+front/static/icons/self.png
+front/static/icons/spi1_icon.png
+front/static/icons/spi2_icon.png
+front/static/icons/spi3_icon.png
+front/static/icons/spoi_icon.png
+front/static/icons/u.png
+front/static/icons/x.png
+front/static/js/bootstrap.bundle.min.js
+front/static/js/leaflet.draw.js
+front/static/js/components/alarms.js
+front/static/js/components/casevacform.js
+front/static/js/components/cotlog.js
+front/static/js/components/drawing.edit.modal.js
+front/static/js/components/flows.js
+front/static/js/components/overlays.js
+front/static/js/components/send.js
+front/static/js/components/sensorsmodal.js
+front/static/js/components/sidebar.js
+front/static/js/components/userinfo.js
 
 (File list truncated. Use list_files on specific subdirectories if you need to explore further.)
 </environment_details>
@@ -250,7 +250,7 @@ staticfiles/static/js/components/userinfo.js
 
 <thinking>The user wants to refactor the frontend code to merge the 'current unit' and 'casevac' tabs in the sidebar into a single dynamic tab. This requires converting modal forms for other item types (routes, polygons, points, units) into components that can be displayed within this single sidebar tab.
 
-This is a significant frontend refactoring task involving multiple JavaScript files, primarily within the `staticfiles/static/js/components/` directory. The task requires understanding and modifying Vue components and application logic.
+This is a significant frontend refactoring task involving multiple JavaScript files, primarily within the `front/static/js/components/` directory. The task requires understanding and modifying Vue components and application logic.
 
 Since I am in Orchestrator mode, I cannot perform the code modifications directly. I need to delegate this task to the Code mode.
 
@@ -261,39 +261,39 @@ The subtasks involved are:
 4.  Implement logic in the sidebar to dynamically render the correct component based on the selected item type.
 5.  Update any related application logic (e.g., store, utility functions) to align with the new sidebar structure.
 
-I will create a new task for the Code mode, providing a clear objective and outlining these steps. I will instruct the Code mode to use `attempt_completion` upon finishing the task, summarizing the changes made. The scope is limited to the `staticfiles/static/` directory. I will also explicitly state that the Code mode should not execute commands or use the browser for verification, as per the user's instructions.
+I will create a new task for the Code mode, providing a clear objective and outlining these steps. I will instruct the Code mode to use `attempt_completion` upon finishing the task, summarizing the changes made. The scope is limited to the `front/static/` directory. I will also explicitly state that the Code mode should not execute commands or use the browser for verification, as per the user's instructions.
 
 Relevant files identified from the environment details and user description include:
-- [`staticfiles/static/js/components/sidebar.js`](staticfiles/static/js/components/sidebar.js)
-- [`staticfiles/static/js/components/casevacform.js`](staticfiles/static/js/components/casevacform.js)
-- Potentially other form components (e.g., for routes, polygons, points, units) which might be in `staticfiles/static/js/components/` or other locations within `staticfiles/static/js/`.
-- [`staticfiles/static/js/store.js`](staticfiles/static/js/store.js) (for state management)
-- [`staticfiles/static/js/utils.js`](staticfiles/static/js/utils.js) (for utility functions)
+- [`front/static/js/components/sidebar.js`](front/static/js/components/sidebar.js)
+- [`front/static/js/components/casevacform.js`](front/static/js/components/casevacform.js)
+- Potentially other form components (e.g., for routes, polygons, points, units) which might be in `front/static/js/components/` or other locations within `front/static/js/`.
+- [`front/static/js/store.js`](front/static/js/store.js) (for state management)
+- [`front/static/js/utils.js`](front/static/js/utils.js) (for utility functions)
 
 I will include these files as context for the Code mode task.<new_task>
 <mode>code</mode>
 <message>Refactor the frontend sidebar component to merge the 'current unit' and 'casevac' tabs into a single dynamic tab.
 
 **Objective:**
-Merge the 'current unit' tab and the 'casevac' tab in the sidebar component (`staticfiles/static/js/components/sidebar.js`) into a single tab. This single tab should dynamically display the appropriate Vue component for viewing or editing an item based on its type (casevac, route, polygon, point, unit).
+Merge the 'current unit' tab and the 'casevac' tab in the sidebar component (`front/static/js/components/sidebar.js`) into a single tab. This single tab should dynamically display the appropriate Vue component for viewing or editing an item based on its type (casevac, route, polygon, point, unit).
 
 **Scope:**
-All changes must be confined to the `staticfiles/static/` directory.
+All changes must be confined to the `front/static/` directory.
 
 **Instructions:**
-1.  **Analyze:** Examine the current implementation of the sidebar component (`staticfiles/static/js/components/sidebar.js`), the casevac form component (`staticfiles/static/js/components/casevacform.js`), and any other relevant form components (for routes, polygons, points, units) within `staticfiles/static/js/components/`. Understand how the `current_unit` prop is used, how tabs are currently managed, and how modal forms are triggered and handle data. Also, review `staticfiles/static/js/store.js` and `staticfiles/static/js/utils.js` for related logic.
-2.  **Refactor Sidebar:** Modify `staticfiles/static/js/components/sidebar.js` to:
+1.  **Analyze:** Examine the current implementation of the sidebar component (`front/static/js/components/sidebar.js`), the casevac form component (`front/static/js/components/casevacform.js`), and any other relevant form components (for routes, polygons, points, units) within `front/static/js/components/`. Understand how the `current_unit` prop is used, how tabs are currently managed, and how modal forms are triggered and handle data. Also, review `front/static/js/store.js` and `front/static/js/utils.js` for related logic.
+2.  **Refactor Sidebar:** Modify `front/static/js/components/sidebar.js` to:
     *   Remove the separate 'current unit' and 'casevac' tabs.
     *   Implement a single tab that will serve as the container for item details/forms.
     *   Add logic to dynamically render the correct Vue component within this single tab based on the type of the currently selected item (which might be determined by a prop or state).
     *   Adjust the logic that previously controlled tab activation based on `current_unit` to instead control which item's data is loaded and displayed in the new single tab.
-3.  **Convert Forms:** For item types (routes, polygons, points, units) that currently use modal forms for adding/editing, refactor or create new Vue components within `staticfiles/static/js/components/` that can function within the sidebar tab. These components should handle both viewing and editing the respective item types.
-4.  **Integrate Components:** Update the sidebar component (`staticfiles/static/js/components/sidebar.js`) to import and use the refactored/new item components. Implement the conditional rendering logic to display the correct component based on the selected item's type.
-5.  **Update Application Logic:** Modify any necessary logic in `staticfiles/static/js/store.js`, `staticfiles/static/js/utils.js`, or other related files within `staticfiles/static/js/` to support the new sidebar structure and the transition from modal forms to sidebar components for item management.
+3.  **Convert Forms:** For item types (routes, polygons, points, units) that currently use modal forms for adding/editing, refactor or create new Vue components within `front/static/js/components/` that can function within the sidebar tab. These components should handle both viewing and editing the respective item types.
+4.  **Integrate Components:** Update the sidebar component (`front/static/js/components/sidebar.js`) to import and use the refactored/new item components. Implement the conditional rendering logic to display the correct component based on the selected item's type.
+5.  **Update Application Logic:** Modify any necessary logic in `front/static/js/store.js`, `front/static/js/utils.js`, or other related files within `front/static/js/` to support the new sidebar structure and the transition from modal forms to sidebar components for item management.
 6.  **Signal Completion:** Upon successful completion of the refactoring, use the `attempt_completion` tool. Provide a concise summary of the changes made in the `result` parameter, detailing which files were modified and the overall outcome of the refactoring.
 
 **Constraints:**
-*   Only modify files within the `staticfiles/static/` directory.
+*   Only modify files within the `front/static/` directory.
 *   Do not execute any CLI commands.
 *   Do not use the browser_action tool to verify changes.
 
@@ -323,7 +323,7 @@ These specific instructions supersede any conflicting general instructions for t
    - Maintains all existing functionality for viewing and editing different item types
    - Dynamically updates the tab name based on the item being displayed
 
-The changes are confined to the JavaScript files in the `staticfiles/static/` directory as requested, and the application should continue to function as before but with a more streamlined interface.
+The changes are confined to the JavaScript files in the `front/static/` directory as requested, and the application should continue to function as before but with a more streamlined interface.
 
 ---
 
@@ -332,25 +332,25 @@ The changes are confined to the JavaScript files in the `staticfiles/static/` di
 [new_task in 💻 Code mode: 'Refactor the frontend sidebar component to merge the 'current unit' and 'casevac' tabs into a single dynamic tab.
 
 **Objective:**
-Merge the 'current unit' tab and the 'casevac' tab in the sidebar component (`staticfiles/static/js/components/sidebar.js`) into a single tab. This single tab should dynamically display the appropriate Vue component for viewing or editing an item based on its type (casevac, route, polygon, point, unit).
+Merge the 'current unit' tab and the 'casevac' tab in the sidebar component (`front/static/js/components/sidebar.js`) into a single tab. This single tab should dynamically display the appropriate Vue component for viewing or editing an item based on its type (casevac, route, polygon, point, unit).
 
 **Scope:**
-All changes must be confined to the `staticfiles/static/` directory.
+All changes must be confined to the `front/static/` directory.
 
 **Instructions:**
-1.  **Analyze:** Examine the current implementation of the sidebar component (`staticfiles/static/js/components/sidebar.js`), the casevac form component (`staticfiles/static/js/components/casevacform.js`), and any other relevant form components (for routes, polygons, points, units) within `staticfiles/static/js/components/`. Understand how the `current_unit` prop is used, how tabs are currently managed, and how modal forms are triggered and handle data. Also, review `staticfiles/static/js/store.js` and `staticfiles/static/js/utils.js` for related logic.
-2.  **Refactor Sidebar:** Modify `staticfiles/static/js/components/sidebar.js` to:
+1.  **Analyze:** Examine the current implementation of the sidebar component (`front/static/js/components/sidebar.js`), the casevac form component (`front/static/js/components/casevacform.js`), and any other relevant form components (for routes, polygons, points, units) within `front/static/js/components/`. Understand how the `current_unit` prop is used, how tabs are currently managed, and how modal forms are triggered and handle data. Also, review `front/static/js/store.js` and `front/static/js/utils.js` for related logic.
+2.  **Refactor Sidebar:** Modify `front/static/js/components/sidebar.js` to:
     *   Remove the separate 'current unit' and 'casevac' tabs.
     *   Implement a single tab that will serve as the container for item details/forms.
     *   Add logic to dynamically render the correct Vue component within this single tab based on the type of the currently selected item (which might be determined by a prop or state).
     *   Adjust the logic that previously controlled tab activation based on `current_unit` to instead control which item's data is loaded and displayed in the new single tab.
-3.  **Convert Forms:** For item types (routes, polygons, points, units) that currently use modal forms for adding/editing, refactor or create new Vue components within `staticfiles/static/js/components/` that can function within the sidebar tab. These components should handle both viewing and editing the respective item types.
-4.  **Integrate Components:** Update the sidebar component (`staticfiles/static/js/components/sidebar.js`) to import and use the refactored/new item components. Implement the conditional rendering logic to display the correct component based on the selected item's type.
-5.  **Update Application Logic:** Modify any necessary logic in `staticfiles/static/js/store.js`, `staticfiles/static/js/utils.js`, or other related files within `staticfiles/static/js/` to support the new sidebar structure and the transition from modal forms to sidebar components for item management.
+3.  **Convert Forms:** For item types (routes, polygons, points, units) that currently use modal forms for adding/editing, refactor or create new Vue components within `front/static/js/components/` that can function within the sidebar tab. These components should handle both viewing and editing the respective item types.
+4.  **Integrate Components:** Update the sidebar component (`front/static/js/components/sidebar.js`) to import and use the refactored/new item components. Implement the conditional rendering logic to display the correct component based on the selected item's type.
+5.  **Update Application Logic:** Modify any necessary logic in `front/static/js/store.js`, `front/static/js/utils.js`, or other related files within `front/static/js/` to support the new sidebar structure and the transition from modal forms to sidebar components for item management.
 6.  **Signal Completion:** Upon successful completion of the refactoring, use the `attempt_completion` tool. Provide a concise summary of the changes made in the `result` parameter, detailing which files were modified and the overall outcome of the refactoring.
 
 **Constraints:**
-*   Only modify files within the `staticfiles/static/` directory.
+*   Only modify files within the `front/static/` directory.
 *   Do not execute any CLI commands.
 *   Do not use the browser_action tool to verify changes.
 
@@ -359,25 +359,25 @@ These specific instructions supersede any conflicting general instructions for t
 Successfully created new task in 💻 Code mode with message: Refactor the frontend sidebar component to merge the 'current unit' and 'casevac' tabs into a single dynamic tab.
 
 **Objective:**
-Merge the 'current unit' tab and the 'casevac' tab in the sidebar component (`staticfiles/static/js/components/sidebar.js`) into a single tab. This single tab should dynamically display the appropriate Vue component for viewing or editing an item based on its type (casevac, route, polygon, point, unit).
+Merge the 'current unit' tab and the 'casevac' tab in the sidebar component (`front/static/js/components/sidebar.js`) into a single tab. This single tab should dynamically display the appropriate Vue component for viewing or editing an item based on its type (casevac, route, polygon, point, unit).
 
 **Scope:**
-All changes must be confined to the `staticfiles/static/` directory.
+All changes must be confined to the `front/static/` directory.
 
 **Instructions:**
-1.  **Analyze:** Examine the current implementation of the sidebar component (`staticfiles/static/js/components/sidebar.js`), the casevac form component (`staticfiles/static/js/components/casevacform.js`), and any other relevant form components (for routes, polygons, points, units) within `staticfiles/static/js/components/`. Understand how the `current_unit` prop is used, how tabs are currently managed, and how modal forms are triggered and handle data. Also, review `staticfiles/static/js/store.js` and `staticfiles/static/js/utils.js` for related logic.
-2.  **Refactor Sidebar:** Modify `staticfiles/static/js/components/sidebar.js` to:
+1.  **Analyze:** Examine the current implementation of the sidebar component (`front/static/js/components/sidebar.js`), the casevac form component (`front/static/js/components/casevacform.js`), and any other relevant form components (for routes, polygons, points, units) within `front/static/js/components/`. Understand how the `current_unit` prop is used, how tabs are currently managed, and how modal forms are triggered and handle data. Also, review `front/static/js/store.js` and `front/static/js/utils.js` for related logic.
+2.  **Refactor Sidebar:** Modify `front/static/js/components/sidebar.js` to:
     *   Remove the separate 'current unit' and 'casevac' tabs.
     *   Implement a single tab that will serve as the container for item details/forms.
     *   Add logic to dynamically render the correct Vue component within this single tab based on the type of the currently selected item (which might be determined by a prop or state).
     *   Adjust the logic that previously controlled tab activation based on `current_unit` to instead control which item's data is loaded and displayed in the new single tab.
-3.  **Convert Forms:** For item types (routes, polygons, points, units) that currently use modal forms for adding/editing, refactor or create new Vue components within `staticfiles/static/js/components/` that can function within the sidebar tab. These components should handle both viewing and editing the respective item types.
-4.  **Integrate Components:** Update the sidebar component (`staticfiles/static/js/components/sidebar.js`) to import and use the refactored/new item components. Implement the conditional rendering logic to display the correct component based on the selected item's type.
-5.  **Update Application Logic:** Modify any necessary logic in `staticfiles/static/js/store.js`, `staticfiles/static/js/utils.js`, or other related files within `staticfiles/static/js/` to support the new sidebar structure and the transition from modal forms to sidebar components for item management.
+3.  **Convert Forms:** For item types (routes, polygons, points, units) that currently use modal forms for adding/editing, refactor or create new Vue components within `front/static/js/components/` that can function within the sidebar tab. These components should handle both viewing and editing the respective item types.
+4.  **Integrate Components:** Update the sidebar component (`front/static/js/components/sidebar.js`) to import and use the refactored/new item components. Implement the conditional rendering logic to display the correct component based on the selected item's type.
+5.  **Update Application Logic:** Modify any necessary logic in `front/static/js/store.js`, `front/static/js/utils.js`, or other related files within `front/static/js/` to support the new sidebar structure and the transition from modal forms to sidebar components for item management.
 6.  **Signal Completion:** Upon successful completion of the refactoring, use the `attempt_completion` tool. Provide a concise summary of the changes made in the `result` parameter, detailing which files were modified and the overall outcome of the refactoring.
 
 **Constraints:**
-*   Only modify files within the `staticfiles/static/` directory.
+*   Only modify files within the `front/static/` directory.
 *   Do not execute any CLI commands.
 *   Do not use the browser_action tool to verify changes.
 
@@ -385,10 +385,10 @@ These specific instructions supersede any conflicting general instructions for t
 </new_task>
 <environment_details>
 # VSCode Visible Files
-C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\staticfiles\static\js\components\casevacform.js,C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\staticfiles\static\js\components\casevacform.js,staticfiles\static\js\mp.js,staticfiles\static\js\components\sidebar.js
+C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\front\static\js\components\casevacform.js,C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\front\static\js\components\casevacform.js,front\static\js\mp.js,front\static\js\components\sidebar.js
 
 # VSCode Open Tabs
-.gitignore,staticfiles/static/js/store.js,staticfiles/static/js/map.js,staticfiles/static/js/utils.js,cmd/webclient/templates/header.html,staticfiles/static/js/components/alarms.js,staticfiles/static/js/components/casevacform.js,staticfiles/static/js/components/item.details.js,staticfiles/static/js/components/sidebar.js,pkg/model/http.go,pkg/cot/util.go,staticfiles/static/js/components/cotlog.js,staticfiles/static/js/components/drawing.edit.modal.js,staticfiles/static/js/components/flows.js,staticfiles/static/js/components/overlays.js,staticfiles/static/js/components/send.js,staticfiles/static/js/components/sensorsmodal.js,staticfiles/static/js/components/userinfo.js
+.gitignore,front/static/js/store.js,front/static/js/map.js,front/static/js/utils.js,cmd/webclient/templates/header.html,front/static/js/components/alarms.js,front/static/js/components/casevacform.js,front/static/js/components/item.details.js,front/static/js/components/sidebar.js,pkg/model/http.go,pkg/cot/util.go,front/static/js/components/cotlog.js,front/static/js/components/drawing.edit.modal.js,front/static/js/components/flows.js,front/static/js/components/overlays.js,front/static/js/components/send.js,front/static/js/components/sensorsmodal.js,front/static/js/components/userinfo.js
 
 # Current Time
 5/18/2025, 2:48:51 PM (Asia/Tehran, UTC+3:30)
@@ -419,10 +419,10 @@ The Code mode successfully:
 - Updated the `Sidebar` component to use the new `ItemDetails` component, removing the separate tabs and implementing a single dynamic tab that updates its content and name based on the selected item.
 - Ensured that existing functionality for viewing and editing different item types is maintained within the new unified interface.
 
-All changes were confined to the JavaScript files within the `staticfiles/static/` directory.
+All changes were confined to the JavaScript files within the `front/static/` directory.
 <attempt_completion>
 <result>
-The frontend sidebar component has been refactored to merge the 'current unit' and 'casevac' tabs into a single dynamic tab. A new `ItemDetails` component was created to handle the dynamic display and editing of various item types (unit, casevac, drawing, point) within this single tab. The `Sidebar` component was updated to utilize this new component, providing a more streamlined and consistent user interface while preserving all original functionality. The modifications were limited to the JavaScript files in the `staticfiles/static/` directory.
+The frontend sidebar component has been refactored to merge the 'current unit' and 'casevac' tabs into a single dynamic tab. A new `ItemDetails` component was created to handle the dynamic display and editing of various item types (unit, casevac, drawing, point) within this single tab. The `Sidebar` component was updated to utilize this new component, providing a more streamlined and consistent user interface while preserving all original functionality. The modifications were limited to the JavaScript files in the `front/static/` directory.
 </result>
 </attempt_completion>
 
@@ -441,10 +441,10 @@ There are some important requirements in there:
 </feedback>
 <environment_details>
 # VSCode Visible Files
-C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\staticfiles\static\js\components\casevacform.js,C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\staticfiles\static\js\components\casevacform.js,staticfiles\static\js\components\item.details.js
+C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\front\static\js\components\casevacform.js,C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\front\static\js\components\casevacform.js,front\static\js\components\item.details.js
 
 # VSCode Open Tabs
-.gitignore,staticfiles/static/js/store.js,staticfiles/static/js/map.js,staticfiles/static/js/utils.js,cmd/webclient/templates/header.html,staticfiles/static/js/components/alarms.js,staticfiles/static/js/components/casevacform.js,staticfiles/static/js/components/item.details.js,staticfiles/static/js/components/sidebar.js,pkg/model/http.go,pkg/cot/util.go,staticfiles/static/js/components/cotlog.js,staticfiles/static/js/components/drawing.edit.modal.js,staticfiles/static/js/components/flows.js,staticfiles/static/js/components/overlays.js,staticfiles/static/js/components/send.js,staticfiles/static/js/components/sensorsmodal.js,staticfiles/static/js/components/userinfo.js
+.gitignore,front/static/js/store.js,front/static/js/map.js,front/static/js/utils.js,cmd/webclient/templates/header.html,front/static/js/components/alarms.js,front/static/js/components/casevacform.js,front/static/js/components/item.details.js,front/static/js/components/sidebar.js,pkg/model/http.go,pkg/cot/util.go,front/static/js/components/cotlog.js,front/static/js/components/drawing.edit.modal.js,front/static/js/components/flows.js,front/static/js/components/overlays.js,front/static/js/components/send.js,front/static/js/components/sensorsmodal.js,front/static/js/components/userinfo.js
 
 # Current Time
 5/18/2025, 3:01:55 PM (Asia/Tehran, UTC+3:30)
@@ -530,7 +530,7 @@ Create a unified tab in the sidebar that replaces both the 'current unit' and 'c
    - Ensure all existing functionality is preserved
 
 **Constraints:**
-- Only modify files within the `staticfiles/static/` directory
+- Only modify files within the `front/static/` directory
 - Do not execute any CLI commands
 - Do not use the browser_action tool to verify changes
 - Focus on creating clean, maintainable components rather than a single large component
@@ -627,7 +627,7 @@ Create a unified tab in the sidebar that replaces both the 'current unit' and 'c
    - Ensure all existing functionality is preserved
 
 **Constraints:**
-- Only modify files within the `staticfiles/static/` directory
+- Only modify files within the `front/static/` directory
 - Do not execute any CLI commands
 - Do not use the browser_action tool to verify changes
 - Focus on creating clean, maintainable components rather than a single large component
@@ -675,7 +675,7 @@ Create a unified tab in the sidebar that replaces both the 'current unit' and 'c
    - Ensure all existing functionality is preserved
 
 **Constraints:**
-- Only modify files within the `staticfiles/static/` directory
+- Only modify files within the `front/static/` directory
 - Do not execute any CLI commands
 - Do not use the browser_action tool to verify changes
 - Focus on creating clean, maintainable components rather than a single large component
@@ -683,10 +683,10 @@ Create a unified tab in the sidebar that replaces both the 'current unit' and 'c
 These specific instructions supersede any conflicting general instructions for the Code mode. Upon completion, use the `attempt_completion` tool with a detailed summary of the changes made.
 <environment_details>
 # VSCode Visible Files
-C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\staticfiles\static\js\components\casevacform.js,C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\staticfiles\static\js\components\casevacform.js,cmd\webclient\templates\header.html
+C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\front\static\js\components\casevacform.js,C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\front\static\js\components\casevacform.js,cmd\webclient\templates\header.html
 
 # VSCode Open Tabs
-.gitignore,staticfiles/static/js/store.js,staticfiles/static/js/map.js,staticfiles/static/js/utils.js,staticfiles/static/js/components/alarms.js,staticfiles/static/js/components/casevacform.js,staticfiles/static/js/components/UnitDetails.js,staticfiles/static/js/components/PointDetails.js,staticfiles/static/js/components/DrawingDetails.js,staticfiles/static/js/components/CasevacDetails.js,staticfiles/static/js/components/item.details.js,staticfiles/static/js/components/sidebar.js,staticfiles/static/js/components/index.js,cmd/webclient/templates/header.html,pkg/model/http.go,pkg/cot/util.go,staticfiles/static/js/components/cotlog.js,staticfiles/static/js/components/drawing.edit.modal.js,staticfiles/static/js/components/flows.js
+.gitignore,front/static/js/store.js,front/static/js/map.js,front/static/js/utils.js,front/static/js/components/alarms.js,front/static/js/components/casevacform.js,front/static/js/components/UnitDetails.js,front/static/js/components/PointDetails.js,front/static/js/components/DrawingDetails.js,front/static/js/components/CasevacDetails.js,front/static/js/components/item.details.js,front/static/js/components/sidebar.js,front/static/js/components/index.js,cmd/webclient/templates/header.html,pkg/model/http.go,pkg/cot/util.go,front/static/js/components/cotlog.js,front/static/js/components/drawing.edit.modal.js,front/static/js/components/flows.js
 
 # Current Time
 5/18/2025, 3:09:21 PM (Asia/Tehran, UTC+3:30)
@@ -798,10 +798,10 @@ Currently when they are being added, a modal shows up in which their details are
 </feedback>
 <environment_details>
 # VSCode Visible Files
-C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\staticfiles\static\js\components\casevacform.js,C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\staticfiles\static\js\components\casevacform.js,cmd\webclient\templates\header.html
+C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\front\static\js\components\casevacform.js,C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\front\static\js\components\casevacform.js,cmd\webclient\templates\header.html
 
 # VSCode Open Tabs
-.gitignore,staticfiles/static/js/store.js,staticfiles/static/js/map.js,staticfiles/static/js/utils.js,staticfiles/static/js/components/alarms.js,staticfiles/static/js/components/casevacform.js,staticfiles/static/js/components/UnitDetails.js,staticfiles/static/js/components/PointDetails.js,staticfiles/static/js/components/DrawingDetails.js,staticfiles/static/js/components/CasevacDetails.js,staticfiles/static/js/components/item.details.js,staticfiles/static/js/components/sidebar.js,staticfiles/static/js/components/index.js,cmd/webclient/templates/header.html,pkg/model/http.go,pkg/cot/util.go,staticfiles/static/js/components/cotlog.js,staticfiles/static/js/components/drawing.edit.modal.js
+.gitignore,front/static/js/store.js,front/static/js/map.js,front/static/js/utils.js,front/static/js/components/alarms.js,front/static/js/components/casevacform.js,front/static/js/components/UnitDetails.js,front/static/js/components/PointDetails.js,front/static/js/components/DrawingDetails.js,front/static/js/components/CasevacDetails.js,front/static/js/components/item.details.js,front/static/js/components/sidebar.js,front/static/js/components/index.js,cmd/webclient/templates/header.html,pkg/model/http.go,pkg/cot/util.go,front/static/js/components/cotlog.js,front/static/js/components/drawing.edit.modal.js
 
 # Current Time
 5/18/2025, 3:28:56 PM (Asia/Tehran, UTC+3:30)
@@ -1049,10 +1049,10 @@ This task should be completed with careful attention to the original workflows, 
 Upon completion, use the attempt_completion tool with a detailed summary of the fixes implemented.
 <environment_details>
 # VSCode Visible Files
-C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\staticfiles\static\js\components\PointDetails.js,C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\staticfiles\static\js\components\PointDetails.js,staticfiles\static\js\map.js
+C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\front\static\js\components\PointDetails.js,C:\Users\Admin\AppData\Local\Programs\Microsoft VS Code\front\static\js\components\PointDetails.js,front\static\js\map.js
 
 # VSCode Open Tabs
-.gitignore,staticfiles/static/js/store.js,cmd/webclient/templates/map.html,staticfiles/static/js/map.js,staticfiles/static/js/components/sidebar.js,staticfiles/static/js/components/CasevacDetails.js,staticfiles/static/js/components/UnitDetails.js,staticfiles/static/js/components/PointDetails.js,staticfiles/static/js/components/DrawingDetails.js,staticfiles/static/js/utils.js,staticfiles/static/js/components/alarms.js,staticfiles/static/js/components/casevacform.js,staticfiles/static/js/components/item.details.js,staticfiles/static/js/components/index.js,cmd/webclient/templates/header.html,pkg/model/http.go,pkg/cot/util.go,staticfiles/static/js/components/cotlog.js
+.gitignore,front/static/js/store.js,cmd/webclient/templates/map.html,front/static/js/map.js,front/static/js/components/sidebar.js,front/static/js/components/CasevacDetails.js,front/static/js/components/UnitDetails.js,front/static/js/components/PointDetails.js,front/static/js/components/DrawingDetails.js,front/static/js/utils.js,front/static/js/components/alarms.js,front/static/js/components/casevacform.js,front/static/js/components/item.details.js,front/static/js/components/index.js,cmd/webclient/templates/header.html,pkg/model/http.go,pkg/cot/util.go,front/static/js/components/cotlog.js
 
 # Current Time
 5/18/2025, 3:41:09 PM (Asia/Tehran, UTC+3:30)

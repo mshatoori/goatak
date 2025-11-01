@@ -8,15 +8,15 @@ This document outlines the design for refactoring the item details and editing f
 
 Based on the review of the provided files:
 
--   [`staticfiles/static/js/components/item.details.js`](staticfiles/static/js/components/item.details.js): This component acts as a dynamic loader for different item detail components based on the item's category and type. It already supports `casevac-details`, `drawing-details`, `point-details`, and `unit-details`. It has the basic structure to switch between different item detail views in the sidebar.
+-   [`front/static/js/components/item.details.js`](front/static/js/components/item.details.js): This component acts as a dynamic loader for different item detail components based on the item's category and type. It already supports `casevac-details`, `drawing-details`, `point-details`, and `unit-details`. It has the basic structure to switch between different item detail views in the sidebar.
 -   [`cmd/webclient/templates/map.html`](cmd/webclient/templates/map.html): This file contains the main HTML structure, including the map, the sidebar component (`<sidebar>`), and several modal definitions. Crucially, it includes the `#edit` modal used for editing Points and Units, and references `drawing-edit-modal`. This confirms that editing for Points, Units, and Drawings is currently handled outside the modular sidebar flow.
--   [`staticfiles/static/js/components/sidebar.js`](staticfiles/static/js/components/sidebar.js): This component manages the sidebar tabs and the `activeItem`. It handles the display of item details via the `ItemDetails` component and includes logic for creating a new casevac item. It needs to be enhanced to handle the initiation of editing for all item types.
--   [`staticfiles/static/js/components/CasevacDetails.js`](staticfiles/static/js/components/CasevacDetails.js): This component already implements both view and edit modes for Casevac items within the sidebar. It serves as a good example for how other item detail components should be structured.
--   [`staticfiles/static/js/components/PointDetails.js`](staticfiles/static/js/components/PointDetails.js): This component has both view and edit modes implemented, similar to `CasevacDetails.js`.
--   [`staticfiles/static/js/components/UnitDetails.js`](staticfiles/static/js/components/UnitDetails.js): This component also has both view and edit modes implemented, similar to `CasevacDetails.js`.
--   [`staticfiles/static/js/components/DrawingDetails.js`](staticfiles/static/js/components/DrawingDetails.js): This component has both view and edit modes implemented, similar to `CasevacDetails.js`.
+-   [`front/static/js/components/sidebar.js`](front/static/js/components/sidebar.js): This component manages the sidebar tabs and the `activeItem`. It handles the display of item details via the `ItemDetails` component and includes logic for creating a new casevac item. It needs to be enhanced to handle the initiation of editing for all item types.
+-   [`front/static/js/components/CasevacDetails.js`](front/static/js/components/CasevacDetails.js): This component already implements both view and edit modes for Casevac items within the sidebar. It serves as a good example for how other item detail components should be structured.
+-   [`front/static/js/components/PointDetails.js`](front/static/js/components/PointDetails.js): This component has both view and edit modes implemented, similar to `CasevacDetails.js`.
+-   [`front/static/js/components/UnitDetails.js`](front/static/js/components/UnitDetails.js): This component also has both view and edit modes implemented, similar to `CasevacDetails.js`.
+-   [`front/static/js/components/DrawingDetails.js`](front/static/js/components/DrawingDetails.js): This component has both view and edit modes implemented, similar to `CasevacDetails.js`.
 -   `#edit` modal in [`cmd/webclient/templates/map.html`](cmd/webclient/templates/map.html): This modal handles the editing of Points and Units. It uses a single form with conditional fields based on item category. The logic for handling different fields and interacting with the main application state needs to be migrated to `PointDetails.js` and `UnitDetails.js`.
--   [`staticfiles/static/js/components/drawing.edit.modal.js`](staticfiles/static/js/components/drawing.edit.modal.js): This modal handles the editing of Drawings. The editing logic and form fields need to be fully integrated into `DrawingDetails.js`.
+-   [`front/static/js/components/drawing.edit.modal.js`](front/static/js/components/drawing.edit.modal.js): This modal handles the editing of Drawings. The editing logic and form fields need to be fully integrated into `DrawingDetails.js`.
 
 ## 3. Proposed Design
 
@@ -88,7 +88,7 @@ The proposed design involves leveraging the existing structure of the item detai
 
 5.  **Clean up old modal code**:
     -   Remove the HTML for the `#edit` modal from [`cmd/webclient/templates/map.html`](cmd/webclient/templates/map.html).
-    -   Remove the `drawing-edit-modal` component file (`staticfiles/static/js/components/drawing.edit.modal.js`) and any references to it in `map.html` or other files.
+    -   Remove the `drawing-edit-modal` component file (`front/static/js/components/drawing.edit.modal.js`) and any references to it in `map.html` or other files.
     -   Remove any related JavaScript logic in `map.js` (or the main Vue instance) that was specifically for managing the `#edit` or `drawing-edit` modals (e.g., `form_unit` data property, `cancelEditForm`, `saveEditForm`, and functions related to opening/closing these modals).
 
 ## 5. Mermaid Diagram

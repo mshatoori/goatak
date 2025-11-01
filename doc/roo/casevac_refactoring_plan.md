@@ -17,25 +17,25 @@
 
 1.  **Analyze Unit and Point Creation/Editing Flow:**
 
-    - **Files:** `staticfiles/static/js/map.js`, `staticfiles/static/js/components/UnitDetails.js`, `staticfiles/static/js/components/PointDetails.js`, `staticfiles/header.html`
+    - **Files:** `front/static/js/map.js`, `front/static/js/components/UnitDetails.js`, `front/static/js/components/PointDetails.js`, `front/header.html`
     - **Action:** Examine the code in detail to fully understand how Unit and Point items are created (e.g., which map events trigger creation, how the initial data is structured) and how their details are displayed and edited in the sidebar components. Pay close attention to how data is passed to and from the sidebar components and how changes are saved via the `store` and `saveItem`.
     - **Reasoning:** A thorough understanding of the existing, desired flow is crucial for effectively refactoring the Casevac flow to match it.
 
 2.  **Analyze Current Casevac Creation/Editing Flow (Ignoring `casevacform.js`):**
 
-    - **Files:** `staticfiles/static/js/map.js`, `staticfiles/static/js/components/CasevacDetails.js`, `staticfiles/header.html`
+    - **Files:** `front/static/js/map.js`, `front/static/js/components/CasevacDetails.js`, `front/header.html`
     - **Action:** Examine the code related to Casevac handling, specifically in `map.js` and `CasevacDetails.js`. Identify where Casevac creation is initiated (e.g., the commented-out `add_casevac` in `mapClick`), how `CasevacDetails.js` is currently used (for display only, or does it have editing capabilities?), and how Casevac data is handled and potentially saved. Ignore any references or logic related to `casevacform.js`.
     - **Reasoning:** To pinpoint the exact differences and areas that require refactoring within the allowed files.
 
 3.  **Enhance `CasevacDetails.js` for Editing:**
 
-    - **File:** `staticfiles/static/js/components/CasevacDetails.js`
+    - **File:** `front/static/js/components/CasevacDetails.js`
     - **Action:** If `CasevacDetails.js` currently only displays details, add the necessary form elements and logic to allow editing of Casevac properties. Model this after the editing capabilities found in `UnitDetails.js` and `PointDetails.js`.
     - **Reasoning:** To enable the sidebar component to handle Casevac editing consistently with other item types.
 
 4.  **Modify `map.js` to Standardize Casevac Creation:**
 
-    - **File:** `staticfiles/static/js/map.js`
+    - **File:** `front/static/js/map.js`
     - **Action:**
       - Uncomment and adapt the `add_casevac` logic within the `mapClick` function or create a new function for Casevac creation that mirrors the `mapClickAddUnit` function.
       - Ensure that a new Casevac item is created in the `store` with a unique UID and initial properties when the creation is triggered.
@@ -45,13 +45,13 @@
 
 5.  **Update `header.html` and other relevant files:**
 
-    - **Files:** `staticfiles/header.html`, and potentially other files that might have referenced `casevacform.js`.
+    - **Files:** `front/header.html`, and potentially other files that might have referenced `casevacform.js`.
     - **Action:** Remove any references to `casevacform.js`. Ensure that the sidebar component is correctly configured to display `CasevacDetails.js` when a Casevac item is active.
     - **Reasoning:** To remove any potential dependencies on the ignored Casevac form component and ensure the correct component is loaded in the UI.
 
 6.  **Refactor Data Handling and Saving:**
 
-    - **Files:** `staticfiles/static/js/map.js`, `staticfiles/static/js/store.js`, `staticfiles/static/js/components/CasevacDetails.js`
+    - **Files:** `front/static/js/map.js`, `front/static/js/store.js`, `front/static/js/components/CasevacDetails.js`
     - **Action:**
       - Verify that Casevac data is stored in the `store` using a similar structure to Unit and Point items.
       - Ensure that saving changes to a Casevac item from `CasevacDetails.js` correctly uses the `saveItem` function in `map.js`, which interacts with the `store`.

@@ -79,7 +79,7 @@ The TAK application is built using Vue.js as the front-end framework. The main c
 - **Observer Pattern**: Components react to changes in the store
 - **Singleton Pattern**: The store is a singleton that provides a single source of truth
 
-@/staticfiles/static/architecture_summary.md 
+@/front/static/architecture_summary.md 
 Look at the last few git commits to see how I fixed the `UnitDetails.js`, try to fix the other item details components to work correctly.
 Currently saving Caseevac differs from how Unit & Point are getting saved.
-In other words, the creation/editing flow for these types differs and Casevac is handled as a special case. I prefer it to follow a more general flow closer to how units and point are handled. Read the components, `staticfiles/header.html` and `map.js` carefully and devise a plan to refactor the code, so that the casevac would be handled as close as possible to how the other items are being handled.
+In other words, the creation/editing flow for these types differs and Casevac is handled as a special case. I prefer it to follow a more general flow closer to how units and point are handled. Read the components, `front/header.html` and `map.js` carefully and devise a plan to refactor the code, so that the casevac would be handled as close as possible to how the other items are being handled.

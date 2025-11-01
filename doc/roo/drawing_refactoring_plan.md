@@ -16,11 +16,11 @@ Align the Drawing creation/editing flow with the Unit and Point flow by:
 
 **Detailed Plan:**
 
-1.  **Modify `staticfiles/header.html`:**
+1.  **Modify `front/header.html`:**
     -   Add buttons or controls to the UI (e.g., in the navbar or sidebar) to activate drawing modes for different shapes (e.g., "Add Polygon", "Add Polyline"). These UI elements will be responsible for enabling the corresponding drawing tools from the Leaflet Draw control.
     -   Consider hiding or removing the default Leaflet Draw control buttons if the new UI elements replace their functionality.
 
-2.  **Modify `staticfiles/static/js/map.js`:**
+2.  **Modify `front/static/js/map.js`:**
     -   Introduce new data properties to track drawing modes (e.g., `drawingMode: null`).
     -   Add methods to activate drawing modes. These methods will enable the specific drawing handler (e.g., `this.drawControl.enable(L.Draw.Polygon)`) and set the `drawingMode` data property.
     -   Modify the `map.on(L.Draw.Event.CREATED, ...)` handler:
@@ -31,15 +31,15 @@ Align the Drawing creation/editing flow with the Unit and Point flow by:
         -   Reset the drawing mode after creation (e.g., `this.drawingMode = null;`).
     -   Review and ensure that `_processDrawing` and `_processUpdate` correctly handle adding and updating drawing layers based on data from the store.
 
-3.  **Modify `staticfiles/static/js/store.js`:**
+3.  **Modify `front/static/js/store.js`:**
     -   Verify that the `saveItem` method correctly handles items with `category: "drawing"` and `category: "route"` and sends the appropriate data to the backend for persistence.
     -   Confirm that the `handleItemChangeMessage` method properly processes incoming WebSocket messages for drawings and updates the store, triggering reactivity in the map and sidebar components.
 
-4.  **Modify `staticfiles/static/js/components/DrawingDetails.js`:**
+4.  **Modify `front/static/js/components/DrawingDetails.js`:**
     -   Ensure this Vue component is fully implemented to display and allow editing of Drawing item properties (callsign, color, etc.). It should receive the drawing item data as a prop.
     -   Implement methods within `DrawingDetails.js` to update the drawing item in the store when changes are made by the user.
 
-5.  **Modify `staticfiles/static/js/components/sidebar.js`:**
+5.  **Modify `front/static/js/components/sidebar.js`:**
     -   Confirm that the sidebar component watches the `activeItem` prop and dynamically renders the appropriate details component (`UnitDetails`, `PointDetails`, `DrawingDetails`, etc.) based on the `activeItem.category`.
 
 **Reasoning for Changes:**

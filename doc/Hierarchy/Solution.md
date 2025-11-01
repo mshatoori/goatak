@@ -10,7 +10,7 @@ This document provides a high-level design for implementing a military hierarchy
 The current system has:
 - **Item Model** ([`pkg/model/unit.go`](pkg/model/unit.go:25)): Core entity representing units, contacts, points, etc.
 - **User Model** ([`internal/model/user.go`](internal/model/user.go:3)): Basic user with team, role, and scope
-- **Parent Tracking**: Items already have `parent_uid` and `parent_callsign` fields (visible in [`UnitDetails.js`](staticfiles/static/js/components/UnitDetails.js:377-389))
+- **Parent Tracking**: Items already have `parent_uid` and `parent_callsign` fields (visible in [`UnitDetails.js`](front/static/js/components/UnitDetails.js:377-389))
 - **Type Hierarchy**: Existing hierarchical type system for unit classification
 
 ### 1.2 Gaps for Military Hierarchy
@@ -352,7 +352,7 @@ components/
 ### 6.2 Hierarchy Tree Component
 
 ```javascript
-// staticfiles/static/js/components/HierarchyTree.js
+// front/static/js/components/HierarchyTree.js
 Vue.component('HierarchyTree', {
   props: {
     rootUnitUID: String,
@@ -427,7 +427,7 @@ class HierarchyMapController {
 
 ### 6.4 Enhanced Unit Details
 
-Extend existing [`UnitDetails.js`](staticfiles/static/js/components/UnitDetails.js:1) to show hierarchy information:
+Extend existing [`UnitDetails.js`](front/static/js/components/UnitDetails.js:1) to show hierarchy information:
 
 ```javascript
 // Add to UnitDetails component

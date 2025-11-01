@@ -1,7 +1,6 @@
 package main
 
 import (
-	"embed"
 	"encoding/json"
 	"fmt"
 	"runtime/pprof"
@@ -19,25 +18,13 @@ import (
 	"github.com/kdudkov/goatak/pkg/cot"
 	"github.com/kdudkov/goatak/pkg/cotproto"
 	"github.com/kdudkov/goatak/pkg/model"
-	"github.com/kdudkov/goatak/staticfiles"
 )
-
-//go:embed templates
-var templates embed.FS
 
 func NewHttp(app *App, address string) *air.Air {
 	srv := air.New()
 	srv.Address = address
 	srv.DebugMode = true
 
-	staticfiles.EmbedFiles(srv, "/static")
-	renderer := new(staticfiles.Renderer)
-	renderer.LeftDelimeter = "[["
-	renderer.RightDelimeter = "]]"
-	_ = renderer.Load(templates)
-
-	srv.OPTIONS("/", optionsHandler())
-	srv.GET("/", getIndexHandler(app, renderer))
 	srv.OPTIONS("/config", optionsHandler())
 	srv.GET("/config", getConfigHandler(app))
 	srv.PATCH("/config", changeConfigHandler(app))
@@ -107,31 +94,6 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.RendererTemplateRightDelim = "]]"
 
 	return srv
-}
-
-func getIndexHandler(app *App, r *staticfiles.Renderer) air.Handler {
-	return func(req *air.Request, res *air.Response) error {
-		data := map[string]any{
-			"js": []string{
-				// "utils.js", "store.js", "map.js"
-			},
-		}
-
-		// compf, err := staticfiles.StaticFiles.ReadDir("static/js/components")
-		// if err != nil {
-		// 	return err
-		// }
-		// for _, f := range compf {
-		// 	data["js"] = append(data["js"].([]string), fmt.Sprintf("components/%s", f.Name()))
-		// }
-
-		s, err := r.Render(data, "map.html", "header.html")
-		if err != nil {
-			return err
-		}
-
-		return res.WriteHTML(s)
-	}
 }
 
 func getUnitsHandler(app *App) air.Handler {

@@ -2,19 +2,19 @@ Based on my analysis of the UI components, here is a comprehensive list of numbe
 
 ## Numbers Requiring fa-IR Locale Conversion
 
-### 1. **UnitDetails.js** ([`staticfiles/static/js/components/UnitDetails.js`](staticfiles/static/js/components/UnitDetails.js))
+### 1. **UnitDetails.js** ([`front/static/js/components/UnitDetails.js`](front/static/js/components/UnitDetails.js))
 
 - **Line 372**: `{{Utils.sp(item.speed)}} KM/H` - Speed value
 - **Line 381**: `{{item.hae.toFixed(1)}}` - Altitude value
 - **Line 524-526**: Number input min/max values (`min="1"`, `max="168"`) - These are HTML attributes but the displayed value should be localized
 
-### 2. **NavigationInfo.js** ([`staticfiles/static/js/components/NavigationInfo.js`](staticfiles/static/js/components/NavigationInfo.js))
+### 2. **NavigationInfo.js** ([`front/static/js/components/NavigationInfo.js`](front/static/js/components/NavigationInfo.js))
 
 - **Line 36**: `${this.navigationData.bearing.toFixed(1)}°T` - Bearing degrees
 - **Line 42**: `${distance.toFixed(0)}m` - Distance in meters
 - **Line 43**: `${(distance / 1000).toFixed(1)}km` - Distance in kilometers
 
-### 3. **CasevacDetails.js** ([`staticfiles/static/js/components/CasevacDetails.js`](staticfiles/static/js/components/CasevacDetails.js))
+### 3. **CasevacDetails.js** ([`front/static/js/components/CasevacDetails.js`](front/static/js/components/CasevacDetails.js))
 
 - **Line 222**: `{{ item.casevac_detail?.urgent || 0 }}` - Urgent patient count
 - **Line 228**: `{{ item.casevac_detail?.priority || 0 }}` - Priority patient count
@@ -31,7 +31,7 @@ Based on my analysis of the UI components, here is a comprehensive list of numbe
 - **Lines 246-257**: Security level values (0, 1, 2, 3) in conditional displays
 - **Lines 467-470**: Security option values in select dropdown
 
-### 4. **utils.js** ([`staticfiles/static/js/utils.js`](staticfiles/static/js/utils.js))
+### 4. **utils.js** ([`front/static/js/utils.js`](front/static/js/utils.js))
 
 - **Line 105**: `(item.speed * 3.6).toFixed(1) + " km/h"` - Speed in km/h
 - **Line 109**: `item.hae.toFixed(0) + " m"` - Altitude in meters
