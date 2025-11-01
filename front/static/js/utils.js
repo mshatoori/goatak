@@ -53,25 +53,25 @@ function getIconUri(item, withText) {
     };
   }
   if (item.type === "b") {
-    return { uri: "/static/icons/b.png", x: 16, y: 16 };
+    return { uri: "static/icons/b.png", x: 16, y: 16 };
   }
   if (item.type.startsWith("b-a-o-")) {
-    return { uri: "/static/icons/" + item.type + ".png", x: 16, y: 16 };
+    return { uri: "static/icons/" + item.type + ".png", x: 16, y: 16 };
   }
   if (item.type === "b-m-p-w-GOTO") {
-    return { uri: "/static/icons/green_flag.png", x: 6, y: 30 };
+    return { uri: "static/icons/green_flag.png", x: 6, y: 30 };
   }
   if (item.type === "b-m-p-s-p-op") {
-    return { uri: "/static/icons/binos.png", x: 16, y: 16 };
+    return { uri: "static/icons/binoculars.png", x: 16, y: 16 };
   }
   if (item.type === "b-m-p-s-p-loc") {
-    return { uri: "/static/icons/sensor_location.png", x: 16, y: 16 };
+    return { uri: "static/icons/sensor_location.png", x: 16, y: 16 };
   }
   if (item.type === "b-m-p-s-p-i") {
-    return { uri: "/static/icons/b-m-p-s-p-i.png", x: 16, y: 16 };
+    return { uri: "static/icons/b-m-p-s-p-i.png", x: 16, y: 16 };
   }
   if (item.type === "b-m-p-a") {
-    return { uri: "/static/icons/aimpoint.png", x: 16, y: 16 };
+    return { uri: "static/icons/aimpoint.png", x: 16, y: 16 };
   }
   if (item.category === "point") {
     return {
@@ -81,7 +81,7 @@ function getIconUri(item, withText) {
     };
   }
   if (item.type === "b-r-f-h-c") {
-    return { uri: "/static/icons/casevac.svg", x: 16, y: 16 };
+    return { uri: "static/icons/casevac.svg", x: 16, y: 16 };
   }
   return getMilIcon(item, withText);
 }
