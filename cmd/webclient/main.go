@@ -125,17 +125,6 @@ func (m *CoTEventMutator) mutate(event *cotproto.CotEvent) bool {
 	return false
 }
 
-type FlowConfig struct {
-	UID          string `mapstructure:"uid,omitempty"`
-	Title        string `mapstructure:"title,omitempty"`
-	Addr         string `mapstructure:"address"`
-	Port         int    `mapstructure:"port"`
-	Type         string `mapstructure:"type,omitempty"`
-	Direction    int    `mapstructure:"direction,omitempty"`
-	SendExchange string `mapstructure:"sendExchange,omitempty"`
-	RecvQueue    string `mapstructure:"recvQueue,omitempty"`
-}
-
 // Get preferred outbound ip of this machine
 func getOutboundIP() net.IP {
 	logger := slog.Default()
