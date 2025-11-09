@@ -3,10 +3,12 @@ package main
 import (
 	"database/sql"
 	"log/slog"
+	"os"
 	"sync"
 
 	"github.com/mcuadros/go-defaults"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 )
 
 type FlowConfig struct {
@@ -103,11 +105,31 @@ func NewConfigManager(db *sql.DB, logger *slog.Logger) *ConfigManager {
 	}
 }
 
-func (cm *ConfigManager) Load(viper *viper.Viper) (ApplicationConfig, error) {
+func (cm *ConfigManager) Load(configFile string) (ApplicationConfig, error) {
 	var c ApplicationConfig
+
+	viper.SetConfigFile(configFile)
 
 	defaults.SetDefaults(&c)
 	viper.Unmarshal(&c)
 
 	return c, nil
+}
+
+func (cm *ConfigManager) Save(c ApplicationConfig, configFile string) error {
+	fileContent, err := yaml.Marshal(c)
+	if err != nil {
+		return err
+	}
+
+	// Create backup if file exists
+	if _, err := os.Stat(configFile); err == nil {
+		backupFile := configFile + ".bak"
+		if err := os.Rename(configFile, backupFile); err != nil {
+			return err
+		}
+	}
+
+	// Write the file
+	return os.WriteFile(configFile, fileContent, 0644)
 }
