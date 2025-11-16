@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/mcuadros/go-defaults"
@@ -22,7 +24,7 @@ type FlowConfig struct {
 }
 
 type SensorConfig struct {
-	Title string `mapstructure:"uid"`
+	Title string `mapstructure:"title"`
 	// TODO: Change Addr & Port with a general config map
 	Addr string `mapstructure:"addr"`
 
@@ -115,6 +117,12 @@ func (cm *ConfigManager) Load(configFile string) (ApplicationConfig, error) {
 	viper.SetConfigFile(configFile)
 
 	defaults.SetDefaults(&c)
+
+	if err := viper.ReadInConfig(); err != nil {
+		cm.logger.Error("Failed to read configuration file", "error", err, "file", configFile)
+		return c, err
+	}
+
 	err := viper.Unmarshal(&c)
 	if err != nil {
 		cm.logger.Error("Failed to unmarshal configuration", "error", err, "file", configFile)
@@ -122,6 +130,8 @@ func (cm *ConfigManager) Load(configFile string) (ApplicationConfig, error) {
 	}
 
 	cm.logger.Info("Configuration loaded successfully", "file", configFile, "flows", len(c.Flows), "sensors", len(c.Sensors))
+	cm.logConfig(c)
+
 	return c, nil
 }
 
@@ -258,4 +268,158 @@ func (cm *ConfigManager) GetSensors(config *ApplicationConfig) []SensorConfig {
 	sensors := make([]SensorConfig, len(config.Sensors))
 	copy(sensors, config.Sensors)
 	return sensors
+}
+
+// logConfig logs the ApplicationConfig in a pretty ASCII table format
+func (cm *ConfigManager) logConfig(cfg ApplicationConfig) {
+	var sb strings.Builder
+
+	// Header
+	sb.WriteString("\n")
+	sb.WriteString("╔════════════════════════════════════════════════════════════════════════════════════════╗\n")
+	sb.WriteString("║                           APPLICATION CONFIGURATION                                    ║\n")
+	sb.WriteString("╠════════════════════════════════════════════════════════════════════════════════════════╣\n")
+
+	// General Settings Section
+	sb.WriteString("║ GENERAL SETTINGS                                                                       ║\n")
+	sb.WriteString("╟────────────────────────────────────────┬───────────────────────────────────────────────╢\n")
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Web Port", fmt.Sprintf("%d", cfg.WebPort)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Debug", fmt.Sprintf("%t", cfg.Debug)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "No Web", fmt.Sprintf("%t", cfg.NoWeb)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Config File", truncate(cfg.File, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Server Address", truncate(cfg.ServerAddress, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "GPSD", truncate(cfg.Gpsd, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "GPS Port", truncate(cfg.GpsPort, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Map Server", truncate(cfg.MapServer, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "DNS Service URL", truncate(cfg.DnsServiceURL, 45)))
+
+	// SSL Settings Section
+	sb.WriteString("╟────────────────────────────────────────┴───────────────────────────────────────────────╢\n")
+	sb.WriteString("║ SSL SETTINGS                                                                           ║\n")
+	sb.WriteString("╟────────────────────────────────────────┬───────────────────────────────────────────────╢\n")
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Enroll User", truncate(cfg.SslEnrollUser, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Enroll Password", maskPassword(cfg.SslEnrollPassword)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Certificate", truncate(cfg.SslCert, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Password", maskPassword(cfg.SslPassword)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Save Certificate", fmt.Sprintf("%t", cfg.SslSaveCert)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Strict SSL", fmt.Sprintf("%t", cfg.SslStrict)))
+
+	// Default Destination Section
+	sb.WriteString("╟────────────────────────────────────────┴───────────────────────────────────────────────╢\n")
+	sb.WriteString("║ DEFAULT DESTINATION                                                                    ║\n")
+	sb.WriteString("╟────────────────────────────────────────┬───────────────────────────────────────────────╢\n")
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Default Dest IP", truncate(cfg.DefaultDestIP, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Default Dest URN", fmt.Sprintf("%d", cfg.DefaultDestURN)))
+
+	// Unit Configuration Section
+	sb.WriteString("╟────────────────────────────────────────┴───────────────────────────────────────────────╢\n")
+	sb.WriteString("║ UNIT CONFIGURATION (ME)                                                                ║\n")
+	sb.WriteString("╟────────────────────────────────────────┬───────────────────────────────────────────────╢\n")
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Callsign", truncate(cfg.Me.Callsign, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Position", fmt.Sprintf("%.6f, %.6f", cfg.Me.Lat, cfg.Me.Lon)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Zoom", fmt.Sprintf("%d", cfg.Me.Zoom)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Type", truncate(cfg.Me.Type, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Team", truncate(cfg.Me.Team, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Role", truncate(cfg.Me.Role, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Platform", truncate(cfg.Me.Platform, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Version", truncate(cfg.Me.Version, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "UID", truncate(cfg.Me.Uid, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "URN", fmt.Sprintf("%d", cfg.Me.Urn)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "IP", truncate(cfg.Me.Ip, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "OS", truncate(cfg.Me.OS, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Interval", fmt.Sprintf("%d seconds", cfg.Me.Interval)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Device", truncate(cfg.Me.Device, 45)))
+
+	// Tracking Configuration Section
+	sb.WriteString("╟────────────────────────────────────────┴───────────────────────────────────────────────╢\n")
+	sb.WriteString("║ TRACKING CONFIGURATION                                                                 ║\n")
+	sb.WriteString("╟────────────────────────────────────────┬───────────────────────────────────────────────╢\n")
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Enabled", fmt.Sprintf("%t", cfg.Tracking.Enabled)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Default Trail Length", fmt.Sprintf("%d", cfg.Tracking.DefaultTrailLength)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Default Update Interval", fmt.Sprintf("%d seconds", cfg.Tracking.DefaultUpdateInterval)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Default Trail Color", truncate(cfg.Tracking.DefaultTrailColor, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Default Trail Width", fmt.Sprintf("%d", cfg.Tracking.DefaultTrailWidth)))
+
+	// Resend Configuration Section
+	sb.WriteString("╟────────────────────────────────────────┴───────────────────────────────────────────────╢\n")
+	sb.WriteString("║ RESEND CONFIGURATION                                                                   ║\n")
+	sb.WriteString("╟────────────────────────────────────────┬───────────────────────────────────────────────╢\n")
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Enabled", fmt.Sprintf("%t", cfg.Resend.Enabled)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Max Filters Per Config", fmt.Sprintf("%d", cfg.Resend.MaxFiltersPerConfig)))
+
+	// Flows Section
+	sb.WriteString("╟────────────────────────────────────────┴───────────────────────────────────────────────╢\n")
+	sb.WriteString(fmt.Sprintf("║ FLOWS (%d configured)%-67s║\n", len(cfg.Flows), ""))
+	sb.WriteString("╟────────────────────────────────────────────────────────────────────────────────────────╢\n")
+
+	if len(cfg.Flows) == 0 {
+		sb.WriteString("║ No flows configured                                                                    ║\n")
+	} else {
+		for i, flow := range cfg.Flows {
+			sb.WriteString(fmt.Sprintf("║ Flow #%-2d                                                                              ║\n", i+1))
+			sb.WriteString("╟────────────────────────────────────────┬───────────────────────────────────────────────╢\n")
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  UID", truncate(flow.UID, 45)))
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  Title", truncate(flow.Title, 45)))
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  Address", truncate(flow.Addr, 45)))
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  Port", fmt.Sprintf("%d", flow.Port)))
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  Type", truncate(flow.Type, 45)))
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  Direction", fmt.Sprintf("%d", flow.Direction)))
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  Send Exchange", truncate(flow.SendExchange, 45)))
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  Recv Queue", truncate(flow.RecvQueue, 45)))
+			if i < len(cfg.Flows)-1 {
+				sb.WriteString("╟────────────────────────────────────────┴───────────────────────────────────────────────╢\n")
+			}
+		}
+	}
+
+	// Sensors Section
+	sb.WriteString("╟────────────────────────────────────────────────────────────────────────────────────────╢\n")
+	sb.WriteString(fmt.Sprintf("║ SENSORS (%d configured)%-64s║\n", len(cfg.Sensors), ""))
+	sb.WriteString("╟────────────────────────────────────────────────────────────────────────────────────────╢\n")
+
+	if len(cfg.Sensors) == 0 {
+		sb.WriteString("║ No sensors configured                                                                  ║\n")
+	} else {
+		for i, sensor := range cfg.Sensors {
+			sb.WriteString(fmt.Sprintf("║ Sensor #%-2d                                                                            ║\n", i+1))
+			sb.WriteString("╟────────────────────────────────────────┬───────────────────────────────────────────────╢\n")
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  UID", truncate(sensor.UID, 45)))
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  Title", truncate(sensor.Title, 45)))
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  Address", truncate(sensor.Addr, 45)))
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  Port", fmt.Sprintf("%d", sensor.Port)))
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  Type", truncate(sensor.Type, 45)))
+			sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "  Interval", fmt.Sprintf("%d seconds", sensor.Interval)))
+			if i < len(cfg.Sensors)-1 {
+				sb.WriteString("╟────────────────────────────────────────┴───────────────────────────────────────────────╢\n")
+			}
+		}
+	}
+
+	// Footer
+	sb.WriteString("╚════════════════════════════════════════════════════════════════════════════════════════╝\n")
+
+	// Log the table
+	cm.logger.Debug(sb.String())
+}
+
+// truncate truncates a string to maxLen, adding "..." if necessary
+func truncate(s string, maxLen int) string {
+	if s == "" {
+		return "-"
+	}
+	if len(s) <= maxLen {
+		return s
+	}
+	if maxLen <= 3 {
+		return s[:maxLen]
+	}
+	return s[:maxLen-3] + "..."
+}
+
+// maskPassword masks a password string for display
+func maskPassword(password string) string {
+	if password == "" {
+		return "-"
+	}
+	return "********"
 }

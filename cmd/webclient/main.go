@@ -255,21 +255,32 @@ func initFlowsSensorsAndConfig(app *App) {
 	dbPath := viper.GetString("database.path")
 	if dbPath == "" {
 		app.logger.Error("database.path not set in config")
-		return
-	}
+	} else {
+		db, _, err := app.initializeDatabase(dbPath)
+		if err != nil {
+			app.logger.Error("failed to initialize database", "error", err)
+			return
+		}
 
-	db, _, err := app.initializeDatabase(dbPath)
-	if err != nil {
-		app.logger.Error("failed to initialize database", "error", err)
-		return
-	}
+		app.DB = db
 
-	app.DB = db
+		// Initialize database tables (only for resend and tracking, not for flows/sensors)
+		if err := app.createDatabaseTables(db); err != nil {
+			app.logger.Error("failed to create database tables", "error", err)
+			return
+		}
+		// Create tracking tables if they don't exist
+		if err := app.createTrackingTables(db); err != nil {
+			app.logger.Error("failed to create tracking tables", "error", err)
+			// Continue without tracking functionality
+		} else {
+			// Initialize tracking service
+			app.trackingService = tracking.NewTrackingService(db, app.logger)
+			app.logger.Info("Tracking service initialized")
 
-	// Initialize database tables (only for resend and tracking, not for flows/sensors)
-	if err := app.createDatabaseTables(db); err != nil {
-		app.logger.Error("failed to create database tables", "error", err)
-		return
+			// Start periodic cleanup of old tracking data
+			go app.startTrackingCleanup()
+		}
 	}
 
 	// Load flows from config
@@ -277,19 +288,6 @@ func initFlowsSensorsAndConfig(app *App) {
 
 	// Load sensors from config
 	app.loadSensorsFromConfig()
-
-	// Create tracking tables if they don't exist
-	if err := app.createTrackingTables(db); err != nil {
-		app.logger.Error("failed to create tracking tables", "error", err)
-		// Continue without tracking functionality
-	} else {
-		// Initialize tracking service
-		app.trackingService = tracking.NewTrackingService(db, app.logger)
-		app.logger.Info("Tracking service initialized")
-
-		// Start periodic cleanup of old tracking data
-		go app.startTrackingCleanup()
-	}
 }
 
 func (app *App) Run(ctx context.Context) {
@@ -473,74 +471,11 @@ func (app *App) startTrackingCleanup() {
 }
 
 func main() {
-	conf := flag.String("config", "goatak_client.yml", "name of config file")
+	conf := flag.String("config", "config/goatak_client.yml", "name of config file")
 	noweb := flag.Bool("noweb", false, "do not start web server")
 	debug := flag.Bool("debug", false, "debug")
 	saveFile := flag.String("file", "", "record all events to file")
 	flag.Parse()
-
-	viper.SetConfigFile(*conf)
-
-	viper.SetDefault("server_address", "127.0.0.1:8087:tcp")
-	viper.BindEnv("server_address")
-
-	viper.SetDefault("web_port", 8080)
-	viper.BindEnv("web_port")
-
-	viper.SetDefault("me.callsign", RandString(10))
-	viper.BindEnv("me.callsign", "CALLSIGN")
-
-	viper.SetDefault("me.lat", 0.0)
-	viper.BindEnv("me.lat", "LAT")
-	viper.SetDefault("me.lon", 0.0)
-	viper.BindEnv("me.lon", "LON")
-	viper.SetDefault("me.zoom", 12)
-	viper.BindEnv("me.zoom", "ZOOM")
-	viper.SetDefault("me.type", "a-f-G-U-C")
-	viper.BindEnv("me.type", "TYPE")
-	viper.SetDefault("me.team", "Blue")
-	viper.BindEnv("me.team", "TEAM")
-	viper.SetDefault("me.role", "HQ")
-	viper.BindEnv("me.role", "ROLE")
-	viper.SetDefault("me.platform", "GoATAK_client")
-	viper.BindEnv("platform", "PLATFORM")
-	viper.SetDefault("me.version", getVersion())
-	viper.BindEnv("me.version", "VERSION")
-	viper.SetDefault("ssl.password", "atakatak")
-	viper.BindEnv("ssl.password", "SSL_PASSWORD")
-	viper.SetDefault("ssl.save_cert", true)
-	viper.BindEnv("ssl.save_cert", "SSL_SAVE_CERT")
-	viper.SetDefault("ssl.strict", false)
-	viper.BindEnv("ssl.strict", "SSL_STRICT")
-	viper.SetDefault("map_server", "127.0.0.1:8000")
-	viper.BindEnv("map_server", "MAP_SERVER")
-
-	viper.SetDefault("gpsd", "gpsd:2947")
-	viper.BindEnv("gpsd", "GPSD")
-
-	viper.BindEnv("me.uid", "ME_UID")
-	viper.BindEnv("me.OS", "OS")
-	viper.BindEnv("ssl.enroll_user", "SSL_ENROLL_USER")
-	viper.BindEnv("ssl.enroll_password", "SSL_ENROLL_PASSWORD")
-	viper.BindEnv("ssl.cert", "SSL_CERT")
-
-	viper.BindEnv("me.urn", "URN")
-	viper.BindEnv("me.ip", "ME_IP")
-
-	viper.SetDefault("me.interval", 15)
-
-	viper.BindEnv("default_dest_ip", "DEFAULT_DEST_IP")
-	viper.BindEnv("default_dest_urn", "DEFAULT_DEST_URN")
-	viper.SetDefault("default_dest_ip", "255.255.255.255")
-	viper.SetDefault("default_dest_urn", 16777215)
-
-	viper.SetDefault("dns_service.url", "http://dns.api")
-	viper.BindEnv("dns_service.url", "DNS_SERVICE_URL")
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		panic(fmt.Errorf("fatal error config file: %w", err))
-	}
 
 	var h slog.Handler
 	if *debug {

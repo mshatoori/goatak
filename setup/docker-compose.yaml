@@ -14,7 +14,7 @@ services:
       - "1200:1100/udp"
     volumes:
       - .:/workspace:cached
-      - ./goatak_client.yml:/app/goatak_client.yml
+      - ./config/:/app/config/
       - ./config.sqlite3:/app/config.sqlite3
     networks:
       - mmhs
