@@ -6,8 +6,8 @@ Vue.component("OverlaysList", {
       // Track expanded state for categories
       expandedCategories: {
         contact: false,
-        unit: true,
-        alarm: true,
+        unit: false,
+        alarm: false,
         point: false,
         drawing: false,
         route: false,
