@@ -495,7 +495,11 @@ let app = new Vue({
             this.setActiveItemUid(item.uid, false);
           });
         }
-        item.marker.addTo(this.drawnItems);
+
+        // Only add to map if item is visible
+        if (item.visible !== false) {
+          item.marker.addTo(this.drawnItems);
+        }
 
         // Add text label for polygon
         this.addDrawingTextLabel(item);
@@ -506,7 +510,11 @@ let app = new Vue({
         item.marker.on("click", (e) => {
           this.setActiveItemUid(item.uid, false);
         });
-        item.marker.addTo(this.routeItems);
+
+        // Only add to map if item is visible
+        if (item.visible !== false) {
+          item.marker.addTo(this.routeItems);
+        }
 
         // Add text label for route
         this.addDrawingTextLabel(item);
@@ -547,7 +555,10 @@ let app = new Vue({
         this.setActiveItemUid(item.uid, false);
       });
 
-      item.textLabel.addTo(this.getItemOverlay(item));
+      // Only add to map if item is visible
+      if (item.visible !== false) {
+        item.textLabel.addTo(this.getItemOverlay(item));
+      }
     },
 
     calculateTextLabelPosition: function (item) {
@@ -744,6 +755,11 @@ let app = new Vue({
     },
 
     _processAddition: function (item) {
+      // Initialize visibility state if not set (default to visible)
+      if (item.visible === undefined) {
+        item.visible = true;
+      }
+
       if (item.category === "drawing" || item.category === "route") {
         this._processDrawing(item);
       } else {
@@ -877,7 +893,7 @@ let app = new Vue({
     updateUnitMarker: function (unit, draggable, updateIcon) {
       if (unit.lon === 0 && unit.lat === 0) {
         if (unit.marker) {
-          this.getItemOverlay(item).removeLayer(unit.marker);
+          this.getItemOverlay(unit).removeLayer(unit.marker);
           unit.marker = null;
         }
         return;
@@ -902,7 +918,11 @@ let app = new Vue({
         });
       }
       unit.marker.setIcon(getIcon(unit, true));
-      unit.marker.addTo(this.getItemOverlay(unit));
+
+      // Only add to map if item is visible (check visibility state)
+      if (unit.visible !== false) {
+        unit.marker.addTo(this.getItemOverlay(unit));
+      }
 
       let markerHtml = "<div>" + unit.callsign;
       // if (unit.ip_address) markerHtml += "<br>" + unit.ip_address;
@@ -917,7 +937,11 @@ let app = new Vue({
 
       if (!unit.type.startsWith("b-a-o")) {
         unit.infoMarker = L.marker([unit.lat, unit.lon], { icon: markerInfo });
-        unit.infoMarker.addTo(this.getItemOverlay(unit));
+
+        // Only add to map if item is visible
+        if (unit.visible !== false) {
+          unit.infoMarker.addTo(this.getItemOverlay(unit));
+        }
 
         unit.infoMarker.setLatLng([unit.lat, unit.lon]);
         unit.infoMarker.setIcon(markerInfo);
@@ -1406,6 +1430,123 @@ let app = new Vue({
       console.log("toggleOverlay", overlayName, overlayActive);
       if (!overlayActive) this.overlays[overlayName].removeFrom(this.map);
       else this.overlays[overlayName].addTo(this.map);
+    },
+
+    // New granular visibility control method
+    setItemVisibility: function (uid, visible) {
+      const item = this.sharedState.items.get(uid);
+      if (!item) return;
+
+      // Store visibility state on the item object itself
+      item.visible = visible;
+
+      const overlay = this.getItemOverlay(item);
+      if (!overlay) return;
+
+      if (visible) {
+        // For drawings (polygons), add to drawnItems FeatureGroup
+        if (item.category === "drawing" && item.marker) {
+          if (!this.drawnItems.hasLayer(item.marker)) {
+            item.marker.addTo(this.drawnItems);
+          }
+        }
+        // For routes (polylines), add to routeItems FeatureGroup
+        else if (item.category === "route" && item.marker) {
+          if (!this.routeItems.hasLayer(item.marker)) {
+            item.marker.addTo(this.routeItems);
+          }
+        }
+        // For other items (units, points, alarms, etc.), add directly to overlay
+        else if (item.marker && !overlay.hasLayer(item.marker)) {
+          item.marker.addTo(overlay);
+        }
+
+        // InfoMarker and textLabel are always added to the overlay directly
+        if (item.infoMarker && !overlay.hasLayer(item.infoMarker)) {
+          item.infoMarker.addTo(overlay);
+        }
+        if (item.textLabel && !overlay.hasLayer(item.textLabel)) {
+          item.textLabel.addTo(overlay);
+        }
+      } else {
+        // For drawings (polygons), remove from drawnItems FeatureGroup
+        if (item.category === "drawing" && item.marker) {
+          if (this.drawnItems.hasLayer(item.marker)) {
+            this.drawnItems.removeLayer(item.marker);
+          }
+        }
+        // For routes (polylines), remove from routeItems FeatureGroup
+        else if (item.category === "route" && item.marker) {
+          if (this.routeItems.hasLayer(item.marker)) {
+            this.routeItems.removeLayer(item.marker);
+          }
+        }
+        // For other items, remove directly from overlay
+        else if (item.marker && overlay.hasLayer(item.marker)) {
+          overlay.removeLayer(item.marker);
+        }
+
+        // InfoMarker and textLabel are always removed from overlay directly
+        if (item.infoMarker && overlay.hasLayer(item.infoMarker)) {
+          overlay.removeLayer(item.infoMarker);
+        }
+        if (item.textLabel && overlay.hasLayer(item.textLabel)) {
+          overlay.removeLayer(item.textLabel);
+        }
+      }
+    },
+
+    // Helper to check if an item matches a subcategory
+    matchesSubcategory: function (item, categoryName, subcategoryKey) {
+      if (item.category !== categoryName) return false;
+
+      // Extract subcategory identifier from key (format: "category_subcategory")
+      const parts = subcategoryKey.split("_");
+      if (parts.length < 2) return false;
+      const subcategory = parts[1];
+
+      if (categoryName === "unit") {
+        // For units, check affiliation
+        const affCode =
+          item.type && item.type.length >= 3 ? item.type.charAt(2) : "u";
+        return affCode === subcategory;
+      } else if (categoryName === "alarm") {
+        // For alarms, check emergency vs general
+        if (subcategory === "emergency") {
+          return item.type && item.type.startsWith("b-a-o");
+        } else if (subcategory === "general") {
+          return item.type && !item.type.startsWith("b-a-o");
+        }
+      }
+
+      return false;
+    },
+
+    // Granular overlay visibility control
+    toggleOverlayItems: function (
+      categoryName,
+      subcategoryKey,
+      itemUid,
+      visible
+    ) {
+      if (itemUid) {
+        // Single item
+        this.setItemVisibility(itemUid, visible);
+      } else if (subcategoryKey) {
+        // All items in subcategory
+        this.sharedState.items.forEach((item) => {
+          if (this.matchesSubcategory(item, categoryName, subcategoryKey)) {
+            this.setItemVisibility(item.uid, visible);
+          }
+        });
+      } else if (categoryName) {
+        // All items in category
+        this.sharedState.items.forEach((item) => {
+          if (item.category === categoryName && !item.uid.endsWith("-fence")) {
+            this.setItemVisibility(item.uid, visible);
+          }
+        });
+      }
     },
 
     createEmergencyAlert: function (emergencyType) {

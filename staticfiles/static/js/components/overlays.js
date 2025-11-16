@@ -43,8 +43,7 @@ Vue.component("OverlaysList", {
         alarm_general: true,
       },
 
-      // Individual item visibility (uid -> boolean)
-      itemVisibility: {},
+      // Note: Individual item visibility is now stored directly on item.visible
     };
   },
 
@@ -68,7 +67,7 @@ Vue.component("OverlaysList", {
               key: "unit_f",
               category: "unit",
               subcategory: "f",
-              title: "دوست",
+              title: "خودی",
               items: this.getUnitsByAffiliation("f"),
               count: this.getUnitsByAffiliation("f").length,
             },
@@ -149,15 +148,8 @@ Vue.component("OverlaysList", {
   },
 
   watch: {
-    // Watch category visibility and propagate to toggleOverlay
-    categoryVisibility: {
-      handler(newValue) {
-        for (const [categoryName, active] of Object.entries(newValue)) {
-          this.toggleOverlay(categoryName, active);
-        }
-      },
-      deep: true,
-    },
+    // Note: Visibility is now handled directly in toggle methods, not via watch
+    // This watch is kept for backward compatibility but no longer needed
   },
 
   methods: {
@@ -169,8 +161,11 @@ Vue.component("OverlaysList", {
           items.push(item);
         }
       });
-      return items.sort((a, b) =>
-        (a.callsign || "").localeCompare(b.callsign || "", "fa")
+      return (
+        this.sharedState.ts &&
+        items.sort((a, b) =>
+          (a.callsign || "").localeCompare(b.callsign || "", "fa")
+        )
       );
     },
 
@@ -182,7 +177,7 @@ Vue.component("OverlaysList", {
           count++;
         }
       });
-      return count;
+      return this.sharedState.ts && count;
     },
 
     // Get affiliation from CoT type (character at position 2)
@@ -203,8 +198,11 @@ Vue.component("OverlaysList", {
           }
         }
       });
-      return units.sort((a, b) =>
-        (a.callsign || "").localeCompare(b.callsign || "", "fa")
+      return (
+        this.sharedState.ts &&
+        units.sort((a, b) =>
+          (a.callsign || "").localeCompare(b.callsign || "", "fa")
+        )
       );
     },
 
@@ -228,8 +226,11 @@ Vue.component("OverlaysList", {
           }
         }
       });
-      return alarms.sort((a, b) =>
-        (a.callsign || "").localeCompare(b.callsign || "", "fa")
+      return (
+        this.sharedState.ts &&
+        alarms.sort((a, b) =>
+          (a.callsign || "").localeCompare(b.callsign || "", "fa")
+        )
       );
     },
 
@@ -258,15 +259,18 @@ Vue.component("OverlaysList", {
           this.subcategoryVisibility[sub.key] = newState;
           // Cascade to all items in subcategory
           sub.items.forEach((item) => {
-            this.$set(this.itemVisibility, item.uid, newState);
+            item.visible = newState;
           });
         });
       } else {
         // Cascade to all items directly
         category.items.forEach((item) => {
-          this.itemVisibility[item.uid] = newState;
+          item.visible = newState;
         });
       }
+
+      // Actually control the markers on the map
+      this.toggleOverlayItems(categoryName, null, null, newState);
     },
 
     // Toggle subcategory visibility with cascading
@@ -282,23 +286,30 @@ Vue.component("OverlaysList", {
 
       // Cascade to all items
       subcat.items.forEach((item) => {
-        this.$set(this.itemVisibility, item.uid, newState);
+        item.visible = newState;
       });
 
       // Update parent category state
       this.updateParentCategoryState(categoryName);
+
+      this.toggleOverlayItems(categoryName, key, null, newState);
     },
 
     // Toggle individual item visibility
     toggleItemVisibility(uid, categoryName, subcategoryKey) {
-      const newState = !this.itemVisibility[uid];
-      this.$set(this.itemVisibility, uid, newState);
+      const item = this.sharedState.items.get(uid);
+      if (!item) return;
+
+      const newState = !item.visible;
+      item.visible = newState;
 
       // Update parent states
       if (subcategoryKey) {
         this.updateSubcategoryState(subcategoryKey, categoryName);
       }
       this.updateParentCategoryState(categoryName);
+
+      this.toggleOverlayItems(null, null, uid, newState);
     },
 
     // Update subcategory state based on its items
@@ -313,9 +324,7 @@ Vue.component("OverlaysList", {
         return;
       }
 
-      const allChecked = subcat.items.every(
-        (item) => this.itemVisibility[item.uid] !== false
-      );
+      const allChecked = subcat.items.every((item) => item.visible);
 
       this.subcategoryVisibility[key] = allChecked;
     },
@@ -337,9 +346,7 @@ Vue.component("OverlaysList", {
           this.categoryVisibility[categoryName] = true;
           return;
         }
-        const allItemsChecked = category.items.every(
-          (item) => this.itemVisibility[item.uid] !== false
-        );
+        const allItemsChecked = category.items.every((item) => item.visible);
         this.categoryVisibility[categoryName] = allItemsChecked;
       }
     },
@@ -359,9 +366,7 @@ Vue.component("OverlaysList", {
         );
         return anySubcategoryChecked ? "indeterminate" : "unchecked";
       } else {
-        const anyItemChecked = category.items.some(
-          (item) => this.itemVisibility[item.uid] !== false
-        );
+        const anyItemChecked = category.items.some((item) => item.visible);
         return anyItemChecked ? "indeterminate" : "unchecked";
       }
     },
@@ -376,9 +381,7 @@ Vue.component("OverlaysList", {
       }
 
       // Check for indeterminate state
-      const anyItemChecked = subcat.items.some(
-        (item) => this.itemVisibility[item.uid] !== false
-      );
+      const anyItemChecked = subcat.items.some((item) => item.visible);
       return anyItemChecked ? "indeterminate" : "unchecked";
     },
 
@@ -387,12 +390,23 @@ Vue.component("OverlaysList", {
       this.$emit("select-item", item);
     },
 
-    // Initialize item visibility from current state
+    // Initialize category and subcategory visibility from item states
     initializeItemVisibility() {
+      // Ensure all items have a visibility state (default to true)
       this.sharedState.items.forEach((item) => {
-        if (this.itemVisibility[item.uid] === undefined) {
-          this.$set(this.itemVisibility, item.uid, true);
+        if (item.visible === undefined) {
+          item.visible = true;
         }
+      });
+
+      // Update parent states based on actual item visibility
+      this.treeStructure.forEach((category) => {
+        if (category.hasSubcategories) {
+          category.subcategories.forEach((subcat) => {
+            this.updateSubcategoryState(subcat.key, category.name);
+          });
+        }
+        this.updateParentCategoryState(category.name);
       });
     },
   },
@@ -402,7 +416,7 @@ Vue.component("OverlaysList", {
   },
 
   props: {
-    toggleOverlay: {
+    toggleOverlayItems: {
       type: Function,
       required: true,
     },
@@ -519,20 +533,19 @@ Vue.component("OverlaysList", {
                       :key="item.uid"
                       class="tree-item"
                       :class="{ 'active-item': item.uid === activeItemUid }"
-                      @click.stop="selectItem(item)"
                     >
                       <div class="node-content">
                         <!-- Item Checkbox -->
                         <input
                           type="checkbox"
                           class="form-check-input me-2"
-                          :checked="itemVisibility[item.uid] !== false"
+                          :checked="item.visible"
                           @change="toggleItemVisibility(item.uid, category.name, subcategory.key)"
                           @click.stop=""
                         />
                         
                         <!-- Item Callsign -->
-                        <span class="item-callsign">{{ item.callsign || 'بدون نام' }}</span>
+                        <span class="item-callsign" @click.stop="selectItem(item)">{{ item.callsign || 'بدون نام' }}</span>
                       </div>
                     </div>
                   </div>
@@ -553,7 +566,7 @@ Vue.component("OverlaysList", {
                     <input
                       type="checkbox"
                       class="form-check-input me-2"
-                      :checked="itemVisibility[item.uid] !== false"
+                      :checked="item.visible"
                       @change="toggleItemVisibility(item.uid, category.name)"
                       @click.stop=""
                     />

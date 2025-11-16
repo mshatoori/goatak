@@ -148,7 +148,7 @@ Vue.component("Sidebar", {
   },
 
   props: [
-    "toggleOverlay",
+    "toggleOverlayItems",
     "config",
     "coords",
     "configUpdated",
@@ -174,7 +174,7 @@ Vue.component("Sidebar", {
           aria-labelledby="v-pills-overlays-tab"
         >
           <overlays-list
-            :toggle-overlay="toggleOverlay"
+            :toggle-overlay-items="toggleOverlayItems"
             :active-item-uid="activeItem ? activeItem.uid : null"
             :map="map"
             @select-item="handleOverlayItemSelected"
