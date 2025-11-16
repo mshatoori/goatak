@@ -35,3 +35,4 @@ frontend/.vite/
 .env
 .env
 front/node_modules/
+setup/config/goatak_client.yml.bak
