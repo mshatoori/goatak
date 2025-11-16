@@ -11,6 +11,7 @@ Vue.component("OverlaysList", {
         point: false,
         drawing: false,
         route: false,
+        report: false,
       },
 
       // Track expanded state for subcategories (key format: "category_subcategory")
@@ -31,6 +32,7 @@ Vue.component("OverlaysList", {
         point: true,
         drawing: true,
         route: true,
+        report: true,
       },
 
       // Subcategory visibility (key format: "category_subcategory")
@@ -142,6 +144,13 @@ Vue.component("OverlaysList", {
           hasSubcategories: false,
           items: this.getItemsByCategory("route"),
           count: this.countItems("route"),
+        },
+        {
+          name: "report",
+          title: "درخواست‌های امداد",
+          hasSubcategories: false,
+          items: this.getItemsByCategory("report"),
+          count: this.countItems("report"),
         },
       ];
     },
