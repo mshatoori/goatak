@@ -39,15 +39,21 @@ func addSensorHandler(app *App) air.Handler {
 			f.UID = uuid.New().String()
 		}
 
-		if app.DB != nil {
-			if err := app.saveSensorToDatabase(f); err != nil {
-				app.logger.Error("failed to save sensor to database", "error", err)
-				// Continue without saving to DB? Or return error?
-				// For now, return error
-				return err
-			}
-		} else {
-			app.logger.Warn("database not available, sensor configuration not persisted")
+		// Add sensor to config and save
+		sensorConfig := SensorConfig{
+			Title:    f.Title,
+			UID:      f.UID,
+			Addr:     f.Addr,
+			Port:     f.Port,
+			Type:     f.Type,
+			Interval: f.Interval,
+		}
+		app.configManager.AddSensor(app.config, sensorConfig)
+
+		// Save config to file
+		if err := app.configManager.Save(*app.config); err != nil {
+			app.logger.Error("failed to save sensor to config file", "error", err)
+			return err
 		}
 
 		var newSensor sensors.BaseSensor
@@ -139,12 +145,20 @@ func editSensorHandler(app *App) air.Handler {
 		updatedSensor.Initialize()
 		go updatedSensor.Start(app.sensorCallback)
 
-		if app.DB != nil {
-			if err := app.saveSensorToDatabase(updatedSensorModel); err != nil {
-				app.logger.Error("failed to update sensor in database", "error", err)
-			}
-		} else {
-			app.logger.Warn("database not available, sensor configuration not persisted")
+		// Update sensor in config and save
+		sensorConfig := SensorConfig{
+			Title:    updatedSensorModel.Title,
+			UID:      updatedSensorModel.UID,
+			Addr:     updatedSensorModel.Addr,
+			Port:     updatedSensorModel.Port,
+			Type:     updatedSensorModel.Type,
+			Interval: updatedSensorModel.Interval,
+		}
+		app.configManager.UpdateSensor(app.config, uid, sensorConfig)
+
+		// Save config to file
+		if err := app.configManager.Save(*app.config); err != nil {
+			app.logger.Error("failed to save updated sensor to config file", "error", err)
 		}
 
 		return res.WriteJSON(getSensors(app))
@@ -175,14 +189,12 @@ func deleteSensorHandler(app *App) air.Handler {
 		if sensorIdx == -1 {
 			res.Status = 404
 		} else {
-			if app.DB != nil {
-				if err := app.deleteSensorFromDatabase(uid); err != nil {
-					app.logger.Error("failed to delete sensor from database", "error", err)
-					// Continue with deletion from memory even if DB deletion fails?
-					// For now, continue
-				}
-			} else {
-				app.logger.Warn("database not available, sensor configuration not deleted from persistence")
+			// Remove sensor from config and save
+			app.configManager.RemoveSensor(app.config, uid)
+
+			// Save config to file
+			if err := app.configManager.Save(*app.config); err != nil {
+				app.logger.Error("failed to save sensor deletion to config file", "error", err)
 			}
 
 			sensor := app.sensors[sensorIdx]

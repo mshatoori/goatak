@@ -34,3 +34,4 @@ frontend/.vite/
 # (.vscode/settings.json and .roo/mcp.json contain MCP setup)
 .env
 .env
+front/node_modules/

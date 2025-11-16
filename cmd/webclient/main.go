@@ -100,6 +100,9 @@ type App struct {
 	trackingService *tracking.TrackingService
 	dnsServiceProxy *dnsproxy.DnsServiceProxy
 	resendService   *resend.ResendService
+
+	config        *ApplicationConfig
+	configManager *ConfigManager
 }
 
 type CoTEventMutator struct {
@@ -229,7 +232,7 @@ func (app *App) Init() {
 }
 
 func (app *App) InitServices() {
-	dnsServiceURL := viper.GetString("dns_service.url")
+	dnsServiceURL := app.config.DnsServiceURL
 	app.dnsServiceProxy = dnsproxy.NewDnsServiceProxy(dnsServiceURL)
 
 	// Initialize resend service
@@ -252,38 +255,28 @@ func initFlowsSensorsAndConfig(app *App) {
 	dbPath := viper.GetString("database.path")
 	if dbPath == "" {
 		app.logger.Error("database.path not set in config")
-		app.loadFlowsFromConfig()
 		return
 	}
 
-	db, dbExists, err := app.initializeDatabase(dbPath)
+	db, _, err := app.initializeDatabase(dbPath)
 	if err != nil {
 		app.logger.Error("failed to initialize database", "error", err)
-		app.loadFlowsFromConfig()
 		return
 	}
 
 	app.DB = db
 
-	// Initialize database tables
+	// Initialize database tables (only for resend and tracking, not for flows/sensors)
 	if err := app.createDatabaseTables(db); err != nil {
 		app.logger.Error("failed to create database tables", "error", err)
-		app.loadFlowsFromConfig()
-		app.loadSensorsFromConfig()
 		return
 	}
 
-	// Load sensors from database
-	if err := app.loadSensorsFromDatabase(db); err != nil {
-		app.logger.Error("failed to load sensors from database", "error", err)
-		app.loadSensorsFromConfig()
-	}
+	// Load flows from config
+	app.loadFlowsFromConfig()
 
-	// Load config from database
-	app.loadConfigFromDatabase(db)
-
-	// Load flows from database or config
-	app.loadFlowsFromDatabaseOrConfig(db, dbExists)
+	// Load sensors from config
+	app.loadSensorsFromConfig()
 
 	// Create tracking tables if they don't exist
 	if err := app.createTrackingTables(db); err != nil {
@@ -313,7 +306,7 @@ func (app *App) Run(ctx context.Context) {
 
 	go app.cleaner()
 
-	app.logger.Debug("GPSD", "addr", viper.GetString("gpsd"))
+	app.logger.Debug("GPSD", "addr", app.config.Gpsd)
 
 	// Check if any GPS sensors were loaded from the database
 	hasExistingGPSSensor := false
@@ -326,7 +319,7 @@ func (app *App) Run(ctx context.Context) {
 
 	// If no GPS sensors were loaded from the database, create the default one from config
 	if !hasExistingGPSSensor {
-		if addr := viper.GetString("gpsd"); addr != "" {
+		if addr := app.config.Gpsd; addr != "" {
 			var gpsdSensor = &sensors.GpsdSensor{
 				Addr:         addr,
 				Conn:         nil,
@@ -337,7 +330,7 @@ func (app *App) Run(ctx context.Context) {
 				Interval:     time.Duration(15) * time.Second,
 				Ctx:          ctx,
 				Title:        "مکان‌یاب",
-				SerialPort:   viper.GetString("gps_port"),
+				SerialPort:   app.config.GpsPort,
 				TCPProxyAddr: "", // Disable TCP Proxy
 			}
 			app.sensors = append(app.sensors, gpsdSensor)
@@ -432,7 +425,7 @@ func (app *App) getTLSConfig() *tls.Config {
 		ClientCAs:    app.cas,
 	}
 
-	if !viper.GetBool("ssl.strict") {
+	if !app.config.SslStrict {
 		conf.InsecureSkipVerify = true
 	}
 
@@ -442,8 +435,8 @@ func (app *App) getTLSConfig() *tls.Config {
 func (app *App) createDefaultRabbitFlow() {
 	destinations := make([]model.SendItemDest, 1)
 	destinations[0] = model.SendItemDest{
-		Addr: viper.GetString("default_dest_ip"),
-		URN:  viper.GetInt("default_dest_urn"),
+		Addr: app.config.DefaultDestIP,
+		URN:  app.config.DefaultDestURN,
 	}
 
 	newFlow := client.NewRabbitFlow(&client.RabbitFlowConfig{
@@ -558,20 +551,31 @@ func main() {
 
 	slog.SetDefault(slog.New(h))
 
-	uid := viper.GetString("me.uid")
+	// Initialize ConfigManager and load configuration
+	configManager := NewConfigManager(*conf, slog.Default())
+	appConfig, err := configManager.Load(*conf)
+	if err != nil {
+		panic(fmt.Errorf("fatal error loading config: %w", err))
+	}
+
+	uid := appConfig.Me.Uid
 	if uid == "auto" || uid == "" {
-		uid = makeUID(viper.GetString("me.callsign"))
+		uid = makeUID(appConfig.Me.Callsign)
 	}
 
 	app := NewApp(
 		uid,
-		viper.GetString("me.callsign"),
-		viper.GetString("server_address"),
-		viper.GetInt("web_port"),
-		viper.GetString("map_server"),
-		viper.GetInt32("me.urn"),
-		viper.GetString("me.ip"),
+		appConfig.Me.Callsign,
+		appConfig.ServerAddress,
+		appConfig.WebPort,
+		appConfig.MapServer,
+		int32(appConfig.Me.Urn),
+		appConfig.Me.Ip,
 	)
+
+	// Store config and config manager in app
+	app.config = &appConfig
+	app.configManager = configManager
 
 	app.saveFile = *saveFile
 
@@ -579,35 +583,35 @@ func main() {
 		app.webPort = -1
 	}
 
-	app.pos.Store(model.NewPos(viper.GetFloat64("me.lat"), viper.GetFloat64("me.lon")))
-	app.zoom = int8(viper.GetInt("me.zoom"))
-	app.typ = viper.GetString("me.type")
-	app.team = viper.GetString("me.team")
-	app.role = viper.GetString("me.role")
+	app.pos.Store(model.NewPos(appConfig.Me.Lat, appConfig.Me.Lon))
+	app.zoom = int8(appConfig.Me.Zoom)
+	app.typ = appConfig.Me.Type
+	app.team = appConfig.Me.Team
+	app.role = appConfig.Me.Role
 
-	app.device = viper.GetString("me.device")
-	app.version = viper.GetString("me.version")
-	app.platform = viper.GetString("me.platform")
-	app.os = viper.GetString("me.os")
+	app.device = appConfig.Me.Device
+	app.version = appConfig.Me.Version
+	app.platform = appConfig.Me.Platform
+	app.os = appConfig.Me.OS
 
 	app.logger.Info("callsign: " + app.callsign)
 	app.logger.Info("uid: " + app.uid)
 	app.logger.Info("team: " + app.team)
 	app.logger.Info("role: " + app.role)
-	app.logger.Info("server: " + viper.GetString("server_address"))
+	app.logger.Info("server: " + app.config.ServerAddress)
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	if app.tls {
-		if user := viper.GetString("ssl.enroll_user"); user != "" {
-			passw := viper.GetString("ssl.enroll_password")
+		if user := app.config.SslEnrollUser; user != "" {
+			passw := app.config.SslEnrollPassword
 			if passw == "" {
 				fmt.Println("no enroll_password")
 
 				return
 			}
 
-			enr := client.NewEnroller(app.host, user, passw, viper.GetBool("ssl.save_cert"))
+			enr := client.NewEnroller(app.host, user, passw, app.config.SslSaveCert)
 
 			cert, cas, err := enr.GetOrEnrollCert(ctx, app.uid, app.GetVersion())
 			if err != nil {
@@ -619,9 +623,9 @@ func main() {
 			app.tlsCert = cert
 			app.cas = tlsutil.MakeCertPool(cas...)
 		} else {
-			app.logger.Info("loading cert from file " + viper.GetString("ssl.cert"))
+			app.logger.Info("loading cert from file " + app.config.SslCert)
 
-			cert, cas, err := client.LoadP12(viper.GetString("ssl.cert"), viper.GetString("ssl.password"))
+			cert, cas, err := client.LoadP12(app.config.SslCert, app.config.SslPassword)
 			if err != nil {
 				app.logger.Error("error while loading cert: " + err.Error())
 
