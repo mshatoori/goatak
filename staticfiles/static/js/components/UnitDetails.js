@@ -369,7 +369,7 @@ Vue.component("UnitDetails", {
             >
             <div class="col-sm-8">
               <label class="col-form-label"
-                >{{formatNumber(Utils.sp(item.speed))}} KM/H</label
+                >{{Utils.formatNumber(Utils.sp(item.speed))}} KM/H</label
               >
             </div>
           </div>

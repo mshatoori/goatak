@@ -186,7 +186,7 @@ function printCoords(lat, lng) {
   const lngSec = Math.round(((absLng - lngDeg) * 60 - lngMin) * 60);
 
   // Format numbers with Persian locale
-  const format = n => n.toLocaleString('fa-IR');
+  const format = (n) => n.toLocaleString("fa-IR");
 
   // Handle seconds overflow
   let finalLatMin = latMin;
@@ -281,9 +281,9 @@ function sp(v) {
 }
 
 function formatNumber(num, decimals = 0) {
-  return num.toLocaleString('fa-IR', {
+  return num.toLocaleString("fa-IR", {
     minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
+    maximumFractionDigits: decimals,
   });
 }
 
@@ -403,6 +403,7 @@ Vue.prototype.Utils = {
   latLongToIso6709: latLongToIso6709,
   needIconUpdate: needIconUpdate,
   humanReadableType: humanReadableType,
+  formatNumber: formatNumber,
 };
 
 L.Marker.RotatedMarker = L.Marker.extend({
