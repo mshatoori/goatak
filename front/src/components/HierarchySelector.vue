@@ -31,10 +31,10 @@
                 class="btn btn-link p-0 text-decoration-none"
                 @click="navigateToNode(node, index)"
               >
-                {{ node.name }} {{ node.code ? `(${node.code})` : '#' }}
+                {{ node.name }} {{ node.code ? `(${node.code})` : "#" }}
               </button>
               <span v-else aria-current="page">
-                {{ node.name }} {{ node.code ? `(${node.code})` : '#' }}
+                {{ node.name }} {{ node.code ? `(${node.code})` : "#" }}
               </span>
             </li>
           </ol>
@@ -50,8 +50,8 @@
             role="button"
           >
             <span
-              >{{ option.name }} {{ option.code ? `(${option.code})` : ''
-              }}</span
+              >{{ option.name }}
+              {{ option.code ? `(${option.code})` : "" }}</span
             >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -75,10 +75,10 @@
 </template>
 
 <script>
-import store from '../../store.js';
+import store from "../../static/js/store.js";
 
 export default {
-  name: 'HierarchySelector',
+  name: "HierarchySelector",
   props: {
     value: {
       type: String,
@@ -346,5 +346,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

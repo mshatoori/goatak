@@ -102,9 +102,7 @@
                   v-model="trailConfig.trailWidth"
                   @change="updateTrailConfig"
                 />
-                <small class="text-muted"
-                  >{{ trailConfig.trailWidth }}px</small
-                >
+                <small class="text-muted">{{ trailConfig.trailWidth }}px</small>
               </div>
               <div class="col-6">
                 <label class="form-label">شفافیت:</label>
@@ -154,8 +152,8 @@
         <div v-if="!trackingEnabled" class="text-muted">
           <small>
             <i class="bi bi-info-circle"></i>
-            ردگیری را فعال کنید تا مسیر حرکت این واحد روی نقشه ضبط و نمایش
-            داده شود.
+            ردگیری را فعال کنید تا مسیر حرکت این واحد روی نقشه ضبط و نمایش داده
+            شود.
           </small>
         </div>
       </div>
@@ -164,10 +162,8 @@
 </template>
 
 <script>
-import store from '../../store.js';
-
 export default {
-  name: 'UnitTrackingControl',
+  name: "UnitTrackingControl",
   props: ["unit", "trackingManager"],
   data() {
     return {
@@ -366,5 +362,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

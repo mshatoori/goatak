@@ -1,435 +1,443 @@
 <template>
-    <div class="card">
-      <!-- Header -->
-      <div class="card-header">
-        <span class="pull-left fw-bold" v-on:click.stop="mapToUnit(item)">
-          <img :src="milImg(renderedItem)" /> {{ getUnitName(renderedItem) }}
-          <span v-if="item.status"> ({{ item.status }}) </span>
-          <img
-            height="24"
-            src="/static/icons/coord_unlock.png"
-            v-if="locked_unit_uid != item.uid"
-            v-on:click.stop="locked_unit_uid=item.uid"
-          />
-          <img
-            height="24"
-            src="/static/icons/coord_lock.png"
-            v-if="locked_unit_uid == item.uid"
-            v-on:click.stop="locked_unit_uid=''"
-          />
-        </span>
-        <span class="pull-right" v-if="!editing && !isContact">
-          <button
-            type="button"
-            class="btn btn-sm btn-primary"
-            v-on:click.stop="startEditing"
-          >
-            <i class="bi bi-pencil-square"></i>
-          </button>
-          <button
-            type="button"
-            class="btn btn-sm btn-danger"
-            v-on:click.stop="deleteItem()"
-          >
-            <i class="bi bi-trash3-fill"></i>
-          </button>
-        </span>
-        <span class="pull-right" v-if="isContact"
-          ><button
-            type="button"
-            class="btn btn-sm btn-primary"
-            v-on:click.stop="openChat(item.uid, item.callsign);"
-          >
-            <i class="bi bi-chat-text-fill"></i></button
-        ></span>
-      </div>
+  <div class="card">
+    <!-- Header -->
+    <div class="card-header">
+      <span class="pull-left fw-bold" v-on:click.stop="mapToUnit(item)">
+        <img :src="milImg(renderedItem)" /> {{ getUnitName(renderedItem) }}
+        <span v-if="item.status"> ({{ item.status }}) </span>
+        <img
+          height="24"
+          src="/static/icons/coord_unlock.png"
+          v-if="locked_unit_uid != item.uid"
+          v-on:click.stop="locked_unit_uid = item.uid"
+        />
+        <img
+          height="24"
+          src="/static/icons/coord_lock.png"
+          v-if="locked_unit_uid == item.uid"
+          v-on:click.stop="locked_unit_uid = ''"
+        />
+      </span>
+      <span class="pull-right" v-if="!editing && !isContact">
+        <button
+          type="button"
+          class="btn btn-sm btn-primary"
+          v-on:click.stop="startEditing"
+        >
+          <i class="bi bi-pencil-square"></i>
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-danger"
+          v-on:click.stop="deleteItem()"
+        >
+          <i class="bi bi-trash3-fill"></i>
+        </button>
+      </span>
+      <span class="pull-right" v-if="isContact"
+        ><button
+          type="button"
+          class="btn btn-sm btn-primary"
+          v-on:click.stop="openChat(item.uid, item.callsign)"
+        >
+          <i class="bi bi-chat-text-fill"></i></button
+      ></span>
+    </div>
 
-      <!-- Unit View (non-editing mode) -->
-      <div class="card-body" v-if="!editing">
-        <dl>
+    <!-- Unit View (non-editing mode) -->
+    <div class="card-body" v-if="!editing">
+      <dl>
+        <div class="form-group row">
+          <label
+            for="input-UID"
+            class="col-sm-4 col-form-label font-weight-bold"
+            ><strong>UID</strong></label
+          >
+          <div class="col-sm-8">
+            <label class="col-form-label">{{ item.uid }}</label>
+          </div>
+        </div>
+        <template v-if="item.team">
           <div class="form-group row">
             <label
-              for="input-UID"
+              for="input-team"
               class="col-sm-4 col-form-label font-weight-bold"
-              ><strong>UID</strong></label
+              ><strong>تیم</strong></label
             >
             <div class="col-sm-8">
-              <label class="col-form-label">{{item.uid}}</label>
+              <label class="col-form-label">{{ item.team }}</label>
             </div>
           </div>
-          <template v-if="item.team">
-            <div class="form-group row">
-              <label
-                for="input-team"
-                class="col-sm-4 col-form-label font-weight-bold"
-                ><strong>تیم</strong></label
-              >
-              <div class="col-sm-8">
-                <label class="col-form-label">{{item.team}}</label>
-              </div>
-            </div>
-            <div class="form-group row">
-              <label
-                for="input-role"
-                class="col-sm-4 col-form-label font-weight-bold"
-                ><strong>نقش</strong></label
-              >
-              <div class="col-sm-8">
-                <label class="col-form-label">{{item.role}}</label>
-              </div>
-            </div>
-          </template>
           <div class="form-group row">
             <label
-              for="input-type"
+              for="input-role"
               class="col-sm-4 col-form-label font-weight-bold"
-              ><strong>نوع</strong></label
+              ><strong>نقش</strong></label
             >
             <div class="col-sm-8">
-              <label class="col-form-label"
-                >{{Utils.humanReadableType(item.type)}}</label
-              >
+              <label class="col-form-label">{{ item.role }}</label>
             </div>
           </div>
+        </template>
+        <div class="form-group row">
+          <label
+            for="input-type"
+            class="col-sm-4 col-form-label font-weight-bold"
+            ><strong>نوع</strong></label
+          >
+          <div class="col-sm-8">
+            <label class="col-form-label">{{
+              Utils.humanReadableType(item.type)
+            }}</label>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label font-weight-bold"
+            ><strong>مختصات</strong></label
+          >
+          <div class="col-sm-8">
+            <label class="col-form-label"
+              >{{ Utils.printCoords(item.lat, item.lon) }}
+              <span
+                class="badge rounded-pill bg-success"
+                style="cursor: default"
+                v-on:click="map.setView([item.lat, item.lon])"
+                ><i class="bi bi-geo"></i
+              ></span>
+              <span v-if="coords"
+                >({{
+                  Utils.distBea(Utils.latlng(item.lat, item.lon), coords)
+                }}
+                تا نشانگر)</span
+              ></label
+            >
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label font-weight-bold"
+            ><strong>سرعت</strong></label
+          >
+          <div class="col-sm-8">
+            <label class="col-form-label"
+              >{{ formatNumber(Utils.sp(item.speed)) }} KM/H</label
+            >
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label font-weight-bold"
+            ><strong>ارتفاع</strong></label
+          >
+          <div class="col-sm-8">
+            <label class="col-form-label">{{ item.hae.toFixed(1) }}</label>
+          </div>
+        </div>
+
+        <div v-if="item.parent_uid">
           <div class="form-group row">
             <label class="col-sm-4 col-form-label font-weight-bold"
-              ><strong>مختصات</strong></label
+              ><strong>سازنده</strong></label
             >
             <div class="col-sm-8">
               <label class="col-form-label"
-                >{{ Utils.printCoords(item.lat, item.lon) }}
-                <span
-                  class="badge rounded-pill bg-success"
-                  style="cursor:default;"
-                  v-on:click="map.setView([item.lat, item.lon])"
-                  ><i class="bi bi-geo"></i
-                ></span>
-                <span v-if="coords"
-                  >({{ Utils.distBea(Utils.latlng(item.lat, item.lon), coords)
-                  }} تا نشانگر)</span
+                >{{ item.parent_uid
+                }}<span v-if="item.parent_callsign"
+                  >({{ item.parent_callsign }})</span
                 ></label
               >
             </div>
           </div>
-          <div class="form-group row">
-            <label class="col-sm-4 col-form-label font-weight-bold"
-              ><strong>سرعت</strong></label
-            >
-            <div class="col-sm-8">
-              <label class="col-form-label"
-                >{{formatNumber(Utils.sp(item.speed))}} KM/H</label
-              >
-            </div>
-          </div>
-          <div class="form-group row">
-            <label class="col-sm-4 col-form-label font-weight-bold"
-              ><strong>ارتفاع</strong></label
-            >
-            <div class="col-sm-8">
-              <label class="col-form-label">{{item.hae.toFixed(1)}}</label>
-            </div>
-          </div>
-
-          <div v-if="item.parent_uid">
-            <div class="form-group row">
-              <label class="col-sm-4 col-form-label font-weight-bold"
-                ><strong>سازنده</strong></label
-              >
-              <div class="col-sm-8">
-                <label class="col-form-label"
-                  >{{ item.parent_uid }}<span v-if="item.parent_callsign"
-                    >({{ item.parent_callsign }})</span
-                  ></label
-                >
-              </div>
-            </div>
-          </div>
-          <div class="form-group row">
-            <label class="col-sm-4 col-form-label font-weight-bold"
-              ><strong>زمان ایجاد</strong></label
-            >
-            <div class="col-sm-8">
-              <label class="col-form-label"
-                >{{ Utils.dt(item.start_time) }}</label
-              >
-            </div>
-          </div>
-          <div class="form-group row">
-            <label class="col-sm-4 col-form-label font-weight-bold"
-              ><strong>زمان ارسال</strong></label
-            >
-            <div class="col-sm-8">
-              <label class="col-form-label"
-                >{{ Utils.dt(item.send_time) }}</label
-              >
-            </div>
-          </div>
-          <div class="form-group row">
-            <label class="col-sm-4 col-form-label font-weight-bold"
-              ><strong>زمان انقضا</strong></label
-            >
-            <div class="col-sm-8">
-              <label class="col-form-label"
-                >{{ Utils.dt(item.stale_time) }}</label
-              >
-            </div>
-          </div>
-        </dl>
-        <div v-if="Object.keys(item.sensor_data || {}).length > 0">
-          <h6>آخرین داده‌های سنسور</h6>
-          <table class="table" style="table-layout: fixed">
-            <tr v-for="(value, key) in item.sensor_data">
-              <td class="col-3">{{key}}</td>
-              <td
-                class="col-9"
-                style="text-overflow: ellipsis;white-space: nowrap;overflow: hidden;"
-                :title="value"
-              >
-                {{value}}
-              </td>
-            </tr>
-          </table>
         </div>
-        <div class="form-group row">{{ item.text }}</div>
-
-        <!-- Navigation Info Component -->
-        <navigation-info
-          v-if="!editing"
-          :target-item="item"
-          :user-position="config"
-          @navigation-line-toggle="$emit('navigation-line-toggle', $event)"
-        ></navigation-info>
-
-        <!-- Unit Tracking Control Component -->
-        <unit-tracking-control
-          v-if="!editing && item.category === 'unit'"
-          :unit="item"
-          :tracking-manager="$root.trackingManager"
-        ></unit-tracking-control>
-      </div>
-
-      <!-- Unit Edit Form -->
-      <div class="card-body" v-if="editing">
-        <form>
-          <div class="form-group row mb-3">
-            <label for="edit-callsign" class="col-sm-4 col-form-label"
-              >شناسه</label
-            >
-            <div class="col-sm-8">
-              <input
-                type="text"
-                class="form-control"
-                id="edit-callsign"
-                v-model="editingData.callsign"
-              />
-            </div>
-          </div>
-          <div class="form-group row mb-3">
-            <label for="edit-aff" class="col-sm-4 col-form-label">طرف</label>
-            <div class="col-sm-8">
-              <select
-                class="form-select"
-                id="edit-aff"
-                v-model="editingData.aff"
-              >
-                <option value="h">دشمن</option>
-                <option value="f">خودی</option>
-                <option value="n">خنثی</option>
-                <option value="u">نامعلوم</option>
-                <option value="s">مشکوک</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-group row my-2 mx-2">
-            <div class="col-12">
-              <label class="my-1 mr-2">نوع</label>
-              <hierarchy-selector v-model="editingData.subtype" />
-            </div>
-          </div>
-          <div class="form-group row mb-3">
-            <label for="edit-remarks" class="col-sm-4 col-form-label"
-              >توضیحات</label
-            >
-            <div class="col-sm-8">
-              <textarea
-                class="form-control"
-                id="edit-remarks"
-                rows="3"
-                v-model="editingData.text"
-              ></textarea>
-            </div>
-          </div>
-          <div class="form-group row mb-3">
-            <label for="edit-stale-duration" class="col-sm-4 col-form-label"
-              >مدت انقضا (ساعت)</label
-            >
-            <div class="col-sm-8">
-              <input
-                type="number"
-                class="form-control"
-                id="edit-stale-duration"
-                v-model.number="editingData.stale_duration"
-                min="1"
-                max="168"
-                step="1"
-              />
-            </div>
-          </div>
-          <!-- Enhanced Destination Selection -->
-          <div class="form-group row mb-3">
-            <label class="col-sm-4 col-form-label">حالت ارسال</label>
-            <div class="col-sm-8">
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="send_mode"
-                  id="send_modeNone"
-                  value="none"
-                  v-model="editingData.send_mode"
-                />
-                <label class="form-check-label" for="send_modeNone">
-                  عدم ارسال
-                </label>
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="send_mode"
-                  id="send_modeBroadcast"
-                  value="broadcast"
-                  v-model="editingData.send_mode"
-                />
-                <label class="form-check-label" for="send_modeBroadcast">
-                  پخش عمومی
-                </label>
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="send_mode"
-                  id="send_modeSubnet"
-                  value="subnet"
-                  v-model="editingData.send_mode"
-                />
-                <label class="form-check-label" for="send_modeSubnet">
-                  ارسال به زیرشبکه
-                </label>
-              </div>
-              <div class="form-check">
-                <input
-                  class="form-check-input"
-                  type="radio"
-                  name="send_mode"
-                  id="send_modeDirect"
-                  value="direct"
-                  v-model="editingData.send_mode"
-                />
-                <label class="form-check-label" for="send_modeDirect">
-                  ارسال مستقیم
-                </label>
-              </div>
-            </div>
-          </div>
-
-          <!-- Subnet Selection (shown when send_mode === 'subnet') -->
-          <div
-            class="form-group row mb-3"
-            v-if="editingData.send_mode === 'subnet'"
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label font-weight-bold"
+            ><strong>زمان ایجاد</strong></label
           >
-            <label for="edit-subnet" class="col-sm-4 col-form-label"
-              >زیرشبکه</label
+          <div class="col-sm-8">
+            <label class="col-form-label">{{
+              Utils.dt(item.start_time)
+            }}</label>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label font-weight-bold"
+            ><strong>زمان ارسال</strong></label
+          >
+          <div class="col-sm-8">
+            <label class="col-form-label">{{ Utils.dt(item.send_time) }}</label>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label font-weight-bold"
+            ><strong>زمان انقضا</strong></label
+          >
+          <div class="col-sm-8">
+            <label class="col-form-label">{{
+              Utils.dt(item.stale_time)
+            }}</label>
+          </div>
+        </div>
+      </dl>
+      <div v-if="Object.keys(item.sensor_data || {}).length > 0">
+        <h6>آخرین داده‌های سنسور</h6>
+        <table class="table" style="table-layout: fixed">
+          <tr v-for="(value, key) in item.sensor_data">
+            <td class="col-3">{{ key }}</td>
+            <td
+              class="col-9"
+              style="
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+              "
+              :title="value"
+            >
+              {{ value }}
+            </td>
+          </tr>
+        </table>
+      </div>
+      <div class="form-group row">{{ item.text }}</div>
+
+      <!-- Navigation Info Component -->
+      <navigation-info
+        v-if="!editing"
+        :target-item="item"
+        :user-position="config"
+        @navigation-line-toggle="$emit('navigation-line-toggle', $event)"
+      ></navigation-info>
+
+      <!-- Unit Tracking Control Component -->
+      <unit-tracking-control
+        v-if="!editing && item.category === 'unit'"
+        :unit="item"
+        :tracking-manager="$root.trackingManager"
+      ></unit-tracking-control>
+    </div>
+
+    <!-- Unit Edit Form -->
+    <div class="card-body" v-if="editing">
+      <form>
+        <div class="form-group row mb-3">
+          <label for="edit-callsign" class="col-sm-4 col-form-label"
+            >شناسه</label
+          >
+          <div class="col-sm-8">
+            <input
+              type="text"
+              class="form-control"
+              id="edit-callsign"
+              v-model="editingData.callsign"
+            />
+          </div>
+        </div>
+        <div class="form-group row mb-3">
+          <label for="edit-aff" class="col-sm-4 col-form-label">طرف</label>
+          <div class="col-sm-8">
+            <select class="form-select" id="edit-aff" v-model="editingData.aff">
+              <option value="h">دشمن</option>
+              <option value="f">خودی</option>
+              <option value="n">خنثی</option>
+              <option value="u">نامعلوم</option>
+              <option value="s">مشکوک</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group row my-2 mx-2">
+          <div class="col-12">
+            <label class="my-1 mr-2">نوع</label>
+            <hierarchy-selector v-model="editingData.subtype" />
+          </div>
+        </div>
+        <div class="form-group row mb-3">
+          <label for="edit-remarks" class="col-sm-4 col-form-label"
+            >توضیحات</label
+          >
+          <div class="col-sm-8">
+            <textarea
+              class="form-control"
+              id="edit-remarks"
+              rows="3"
+              v-model="editingData.text"
+            ></textarea>
+          </div>
+        </div>
+        <div class="form-group row mb-3">
+          <label for="edit-stale-duration" class="col-sm-4 col-form-label"
+            >مدت انقضا (ساعت)</label
+          >
+          <div class="col-sm-8">
+            <input
+              type="number"
+              class="form-control"
+              id="edit-stale-duration"
+              v-model.number="editingData.stale_duration"
+              min="1"
+              max="168"
+              step="1"
+            />
+          </div>
+        </div>
+        <!-- Enhanced Destination Selection -->
+        <div class="form-group row mb-3">
+          <label class="col-sm-4 col-form-label">حالت ارسال</label>
+          <div class="col-sm-8">
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="send_mode"
+                id="send_modeNone"
+                value="none"
+                v-model="editingData.send_mode"
+              />
+              <label class="form-check-label" for="send_modeNone">
+                عدم ارسال
+              </label>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="send_mode"
+                id="send_modeBroadcast"
+                value="broadcast"
+                v-model="editingData.send_mode"
+              />
+              <label class="form-check-label" for="send_modeBroadcast">
+                پخش عمومی
+              </label>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="send_mode"
+                id="send_modeSubnet"
+                value="subnet"
+                v-model="editingData.send_mode"
+              />
+              <label class="form-check-label" for="send_modeSubnet">
+                ارسال به زیرشبکه
+              </label>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="radio"
+                name="send_mode"
+                id="send_modeDirect"
+                value="direct"
+                v-model="editingData.send_mode"
+              />
+              <label class="form-check-label" for="send_modeDirect">
+                ارسال مستقیم
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subnet Selection (shown when send_mode === 'subnet') -->
+        <div
+          class="form-group row mb-3"
+          v-if="editingData.send_mode === 'subnet'"
+        >
+          <label for="edit-subnet" class="col-sm-4 col-form-label"
+            >زیرشبکه</label
+          >
+          <div class="col-sm-8">
+            <select
+              class="form-select"
+              id="edit-subnet"
+              v-model="editingData.selected_subnet"
+            >
+              <option value="" disabled>زیرشبکه را انتخاب کنید</option>
+              <option
+                v-for="subnet in availableSubnets"
+                :key="subnet"
+                :value="subnet"
+              >
+                {{ subnet }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Direct Destination Selection (shown when send_mode === 'direct') -->
+        <div v-if="editingData.send_mode === 'direct'">
+          <div class="form-group row mb-3">
+            <label for="edit-urn" class="col-sm-4 col-form-label"
+              >URN (مخاطب)</label
             >
             <div class="col-sm-8">
               <select
                 class="form-select"
-                id="edit-subnet"
-                v-model="editingData.selected_subnet"
+                id="edit-urn"
+                v-model="editingData.selected_urn"
+                @change="onUrnSelected"
               >
-                <option value="" disabled>زیرشبکه را انتخاب کنید</option>
+                <option value="" disabled>URN را انتخاب کنید</option>
                 <option
-                  v-for="subnet in availableSubnets"
-                  :key="subnet"
-                  :value="subnet"
+                  v-for="contact in availableContacts"
+                  :key="contact.urn"
+                  :value="contact.urn"
                 >
-                  {{ subnet }}
+                  {{ contact.urn }} ({{ contact.callsign }})
                 </option>
               </select>
             </div>
           </div>
-
-          <!-- Direct Destination Selection (shown when send_mode === 'direct') -->
-          <div v-if="editingData.send_mode === 'direct'">
-            <div class="form-group row mb-3">
-              <label for="edit-urn" class="col-sm-4 col-form-label"
-                >URN (مخاطب)</label
+          <div class="form-group row mb-3">
+            <label for="edit-ip" class="col-sm-4 col-form-label">آدرس IP</label>
+            <div class="col-sm-8">
+              <select
+                class="form-select"
+                id="edit-ip"
+                v-model="editingData.selected_ip"
+                :disabled="!editingData.selected_urn"
               >
-              <div class="col-sm-8">
-                <select
-                  class="form-select"
-                  id="edit-urn"
-                  v-model="editingData.selected_urn"
-                  @change="onUrnSelected"
-                >
-                  <option value="" disabled>URN را انتخاب کنید</option>
-                  <option
-                    v-for="contact in availableContacts"
-                    :key="contact.urn"
-                    :value="contact.urn"
-                  >
-                    {{ contact.urn }} ({{ contact.callsign }})
-                  </option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group row mb-3">
-              <label for="edit-ip" class="col-sm-4 col-form-label"
-                >آدرس IP</label
-              >
-              <div class="col-sm-8">
-                <select
-                  class="form-select"
-                  id="edit-ip"
-                  v-model="editingData.selected_ip"
-                  :disabled="!editingData.selected_urn"
-                >
-                  <option value="" disabled>IP را انتخاب کنید</option>
-                  <option v-for="ip in availableIps" :key="ip" :value="ip">
-                    {{ ip }}
-                  </option>
-                </select>
-              </div>
+                <option value="" disabled>IP را انتخاب کنید</option>
+                <option v-for="ip in availableIps" :key="ip" :value="ip">
+                  {{ ip }}
+                </option>
+              </select>
             </div>
           </div>
-          <div class="d-flex justify-content-end">
-            <button
-              type="button"
-              class="btn btn-secondary me-2"
-              v-on:click="cancelEditing"
-            >
-              لغو
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              v-on:click="saveEditing"
-            >
-              ذخیره
-            </button>
-          </div>
-        </form>
-      </div>
+        </div>
+        <div class="d-flex justify-content-end">
+          <button
+            type="button"
+            class="btn btn-secondary me-2"
+            v-on:click="cancelEditing"
+          >
+            لغو
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            v-on:click="saveEditing"
+          >
+            ذخیره
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 </template>
 
 <script>
-import store from '../store.js';
-import { getMilIcon, humanReadableType, printCoords, distBea, latlng, sp, dt, formatNumber } from '../utils.js';
-import NavigationInfo from './NavigationInfo.vue';
-import UnitTrackingControl from './UnitTrackingControl.vue';
-import HierarchySelector from './HierarchySelector.vue';
+import store from "../../static/js/store.js";
+import {
+  getMilIcon,
+  humanReadableType,
+  printCoords,
+  distBea,
+  latlng,
+  sp,
+  dt,
+  formatNumber,
+} from "../../static/js/utils.js";
+import NavigationInfo from "./NavigationInfo.vue";
+import UnitTrackingControl from "./UnitTrackingControl.vue";
+import HierarchySelector from "./HierarchySelector.vue";
 
 export default {
   props: ["item", "coords", "map", "locked_unit_uid", "config"],
@@ -698,5 +706,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

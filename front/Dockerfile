@@ -1,4 +1,5 @@
-FROM node:alpine as build
+# Stage 1 - Build Stage
+FROM node:20-alpine as build
 
 WORKDIR /app
 
@@ -6,13 +7,29 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci --only=production
 
-# Copy source files
+# Copy all source files
 COPY . .
 
-# Expose the development server port
-EXPOSE 5173
+# Build the production bundle
+RUN npm run build
 
-# Start the development server
-CMD ["npm", "run", "dev", "--", "--host"]
+# Stage 2 - Production Stage
+FROM nginx:alpine
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Copy built files from build stage
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy static assets and templates (referenced by nginx.conf)
+COPY --from=build /app/static /usr/share/nginx/html/static
+COPY --from=build /app/templates /usr/share/nginx/html/templates
+
+# Expose port 80
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
