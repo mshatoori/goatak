@@ -1464,6 +1464,14 @@ let app = new Vue({
       }
     },
 
+    handleSelectOverlayItem: function (item) {
+      console.log("Overlay item selected@map", item);
+      if (item && item.uid) {
+        // Set the item as active and pan to it
+        this.setActiveItemUid(item.uid, true);
+      }
+    },
+
     showNavigationLine: function (targetItem, userPosition, navigationData) {
       // Clear any existing navigation line
       this.hideNavigationLine();

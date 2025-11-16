@@ -79,6 +79,19 @@ Vue.component("Sidebar", {
       console.log("Navigation line toggle@sidebar", event);
       this.$emit("navigation-line-toggle", event);
     },
+    handleOverlayItemSelected: function (item) {
+      console.log("Overlay item selected@sidebar", item);
+      // The parent (map.js) will handle setting the active item and panning
+      // We emit this so the map component can handle it
+      this.$emit("select-overlay-item", item);
+
+      // Also switch to item details tab to show the selected item
+      if (item && item.uid) {
+        this.$nextTick(() => {
+          this.switchTab("item-details", true);
+        });
+      }
+    },
   },
 
   watch: {
@@ -160,7 +173,12 @@ Vue.component("Sidebar", {
           role="tabpanel"
           aria-labelledby="v-pills-overlays-tab"
         >
-          <overlays-list :toggle-overlay="toggleOverlay"></overlays-list>
+          <overlays-list
+            :toggle-overlay="toggleOverlay"
+            :active-item-uid="activeItem ? activeItem.uid : null"
+            :map="map"
+            @select-item="handleOverlayItemSelected"
+          ></overlays-list>
         </div>
         <div
           v-if="config && config.callsign"
