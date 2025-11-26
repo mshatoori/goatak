@@ -1,33 +1,33 @@
 flows: []
 sensors:
-    - title: رادار!
-      addr: ""
-      port: 11111
-      uid: 71c9dda0-ef45-49e1-84d3-864185429802
-      type: Radar
-      interval: 5
-    - title: "111"
-      addr: 0.0.0.0
-      port: 123
-      uid: 009fca86-dc41-4200-9582-475750734b22
-      type: AIS
-      interval: 12
+  - title: رادار!
+    addr: ""
+    port: 11111
+    uid: 71c9dda0-ef45-49e1-84d3-864185429802
+    type: Radar
+    interval: 5
+  - title: a
+    addr: ""
+    port: 1234
+    uid: b9bae8a1-3ba2-483a-b3ff-0f09c0fcc038
+    type: AIS
+    interval: 5
 me:
-    callsign: نود ششم شبکه
-    lat: 35.777088
-    lon: 51.471548
-    zoom: 12
-    type: a-f-G-I-B
-    team: Blue
-    role: HQ
-    platform: GoATAK_client
-    version: unknown
-    urn: 6
-    ip: 192.168.11.6
-    uid: NODE6
-    os: ""
-    interval: 30
-    device: ""
+  callsign: نود ششم شبکه
+  lat: 35.777088
+  lon: 51.471548
+  zoom: 12
+  type: a-f-G-I-B
+  team: Blue
+  role: HQ
+  platform: GoATAK_client
+  version: unknown
+  urn: 6
+  ip: 192.168.11.6
+  uid: NODE6
+  os: ""
+  interval: 30
+  device: ""
 webport: 8080
 debug: false
 noweb: false
@@ -46,11 +46,11 @@ sslstrict: false
 defaultdestip: ""
 defaultdesturn: 0
 tracking:
-    enabled: false
-    defaulttraillength: 0
-    defaultupdateinterval: 0
-    defaulttrailcolor: ""
-    defaulttrailwidth: 0
+  enabled: false
+  defaulttraillength: 0
+  defaultupdateinterval: 0
+  defaulttrailcolor: ""
+  defaulttrailwidth: 0
 resend:
-    enabled: false
-    maxfiltersperconfig: 0
+  enabled: false
+  maxfiltersperconfig: 0

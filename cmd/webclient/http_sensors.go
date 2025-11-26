@@ -57,9 +57,8 @@ func addSensorHandler(app *App) air.Handler {
 		}
 
 		var newSensor sensors.BaseSensor
-		// TODO: Refactor with switch case
-		if f.Type == "GPS" || f.Type == "AIS" {
-			//gpsAddr := fmt.Sprintf("%s:%d", f.Addr, f.Port)
+		switch f.Type {
+		case "GPS":
 			newSensor = &sensors.GpsdSensor{
 				Addr:     fmt.Sprintf("%s:%d", f.Addr, f.Port),
 				Conn:     nil,
@@ -71,9 +70,11 @@ func addSensorHandler(app *App) air.Handler {
 				Ctx:      context.Background(),
 				Title:    f.Title,
 			}
-		} else if f.Type == "Radar" {
+		case "Radar":
 			newSensor = sensors.NewRadarSensor(f, app.logger.With("logger", "radar"))
-		} else {
+		case "AIS":
+			newSensor = sensors.NewAISSensor(f, app.logger.With("logger", "ais"))
+		default:
 			res.Status = 400
 			return res.WriteString(fmt.Sprintf("unsupported sensor type: %s", f.Type))
 		}
@@ -119,7 +120,8 @@ func editSensorHandler(app *App) air.Handler {
 
 		// Update the sensor's configuration
 		var updatedSensor sensors.BaseSensor
-		if updatedSensorModel.Type == "GPS" || updatedSensorModel.Type == "AIS" {
+		switch updatedSensorModel.Type {
+		case "GPS":
 			updatedSensor = &sensors.GpsdSensor{
 				Addr:     fmt.Sprintf("%s:%d", updatedSensorModel.Addr, updatedSensorModel.Port),
 				Conn:     nil,
@@ -131,11 +133,13 @@ func editSensorHandler(app *App) air.Handler {
 				Ctx:      context.Background(),
 				Title:    updatedSensorModel.Title,
 			}
-		} else if updatedSensorModel.Type == "Radar" {
+		case "Radar":
 			updatedSensor = sensors.NewRadarSensor(updatedSensorModel, app.logger.With("logger", "radar"))
 			updatedSensor.(*sensors.RadarSensor).UID = uid
-
-		} else {
+		case "AIS":
+			updatedSensor = sensors.NewAISSensor(updatedSensorModel, app.logger.With("logger", "ais"))
+			updatedSensor.(*sensors.AISSensor).UID = uid
+		default:
 			res.Status = 400
 			return res.WriteString(fmt.Sprintf("unsupported sensor type: %s", updatedSensorModel.Type))
 		}

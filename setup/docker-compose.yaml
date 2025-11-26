@@ -12,6 +12,8 @@ services:
       - "6970:6969/udp"
       - "1200:1100"
       - "1200:1100/udp"
+      - "1234:1234"
+      - "1234:1234/udp"
     volumes:
       - .:/workspace:cached
       - ./config/:/app/config/

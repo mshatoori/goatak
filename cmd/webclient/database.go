@@ -169,11 +169,11 @@ func (app *App) loadSensorsFromConfig() {
 // createSensorInstance creates a sensor instance from configuration
 func (app *App) createSensorInstance(sensorConfig *model.SensorModel) (sensors.BaseSensor, error) {
 	switch strings.ToLower(sensorConfig.Type) {
-	case "gps", "ais":
+	case "gps":
 		return &sensors.GpsdSensor{
 			Addr:     fmt.Sprintf("%s:%d", sensorConfig.Addr, sensorConfig.Port),
 			Conn:     nil,
-			Logger:   app.logger.With("logger", "gpsd"), // TODO: Make logger name dynamic
+			Logger:   app.logger.With("logger", "gpsd"),
 			Reader:   nil,
 			Type:     sensorConfig.Type,
 			UID:      sensorConfig.UID,
@@ -183,8 +183,9 @@ func (app *App) createSensorInstance(sensorConfig *model.SensorModel) (sensors.B
 			// SerialPort and TCPProxyAddr are not in SensorModel yet, need to consider how to handle sensor-specific configs
 		}, nil
 	case "radar":
-		// Assuming NewRadarSensor can take SensorModel and logger
-		return sensors.NewRadarSensor(sensorConfig, app.logger.With("logger", "radar")), nil // TODO: Make logger name dynamic
+		return sensors.NewRadarSensor(sensorConfig, app.logger.With("logger", "radar")), nil
+	case "ais":
+		return sensors.NewAISSensor(sensorConfig, app.logger.With("logger", "ais")), nil
 	default:
 		return nil, fmt.Errorf("unsupported sensor type: %s", sensorConfig.Type)
 	}

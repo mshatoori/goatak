@@ -65,7 +65,7 @@ type GpsdSensor struct {
 	Conn        net.Conn
 	Logger      *slog.Logger
 	Reader      *bufio.Reader
-	Type        string // Could be GPS or AIS
+	Type        string // GPS
 	UID         string
 	Interval    time.Duration
 	Ctx         context.Context
@@ -182,25 +182,6 @@ func (sensor *GpsdSensor) Start(cb func(data any)) {
 						Altsrc:      "GPS",
 					},
 				},
-			}
-			sensor.mu.Unlock()
-
-		case "AIS":
-			if sensor.Type != "AIS" {
-				continue
-			}
-
-			sensorData := make([]*cotproto.SensorData, 0)
-			sensorData = append(sensorData, &cotproto.SensorData{
-				SensorName: "AIS",
-				Value:      string(data),
-			})
-
-			sensor.mu.Lock()
-			sensor.latestEvent = &cotproto.CotEvent{
-				Uid:       "$self.ais",
-				StaleTime: cot.TimeToMillis(time.Now().Add(StaleTime)),
-				Detail:    &cotproto.Detail{SensorData: sensorData},
 			}
 			sensor.mu.Unlock()
 
