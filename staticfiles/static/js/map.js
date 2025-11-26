@@ -289,6 +289,11 @@ let app = new Vue({
         this.myInfoMarker.setLatLng([this.config.lat, this.config.lon]);
         this.myInfoMarker.setIcon(markerInfo);
       }
+      
+      // Update self marker tooltip if it exists
+      if (this.me && this.me.getTooltip()) {
+        this.me.setTooltipContent(selfPopup(this.config));
+      }
     },
     getConfig: function () {
       let vm = this;
@@ -311,6 +316,9 @@ let app = new Vue({
               })
             );
             vm.me.addTo(vm.map);
+            
+            // Add tooltip to self marker
+            vm.me.bindTooltip(selfPopup(vm.config));
 
             vm.configUpdated();
           }
@@ -861,6 +869,8 @@ let app = new Vue({
       this.me.setLatLng([u.lat, u.lon]);
       if (this.myInfoMarker) this.myInfoMarker.setLatLng([u.lat, u.lon]);
       if (u.course) this.me.setIconAngle(u.course);
+      // Update self marker tooltip with new coordinates
+      this.me.setTooltipContent(selfPopup(this.config));
     },
 
     processWS: function (u) {
@@ -947,7 +957,9 @@ let app = new Vue({
         unit.infoMarker.setIcon(markerInfo);
       }
       unit.marker.setLatLng([unit.lat, unit.lon]);
-      unit.marker.bindTooltip(popup(unit));
+      // Pass self coordinates for distance calculation
+      const selfCoords = this.config ? { lat: this.config.lat, lon: this.config.lon } : null;
+      unit.marker.bindTooltip(popup(unit, selfCoords, false));
     },
 
     setActiveItemUid: function (uid, follow) {

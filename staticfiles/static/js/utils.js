@@ -30,6 +30,21 @@ const roles = new Map([
   ["RTO", "R"],
 ]);
 
+// Tooltip field configuration - controls which fields are shown in marker tooltips
+const tooltipFieldConfig = {
+  callsign: true,           // Always show (bold)
+  humanReadableType: true,  // Use humanReadableType(item.type)
+  lastSeen: true,           // Format item.last_seen with dt()
+  distanceToSelf: true,     // Calculate using distBea(), needs access to self coords
+  // team: true,               // Show team + role
+  speed: true,              // Show if > 0
+  altitude: true,           // Show for air units (sidc[2] === 'A')
+  coordinates: true,        // lat/lon formatted
+  course: false,            // Heading in degrees
+  status: false,            // Online/Offline for contacts
+  text: true                // Remarks
+};
+
 function getIconUri(item, withText) {
   // TEMP:
   // if (item.team && item.role) {
@@ -300,17 +315,109 @@ function uuidv4() {
   );
 }
 
-function popup(item) {
-  let v = "<b>" + item.callsign + "</b><br/>";
-  if (item.team) v += item.team + " " + item.role + "<br/>";
-  if (item.speed && item.speed > 0)
-    v += "Speed: " + formatNumber(item.speed, 0) + " m/s<br/>";
-  if (item.sidc.charAt(2) === "A") {
-    v += "hae: " + formatNumber(item.hae, 0) + " m<br/>";
+/**
+ * Generate tooltip content for a map marker
+ * @param {Object} item - The item to generate tooltip for
+ * @param {Object} selfCoords - Optional self coordinates {lat, lon} for distance calculation
+ * @param {boolean} isSelf - Whether this is the self marker (skip distance calculation)
+ * @returns {string} HTML content for the tooltip
+ */
+function popup(item, selfCoords, isSelf) {
+  let v = "";
+  
+  // Callsign - always shown in bold
+  if (tooltipFieldConfig.callsign) {
+    v += "<b>" + item.callsign + "</b><br/>";
   }
-  v +=
-    '<span dir="ltr">' + latLongToIso6709(item.lat, item.lon) + "</span><br/>";
-  v += item.text.replaceAll("\n", "<br/>").replaceAll("; ", "<br/>");
+  
+  // Human readable type
+  if (tooltipFieldConfig.humanReadableType && item.type) {
+    const readableType = humanReadableType(item.type);
+    // Only show if it's different from the raw type (meaning we found a readable name)
+    if (readableType && readableType !== item.type) {
+      v += "نوع: " + readableType + "<br/>";
+    }
+  }
+  
+  // Last seen/update time
+  if (tooltipFieldConfig.lastSeen && item.last_seen) {
+    v += "آخرین آپدیت: " + dt(item.last_seen) + "<br/>";
+  }
+  
+  // Distance to self (only if not self marker and selfCoords provided)
+  if (tooltipFieldConfig.distanceToSelf && !isSelf && selfCoords &&
+      selfCoords.lat !== undefined && selfCoords.lon !== undefined) {
+    const selfPoint = { lat: selfCoords.lat, lng: selfCoords.lon };
+    const itemPoint = { lat: item.lat, lng: item.lon };
+    const distanceInfo = distBea(selfPoint, itemPoint);
+    v += "فاصله: " + distanceInfo + "<br/>";
+  }
+  
+  // Team and role
+  // if (tooltipFieldConfig.team && item.team) {
+  //   v += item.team;
+  //   if (item.role) {
+  //     v += " " + item.role;
+  //   }
+  //   v += "<br/>";
+  // }
+  
+  // Speed (only if > 0)
+  if (tooltipFieldConfig.speed && item.speed && item.speed > 0) {
+    v += "سرعت: " + formatNumber(item.speed * 3.6, 1) + " km/h<br/>";
+  }
+  
+  // Altitude (only for air units)
+  if (tooltipFieldConfig.altitude && item.sidc && item.sidc.charAt(2) === "A") {
+    v += "ارتفاع: " + formatNumber(item.hae, 0) + " m<br/>";
+  }
+  
+  // Heading/Course
+  if (tooltipFieldConfig.course && item.course && item.course > 0) {
+    v += "جهت: " + formatNumber(item.course, 0) + "°<br/>";
+  }
+  
+  // Status (for contacts)
+  if (tooltipFieldConfig.status && item.status) {
+    v += "وضعیت: " + item.status + "<br/>";
+  }
+  
+  
+  // Coordinates
+  if (tooltipFieldConfig.coordinates) {
+    v += '<span dir="ltr">' + latLongToIso6709(item.lat, item.lon) + "</span><br/>";
+  }
+  
+  // Text/Remarks
+  if (tooltipFieldConfig.text && item.text) {
+    v += item.text.replaceAll("\n", "<br/>").replaceAll("; ", "<br/>");
+  }
+  
+  return v;
+}
+
+/**
+ * Generate tooltip content for the self marker
+ * @param {Object} config - The config object with self information
+ * @returns {string} HTML content for the tooltip
+ */
+function selfPopup(config) {
+  let v = "<b>" + config.callsign + "</b><br/>";
+  
+  // Team and role if available
+  if (config.team) {
+    v += config.team;
+    if (config.role) {
+      v += " " + config.role;
+    }
+    v += "<br/>";
+  }
+  
+  // Coordinates
+  if (tooltipFieldConfig.coordinates) {
+    v += '<span dir="ltr">' + latLongToIso6709(config.lat, config.lon) + "</span><br/>";
+  }
+  
   return v;
 }
 
@@ -400,10 +507,12 @@ Vue.prototype.Utils = {
   toUri: toUri,
   uuidv4: uuidv4,
   popup: popup,
+  selfPopup: selfPopup,
   latLongToIso6709: latLongToIso6709,
   needIconUpdate: needIconUpdate,
   humanReadableType: humanReadableType,
   formatNumber: formatNumber,
+  tooltipFieldConfig: tooltipFieldConfig,
 };
 
 L.Marker.RotatedMarker = L.Marker.extend({
