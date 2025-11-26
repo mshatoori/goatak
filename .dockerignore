@@ -6,3 +6,5 @@ docker-compose.yaml
 dist
 *.tar
 setup/
+setup/tiles/*
+setup/tiles

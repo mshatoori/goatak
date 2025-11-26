@@ -3,6 +3,10 @@ Vue.component("OverlaysList", {
     return {
       sharedState: store.state,
 
+      // Search feature
+      searchQuery: '',
+      showSearchBar: false,
+
       // Track expanded state for categories
       expandedCategories: {
         contact: false,
@@ -50,6 +54,28 @@ Vue.component("OverlaysList", {
   },
 
   computed: {
+    // Search results computed property
+    searchResults() {
+      if (!this.searchQuery.trim()) return [];
+      const query = this.searchQuery.toLowerCase();
+      const results = [];
+      this.sharedState.items.forEach((item) => {
+        // Exclude fence items, only include items with callsign
+        if (!item.uid.endsWith('-fence') && item.callsign) {
+          if (item.callsign.toLowerCase().includes(query)) {
+            results.push(item);
+          }
+        }
+      });
+      return results.sort((a, b) =>
+        a.callsign.localeCompare(b.callsign, 'fa')
+      );
+    },
+    
+    isSearchMode() {
+      return this.searchQuery.trim().length > 0;
+    },
+
     // Build the tree structure from items
     treeStructure() {
       return [
@@ -162,6 +188,18 @@ Vue.component("OverlaysList", {
   },
 
   methods: {
+    // Search methods
+    toggleSearchBar() {
+      this.showSearchBar = !this.showSearchBar;
+      if (!this.showSearchBar) {
+        this.searchQuery = '';
+      }
+    },
+    
+    clearSearch() {
+      this.searchQuery = '';
+    },
+
     // Get items by category, excluding fence items
     getItemsByCategory(category) {
       const items = [];
@@ -441,9 +479,67 @@ Vue.component("OverlaysList", {
 
   template: `
     <div class="card overlay-manager-tree">
-      <h5 class="card-header">لایه‌ها</h5>
+      <h5 class="card-header d-flex justify-content-between align-items-center">
+        <span>لایه‌ها</span>
+        <button
+          class="btn btn-sm btn-outline-secondary"
+          @click="toggleSearchBar"
+          :class="{ 'active': showSearchBar }"
+          title="جستجو"
+        >
+          <i class="bi bi-search"></i>
+        </button>
+      </h5>
+      
+      <!-- Search Bar -->
+      <div v-show="showSearchBar" class="overlay-search-bar p-2 border-bottom">
+        <div class="input-group input-group-sm">
+          <input
+            type="text"
+            class="form-control"
+            v-model="searchQuery"
+            placeholder="جستجوی نام..."
+            @keyup.escape="clearSearch"
+          />
+          <button
+            v-if="searchQuery"
+            class="btn btn-outline-secondary"
+            type="button"
+            @click="clearSearch"
+          >
+            <i class="bi bi-x"></i>
+          </button>
+        </div>
+      </div>
+      
       <div class="card-body p-2">
-        <div class="tree-container">
+        <!-- Search Results Mode -->
+        <div v-if="isSearchMode" class="overlay-search-results">
+          <div v-if="searchResults.length === 0" class="text-muted text-center py-3">
+            <i class="bi bi-search me-2"></i>
+            نتیجه‌ای یافت نشد
+          </div>
+          <div v-else>
+            <div class="mb-2 text-muted small">
+              {{ searchResults.length }} نتیجه یافت شد
+            </div>
+            <div
+              v-for="item in searchResults"
+              :key="item.uid"
+              class="overlay-search-result-item"
+              :class="{ 'active-item': item.uid === activeItemUid }"
+              @click="selectItem(item)"
+            >
+              <div class="d-flex align-items-center">
+                <span class="item-callsign flex-grow-1">{{ item.callsign }}</span>
+                <span class="badge bg-secondary small">{{ item.category }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Tree View Mode -->
+        <div v-else class="tree-container">
           <!-- Render each category -->
           <div v-for="category in treeStructure" :key="category.name" class="tree-category mb-2">
             
@@ -588,6 +684,7 @@ Vue.component("OverlaysList", {
             </div>
             
           </div>
+        </div>
         </div>
       </div>
     </div>

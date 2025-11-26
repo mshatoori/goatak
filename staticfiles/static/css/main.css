@@ -619,3 +619,86 @@ resending-panel-container code {
 .overlay-manager-tree .tree-container::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+
+/* Overlay Search Feature Styles */
+.overlay-manager-tree .overlay-search-bar {
+  background-color: #f8f9fa;
+}
+
+.overlay-manager-tree .overlay-search-bar .form-control {
+  border-radius: 0.375rem 0 0 0.375rem;
+}
+
+.overlay-manager-tree .overlay-search-bar .btn {
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+.overlay-manager-tree .overlay-search-results {
+  max-height: 500px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.overlay-manager-tree .overlay-search-result-item {
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-bottom: 0.25rem;
+  border: 1px solid transparent;
+}
+
+.overlay-manager-tree .overlay-search-result-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.overlay-manager-tree .overlay-search-result-item.active-item {
+  background-color: rgba(13, 110, 253, 0.1);
+  border-color: #0d6efd;
+}
+
+.overlay-manager-tree .overlay-search-result-item .item-callsign {
+  font-weight: 500;
+}
+
+.overlay-manager-tree .overlay-search-result-item .badge {
+  font-size: 0.7rem;
+  font-weight: normal;
+}
+
+/* RTL Support for Search */
+[dir="rtl"] .overlay-manager-tree .overlay-search-bar .form-control {
+  border-radius: 0 0.375rem 0.375rem 0;
+}
+
+[dir="rtl"] .overlay-manager-tree .overlay-search-bar .btn {
+  border-radius: 0.375rem 0 0 0.375rem;
+}
+
+/* Search button active state */
+.overlay-manager-tree .card-header .btn.active {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: white;
+}
+
+/* Scrollbar styling for search results */
+.overlay-manager-tree .overlay-search-results::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overlay-manager-tree .overlay-search-results::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.overlay-manager-tree .overlay-search-results::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.overlay-manager-tree .overlay-search-results::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
