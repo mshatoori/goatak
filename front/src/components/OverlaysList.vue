@@ -75,7 +75,10 @@
             <div class="node-content">
               <!-- Expand/Collapse Icon -->
               <i
-                v-if="category.hasSubcategories || category.items.length > 0"
+                v-if="
+                  category.hasSubcategories ||
+                  (category.items && category.items.length > 0)
+                "
                 class="expand-icon bi me-1"
                 :class="
                   expandedCategories[category.name]
@@ -129,7 +132,7 @@
                   <div class="node-content">
                     <!-- Expand/Collapse Icon -->
                     <i
-                      v-if="subcategory.items.length > 0"
+                      v-if="subcategory.items && subcategory.items.length > 0"
                       class="expand-icon bi me-1"
                       :class="
                         expandedSubcategories[subcategory.key]
@@ -190,7 +193,7 @@
                   class="tree-children"
                 >
                   <div
-                    v-for="item in subcategory.items"
+                    v-for="item in subcategory.items || []"
                     :key="item.uid"
                     class="tree-item"
                     :class="{ 'active-item': item.uid === activeItemUid }"
@@ -226,7 +229,7 @@
             <!-- Direct Items (for categories without subcategories) -->
             <div v-else>
               <div
-                v-for="item in category.items"
+                v-for="item in category.items || []"
                 :key="item.uid"
                 class="tree-item"
                 :class="{ 'active-item': item.uid === activeItemUid }"
@@ -272,7 +275,7 @@ export default {
     },
     map: {
       type: Object,
-      required: true,
+      default: null,
     },
   },
   data() {
@@ -477,11 +480,8 @@ export default {
           items.push(item);
         }
       });
-      return (
-        this.sharedState.ts &&
-        items.sort((a, b) =>
-          (a.callsign || "").localeCompare(b.callsign || "", "fa")
-        )
+      return items.sort((a, b) =>
+        (a.callsign || "").localeCompare(b.callsign || "", "fa")
       );
     },
 
@@ -493,7 +493,7 @@ export default {
           count++;
         }
       });
-      return this.sharedState.ts && count;
+      return count;
     },
 
     // Get affiliation from CoT type (character at position 2)
@@ -514,11 +514,8 @@ export default {
           }
         }
       });
-      return (
-        this.sharedState.ts &&
-        units.sort((a, b) =>
-          (a.callsign || "").localeCompare(b.callsign || "", "fa")
-        )
+      return units.sort((a, b) =>
+        (a.callsign || "").localeCompare(b.callsign || "", "fa")
       );
     },
 
@@ -542,11 +539,8 @@ export default {
           }
         }
       });
-      return (
-        this.sharedState.ts &&
-        alarms.sort((a, b) =>
-          (a.callsign || "").localeCompare(b.callsign || "", "fa")
-        )
+      return alarms.sort((a, b) =>
+        (a.callsign || "").localeCompare(b.callsign || "", "fa")
       );
     },
 
@@ -574,15 +568,19 @@ export default {
         category.subcategories.forEach((sub) => {
           this.subcategoryVisibility[sub.key] = newState;
           // Cascade to all items in subcategory
-          sub.items.forEach((item) => {
-            item.visible = newState;
-          });
+          if (sub.items && Array.isArray(sub.items)) {
+            sub.items.forEach((item) => {
+              item.visible = newState;
+            });
+          }
         });
       } else {
         // Cascade to all items directly
-        category.items.forEach((item) => {
-          item.visible = newState;
-        });
+        if (category.items && Array.isArray(category.items)) {
+          category.items.forEach((item) => {
+            item.visible = newState;
+          });
+        }
       }
 
       // Actually control the markers on the map
@@ -601,9 +599,11 @@ export default {
       if (!subcat) return;
 
       // Cascade to all items
-      subcat.items.forEach((item) => {
-        item.visible = newState;
-      });
+      if (subcat.items && Array.isArray(subcat.items)) {
+        subcat.items.forEach((item) => {
+          item.visible = newState;
+        });
+      }
 
       // Update parent category state
       this.updateParentCategoryState(categoryName);
@@ -635,7 +635,11 @@ export default {
       const subcat = category.subcategories.find((s) => s.key === key);
       if (!subcat) return;
 
-      if (subcat.items.length === 0) {
+      if (
+        !subcat.items ||
+        !Array.isArray(subcat.items) ||
+        subcat.items.length === 0
+      ) {
         this.subcategoryVisibility[key] = true;
         return;
       }
@@ -658,7 +662,11 @@ export default {
         this.categoryVisibility[categoryName] = allSubcategoriesChecked;
       } else {
         // Check if all items are checked
-        if (category.items.length === 0) {
+        if (
+          !category.items ||
+          !Array.isArray(category.items) ||
+          category.items.length === 0
+        ) {
           this.categoryVisibility[categoryName] = true;
           return;
         }
@@ -682,6 +690,9 @@ export default {
         );
         return anySubcategoryChecked ? "indeterminate" : "unchecked";
       } else {
+        if (!category.items || !Array.isArray(category.items)) {
+          return "unchecked";
+        }
         const anyItemChecked = category.items.some((item) => item.visible);
         return anyItemChecked ? "indeterminate" : "unchecked";
       }
@@ -697,6 +708,9 @@ export default {
       }
 
       // Check for indeterminate state
+      if (!subcat.items || !Array.isArray(subcat.items)) {
+        return "unchecked";
+      }
       const anyItemChecked = subcat.items.some((item) => item.visible);
       return anyItemChecked ? "indeterminate" : "unchecked";
     },

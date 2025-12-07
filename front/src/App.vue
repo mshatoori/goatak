@@ -317,7 +317,7 @@ import {
   getIconUri,
   getMilIcon,
   getIcon,
-  circle,
+  selfPopup,
   dt,
   printCoordsll,
   printCoords,
