@@ -38,3 +38,5 @@ Uncaught TypeError: can't access property "_latLngToNewLayerPoint", this._map is
     mount runtime-dom.esm-bundler.js:1826
     <anonymous> main.js:59
 ```
+
+- آماده کنم، بدم برای این‌که چند نفر تستش کنن با تعداد زیاد سنسور.
