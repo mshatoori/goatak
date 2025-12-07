@@ -30,8 +30,6 @@ import (
 	"github.com/kdudkov/goatak/pkg/sensors"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/spf13/viper"
-
 	"github.com/kdudkov/goatak/internal/client"
 	"github.com/kdudkov/goatak/internal/dnsproxy"
 	"github.com/kdudkov/goatak/internal/repository"
@@ -252,9 +250,9 @@ func (app *App) InitServices() {
 }
 
 func initFlowsSensorsAndConfig(app *App) {
-	dbPath := viper.GetString("database.path")
+	dbPath := app.config.DbPath
 	if dbPath == "" {
-		app.logger.Error("database.path not set in config")
+		app.logger.Error("db_path not set in config")
 	} else {
 		db, _, err := app.initializeDatabase(dbPath)
 		if err != nil {

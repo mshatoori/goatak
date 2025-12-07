@@ -81,6 +81,7 @@ type ApplicationConfig struct {
 	DnsServiceURL     string `mapstructure:"dns_service.url" default:"http://dns.api"`
 	GpsPort           string `mapstructure:"gps_port" default:""`
 	MapServer         string `mapstructure:"map_server" default:"127.0.0.1:8000"`
+	DbPath            string `mapstructure:"db_path" default:"config/goatak.db"`
 	SslEnrollUser     string `mapstructure:"ssl.enroll_user,omitempty"`
 	SslEnrollPassword string `mapstructure:"ssl.enroll_password,omitempty"`
 	SslCert           string `mapstructure:"ssl.cert,omitempty"`
@@ -292,6 +293,7 @@ func (cm *ConfigManager) logConfig(cfg ApplicationConfig) {
 	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "GPS Port", truncate(cfg.GpsPort, 45)))
 	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Map Server", truncate(cfg.MapServer, 45)))
 	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "DNS Service URL", truncate(cfg.DnsServiceURL, 45)))
+	sb.WriteString(fmt.Sprintf("║ %-38s │ %-45s ║\n", "Database Path", truncate(cfg.DbPath, 45)))
 
 	// SSL Settings Section
 	sb.WriteString("╟────────────────────────────────────────┴───────────────────────────────────────────────╢\n")

@@ -46,7 +46,7 @@ sslstrict: false
 defaultdestip: ""
 defaultdesturn: 0
 tracking:
-  enabled: false
+  enabled: true
   defaulttraillength: 0
   defaultupdateinterval: 0
   defaulttrailcolor: ""
