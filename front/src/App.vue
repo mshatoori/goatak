@@ -453,7 +453,7 @@ export default {
     this.getRawMap().addControl(new ToolsControl());
 
     // Initialize TrackingManager
-    this.trackingManager = new TrackingManager(this.map, {
+    this.trackingManager = new TrackingManager(this.getRawMap(), {
       trailLength: 50,
       trailColor: "#FF0000",
       trailWidth: 2,
@@ -1603,7 +1603,7 @@ export default {
       if (this.tools.has(name)) {
         this.tools.get(name).setLatLng(coord);
       } else {
-        let p = new L.marker(coord).addTo(this.map);
+        let p = new L.marker(coord).addTo(this.getRawMap());
         if (icon) {
           p.setIcon(
             L.icon({
@@ -1734,7 +1734,7 @@ export default {
 
     getUnitName: function(u) {
       let res = u.callsign || "no name";
-      if (u.parent_uid === this.config.uid) {
+      if (this.config && u.parent_uid === this.config.uid) {
         if (u.send === true) {
           res = "+ " + res;
         } else {
@@ -1789,8 +1789,9 @@ export default {
         );
         return;
       }
-      if (!overlayActive) this.overlays[overlayName].removeFrom(this.map);
-      else this.overlays[overlayName].addTo(this.map);
+      if (!overlayActive)
+        this.overlays[overlayName].removeFrom(this.getRawMap());
+      else this.overlays[overlayName].addTo(this.getRawMap());
     },
 
     toggleOverlayItems: function(overlayName, overlayActive) {
@@ -1805,9 +1806,9 @@ export default {
 
       // Toggle overlay layer visibility
       if (!overlayActive) {
-        this.overlays[overlayName].removeFrom(this.map);
+        this.overlays[overlayName].removeFrom(this.getRawMap());
       } else {
-        this.overlays[overlayName].addTo(this.map);
+        this.overlays[overlayName].addTo(this.getRawMap());
       }
 
       // Update individual item visibility based on overlay state
