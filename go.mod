@@ -21,12 +21,12 @@ require (
 	gorm.io/gorm v1.25.9
 	modernc.org/sqlite v1.29.8
 	software.sslmate.com/src/go-pkcs12 v0.4.0
+	github.com/BertoldVdb/go-ais v0.4.0
 )
 
 require github.com/allegro/bigcache v1.2.1 // indirect
 
 require (
-	github.com/BertoldVdb/go-ais v0.4.0 // indirect
 	github.com/VictoriaMetrics/fastcache v1.12.2 // indirect
 	github.com/aofei/mimesniffer v1.2.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
