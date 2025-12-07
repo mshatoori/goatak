@@ -416,7 +416,7 @@ export default {
     };
 
     for (const overlay of Object.values(this.overlays)) {
-      overlay.addTo(this.getRawMap());
+      toRaw(overlay).addTo(this.getRawMap());
     }
 
     this.overlays.drawing.addLayer(this.drawnItems);
