@@ -17,10 +17,10 @@ import (
 const (
 	apiKey          = "410ed83aabd8f071b2dbfa28199d7c7f1506a650"
 	streamURL       = "wss://stream.aisstream.io/v0/stream"
-	boundingBoxLat1 = -90.0  //25.0
-	boundingBoxLon1 = -180.0 //43.0
-	boundingBoxLat2 = 90.0   // 40.0
-	boundingBoxLon2 = 180.0  //63.0
+	boundingBoxLat1 = 25.0
+	boundingBoxLon1 = 43.0
+	boundingBoxLat2 = 40.0
+	boundingBoxLon2 = 63.0
 	udpTarget       = "localhost:1234"
 )
 
