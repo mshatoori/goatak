@@ -1790,63 +1790,108 @@ export default {
         return;
       }
       if (!overlayActive)
-        this.overlays[overlayName].removeFrom(this.getRawMap());
-      else this.overlays[overlayName].addTo(this.getRawMap());
+        toRaw(this.overlays[overlayName]).removeFrom(this.getRawMap());
+      else toRaw(this.overlays[overlayName]).addTo(this.getRawMap());
     },
 
-    toggleOverlayItems: function(overlayName, overlayActive) {
-      // Enhanced overlay toggle with visibility controls
-      if (!this.overlays || !this.overlays[overlayName]) {
-        console.warn(
-          "Overlays not initialized yet, skipping toggle for:",
-          overlayName
-        );
+    toggleOverlayItems: function(categoryName, subcategoryKey, uid, newState) {
+      // Helper function to get affiliation from CoT type
+      const getAffiliationFromType = (type) => {
+        if (!type || type.length < 3) return "u";
+        const affCode = type.charAt(2);
+        return ["f", "h", "n", "u"].includes(affCode) ? affCode : "u";
+      };
+
+      // Helper function to check if item matches subcategory
+      const matchesSubcategory = (item, subKey, category) => {
+        if (!subKey) return true;
+
+        if (category === "unit") {
+          const affiliation = subKey.replace("unit_", "");
+          return getAffiliationFromType(item.type) === affiliation;
+        } else if (category === "alarm") {
+          const alarmType = subKey.replace("alarm_", "");
+          if (alarmType === "emergency") {
+            return item.type && item.type.startsWith("b-a-o");
+          } else if (alarmType === "general") {
+            return item.type && !item.type.startsWith("b-a-o");
+          }
+        }
+        return true;
+      };
+
+      // Helper function to toggle visibility of item markers
+      const toggleItemMarkers = (item, visible) => {
+        // Update marker visibility
+        if (item.marker) {
+          if (visible) {
+            item.marker.addTo(this.getItemOverlay(item));
+          } else {
+            this.getItemOverlay(item).removeLayer(item.marker);
+          }
+        }
+
+        // Update info marker visibility
+        if (item.infoMarker) {
+          if (visible) {
+            item.infoMarker.addTo(this.getItemOverlay(item));
+          } else {
+            this.getItemOverlay(item).removeLayer(item.infoMarker);
+          }
+        }
+
+        // Update text label visibility for drawings and routes
+        if (
+          item.textLabel &&
+          (item.category === "drawing" || item.category === "route")
+        ) {
+          if (visible) {
+            item.textLabel.addTo(this.getItemOverlay(item));
+          } else {
+            this.getItemOverlay(item).removeLayer(item.textLabel);
+          }
+        }
+      };
+
+      // Case 1: Toggle individual item
+      if (uid) {
+        const item = this.sharedState.items.get(uid);
+        if (item) {
+          toggleItemMarkers(item, newState);
+        }
         return;
       }
 
-      // Toggle overlay layer visibility
-      if (!overlayActive) {
-        this.overlays[overlayName].removeFrom(this.getRawMap());
-      } else {
-        this.overlays[overlayName].addTo(this.getRawMap());
-      }
+      // Case 2 & 3: Toggle category or subcategory
+      if (categoryName) {
+        // Ensure overlay exists
+        if (!this.overlays || !this.overlays[categoryName]) {
+          console.warn(
+            "Overlays not initialized yet, skipping toggle for:",
+            categoryName
+          );
+          return;
+        }
 
-      // Update individual item visibility based on overlay state
-      this.sharedState.items.forEach((item) => {
-        if (item.category === overlayName) {
-          item.visible = overlayActive;
-
-          // Update marker visibility on map
-          if (item.marker) {
-            if (overlayActive && item.visible !== false) {
-              item.marker.addTo(this.getItemOverlay(item));
-            } else {
-              this.getItemOverlay(item).removeLayer(item.marker);
-            }
-          }
-
-          // Update info marker visibility
-          if (item.infoMarker) {
-            if (overlayActive && item.visible !== false) {
-              item.infoMarker.addTo(this.getItemOverlay(item));
-            } else {
-              this.getItemOverlay(item).removeLayer(item.infoMarker);
-            }
-          }
-
-          // Update text label visibility for drawings and routes
-          if (
-            item.textLabel &&
-            (item.category === "drawing" || item.category === "route")
-          ) {
-            if (overlayActive && item.visible !== false) {
-              item.textLabel.addTo(this.getItemOverlay(item));
-            } else {
-              this.getItemOverlay(item).removeLayer(item.textLabel);
-            }
+        // Toggle overlay layer visibility if toggling entire category
+        if (!subcategoryKey) {
+          if (!newState) {
+            toRaw(this.overlays[categoryName]).removeFrom(this.getRawMap());
+          } else {
+            toRaw(this.overlays[categoryName]).addTo(this.getRawMap());
           }
         }
-      });
+
+        // Update individual item visibility
+        this.sharedState.items.forEach((item) => {
+          if (item.category === categoryName) {
+            // Check if item matches the subcategory filter (if provided)
+            if (matchesSubcategory(item, subcategoryKey, categoryName)) {
+              toggleItemMarkers(item, newState);
+            }
+          }
+        });
+      }
     },
 
     handleOverlayItemSelected: function(item) {
