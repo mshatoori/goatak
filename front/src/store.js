@@ -1,8 +1,9 @@
-import { cleanUnit } from "./utils.js";
+import { reactive } from "vue";
+import { cleanUnit, uuidv4 } from "./utils.js";
 
 const store = {
   debug: true,
-  state: {
+  state: reactive({
     items: new Map(),
     ts: 0,
     sensors: [],
@@ -14,10 +15,10 @@ const store = {
       switch1: false,
       switch2: false,
     },
-  },
+  }),
 
   // Items
-  createItem: function (item) {
+  createItem: function(item) {
     console.log("store.createItem called with:", item);
     item.isNew = false;
     this.state.items.set(item.uid, item);
@@ -38,13 +39,13 @@ const store = {
       });
   },
 
-  fetchItems: function () {
+  fetchItems: function() {
     return fetch(window.baseUrl + "/unit")
       .then((response) => response.json())
       .then((response) => this._processItems(response));
   },
 
-  removeItem: function (uid) {
+  removeItem: function(uid) {
     if (this.state.items.get(uid)?.isNew) {
       console.warn("[removeItem] Item is new:", uid);
 
@@ -54,13 +55,13 @@ const store = {
     }
 
     return fetch(window.baseUrl + "/unit/" + uid, { method: "DELETE" })
-      .then(function (response) {
+      .then(function(response) {
         return response.json();
       })
       .then(({ units }) => this._processItems(units));
   },
 
-  handleItemChangeMessage: function (item, is_delete = false) {
+  handleItemChangeMessage: function(item, is_delete = false) {
     if (is_delete) {
       this.state.items.delete(item.uid);
       this.state.ts += 1;
@@ -147,8 +148,8 @@ const store = {
       .then((response) => (this.state.sensors = response));
   },
 
-  removeSensor: function (uid) {
-    fetch(`/sensors/${uid}`, {
+  removeSensor: function(uid) {
+    fetch(window.baseUrl + `/sensors/${uid}`, {
       headers: { "Content-Type": "application/json" },
       method: "DELETE",
     })
@@ -162,7 +163,7 @@ const store = {
       port: parseInt(sensorData.port),
       interval: parseInt(sensorData.interval),
     };
-    fetch(`/sensors/${sensorData.uid}`, {
+    fetch(window.baseUrl + `/sensors/${sensorData.uid}`, {
       headers: { "Content-Type": "application/json" },
       method: "PUT",
       body: JSON.stringify(sensorJson),
@@ -194,7 +195,7 @@ const store = {
       .then((response) => (this.state.flows = response));
   },
 
-  removeFlow: function (uid) {
+  removeFlow: function(uid) {
     return fetch(window.baseUrl + "/flows/" + uid, {
       method: "DELETE",
     })
@@ -235,18 +236,18 @@ const store = {
   },
 
   // Types
-  fetchTypes: function () {
+  fetchTypes: function() {
     let vm = this;
     fetch(window.baseUrl + "/types")
-      .then(function (response) {
+      .then(function(response) {
         return response.json();
       })
-      .then(function (data) {
+      .then(function(data) {
         vm.state.types = data;
       });
   },
 
-  getSidc: function (s) {
+  getSidc: function(s) {
     let curr = this.state.types;
 
     if (s === "") {
@@ -277,7 +278,7 @@ const store = {
     return null;
   },
 
-  getRootSidc: function (s) {
+  getRootSidc: function(s) {
     let curr = this.state.types;
 
     if (!curr?.next) {
@@ -303,7 +304,7 @@ const store = {
     }
   },
 
-  sidcFromType: function (s) {
+  sidcFromType: function(s) {
     if (!s.startsWith("a-")) return "";
 
     let n = s.split("-");

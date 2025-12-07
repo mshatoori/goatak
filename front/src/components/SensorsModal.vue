@@ -35,7 +35,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(sensor, idx) in allSensors" :key="sensor.uid">
+              <tr
+                v-for="(sensor, idx) in sharedState.sensors"
+                :key="sensor.uid"
+              >
                 <th scope="row">{{ idx + 1 }}</th>
                 <template v-if="editingSensorUid === sensor.uid">
                   <td>
@@ -194,69 +197,75 @@
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, computed } from "vue";
+<script>
 import store from "../store.js";
 
-// Reactive state
-const newSensor = reactive({
-  type: "",
-  title: "",
-  addr: "",
-  port: 1,
-  interval: 5,
-});
+export default {
+  name: "SensorsModal",
 
-const sharedState = store.state;
-const editingSensorUid = ref(null);
+  data() {
+    return {
+      newSensor: {
+        type: "",
+        title: "",
+        addr: "",
+        port: 1,
+        interval: 5,
+      },
+      sharedState: store.state,
+      editingSensorUid: null,
+      editedSensor: {
+        type: "",
+        title: "",
+        addr: "",
+        port: 1,
+        interval: 5,
+      },
+    };
+  },
 
-const editedSensor = reactive({
-  type: "",
-  title: "",
-  addr: "",
-  port: 1,
-  interval: 5,
-});
+  // computed: {
+  //   allSensors() {
+  //     return this.sharedState.sensors;
+  //   },
+  // },
 
-// Computed properties
-const allSensors = computed(() => {
-  return sharedState.sensors;
-});
+  methods: {
+    createSensor() {
+      console.log("Creating Sensor:", this.newSensor);
+      store.createSensor({ ...this.newSensor });
+    },
 
-// Methods
-function createSensor() {
-  console.log("Creating Sensor:", newSensor);
-  store.createSensor({ ...newSensor });
-}
+    removeSensor(uid) {
+      console.log("Removing Sensor: ", uid);
+      store.removeSensor(uid);
+    },
 
-function removeSensor(uid) {
-  console.log("Removing Sensor: ", uid);
-  store.removeSensor(uid);
-}
+    startEditing(sensor) {
+      this.editingSensorUid = sensor.uid;
+      // Copy sensor data to editedSensor
+      this.editedSensor = sensor;
+    },
 
-function startEditing(sensor) {
-  editingSensorUid.value = sensor.uid;
-  // Copy sensor data to editedSensor
-  Object.assign(editedSensor, { ...sensor });
-}
+    cancelEditing() {
+      this.editingSensorUid = null;
+      // Clear editedSensor data
+      this.editedSensor = {
+        type: "",
+        title: "",
+        addr: "",
+        port: 1,
+        interval: 5,
+      };
+    },
 
-function cancelEditing() {
-  editingSensorUid.value = null;
-  // Clear editedSensor data
-  Object.assign(editedSensor, {
-    type: "",
-    title: "",
-    addr: "",
-    port: 1,
-    interval: 5,
-  });
-}
-
-function editSensor() {
-  console.log("Saving Sensor:", editedSensor);
-  store.editSensor({ uid: editingSensorUid.value, ...editedSensor });
-  cancelEditing(); // Exit editing mode after saving
-}
+    editSensor() {
+      console.log("Saving Sensor:", this.editedSensor);
+      store.editSensor({ uid: this.editingSensorUid, ...this.editedSensor });
+      this.cancelEditing(); // Exit editing mode after saving
+    },
+  },
+};
 </script>
 
 <style scoped>

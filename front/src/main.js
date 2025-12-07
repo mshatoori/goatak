@@ -1,3 +1,5 @@
+window.baseUrl = "http://localhost:8080";
+
 import { createApp } from "vue";
 import App from "./App.vue";
 
@@ -7,8 +9,6 @@ import "./main.css";
 // Import utilities and store
 import "./utils.js";
 import "./store.js";
-
-window.baseUrl = "http://localhost:8080";
 
 // Import Vue components
 import Sidebar from "./components/Sidebar.vue";

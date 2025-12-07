@@ -1,8 +1,8 @@
 import store from "./store.js";
 
-if (window.baseUrl === undefined) {
-  window.baseUrl = ""; // Default value
-}
+// if (window.baseUrl === undefined) {
+//   window.baseUrl = ""; // Default value
+// }
 
 const colors = new Map([
   ["Clear", "white"],
@@ -543,7 +543,7 @@ export {
 };
 
 L.Marker.RotatedMarker = L.Marker.extend({
-  _reset: function () {
+  _reset: function() {
     var pos = this._map.latLngToLayerPoint(this._latlng).round();
 
     L.DomUtil.setPosition(this._icon, pos);
@@ -563,7 +563,7 @@ L.Marker.RotatedMarker = L.Marker.extend({
     this._icon.style.zIndex = pos.y;
   },
 
-  setIconAngle: function (iconAngle) {
+  setIconAngle: function(iconAngle) {
     if (this._map) {
       this._removeIcon();
     }
@@ -583,7 +583,7 @@ var LocationControl = L.Control.extend({
     position: "bottomleft",
   },
 
-  onAdd: function (map) {
+  onAdd: function(map) {
     var controlName = "leaflet-control-location",
       container = L.DomUtil.create("div", controlName + " leaflet-bar"),
       options = this.options;
@@ -599,15 +599,15 @@ var LocationControl = L.Control.extend({
     return container;
   },
 
-  onRemove: function (map) {},
+  onRemove: function(map) {},
 
-  _locate: function (e) {
+  _locate: function(e) {
     if (!this._disabled && this._map.options.locateCallback) {
       this._map.options.locateCallback(e);
     }
   },
 
-  _createButton: function (html, title, className, container, fn) {
+  _createButton: function(html, title, className, container, fn) {
     var link = L.DomUtil.create("a", className, container);
     link.innerHTML = html;
     link.href = "#";
@@ -633,7 +633,7 @@ var ToolsControl = L.Control.extend({
     position: "topleft",
   },
 
-  onAdd: function (map) {
+  onAdd: function(map) {
     var controlName = "leaflet-control-tools",
       container = L.DomUtil.create("div", controlName + " leaflet-bar"),
       options = this.options;
@@ -665,27 +665,27 @@ var ToolsControl = L.Control.extend({
     return container;
   },
 
-  onRemove: function (map) {},
+  onRemove: function(map) {},
 
-  _addPoint: function (e) {
+  _addPoint: function(e) {
     if (!this._disabled && this._map.options.changeMode) {
       this._map.options.changeMode("add_point");
     }
   },
 
-  _addUnit: function (e) {
+  _addUnit: function(e) {
     if (!this._disabled && this._map.options.changeMode) {
       this._map.options.changeMode("add_unit");
     }
   },
 
-  _addCasevac: function (e) {
+  _addCasevac: function(e) {
     if (!this._disabled && this._map.options.changeMode) {
       this._map.options.changeMode("add_casevac");
     }
   },
 
-  _createButton: function (html, title, className, container, fn) {
+  _createButton: function(html, title, className, container, fn) {
     var link = L.DomUtil.create("a", className, container);
     link.innerHTML = html;
     link.href = "#";

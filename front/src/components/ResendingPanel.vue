@@ -427,7 +427,7 @@ const loadResendConfigs = async () => {
   loading.value = true;
   error.value = null;
   try {
-    const response = await fetch("/api/resend/configs");
+    const response = await fetch(window.baseUrl + "/api/resend/configs");
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -448,9 +448,9 @@ const loadResendConfigs = async () => {
 
 const saveConfigToBackend = async (config) => {
   const isNew = !config.uid;
-  const url = isNew
-    ? "/api/resend/configs"
-    : `/api/resend/configs/${config.uid}`;
+  const url =
+    window.baseUrl +
+    (isNew ? "/api/resend/configs" : `/api/resend/configs/${config.uid}`);
   const method = isNew ? "POST" : "PUT";
 
   try {
@@ -484,9 +484,12 @@ const saveConfigToBackend = async (config) => {
 
 const deleteConfigFromBackend = async (uid) => {
   try {
-    const response = await fetch(`/api/resend/configs/${uid}`, {
-      method: "DELETE",
-    });
+    const response = await fetch(
+      window.baseUrl + `/api/resend/configs/${uid}`,
+      {
+        method: "DELETE",
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -711,7 +714,12 @@ const deleteFilterById = (filterId) => {
 };
 
 const generateId = () => {
-  return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+  return (
+    Date.now().toString() +
+    Math.random()
+      .toString(36)
+      .substr(2, 9)
+  );
 };
 
 const getFilterSummary = (filter) => {
@@ -770,8 +778,7 @@ const loadEnhancedSelectionFromDestination = () => {
     if (editingData.value.destination.type === "node") {
       editingData.value.send_mode = "direct";
       editingData.value.selected_ip = editingData.value.destination.ip;
-      editingData.value.selected_urn =
-        editingData.value.destination.urn.toString();
+      editingData.value.selected_urn = editingData.value.destination.urn.toString();
     } else if (editingData.value.destination.type === "subnet") {
       editingData.value.send_mode = "subnet";
       editingData.value.selected_subnet = editingData.value.destination.ip;

@@ -461,10 +461,10 @@ export default {
 
     let vm = this; // Changed from `app = this` to `vm = this` to avoid global variable
 
-    const drawStart = function (event) {
+    const drawStart = function(event) {
       vm.inDrawMode = true;
     };
-    const drawStop = function (event) {
+    const drawStop = function(event) {
       vm.inDrawMode = false;
     };
 
@@ -473,7 +473,7 @@ export default {
 
     this.map.on(L.Draw.Event.DRAWSTOP, drawStop);
     this.map.on(L.Draw.Event.EDITSTOP, drawStop);
-    this.map.on(L.Draw.Event.CREATED, function (event) {
+    this.map.on(L.Draw.Event.CREATED, function(event) {
       var layer = event.layer;
 
       let u = null;
@@ -552,7 +552,7 @@ export default {
       vm._processAddition(u);
       vm.setActiveItemUid(u.uid, true);
     });
-    this.map.on(L.Draw.Event.DRAWVERTEX, function (event) {
+    this.map.on(L.Draw.Event.DRAWVERTEX, function(event) {
       console.log("DRAW VERTEX:", event);
     });
 
@@ -578,9 +578,25 @@ export default {
     this.map.on("click", this.mapClick);
     this.map.on("mousemove", this.mouseMove);
     this.map.on("zoomanim", this.onMapZoom);
+
+    // Add additional zoom event listeners for debugging
+    this.map.on("zoomstart", () => {
+      console.log("[DEBUG] Zoom start - Map object:", this.map);
+      console.log("[DEBUG] Zoom start - Map._map:", this.map._map);
+    });
+
+    this.map.on("zoom", () => {
+      console.log("[DEBUG] Zoom event - Map object:", this.map);
+      console.log("[DEBUG] Zoom event - Map._map:", this.map._map);
+    });
+
+    this.map.on("zoomend", () => {
+      console.log("[DEBUG] Zoom end - Map object:", this.map);
+      console.log("[DEBUG] Zoom end - Map._map:", this.map._map);
+    });
   },
   computed: {
-    activeItem: function () {
+    activeItem: function() {
       return this.activeItemUid
         ? this.activeItemUid && this.getActiveItem()
         : null;
@@ -596,7 +612,7 @@ export default {
     //   deep: true,
     // },
     // // Watch for active item changes to clear navigation line
-    activeItemUid: function (newUid, oldUid) {
+    activeItemUid: function(newUid, oldUid) {
       if (newUid !== oldUid) {
         this.clearNavigationLineOnItemChange();
       }
@@ -605,14 +621,14 @@ export default {
 
   methods: {
     // Update sidebar collapsed state
-    updateSidebarCollapsed: function (isCollapsed) {
+    updateSidebarCollapsed: function(isCollapsed) {
       console.log("updateSidebarCollapsed", isCollapsed);
       this.sidebarCollapsed = isCollapsed;
     },
     getItemOverlay(item) {
       return this.overlays[item.category];
     },
-    configUpdated: function () {
+    configUpdated: function() {
       console.log("config updated");
       const markerInfo = L.divIcon({
         className: "my-marker-info",
@@ -635,14 +651,14 @@ export default {
         this.me.setTooltipContent(selfPopup(this.config));
       }
     },
-    getConfig: function () {
+    getConfig: function() {
       let vm = this;
 
       fetch(window.baseUrl + "/config")
-        .then(function (response) {
+        .then(function(response) {
           return response.json();
         })
-        .then(function (data) {
+        .then(function(data) {
           vm.config = data;
 
           vm.map.setView([data.lat, data.lon], data.zoom);
@@ -667,7 +683,7 @@ export default {
           layers.addTo(vm.map);
 
           let first = true;
-          data.layers.forEach(function (i) {
+          data.layers.forEach(function(i) {
             let opts = {
               minZoom: i.minZoom ?? 1,
               maxZoom: i.maxZoom ?? 20,
@@ -713,7 +729,7 @@ export default {
         });
     },
 
-    connect: function () {
+    connect: function() {
       let url = "";
       if (window.baseUrl !== "")
         url =
@@ -733,50 +749,50 @@ export default {
 
       this.conn = new WebSocket(url);
 
-      this.conn.onmessage = function (e) {
+      this.conn.onmessage = function(e) {
         let parsed = JSON.parse(e.data);
         vm.processWS(parsed);
       };
 
-      this.conn.onopen = function (e) {
+      this.conn.onopen = function(e) {
         console.log("connected");
       };
 
-      this.conn.onerror = function (e) {
+      this.conn.onerror = function(e) {
         console.log("error");
       };
 
-      this.conn.onclose = function (e) {
+      this.conn.onclose = function(e) {
         console.log("closed");
         setTimeout(vm.connect, 3000);
       };
     },
 
-    connected: function () {
+    connected: function() {
       if (!this.conn) return false;
 
       return this.conn.readyState === 1;
     },
 
-    fetchAllUnits: function () {
+    fetchAllUnits: function() {
       store.fetchItems().then((results) => {
         this.processUnits(results);
       });
     },
 
-    fetchMessages: function () {
+    fetchMessages: function() {
       let vm = this;
 
       fetch(window.baseUrl + "/message")
-        .then(function (response) {
+        .then(function(response) {
           return response.json();
         })
-        .then(function (data) {
+        .then(function(data) {
           vm.messages = data;
         });
     },
 
-    renew: function () {
+    renew: function() {
       let vm = this;
 
       if (!this.conn) {
@@ -796,7 +812,7 @@ export default {
       }
     },
 
-    _processRemoval: function (item) {
+    _processRemoval: function(item) {
       console.log("processRemoval", item);
       if (item.marker) {
         // Handle removal for drawings and routes
@@ -871,7 +887,7 @@ export default {
       }
     },
 
-    addDrawingTextLabel: function (item) {
+    addDrawingTextLabel: function(item) {
       // Remove existing text label if it exists
       if (item.textLabel) {
         this.removeFromAllOverlays(item.textLabel);
@@ -888,7 +904,13 @@ export default {
       if (labelStyle.fontSize < 12) displayStyle = "display:none;";
 
       // Create text label HTML with dynamic styling and combined transform
-      let labelHtml = `<div class="drawing-text-label" style="color: ${item.color}; font-size: ${labelStyle.fontSize}px; transform: translate(-50%, -50%) rotate(${labelStyle.rotation}deg); ${displayStyle}">${item.callsign}</div>`;
+      let labelHtml = `<div class="drawing-text-label" style="color: ${
+        item.color
+      }; font-size: ${
+        labelStyle.fontSize
+      }px; transform: translate(-50%, -50%) rotate(${
+        labelStyle.rotation
+      }deg); ${displayStyle}">${item.callsign}</div>`;
 
       const textIcon = L.divIcon({
         className: "drawing-text-label-icon",
@@ -911,7 +933,7 @@ export default {
       }
     },
 
-    calculateTextLabelPosition: function (item) {
+    calculateTextLabelPosition: function(item) {
       if (!item.links || item.links.length === 0) {
         // Fallback to center if no links available
         return [item.lat, item.lon];
@@ -994,7 +1016,22 @@ export default {
       return [item.lat, item.lon];
     },
 
-    calculateLabelStyle: function (item) {
+    calculateLabelStyle: function(item) {
+      console.log("[DEBUG] calculateLabelStyle called for:", item.callsign);
+      console.log("[DEBUG] Map object in calculateLabelStyle:", this.map);
+      console.log(
+        "[DEBUG] Map._map in calculateLabelStyle:",
+        this.map ? this.map._map : "null"
+      );
+
+      // Validate map is properly initialized before accessing map methods
+      if (!this.map || !this.map._map) {
+        console.error(
+          "[DEBUG] Map not properly initialized in calculateLabelStyle"
+        );
+        return { fontSize: 18, rotation: 0 }; // Return default values
+      }
+
       let fontSize = 18; // Default font size
       let rotation = 0; // Default rotation
       let zoom = this.map.getZoom();
@@ -1104,7 +1141,7 @@ export default {
       return { fontSize, rotation };
     },
 
-    _processAddition: function (item) {
+    _processAddition: function(item) {
       // Initialize visibility state if not set (default to visible)
       if (item.visible === undefined) {
         item.visible = true;
@@ -1129,7 +1166,7 @@ export default {
       this.addContextMenuToMarker(item);
     },
 
-    _processUpdate: function (item) {
+    _processUpdate: function(item) {
       if (item.category === "drawing" || item.category === "route") {
         // Remove existing markers and infomarkers
         if (item.marker) {
@@ -1153,7 +1190,7 @@ export default {
       this.addContextMenuToMarker(item); // Changed vm.addContextMenuToMarker to this.addContextMenuToMarker
     },
 
-    processUnits: function (results) {
+    processUnits: function(results) {
       // console.log("RESULTS:", results);
 
       results["removed"].forEach((item) => this._processRemoval(item));
@@ -1161,7 +1198,7 @@ export default {
       results["updated"].forEach((item) => this._processUpdate(item));
     },
 
-    addContextMenuToMarker: function (unit) {
+    addContextMenuToMarker: function(unit) {
       if (unit.uid.endsWith("-fence")) return;
 
       if (unit.marker) {
@@ -1170,8 +1207,12 @@ export default {
             let menu = `
                     <ul class="dropdown-menu marker-contextmenu">
                       <li><h6 class="dropdown-header">${unit.callsign}</h6></li>
-                      <li><button class="dropdown-item" onclick="app.menuDeleteAction('${unit.uid}')"> حذف </button></li>
-                      <li><button class="dropdown-item" onclick="app.menuSendAction('${unit.uid}')"> ارسال... </button></li>
+                      <li><button class="dropdown-item" onclick="app.menuDeleteAction('${
+                        unit.uid
+                      }')"> حذف </button></li>
+                      <li><button class="dropdown-item" onclick="app.menuSendAction('${
+                        unit.uid
+                      }')"> ارسال... </button></li>
                     </ul>`;
             unit.marker.contextmenu = L.popup()
               .setLatLng(e.latlng)
@@ -1205,7 +1246,7 @@ export default {
       // }
     },
 
-    processMe: function (u) {
+    processMe: function(u) {
       if (!u || !this.me) return;
       this.config = { ...this.config, lat: u.lat, lon: u.lon };
       this.me.setLatLng([u.lat, u.lon]);
@@ -1215,7 +1256,7 @@ export default {
       this.me.setTooltipContent(selfPopup(this.config));
     },
 
-    processWS: function (u) {
+    processWS: function(u) {
       if (u.type === "unit") {
         if (u.unit.uid === this.config.uid) this.processMe(u.unit);
         else this.processUnits(store.handleItemChangeMessage(u.unit));
@@ -1242,7 +1283,7 @@ export default {
         obj.removeFrom(overlay);
       }
     },
-    updateUnitMarker: function (unit, draggable, updateIcon) {
+    updateUnitMarker: function(unit, draggable, updateIcon) {
       const vm = this; // Capture Vue instance reference
       if (unit.lon === 0 && unit.lat === 0) {
         if (unit.marker) {
@@ -1261,11 +1302,11 @@ export default {
       }
 
       unit.marker = L.marker([unit.lat, unit.lon], { draggable: draggable });
-      unit.marker.on("click", function (e) {
+      unit.marker.on("click", function(e) {
         vm.setActiveItemUid(unit.uid, false); // Changed app.setActiveItemUid to vm.setActiveItemUid
       });
       if (draggable) {
-        unit.marker.on("dragend", function (e) {
+        unit.marker.on("dragend", function(e) {
           unit.lat = unit.marker.getLatLng().lat; // Changed marker to unit.marker
           unit.lon = unit.marker.getLatLng().lng; // Changed marker to unit.marker
         });
@@ -1307,7 +1348,7 @@ export default {
       unit.marker.bindTooltip(popup(unit, selfCoords, false));
     },
 
-    setActiveItemUid: function (uid, follow) {
+    setActiveItemUid: function(uid, follow) {
       let currentActiveItem = this.getActiveItem();
       if (currentActiveItem?.isNew && currentActiveItem.uid != uid) {
         // Remove previous unsaved item
@@ -1328,7 +1369,7 @@ export default {
       }
     },
 
-    getActiveItem: function () {
+    getActiveItem: function() {
       console.log(
         "[getActiveItem!] ",
         this.activeItemUid,
@@ -1343,21 +1384,19 @@ export default {
       return this.sharedState.items.get(this.activeItemUid);
     },
 
-    byCategory: function (s) {
-      let arr = Array.from(this.sharedState.items.values()).filter(function (
-        u
-      ) {
+    byCategory: function(s) {
+      let arr = Array.from(this.sharedState.items.values()).filter(function(u) {
         return u.category === s;
       });
-      arr.sort(function (a, b) {
+      arr.sort(function(a, b) {
         return a.callsign.toLowerCase().localeCompare(b.callsign.toLowerCase());
       });
       return this.sharedState.ts && arr;
     },
 
-    nextItemNumber: function (category) {
+    nextItemNumber: function(category) {
       let maxNumber = 0;
-      this.sharedState.items.forEach(function (u) {
+      this.sharedState.items.forEach(function(u) {
         if (u.category === category) {
           let splitParts = u.callsign.split("-");
 
@@ -1374,7 +1413,7 @@ export default {
       return maxNumber + 1;
     },
 
-    mapToUnit: function (u) {
+    mapToUnit: function(u) {
       if (!u) {
         return;
       }
@@ -1383,15 +1422,15 @@ export default {
       }
     },
 
-    getImg: function (item) {
+    getImg: function(item) {
       return getIconUri(item, false).uri;
     },
 
-    milImg: function (item) {
+    milImg: function(item) {
       return getMilIcon(item, false).uri;
     },
 
-    dt: function (str) {
+    dt: function(str) {
       let d = new Date(Date.parse(str));
       return (
         ("0" + d.getDate()).slice(-2) +
@@ -1406,22 +1445,22 @@ export default {
       );
     },
 
-    sp: function (v) {
+    sp: function(v) {
       return (v * 3.6).toFixed(1);
     },
 
-    modeIs: function (s) {
+    modeIs: function(s) {
       return (
         document.getElementById(s) &&
         document.getElementById(s).checked === true
       );
     },
 
-    mouseMove: function (e) {
+    mouseMove: function(e) {
       this.coords = e.latlng;
     },
 
-    mapClickAddPoint: function (e) {
+    mapClickAddPoint: function(e) {
       console.log("mapClickAddPoint called with event:", e);
       let u = createMapItem({
         category: "point",
@@ -1445,7 +1484,7 @@ export default {
       this.setActiveItemUid(u.uid, true);
     },
 
-    mapClickAddUnit: function (e) {
+    mapClickAddUnit: function(e) {
       console.log("mapClickAddUnit called with event:", e);
       let u = createMapItem({
         category: "unit",
@@ -1470,7 +1509,7 @@ export default {
       this.setActiveItemUid(u.uid, true); // Set the new unit as the current unit to display in sidebar
       // The sidebar watcher for activeItem should handle opening the sidebar and showing the form
     },
-    mapClickAddCasevac: function (e) {
+    mapClickAddCasevac: function(e) {
       console.log("mapClickAddCasevac called with event:", e);
       let now = new Date();
       let uid =
@@ -1504,7 +1543,7 @@ export default {
       this._processAddition(u);
       this.setActiveItemUid(u.uid, true);
     },
-    mapClick: function (e) {
+    mapClick: function(e) {
       if (this.inDrawMode) {
         return;
       }
@@ -1525,7 +1564,7 @@ export default {
       }
     },
 
-    checkEmergency: function (
+    checkEmergency: function(
       emergency_switch1,
       emergency_switch2,
       emergency_type
@@ -1537,7 +1576,7 @@ export default {
       }
     },
 
-    activateEmergencyBeacon: function (emergency_type) {
+    activateEmergencyBeacon: function(emergency_type) {
       if (!this.beacon_active) {
         this.beacon_active = true;
         const alert = this.createEmergencyAlert(emergency_type);
@@ -1545,7 +1584,7 @@ export default {
       }
     },
 
-    deactivateEmergencyBeacon: function () {
+    deactivateEmergencyBeacon: function() {
       if (this.beacon_active) {
         this.beacon_active = false;
         let alert = this.sharedState.items.get(this.config.uid + "-9-1-1");
@@ -1558,7 +1597,7 @@ export default {
       }
     },
 
-    saveItem: function (u, cb) {
+    saveItem: function(u, cb) {
       console.log("Sending:", cleanUnit(u));
       store.createItem(u).then((results) => {
         this.processUnits(results);
@@ -1566,12 +1605,12 @@ export default {
       });
     },
 
-    deleteItem: function (uid) {
+    deleteItem: function(uid) {
       console.debug("Deleting:", uid);
       store.removeItem(uid).then((units) => this.processUnits(units));
     },
 
-    removeTool: function (name) {
+    removeTool: function(name) {
       if (this.tools.has(name)) {
         let p = this.tools.get(name);
         this.map.removeLayer(p);
@@ -1581,7 +1620,7 @@ export default {
       }
     },
 
-    getTool: function (name) {
+    getTool: function(name) {
       return this.tools.get(name);
     },
 
@@ -1604,10 +1643,10 @@ export default {
       this.ts++;
     },
 
-    contactsNum: function () {
+    contactsNum: function() {
       let online = 0;
       let total = 0;
-      this.sharedState.items.forEach(function (u) {
+      this.sharedState.items.forEach(function(u) {
         if (u.category === "contact") {
           if (u.status === "Online") online += 1;
           if (u.status !== "") total += 1;
@@ -1617,7 +1656,7 @@ export default {
       return online + "/" + total;
     },
 
-    flowsCount: function () {
+    flowsCount: function() {
       return (
         "↓" +
         this.sharedState.flows
@@ -1634,20 +1673,20 @@ export default {
       );
     },
 
-    sensorsCount: function () {
+    sensorsCount: function() {
       return this.sharedState.sensors.length.toLocaleString("fa-ir");
     },
 
-    countByCategory: function (s) {
+    countByCategory: function(s) {
       let total = 0;
-      this.sharedState.items.forEach(function (u) {
+      this.sharedState.items.forEach(function(u) {
         if (u.category === s) total += 1;
       });
 
       return total;
     },
 
-    msgNum: function () {
+    msgNum: function() {
       if (!this.messages) return 0;
       let n = 0;
       for (const [key, value] of Object.entries(this.messages)) {
@@ -1660,7 +1699,7 @@ export default {
       return n;
     },
 
-    msgNum1: function (uid) {
+    msgNum1: function(uid) {
       if (!this.messages || !this.messages[uid].messages) return 0;
       let n = 0;
       for (m of this.messages[uid].messages) {
@@ -1669,7 +1708,7 @@ export default {
       return n;
     },
 
-    openChat: function (uid, chatroom) {
+    openChat: function(uid, chatroom) {
       this.chat_uid = uid;
       this.chatroom = chatroom;
       new bootstrap.Modal(document.getElementById("messages")).show();
@@ -1681,26 +1720,26 @@ export default {
       }
     },
 
-    openFlows: function () {
+    openFlows: function() {
       new bootstrap.Modal(document.getElementById("flows-modal")).show();
     },
 
-    openSensors: function () {
+    openSensors: function() {
       new bootstrap.Modal(document.getElementById("sensors-modal")).show();
     },
-    openAlarms: function () {
+    openAlarms: function() {
       new bootstrap.Modal(document.getElementById("alarms-modal")).show();
     },
 
-    openResending: function () {
+    openResending: function() {
       new bootstrap.Modal(document.getElementById("resending-modal")).show();
     },
 
-    getStatus: function (uid) {
+    getStatus: function(uid) {
       return this.ts && this.sharedState.items.get(uid)?.status;
     },
 
-    getMessages: function () {
+    getMessages: function() {
       if (!this.chat_uid) {
         return [];
       }
@@ -1718,7 +1757,7 @@ export default {
       return msgs;
     },
 
-    getUnitName: function (u) {
+    getUnitName: function(u) {
       let res = u.callsign || "no name";
       if (u.parent_uid === this.config.uid) {
         if (u.send === true) {
@@ -1730,20 +1769,20 @@ export default {
       return res;
     },
 
-    menuDeleteAction: function (uid) {
+    menuDeleteAction: function(uid) {
       let unit = this.sharedState.items.get(uid);
       store.removeItem(uid).then((units) => this.processUnits(units));
       this.map.closePopup(unit.marker.contextmenu);
     },
 
-    menuSendAction: function (uid) {
+    menuSendAction: function(uid) {
       let unit = this.sharedState.items.get(uid);
       this.sharedState.unitToSend = unit;
       new bootstrap.Modal(document.querySelector("#send-modal")).show();
       this.map.closePopup(unit.marker.contextmenu);
     },
 
-    sendMessage: function () {
+    sendMessage: function() {
       let msg = {
         from: this.config.callsign,
         from_uid: this.config.uid,
@@ -1760,14 +1799,14 @@ export default {
       };
       let vm = this;
       fetch(window.baseUrl + "/message", requestOptions)
-        .then(function (response) {
+        .then(function(response) {
           return response.json();
         })
-        .then(function (data) {
+        .then(function(data) {
           vm.messages = data;
         });
     },
-    toggleOverlay: function (overlayName, overlayActive) {
+    toggleOverlay: function(overlayName, overlayActive) {
       if (!this.overlays || !this.overlays[overlayName]) {
         console.warn(
           "Overlays not initialized yet, skipping toggle for:",
@@ -1779,7 +1818,7 @@ export default {
       else this.overlays[overlayName].addTo(this.map);
     },
 
-    toggleOverlayItems: function (overlayName, overlayActive) {
+    toggleOverlayItems: function(overlayName, overlayActive) {
       // Enhanced overlay toggle with visibility controls
       if (!this.overlays || !this.overlays[overlayName]) {
         console.warn(
@@ -1834,14 +1873,14 @@ export default {
       });
     },
 
-    handleOverlayItemSelected: function (item) {
+    handleOverlayItemSelected: function(item) {
       console.log("Overlay item selected in App:", item);
       if (item && item.uid) {
         this.setActiveItemUid(item.uid, true);
       }
     },
 
-    createEmergencyAlert: function (emergencyType) {
+    createEmergencyAlert: function(emergencyType) {
       let uid = uuidv4();
       let now = new Date();
       let stale = new Date(now);
@@ -1873,18 +1912,18 @@ export default {
 
       return u;
     },
-    locateByGPS: function () {
+    locateByGPS: function() {
       if (!this.config) return; // Check if config is loaded
       fetch(window.baseUrl + "/pos").then((r) =>
         this.map.setView([this.config.lat, this.config.lon])
       );
     },
-    changeMode: function (newMode) {
+    changeMode: function(newMode) {
       this.mode = newMode;
     },
 
     // Navigation line methods
-    handleNavigationLineToggle: function (event) {
+    handleNavigationLineToggle: function(event) {
       console.log("Navigation line toggle event:", event);
 
       if (event.show) {
@@ -1898,7 +1937,7 @@ export default {
       }
     },
 
-    handleSelectOverlayItem: function (item) {
+    handleSelectOverlayItem: function(item) {
       console.log("Overlay item selected@map", item);
       if (item && item.uid) {
         // Set the item as active and pan to it
@@ -1906,7 +1945,7 @@ export default {
       }
     },
 
-    showNavigationLine: function (targetItem, userPosition, navigationData) {
+    showNavigationLine: function(targetItem, userPosition, navigationData) {
       // Clear any existing navigation line
       this.hideNavigationLine();
 
@@ -1947,7 +1986,7 @@ export default {
       );
     },
 
-    hideNavigationLine: function () {
+    hideNavigationLine: function() {
       if (this.navigationLine) {
         this.overlays.navigation.removeLayer(this.navigationLine);
         this.navigationLine = null;
@@ -1959,7 +1998,7 @@ export default {
       console.log("Navigation line hidden");
     },
 
-    updateNavigationLine: function () {
+    updateNavigationLine: function() {
       console.log("updateNavigationLine");
       // Update navigation line when user position changes
       if (this.navigationLineActive && this.navigationTarget && this.config) {
@@ -1987,7 +2026,7 @@ export default {
       }
     },
 
-    clearNavigationLineOnItemChange: function () {
+    clearNavigationLineOnItemChange: function() {
       // Clear navigation line when active item changes
       if (this.navigationLineActive) {
         this.hideNavigationLine();
@@ -1995,7 +2034,7 @@ export default {
     },
 
     // Tracking management methods
-    enableTrackingForUnit: function (unitUid, config = {}) {
+    enableTrackingForUnit: function(unitUid, config = {}) {
       if (!this.trackingManager) return false;
 
       // Set default config for unit
@@ -2011,23 +2050,23 @@ export default {
       return this.trackingManager.setTrailConfig(unitUid, finalConfig);
     },
 
-    disableTrackingForUnit: function (unitUid) {
+    disableTrackingForUnit: function(unitUid) {
       if (!this.trackingManager) return false;
       return this.trackingManager.removeTrail(unitUid);
     },
 
-    updateUnitTrackingConfig: function (unitUid, config) {
+    updateUnitTrackingConfig: function(unitUid, config) {
       if (!this.trackingManager) return false;
       return this.trackingManager.setTrailConfig(unitUid, config);
     },
 
-    clearAllTrails: function () {
+    clearAllTrails: function() {
       if (!this.trackingManager) return false;
       this.trackingManager.clearAllTrails();
       return true;
     },
 
-    generateTrailColor: function (unitUid) {
+    generateTrailColor: function(unitUid) {
       // Generate a consistent color for each unit based on UID
       const colors = [
         "#FF0000",
@@ -2052,34 +2091,49 @@ export default {
       return colors[Math.abs(hash) % colors.length];
     },
 
-    getTrackingStatus: function () {
+    getTrackingStatus: function() {
       if (!this.trackingManager) return false;
       return this.trackingManager.isTrackingEnabled();
     },
 
-    setGlobalTrackingEnabled: function (enabled) {
+    setGlobalTrackingEnabled: function(enabled) {
       if (!this.trackingManager) return false;
       this.trackingManager.setTrackingEnabled(enabled);
       return true;
     },
 
-    exportTrailData: function (unitUid, format = "json") {
+    exportTrailData: function(unitUid, format = "json") {
       if (!this.trackingManager) return null;
       return this.trackingManager.exportTrailData(unitUid, format);
     },
 
-    importTrailData: function (unitUid, data, format = "json") {
+    importTrailData: function(unitUid, data, format = "json") {
       if (!this.trackingManager) return false;
       return this.trackingManager.importTrailData(unitUid, data, format);
     },
 
-    getActiveTrails: function () {
+    getActiveTrails: function() {
       if (!this.trackingManager) return [];
       return this.trackingManager.getAllTrails();
     },
 
     // Update drawing and route labels method
-    updateDrawingTextLabel: function (item) {
+    updateDrawingTextLabel: function(item) {
+      console.log("[DEBUG] updateDrawingTextLabel called for:", item.callsign);
+      console.log("[DEBUG] Map object in updateDrawingTextLabel:", this.map);
+      console.log(
+        "[DEBUG] Map._map in updateDrawingTextLabel:",
+        this.map ? this.map._map : "null"
+      );
+
+      // Validate map is properly initialized before accessing map methods
+      if (!this.map || !this.map._map) {
+        console.error(
+          "[DEBUG] Map not properly initialized in updateDrawingTextLabel"
+        );
+        return;
+      }
+
       // Only update the style of existing text label instead of recreating it
       if (item.textLabel) {
         // Calculate new styling
@@ -2098,7 +2152,9 @@ export default {
           if (labelDiv) {
             // Update font size and rotation while preserving other styles
             labelDiv.style.fontSize = labelStyle.fontSize + "px";
-            labelDiv.style.transform = `translate(-50%, -50%) rotate(${labelStyle.rotation}deg)`;
+            labelDiv.style.transform = `translate(-50%, -50%) rotate(${
+              labelStyle.rotation
+            }deg)`;
 
             if (labelStyle.fontSize < 12) labelDiv.style.display = "none";
             else labelDiv.style.display = "block";
@@ -2108,13 +2164,32 @@ export default {
     },
 
     // Zoom update method
-    onMapZoom: function () {
+    onMapZoom: function() {
+      console.log("[DEBUG] onMapZoom called");
+      console.log("[DEBUG] Map object in onMapZoom:", this.map);
+      console.log(
+        "[DEBUG] Map._map in onMapZoom:",
+        this.map ? this.map._map : "null"
+      );
+
+      // Validate map is properly initialized
+      if (!this.map || !this.map._map) {
+        console.error("[DEBUG] Map not properly initialized during zoom event");
+        return;
+      }
+
       // Throttle zoom updates to improve performance during zoom animations
       if (this.zoomUpdateTimeout) {
         clearTimeout(this.zoomUpdateTimeout);
       }
 
       this.zoomUpdateTimeout = setTimeout(() => {
+        // Double-check map is still valid after timeout
+        if (!this.map || !this.map._map) {
+          console.error("[DEBUG] Map became invalid during zoom timeout");
+          return;
+        }
+
         // Update all drawing and route labels when zoom changes
         this.sharedState.items.forEach((item) => {
           if (
