@@ -303,10 +303,10 @@
   <send-modal></send-modal>
   <sensors-modal></sensors-modal>
   <resending-modal :config="config" :map="map"></resending-modal>
-  <tracking-control
+  <!-- <tracking-control
     :map="map"
     :tracking-manager="trackingManager"
-  ></tracking-control>
+  ></tracking-control> -->
 </template>
 
 <script>
