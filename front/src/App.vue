@@ -310,6 +310,7 @@
 </template>
 
 <script>
+import { toRaw } from "vue";
 import TrackingManager from "./TrackingManager.js";
 import store from "./store.js";
 import ResendingModal from "./components/ResendingModal.vue";
@@ -420,7 +421,7 @@ export default {
     };
 
     for (const overlay of Object.values(this.overlays)) {
-      overlay.addTo(this.map);
+      overlay.addTo(this.getRawMap());
     }
 
     this.overlays.drawing.addLayer(this.drawnItems);
@@ -447,9 +448,9 @@ export default {
       },
     });
 
-    this.map.addControl(this.drawControl);
-    this.map.addControl(new LocationControl());
-    this.map.addControl(new ToolsControl());
+    this.getRawMap().addControl(this.drawControl);
+    this.getRawMap().addControl(new LocationControl());
+    this.getRawMap().addControl(new ToolsControl());
 
     // Initialize TrackingManager
     this.trackingManager = new TrackingManager(this.map, {
@@ -468,12 +469,12 @@ export default {
       vm.inDrawMode = false;
     };
 
-    this.map.on(L.Draw.Event.DRAWSTART, drawStart);
-    this.map.on(L.Draw.Event.EDITSTART, drawStart);
+    this.getRawMap().on(L.Draw.Event.DRAWSTART, drawStart);
+    this.getRawMap().on(L.Draw.Event.EDITSTART, drawStart);
 
-    this.map.on(L.Draw.Event.DRAWSTOP, drawStop);
-    this.map.on(L.Draw.Event.EDITSTOP, drawStop);
-    this.map.on(L.Draw.Event.CREATED, function(event) {
+    this.getRawMap().on(L.Draw.Event.DRAWSTOP, drawStop);
+    this.getRawMap().on(L.Draw.Event.EDITSTOP, drawStop);
+    this.getRawMap().on(L.Draw.Event.CREATED, function(event) {
       var layer = event.layer;
 
       let u = null;
@@ -552,13 +553,15 @@ export default {
       vm._processAddition(u);
       vm.setActiveItemUid(u.uid, true);
     });
-    this.map.on(L.Draw.Event.DRAWVERTEX, function(event) {
+    this.getRawMap().on(L.Draw.Event.DRAWVERTEX, function(event) {
       console.log("DRAW VERTEX:", event);
     });
 
-    this.map.setView([60, 30], 11);
+    this.getRawMap().setView([60, 30], 11);
 
-    L.control.scale({ position: "bottomright", metric: true }).addTo(this.map);
+    L.control
+      .scale({ position: "bottomright", metric: true })
+      .addTo(this.getRawMap());
 
     this.getConfig();
 
@@ -575,25 +578,9 @@ export default {
 
     store.fetchTypes();
 
-    this.map.on("click", this.mapClick);
-    this.map.on("mousemove", this.mouseMove);
-    this.map.on("zoomanim", this.onMapZoom);
-
-    // Add additional zoom event listeners for debugging
-    this.map.on("zoomstart", () => {
-      console.log("[DEBUG] Zoom start - Map object:", this.map);
-      console.log("[DEBUG] Zoom start - Map._map:", this.map._map);
-    });
-
-    this.map.on("zoom", () => {
-      console.log("[DEBUG] Zoom event - Map object:", this.map);
-      console.log("[DEBUG] Zoom event - Map._map:", this.map._map);
-    });
-
-    this.map.on("zoomend", () => {
-      console.log("[DEBUG] Zoom end - Map object:", this.map);
-      console.log("[DEBUG] Zoom end - Map._map:", this.map._map);
-    });
+    this.getRawMap().on("click", this.mapClick);
+    this.getRawMap().on("mousemove", this.mouseMove);
+    this.getRawMap().on("zoomanim", this.onMapZoom);
   },
   computed: {
     activeItem: function() {
@@ -626,7 +613,10 @@ export default {
       this.sidebarCollapsed = isCollapsed;
     },
     getItemOverlay(item) {
-      return this.overlays[item.category];
+      return toRaw(this.overlays[item.category]);
+    },
+    getRawMap() {
+      return toRaw(this.map);
     },
     configUpdated: function() {
       console.log("config updated");
@@ -640,7 +630,7 @@ export default {
         this.myInfoMarker = L.marker([this.config.lat, this.config.lon], {
           icon: markerInfo,
         });
-        this.myInfoMarker.addTo(this.map);
+        this.myInfoMarker.addTo(this.getRawMap());
       } else {
         this.myInfoMarker.setLatLng([this.config.lat, this.config.lon]);
         this.myInfoMarker.setIcon(markerInfo);
@@ -661,7 +651,7 @@ export default {
         .then(function(data) {
           vm.config = data;
 
-          vm.map.setView([data.lat, data.lon], data.zoom);
+          vm.getRawMap().setView([data.lat, data.lon], data.zoom);
 
           if (vm.config.callsign) {
             vm.me = new L.Marker.RotatedMarker([data.lat, data.lon]);
@@ -671,7 +661,7 @@ export default {
                 iconAnchor: new L.Point(16, 16),
               })
             );
-            vm.me.addTo(vm.map);
+            vm.me.addTo(vm.getRawMap());
 
             // Add tooltip to self marker
             vm.me.bindTooltip(selfPopup(vm.config));
@@ -680,7 +670,7 @@ export default {
           }
 
           let layers = L.control.layers({}, null, { hideSingleBase: true });
-          layers.addTo(vm.map);
+          layers.addTo(vm.getRawMap());
 
           let first = true;
           data.layers.forEach(function(i) {
@@ -721,9 +711,9 @@ export default {
 
             if (first) {
               first = false;
-              l.addTo(vm.map);
-              lz2.addTo(vm.map);
-              lz1.addTo(vm.map);
+              l.addTo(vm.getRawMap());
+              lz2.addTo(vm.getRawMap());
+              lz1.addTo(vm.getRawMap());
             }
           });
         });
@@ -1002,7 +992,7 @@ export default {
         }
 
         // Calculate offset distance based on zoom level (increased distance)
-        let zoom = this.map.getZoom();
+        let zoom = this.getRawMap().getZoom();
         let offsetDistance = 0.0003 * Math.pow(2, 15 - zoom); // Increased offset distance
 
         // Apply offset to position label beside the route
@@ -1017,24 +1007,9 @@ export default {
     },
 
     calculateLabelStyle: function(item) {
-      console.log("[DEBUG] calculateLabelStyle called for:", item.callsign);
-      console.log("[DEBUG] Map object in calculateLabelStyle:", this.map);
-      console.log(
-        "[DEBUG] Map._map in calculateLabelStyle:",
-        this.map ? this.map._map : "null"
-      );
-
-      // Validate map is properly initialized before accessing map methods
-      if (!this.map || !this.map._map) {
-        console.error(
-          "[DEBUG] Map not properly initialized in calculateLabelStyle"
-        );
-        return { fontSize: 18, rotation: 0 }; // Return default values
-      }
-
       let fontSize = 18; // Default font size
       let rotation = 0; // Default rotation
-      let zoom = this.map.getZoom();
+      let zoom = this.getRawMap().getZoom();
 
       if (!item.links || item.links.length === 0) {
         // Even without links, make font size responsive to zoom
@@ -1052,7 +1027,7 @@ export default {
           try {
             // Convert lat/lng coordinates to pixel coordinates
             let pixelPoints = latlngs.map((coord) =>
-              this.map.latLngToContainerPoint([coord[0], coord[1]])
+              this.getRawMap().latLngToContainerPoint([coord[0], coord[1]])
             );
 
             // Calculate bounding box in pixels
@@ -1110,7 +1085,7 @@ export default {
           try {
             // Convert route points to pixel coordinates
             let pixelPoints = latlngs.map((coord) =>
-              this.map.latLngToContainerPoint([coord[0], coord[1]])
+              this.getRawMap().latLngToContainerPoint([coord[0], coord[1]])
             );
 
             // Calculate total pixel length of the route
@@ -1184,7 +1159,7 @@ export default {
         this.updateUnitMarker(item, false, true);
 
         if (this.locked_unit_uid === item.uid) {
-          this.map.setView([item.lat, item.lon]);
+          this.getRawMap().setView([item.lat, item.lon]);
         }
       }
       this.addContextMenuToMarker(item); // Changed vm.addContextMenuToMarker to this.addContextMenuToMarker
@@ -1418,7 +1393,7 @@ export default {
         return;
       }
       if (u.lat !== 0 || u.lon !== 0) {
-        this.map.setView([u.lat, u.lon]);
+        this.getRawMap().setView([u.lat, u.lon]);
       }
     },
 
@@ -1613,7 +1588,7 @@ export default {
     removeTool: function(name) {
       if (this.tools.has(name)) {
         let p = this.tools.get(name);
-        this.map.removeLayer(p);
+        this.getRawMap().removeLayer(p);
         p.remove();
         this.tools.delete(name);
         this.ts++;
@@ -1772,14 +1747,14 @@ export default {
     menuDeleteAction: function(uid) {
       let unit = this.sharedState.items.get(uid);
       store.removeItem(uid).then((units) => this.processUnits(units));
-      this.map.closePopup(unit.marker.contextmenu);
+      this.getRawMap().closePopup(unit.marker.contextmenu);
     },
 
     menuSendAction: function(uid) {
       let unit = this.sharedState.items.get(uid);
       this.sharedState.unitToSend = unit;
       new bootstrap.Modal(document.querySelector("#send-modal")).show();
-      this.map.closePopup(unit.marker.contextmenu);
+      this.getRawMap().closePopup(unit.marker.contextmenu);
     },
 
     sendMessage: function() {
@@ -1915,7 +1890,7 @@ export default {
     locateByGPS: function() {
       if (!this.config) return; // Check if config is loaded
       fetch(window.baseUrl + "/pos").then((r) =>
-        this.map.setView([this.config.lat, this.config.lon])
+        this.getRawMap().setView([this.config.lat, this.config.lon])
       );
     },
     changeMode: function(newMode) {
@@ -2119,21 +2094,6 @@ export default {
 
     // Update drawing and route labels method
     updateDrawingTextLabel: function(item) {
-      console.log("[DEBUG] updateDrawingTextLabel called for:", item.callsign);
-      console.log("[DEBUG] Map object in updateDrawingTextLabel:", this.map);
-      console.log(
-        "[DEBUG] Map._map in updateDrawingTextLabel:",
-        this.map ? this.map._map : "null"
-      );
-
-      // Validate map is properly initialized before accessing map methods
-      if (!this.map || !this.map._map) {
-        console.error(
-          "[DEBUG] Map not properly initialized in updateDrawingTextLabel"
-        );
-        return;
-      }
-
       // Only update the style of existing text label instead of recreating it
       if (item.textLabel) {
         // Calculate new styling
@@ -2165,31 +2125,12 @@ export default {
 
     // Zoom update method
     onMapZoom: function() {
-      console.log("[DEBUG] onMapZoom called");
-      console.log("[DEBUG] Map object in onMapZoom:", this.map);
-      console.log(
-        "[DEBUG] Map._map in onMapZoom:",
-        this.map ? this.map._map : "null"
-      );
-
-      // Validate map is properly initialized
-      if (!this.map || !this.map._map) {
-        console.error("[DEBUG] Map not properly initialized during zoom event");
-        return;
-      }
-
       // Throttle zoom updates to improve performance during zoom animations
       if (this.zoomUpdateTimeout) {
         clearTimeout(this.zoomUpdateTimeout);
       }
 
       this.zoomUpdateTimeout = setTimeout(() => {
-        // Double-check map is still valid after timeout
-        if (!this.map || !this.map._map) {
-          console.error("[DEBUG] Map became invalid during zoom timeout");
-          return;
-        }
-
         // Update all drawing and route labels when zoom changes
         this.sharedState.items.forEach((item) => {
           if (
