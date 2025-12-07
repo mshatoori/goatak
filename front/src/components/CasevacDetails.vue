@@ -571,21 +571,21 @@ export default {
   components: {
     NavigationInfo,
   },
-  data: function () {
+  data: function() {
     return {
       editing: false,
       editingData: null,
       sharedState: store.state,
     };
   },
-  mounted: function () {
+  mounted: function() {
     // Automatically start editing if this is a new item
     if (this.item && this.item.isNew === true) {
       this.$nextTick(() => this.startEditing());
     }
   },
   watch: {
-    item: function (newVal, oldVal) {
+    item: function(newVal, oldVal) {
       if (newVal && newVal.uid !== oldVal.uid) {
         if (newVal.isNew) {
           this.$nextTick(() => this.startEditing());
@@ -594,12 +594,12 @@ export default {
     },
   },
   methods: {
-    mapToUnit: function (unit) {
+    mapToUnit: function(unit) {
       if (unit && unit.lat && unit.lon) {
         this.map.setView([unit.lat, unit.lon]);
       }
     },
-    startEditing: function () {
+    startEditing: function() {
       // Fix for cyclic object value error - create a structured deep copy instead of JSON.parse/stringify
       this.editingData = {
         uid: this.item.uid,
@@ -664,7 +664,7 @@ export default {
 
       this.editing = true;
     },
-    cancelEditing: function () {
+    cancelEditing: function() {
       this.editing = false;
       this.editingData = null;
 
@@ -672,10 +672,10 @@ export default {
         this.deleteItem();
       }
     },
-    deleteItem: function () {
+    deleteItem: function() {
       this.$emit("delete", this.item.uid);
     },
-    saveEditing: function () {
+    saveEditing: function() {
       // Validate form fields if necessary
       if (!this.validateForm()) {
         return;
@@ -688,8 +688,8 @@ export default {
         urgent: this.editingData.casevac_detail.urgent,
         routine: this.editingData.casevac_detail.routine,
         hoist: this.editingData.casevac_detail.hoist,
-        extraction_equipment:
-          this.editingData.casevac_detail.extraction_equipment,
+        extraction_equipment: this.editingData.casevac_detail
+          .extraction_equipment,
         ventilator: this.editingData.casevac_detail.ventilator,
         equipment_other: this.editingData.casevac_detail.equipment_other,
         equipment_detail: this.editingData.casevac_detail.equipment_detail,
@@ -715,11 +715,13 @@ export default {
       this.$emit("save", this.item);
       this.editing = false;
     },
-    validateForm: function () {
+    validateForm: function() {
       // Add any necessary form validation logic here
       // For now, we'll just return true to allow saving
       return true;
     },
+    printCoords,
+    formatNumber,
   },
 };
 </script>

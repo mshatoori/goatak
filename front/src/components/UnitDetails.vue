@@ -439,7 +439,7 @@ export default {
     UnitTrackingControl,
     HierarchySelector,
   },
-  data: function () {
+  data: function() {
     return {
       editing: false,
       editingData: null,
@@ -447,14 +447,14 @@ export default {
       availableDestinations: null,
     };
   },
-  mounted: function () {
+  mounted: function() {
     // Automatically start editing if this is a new item
     if (this.item && this.item.isNew) {
       this.$nextTick(() => this.startEditing());
     }
   },
   watch: {
-    item: function (newVal, oldVal) {
+    item: function(newVal, oldVal) {
       if (newVal && newVal.uid !== oldVal.uid) {
         if (newVal.isNew) {
           this.$nextTick(() => this.startEditing());
@@ -465,10 +465,10 @@ export default {
   methods: {
     getSidc: (s) => store.getSidc(s),
     getRootSidc: (s) => store.getRootSidc(s),
-    milImg: function (item) {
+    milImg: function(item) {
       return getMilIcon(item, false).uri;
     },
-    getUnitName: function (u) {
+    getUnitName: function(u) {
       let res = u.callsign || "no name";
       if (u.parent_uid === this.config.uid) {
         // Use send_mode for visual indicators, fallback to send for backward compatibility
@@ -491,12 +491,12 @@ export default {
       }
       return res;
     },
-    mapToUnit: function (unit) {
+    mapToUnit: function(unit) {
       if (unit && unit.lat && unit.lon) {
         this.map.setView([unit.lat, unit.lon]);
       }
     },
-    startEditing: function () {
+    startEditing: function() {
       console.log("startEditing called for item:", this.item); // Added log
       // Use a structured deep copy to avoid circular references
       this.editingData = {
@@ -539,7 +539,7 @@ export default {
       this.editing = true;
       console.log("editing set to:", this.editing); // Added log
     },
-    cancelEditing: function () {
+    cancelEditing: function() {
       this.editing = false;
       this.editingData = null;
 
@@ -547,7 +547,7 @@ export default {
         this.deleteItem();
       }
     },
-    saveEditing: function () {
+    saveEditing: function() {
       // Update the item with the edited data
       for (const key in this.editingData) {
         if (key !== "stale_duration") {
@@ -581,20 +581,20 @@ export default {
 
       this.$emit("save", this.item);
     },
-    deleteItem: function () {
+    deleteItem: function() {
       this.$emit("delete", this.item.uid);
     },
-    openChat: function (uid, callsign) {
+    openChat: function(uid, callsign) {
       console.log("UnitDetails: Opening chat with", uid, callsign);
       this.$emit("open-chat", uid, callsign);
     },
     // Method to handle navigation between subtype levels
-    setFormRootSidc: function (code) {
+    setFormRootSidc: function(code) {
       this.editingData.root_sidc = this.getSidc(code);
       this.editingData.subtype = code;
     },
     // Fetch destinations from API
-    fetchDestinations: function () {
+    fetchDestinations: function() {
       fetch(window.baseUrl + "/destinations")
         .then((response) => response.json())
         .then((data) => {
@@ -606,7 +606,7 @@ export default {
         });
     },
     // Handle URN selection to populate IP options
-    onUrnSelected: function () {
+    onUrnSelected: function() {
       if (this.editingData.selected_urn && this.availableContacts) {
         const selectedContact = this.availableContacts.find(
           (contact) => contact.urn.toString() === this.editingData.selected_urn
@@ -624,9 +624,10 @@ export default {
     sp,
     dt,
     formatNumber,
+    formatSpeed,
   },
   computed: {
-    renderedItem: function () {
+    renderedItem: function() {
       if (this.editing)
         return {
           ...this.editingData,
@@ -636,16 +637,16 @@ export default {
         };
       return this.item;
     },
-    isContact: function () {
+    isContact: function() {
       return this.item && this.item.category === "contact";
     },
-    availableSubnets: function () {
+    availableSubnets: function() {
       // Use ownAddresses as subnet options for broadcast to own networks
       return this.availableDestinations
         ? this.availableDestinations.ownAddresses || []
         : [];
     },
-    availableContacts: function () {
+    availableContacts: function() {
       // Group directDestinations by URN to create contact list
       if (
         !this.availableDestinations ||
@@ -672,7 +673,7 @@ export default {
 
       return Array.from(contactMap.values());
     },
-    availableIps: function () {
+    availableIps: function() {
       console.log(
         this.editingData,
         this.editingData.selected_urn,
