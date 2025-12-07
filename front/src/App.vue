@@ -208,7 +208,6 @@
           :coords="coords"
           :active-item="activeItem"
           :locked_unit_uid="locked_unit_uid"
-          :map="map"
           :tracking-manager="trackingManager"
           v-on:open-chat="openChat"
           v-on:save="saveItem"
@@ -299,14 +298,10 @@
   </div>
 
   <flows-modal></flows-modal>
-  <alarms-modal :map="map"></alarms-modal>
+  <alarms-modal></alarms-modal>
   <send-modal></send-modal>
   <sensors-modal></sensors-modal>
-  <resending-modal :config="config" :map="map"></resending-modal>
-  <!-- <tracking-control
-    :map="map"
-    :tracking-manager="trackingManager"
-  ></tracking-control> -->
+  <resending-modal :config="config"></resending-modal>
 </template>
 
 <script>
@@ -342,7 +337,6 @@ export default {
   name: "App",
   data() {
     return {
-      map: null,
       layers: null,
       overlays: null,
       conn: null,
@@ -388,7 +382,7 @@ export default {
   },
   provide() {
     return {
-      map: this.map,
+      map: () => store.getMap(),
       latlng: this.latlng,
       config: this.config,
       getTool: this.getTool,
@@ -398,11 +392,12 @@ export default {
     };
   },
   mounted() {
-    this.map = L.map("map", {
+    const mapInstance = L.map("map", {
       attributionControl: false,
       locateCallback: this.locateByGPS,
       changeMode: this.changeMode,
     });
+    store.setMap(mapInstance);
     this.inDrawMode = false;
     this.mode = "map";
 
@@ -616,7 +611,7 @@ export default {
       return toRaw(this.overlays[item.category]);
     },
     getRawMap() {
-      return toRaw(this.map);
+      return store.getMap();
     },
     configUpdated: function() {
       console.log("config updated");

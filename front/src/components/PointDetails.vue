@@ -69,7 +69,7 @@
               <span
                 class="badge rounded-pill bg-success"
                 style="cursor: default"
-                v-on:click="map.setView([item.lat, item.lon])"
+                v-on:click="focusOnPoint"
                 ><i class="bi bi-geo"></i
               ></span>
               <span v-if="coords"
@@ -331,25 +331,25 @@ import { getIconUri, printCoords, distBea, latlng, dt } from "../utils.js"; // A
 // import "../../static/js/utils.js";
 
 export default {
-  props: ["item", "coords", "map", "locked_unit_uid", "config"],
+  props: ["item", "coords", "locked_unit_uid", "config"],
   // components: {
   //   NavigationInfo: Vue.component("NavigationInfo"),
   // },
-  data: function () {
+  data: function() {
     return {
       editing: false,
       editingData: null,
       sharedState: store.state,
     };
   },
-  mounted: function () {
+  mounted: function() {
     // Automatically start editing if this is a new item
     if (this.item && this.item.isNew === true) {
       this.$nextTick(() => this.startEditing());
     }
   },
   watch: {
-    item: function (newVal, oldVal) {
+    item: function(newVal, oldVal) {
       if (newVal && newVal.uid !== oldVal.uid) {
         if (newVal.isNew) {
           this.$nextTick(() => this.startEditing());
@@ -358,18 +358,27 @@ export default {
     },
   },
   computed: {
-    renderedItem: function () {
+    renderedItem: function() {
       if (this.editing) return this.editingData;
       return this.item;
     },
   },
   methods: {
-    mapToUnit: function (unit) {
-      if (unit && unit.lat && unit.lon) {
-        this.map.setView([unit.lat, unit.lon]);
+    focusOnPoint: function() {
+      const map = store.getMap();
+      if (map && this.item) {
+        map.setView([this.item.lat, this.item.lon]);
       }
     },
-    startEditing: function () {
+    mapToUnit: function(unit) {
+      if (unit && unit.lat && unit.lon) {
+        const map = store.getMap();
+        if (map) {
+          map.setView([unit.lat, unit.lon]);
+        }
+      }
+    },
+    startEditing: function() {
       // Use a structured deep copy to avoid circular references
       this.editingData = {
         uid: this.item.uid,
@@ -388,7 +397,7 @@ export default {
 
       this.editing = true;
     },
-    cancelEditing: function () {
+    cancelEditing: function() {
       this.editing = false;
       this.editingData = null;
 
@@ -396,7 +405,7 @@ export default {
         this.deleteItem();
       }
     },
-    saveEditing: function () {
+    saveEditing: function() {
       // Update the item with the edited data
       for (const key in this.editingData) {
         this.item[key] = this.editingData[key];
@@ -406,10 +415,10 @@ export default {
       this.editing = false;
       this.editingData = null;
     },
-    deleteItem: function () {
+    deleteItem: function() {
       this.$emit("delete", this.item.uid);
     },
-    colorName: function (color) {
+    colorName: function(color) {
       switch (color) {
         case "red":
           return "قرمز";
@@ -427,7 +436,7 @@ export default {
           return "سیاه";
       }
     },
-    typeName: function (type) {
+    typeName: function(type) {
       switch (type) {
         case "b-m-p-s-m":
           return "محل";

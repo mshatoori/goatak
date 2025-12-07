@@ -90,7 +90,7 @@
             <span
               class="badge rounded-pill bg-success"
               style="cursor: default"
-              v-on:click="map.setView([config.lat, config.lon])"
+              v-on:click="focusOnSelf"
               ><i class="bi bi-geo"></i
             ></span>
             <span v-if="coords"
@@ -157,6 +157,12 @@ export default {
     printCoords,
     distBea,
     latlng,
+    focusOnSelf() {
+      const map = store.getMap();
+      if (map) {
+        map.setView([this.config.lat, this.config.lon]);
+      }
+    },
     toggleEdit() {
       if (this.editing) this.save();
       this.editing = !this.editing;
@@ -195,7 +201,7 @@ export default {
     },
   },
   computed: {},
-  props: ["config", "coords", "configUpdated", "map", "checkEmergency"],
+  props: ["config", "coords", "configUpdated", "checkEmergency"],
   inject: [],
 };
 </script>

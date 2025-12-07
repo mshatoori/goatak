@@ -119,11 +119,11 @@ function getMilIcon(item, withText) {
   if (withText) {
     // opts['uniqueDesignation'] = item.callsign;
     if (item.speed > 0) {
-      opts["speed"] = formatNumber(item.speed * 3.6, 1) + " km/h";
+      opts["speed"] = formatNumberEn(item.speed * 3.6, 1) + " km/h";
       opts["direction"] = item.course;
     }
     if (item.sidc.charAt(2) === "A") {
-      opts["altitudeDepth"] = formatNumber(item.hae, 0) + " m";
+      opts["altitudeDepth"] = formatNumberEn(item.hae, 0) + " m";
     }
   }
 
@@ -527,6 +527,7 @@ export {
   distBea,
   sp,
   formatNumber,
+  formatNumberEn,
   toUri,
   uuidv4,
   popup,
@@ -791,6 +792,22 @@ function formatNumber(num, decimals = 0) {
     return "0";
   }
   return num.toLocaleString("fa-IR", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
+
+/**
+ * Format numbers
+ * @param {number} num - The number to format
+ * @param {number} decimals - Number of decimal places (default: 0)
+ * @returns {string} Formatted number string
+ */
+function formatNumberEn(num, decimals = 0) {
+  if (num === null || num === undefined || isNaN(num)) {
+    return "0";
+  }
+  return num.toLocaleString("en-US", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });

@@ -3,6 +3,10 @@ import { cleanUnit, uuidv4 } from "./utils.js";
 
 const store = {
   debug: true,
+
+  // Map instance stored outside reactive state to avoid Vue3 reactivity wrapping issues
+  _map: null,
+
   state: reactive({
     items: new Map(),
     ts: 0,
@@ -16,6 +20,15 @@ const store = {
       switch2: false,
     },
   }),
+
+  // Map management methods
+  setMap(mapInstance) {
+    this._map = mapInstance;
+  },
+
+  getMap() {
+    return this._map;
+  },
 
   // Items
   createItem: function(item) {

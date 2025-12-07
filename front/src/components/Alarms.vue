@@ -69,7 +69,6 @@ import store from "../store.js";
 
 export default {
   name: "Alarms",
-  props: ["map"], // TODO: Change this to only alarms
   data() {
     return {
       sharedState: store.state,
@@ -79,7 +78,7 @@ export default {
     alarms() {
       let res = [];
       this.sharedState.ts &&
-        this.sharedState.items.forEach(function (u) {
+        this.sharedState.items.forEach(function(u) {
           if (u.category === "alarm") res.push(u);
         });
       return res;
@@ -102,7 +101,10 @@ export default {
       }[alarmType];
     },
     focus(alarm) {
-      this.map.setView([alarm.lat, alarm.lon], 12);
+      const map = store.getMap();
+      if (map) {
+        map.setView([alarm.lat, alarm.lon], 12);
+      }
       var myModalEl = document.getElementById("alarms-modal");
       var modal = bootstrap.Modal.getInstance(myModalEl);
       modal.hide();

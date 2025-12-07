@@ -325,15 +325,14 @@
 <script setup>
 import { ref, computed, onMounted, getCurrentInstance } from "vue";
 import FilterComponent from "./FilterComponent.vue";
+import store from "../store.js";
 
 const props = defineProps({
   config: Object,
-  map: Object,
 });
 
 // Get access to global properties
 const instance = getCurrentInstance();
-const store = instance.appContext.config.globalProperties.$store;
 const emit = instance.emit;
 
 // State

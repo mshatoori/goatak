@@ -77,7 +77,7 @@
               <i
                 v-if="
                   category.hasSubcategories ||
-                  (category.items && category.items.length > 0)
+                    (category.items && category.items.length > 0)
                 "
                 class="expand-icon bi me-1"
                 :class="
@@ -271,10 +271,6 @@ export default {
     },
     activeItemUid: {
       type: String,
-      default: null,
-    },
-    map: {
-      type: Object,
       default: null,
     },
   },
@@ -546,8 +542,9 @@ export default {
 
     // Toggle category expand/collapse
     toggleCategoryExpand(categoryName) {
-      this.expandedCategories[categoryName] =
-        !this.expandedCategories[categoryName];
+      this.expandedCategories[categoryName] = !this.expandedCategories[
+        categoryName
+      ];
     },
 
     // Toggle subcategory expand/collapse

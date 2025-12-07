@@ -225,25 +225,25 @@ import store from "../store.js";
 import * as Utils from "../utils.js"; // Assuming Utils is also needed
 
 export default {
-  props: ["item", "coords", "map", "locked_unit_uid", "config"],
+  props: ["item", "coords", "locked_unit_uid", "config"],
   // components: {
   //   NavigationInfo: Vue.component("NavigationInfo"),
   // },
-  data: function () {
+  data: function() {
     return {
       editing: false,
       editingData: null,
       sharedState: store.state,
     };
   },
-  mounted: function () {
+  mounted: function() {
     // Automatically start editing if this is a new item
     if (this.item && this.item.isNew === true) {
       this.$nextTick(() => this.startEditing());
     }
   },
   watch: {
-    item: function (newVal, oldVal) {
+    item: function(newVal, oldVal) {
       if (newVal && newVal.uid !== oldVal.uid) {
         if (newVal.isNew) {
           this.$nextTick(() => this.startEditing());
@@ -260,12 +260,15 @@ export default {
     },
   },
   methods: {
-    mapToUnit: function (unit) {
+    mapToUnit: function(unit) {
       if (unit && unit.lat && unit.lon) {
-        this.map.setView([unit.lat, unit.lon]);
+        const map = store.getMap();
+        if (map) {
+          map.setView([unit.lat, unit.lon]);
+        }
       }
     },
-    startEditing: function () {
+    startEditing: function() {
       // Use a structured deep copy to avoid circular references
       this.editingData = {
         uid: this.item.uid,
@@ -291,7 +294,7 @@ export default {
 
       this.editing = true;
     },
-    cancelEditing: function () {
+    cancelEditing: function() {
       this.editing = false;
       this.editingData = null;
 
@@ -299,7 +302,7 @@ export default {
         this.deleteItem();
       }
     },
-    saveEditing: function () {
+    saveEditing: function() {
       // Update the item with the edited data
       for (const key in this.editingData) {
         this.item[key] = this.editingData[key];
@@ -310,10 +313,10 @@ export default {
 
       this.$emit("save", this.item);
     },
-    deleteItem: function () {
+    deleteItem: function() {
       this.$emit("delete", this.item.uid);
     },
-    colorName: function (color) {
+    colorName: function(color) {
       switch (color) {
         case "white":
           return "سفید";

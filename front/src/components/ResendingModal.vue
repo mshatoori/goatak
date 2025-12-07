@@ -22,7 +22,7 @@
           ></button>
         </div>
         <div class="modal-body p-0">
-          <ResendingPanel :config="config" :map="map" />
+          <ResendingPanel :config="config" />
         </div>
       </div>
     </div>
@@ -34,6 +34,5 @@ import ResendingPanel from "./ResendingPanel.vue";
 
 defineProps({
   config: Object,
-  map: Object,
 });
 </script>

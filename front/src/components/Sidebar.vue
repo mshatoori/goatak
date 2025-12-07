@@ -14,7 +14,6 @@
         <overlays-list
           :toggle-overlay-items="toggleOverlayItems"
           :active-item-uid="activeItem ? activeItem.uid : null"
-          :map="map"
           @select-item="handleOverlayItemSelected"
         ></overlays-list>
       </div>
@@ -30,7 +29,6 @@
           :config="config"
           :coords="coords"
           :config-updated="configUpdated"
-          :map="map"
         ></user-info>
       </div>
       <!--<div
@@ -134,7 +132,6 @@
           v-if="activeItem"
           :item="activeItem"
           :coords="coords"
-          :map="map"
           :locked_unit_uid="locked_unit_uid"
           :config="config"
           @save="onSave"
@@ -237,7 +234,7 @@ export default {
     };
   },
   methods: {
-    switchTab: function (tabName, force = false) {
+    switchTab: function(tabName, force = false) {
       console.log(
         "[switchTab] starting switch from " + this.activeTab + " to " + tabName
       );
@@ -260,7 +257,7 @@ export default {
       }
     },
 
-    getActiveItemName: function () {
+    getActiveItemName: function() {
       if (this.activeItem) {
         if (
           this.activeItem.category === "report" &&
@@ -287,15 +284,15 @@ export default {
       }
       return "آیتم";
     },
-    openChat: function (uid, callsign) {
+    openChat: function(uid, callsign) {
       console.log("SideBar: Opening chat with", uid, callsign);
       this.$emit("open-chat", uid, callsign);
     },
-    onSave: function (value) {
+    onSave: function(value) {
       console.log("save@sidebar", value);
       this.$emit("save", value);
     },
-    onDelete: function (value) {
+    onDelete: function(value) {
       this.$emit("delete", value);
 
       if (this.activeTab === "item-details") {
@@ -303,11 +300,11 @@ export default {
         this.switchTab("item-details");
       }
     },
-    onNavigationLineToggle: function (event) {
+    onNavigationLineToggle: function(event) {
       console.log("Navigation line toggle@sidebar", event);
       this.$emit("navigation-line-toggle", event);
     },
-    handleOverlayItemSelected: function (item) {
+    handleOverlayItemSelected: function(item) {
       console.log("Overlay item selected@sidebar", item);
       // The parent (map.js) will handle setting the active item and panning
       // We emit this so the map component can handle it
@@ -323,11 +320,11 @@ export default {
   },
 
   watch: {
-    isCollapsed: function (newVal) {
+    isCollapsed: function(newVal) {
       // Emit the collapsed state whenever it changes
       this.$emit("collapsed", newVal);
     },
-    casevacLocation: function (newVal) {
+    casevacLocation: function(newVal) {
       if (newVal) {
         // Create a temporary casevac item
         this.activeItem = {
@@ -364,7 +361,7 @@ export default {
         this.$nextTick(() => this.switchTab("item-details"));
       }
     },
-    activeItem: function (newVal, oldVal) {
+    activeItem: function(newVal, oldVal) {
       // console.log("sidebar selectedItem watcher:", { newVal, oldVal });
       if (newVal && (oldVal === null || newVal.uid !== oldVal.uid)) {
         this.$nextTick(() => {
@@ -384,7 +381,6 @@ export default {
     "activeItem",
     "locked_unit_uid",
     "checkEmergency",
-    "map",
     "casevacLocation",
     "trackingManager",
   ],

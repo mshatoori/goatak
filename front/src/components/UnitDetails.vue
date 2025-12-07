@@ -101,7 +101,7 @@
               <span
                 class="badge rounded-pill bg-success"
                 style="cursor: default"
-                v-on:click="map.setView([item.lat, item.lon])"
+                v-on:click="focusOnUnit"
                 ><i class="bi bi-geo"></i
               ></span>
               <span v-if="coords"
@@ -433,7 +433,7 @@ import UnitTrackingControl from "./UnitTrackingControl.vue";
 import HierarchySelector from "./HierarchySelector.vue";
 
 export default {
-  props: ["item", "coords", "map", "locked_unit_uid", "config"],
+  props: ["item", "coords", "locked_unit_uid", "config"],
   components: {
     NavigationInfo,
     UnitTrackingControl,
@@ -491,9 +491,18 @@ export default {
       }
       return res;
     },
+    focusOnUnit: function() {
+      const map = store.getMap();
+      if (map && this.item) {
+        map.setView([this.item.lat, this.item.lon]);
+      }
+    },
     mapToUnit: function(unit) {
       if (unit && unit.lat && unit.lon) {
-        this.map.setView([unit.lat, unit.lon]);
+        const map = store.getMap();
+        if (map) {
+          map.setView([unit.lat, unit.lon]);
+        }
       }
     },
     startEditing: function() {

@@ -25,7 +25,6 @@
       :is="componentType"
       :item="item"
       :coords="coords"
-      :map="map"
       :locked_unit_uid="locked_unit_uid"
       :config="config"
       @save="onSave"
@@ -41,7 +40,7 @@ import store from "../store.js";
 
 export default {
   name: "ItemDetails",
-  props: ["item", "coords", "map", "locked_unit_uid", "config"],
+  props: ["item", "coords", "locked_unit_uid", "config"],
   computed: {
     isCasevac() {
       return (
@@ -82,7 +81,7 @@ export default {
     },
   },
   methods: {
-    openChat: function (uid, callsign) {
+    openChat: function(uid, callsign) {
       console.log("item.details: Opening chat with", uid, callsign);
       this.$emit("open-chat", uid, callsign);
     },
