@@ -722,7 +722,7 @@ const getFilterSummary = (filter) => {
 };
 
 const fetchDestinations = () => {
-  fetch(window.baseUrl + "destinations")
+  fetch(window.baseUrl + "/destinations")
     .then((response) => response.json())
     .then((data) => {
       availableDestinations.value = data;
@@ -780,8 +780,12 @@ const loadEnhancedSelectionFromDestination = () => {
 };
 
 // Lifecycle
-onMounted(() => {
-  loadResendConfigs();
+onMounted(async () => {
+  try {
+    await loadResendConfigs();
+  } catch (err) {
+    console.error("Failed to load resend configs on mount:", err);
+  }
   fetchDestinations();
 });
 </script>

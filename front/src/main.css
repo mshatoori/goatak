@@ -1,0 +1,164 @@
+/* Main CSS file for the Vue.js frontend */
+
+/* Import Bootstrap and other global styles */
+@import url("../static/css/bootstrap.min.css");
+@import url("../static/css/bootstrap-icons.min.css");
+@import url("../static/css/main.css");
+
+/* Overlay Manager Tree Styles */
+.overlay-manager-tree .tree-container {
+  max-height: 600px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+/* Tree Nodes */
+.overlay-manager-tree .tree-node {
+  padding: 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.overlay-manager-tree .tree-node:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.overlay-manager-tree .node-content {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+/* Category Header */
+.overlay-manager-tree .category-header {
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.overlay-manager-tree .category-title {
+  flex: 1;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* Expand Icon */
+.overlay-manager-tree .expand-icon {
+  cursor: pointer;
+  transition: transform 0.2s;
+  font-size: 0.875rem;
+  width: 1rem;
+  text-align: center;
+}
+
+/* Subcategories */
+.overlay-manager-tree .subcategories {
+  margin-left: 1.5rem;
+  border-left: 2px solid #e9ecef;
+  padding-left: 0.5rem;
+}
+
+.overlay-manager-tree .subcategory-node {
+  padding: 0.25rem 0;
+}
+
+.overlay-manager-tree .subcategory-content {
+  font-size: 0.875rem;
+}
+
+.overlay-manager-tree .subcategory-indent {
+  width: 1rem;
+  display: inline-block;
+}
+
+.overlay-manager-tree .subcategory-title {
+  flex: 1;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* Search Bar */
+.overlay-manager-tree .form-control {
+  font-size: 0.875rem;
+}
+
+/* Badges */
+.overlay-manager-tree .badge {
+  font-size: 0.75rem;
+}
+
+/* Navigation Line Styles */
+.navigation-line {
+  pointer-events: none;
+}
+
+/* Drawing Text Label Styles */
+.drawing-text-label {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: bold;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.drawing-text-label-icon {
+  background: transparent !important;
+}
+
+/* Marker Context Menu */
+.marker-contextmenu {
+  font-size: 0.875rem;
+}
+
+.marker-contextmenu .dropdown-header {
+  font-size: 0.75rem;
+  color: #6c757d;
+}
+
+/* Self Marker Info */
+.my-marker-info {
+  background: rgba(0, 123, 255, 0.9);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .overlay-manager-tree .tree-container {
+    max-height: 400px;
+  }
+
+  .overlay-manager-tree .subcategories {
+    margin-left: 1rem;
+  }
+}
+
+/* Animation for expand/collapse */
+.overlay-manager-tree .expand-icon.bi-chevron-down {
+  transform: rotate(90deg);
+}
+
+/* Custom scrollbar for tree container */
+.overlay-manager-tree .tree-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overlay-manager-tree .tree-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.overlay-manager-tree .tree-container::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.overlay-manager-tree .tree-container::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

@@ -75,7 +75,7 @@
 </template>
 
 <script>
-import store from "../../static/js/store.js";
+import store from "../store.js";
 
 export default {
   name: "HierarchySelector",

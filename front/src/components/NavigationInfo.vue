@@ -91,6 +91,7 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from "vue";
+import { formatNumber, formatBearing, formatDistance } from "../utils.js";
 
 // Props
 const props = defineProps({
@@ -112,11 +113,6 @@ const showNavigationLine = ref(false);
 const isLoading = ref(false);
 const apiError = ref(null);
 const apiResult = ref(null);
-
-// Helper function for number formatting
-function formatNumber(num) {
-  return num.toLocaleString("fa-IR");
-}
 
 // Computed properties
 const navigationData = computed(() => {
@@ -145,15 +141,12 @@ const hasValidData = computed(() => {
 
 const bearingDisplay = computed(() => {
   if (!hasValidData.value) return "N/A";
-  return `${formatNumber(navigationData.value.bearing.toFixed(1))}°T`;
+  return formatBearing(navigationData.value.bearing);
 });
 
 const distanceDisplay = computed(() => {
   if (!hasValidData.value) return "N/A";
-  const distance = navigationData.value.distance;
-  return distance < 10000
-    ? `${formatNumber(distance.toFixed(0))}m`
-    : `${formatNumber((distance / 1000).toFixed(1))}km`;
+  return formatDistance(navigationData.value.distance);
 });
 
 // Watch

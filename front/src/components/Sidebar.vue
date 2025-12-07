@@ -3,7 +3,7 @@
     <div
       class="tab-content flex-grow-1 h-100"
       id="v-pills-tabContent"
-      :class="{'d-none': isCollapsed}"
+      :class="{ 'd-none': isCollapsed }"
     >
       <div
         class="tab-pane fade show active"
@@ -11,7 +11,12 @@
         role="tabpanel"
         aria-labelledby="v-pills-overlays-tab"
       >
-        <overlays-list :toggle-overlay="toggleOverlay"></overlays-list>
+        <overlays-list
+          :toggle-overlay-items="toggleOverlayItems"
+          :active-item-uid="activeItem ? activeItem.uid : null"
+          :map="map"
+          @select-item="handleOverlayItemSelected"
+        ></overlays-list>
       </div>
       <div
         v-if="config && config.callsign"
@@ -92,7 +97,7 @@
             </li>
             <li v-if="getTool('redx')" class="mt-1 list-group-item">
               <span class="badge bg-danger">نشان</span>: {{
-              Utils.printCoordsll(getTool('redx').getLatLng()) }}
+              printCoordsll(getTool('redx').getLatLng()) }}
               <span
                 class="badge rounded-pill bg-success"
                 style="cursor:default;"
@@ -108,9 +113,9 @@
             </li>
             <li v-if="coords" class="mt-1 list-group-item">
               <span class="badge bg-secondary">نشانگر</span>: {{
-              Utils.printCoordsll(coords) }}
+              printCoordsll(coords) }}
               <span v-if="getTool('redx')"
-                >({{ Utils.distBea(getTool('redx').getLatLng(), coords) }} از
+                >({{ distBea(getTool('redx').getLatLng(), coords) }} از
                 نشانگر)</span
               >
             </li>
@@ -217,11 +222,11 @@
 </template>
 
 <script>
-import '../utils.js'
-import store from '../../store.js';
+import { printCoordsll, distBea } from "../utils.js";
+import store from "../store.js";
 
 export default {
-  name: 'Sidebar',
+  name: "Sidebar",
   data() {
     return {
       sharedState: store.state,
@@ -302,6 +307,19 @@ export default {
       console.log("Navigation line toggle@sidebar", event);
       this.$emit("navigation-line-toggle", event);
     },
+    handleOverlayItemSelected: function (item) {
+      console.log("Overlay item selected@sidebar", item);
+      // The parent (map.js) will handle setting the active item and panning
+      // We emit this so the map component can handle it
+      this.$emit("select-overlay-item", item);
+
+      // Also switch to item details tab to show the selected item
+      if (item && item.uid) {
+        this.$nextTick(() => {
+          this.switchTab("item-details", true);
+        });
+      }
+    },
   },
 
   watch: {
@@ -359,7 +377,7 @@ export default {
 
   computed: {},
   props: [
-    "toggleOverlay",
+    "toggleOverlayItems",
     "config",
     "coords",
     "configUpdated",
@@ -374,5 +392,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

@@ -87,7 +87,7 @@
           >
           <div class="col-sm-8">
             <label class="col-form-label">{{
-              Utils.humanReadableType(item.type)
+              humanReadableType(item.type)
             }}</label>
           </div>
         </div>
@@ -97,7 +97,7 @@
           >
           <div class="col-sm-8">
             <label class="col-form-label"
-              >{{ Utils.printCoords(item.lat, item.lon) }}
+              >{{ printCoords(item.lat, item.lon) }}
               <span
                 class="badge rounded-pill bg-success"
                 style="cursor: default"
@@ -105,10 +105,8 @@
                 ><i class="bi bi-geo"></i
               ></span>
               <span v-if="coords"
-                >({{
-                  Utils.distBea(Utils.latlng(item.lat, item.lon), coords)
-                }}
-                تا نشانگر)</span
+                >({{ distBea(latlng(item.lat, item.lon), coords) }} تا
+                نشانگر)</span
               ></label
             >
           </div>
@@ -118,9 +116,7 @@
             ><strong>سرعت</strong></label
           >
           <div class="col-sm-8">
-            <label class="col-form-label"
-              >{{ formatNumber(Utils.sp(item.speed)) }} KM/H</label
-            >
+            <label class="col-form-label">{{ formatSpeed(item.speed) }}</label>
           </div>
         </div>
         <div class="form-group row">
@@ -152,9 +148,7 @@
             ><strong>زمان ایجاد</strong></label
           >
           <div class="col-sm-8">
-            <label class="col-form-label">{{
-              Utils.dt(item.start_time)
-            }}</label>
+            <label class="col-form-label">{{ dt(item.start_time) }}</label>
           </div>
         </div>
         <div class="form-group row">
@@ -162,7 +156,7 @@
             ><strong>زمان ارسال</strong></label
           >
           <div class="col-sm-8">
-            <label class="col-form-label">{{ Utils.dt(item.send_time) }}</label>
+            <label class="col-form-label">{{ dt(item.send_time) }}</label>
           </div>
         </div>
         <div class="form-group row">
@@ -170,9 +164,7 @@
             ><strong>زمان انقضا</strong></label
           >
           <div class="col-sm-8">
-            <label class="col-form-label">{{
-              Utils.dt(item.stale_time)
-            }}</label>
+            <label class="col-form-label">{{ dt(item.stale_time) }}</label>
           </div>
         </div>
       </dl>
@@ -424,17 +416,18 @@
 </template>
 
 <script>
-import store from "../../static/js/store.js";
+import store from "../store.js";
 import {
   getMilIcon,
   humanReadableType,
-  printCoords,
+  formatCoordinates as printCoords,
   distBea,
   latlng,
   sp,
   dt,
   formatNumber,
-} from "../../static/js/utils.js";
+  formatSpeed,
+} from "../utils.js";
 import NavigationInfo from "./NavigationInfo.vue";
 import UnitTrackingControl from "./UnitTrackingControl.vue";
 import HierarchySelector from "./HierarchySelector.vue";
@@ -602,7 +595,7 @@ export default {
     },
     // Fetch destinations from API
     fetchDestinations: function () {
-      fetch(window.baseUrl + "destinations")
+      fetch(window.baseUrl + "/destinations")
         .then((response) => response.json())
         .then((data) => {
           this.availableDestinations = data;
@@ -624,15 +617,12 @@ export default {
         }
       }
     },
-    // Expose Utils functions to the template
-    Utils: {
-      humanReadableType,
-      printCoords,
-      distBea,
-      latlng,
-      sp,
-      dt,
-    },
+    humanReadableType,
+    printCoords,
+    distBea,
+    latlng,
+    sp,
+    dt,
     formatNumber,
   },
   computed: {

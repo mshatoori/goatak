@@ -7,3 +7,4 @@ dist
 *.tar
 setup/
 front/
+node_modules/

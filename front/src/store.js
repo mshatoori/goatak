@@ -1,3 +1,5 @@
+import { cleanUnit } from "./utils.js";
+
 const store = {
   debug: true,
   state: {
@@ -24,7 +26,7 @@ const store = {
     const requestOptions = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(app.cleanUnit(item)),
+      body: JSON.stringify(cleanUnit(item)),
     };
 
     return fetch(window.baseUrl + "/unit", requestOptions)
@@ -257,7 +259,7 @@ const store = {
 
     let cont = false;
 
-    for (; ;) {
+    for (;;) {
       cont = false;
       for (const k of curr.next) {
         if (k.code === s) {
@@ -282,7 +284,7 @@ const store = {
       return null;
     }
 
-    for (; ;) {
+    for (;;) {
       let found = false;
       for (const k of curr.next) {
         if (k.code === s) {

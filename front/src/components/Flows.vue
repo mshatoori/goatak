@@ -34,12 +34,12 @@
                   <div>پورت: {{ flow.port }}</div>
                 </div>
                 <div>
-                  <span class="badge rounded-pill bg-primary"
-                    >{{ flowTypeText(flow.type) }}</span
-                  >
-                  <span class="badge rounded-pill bg-success"
-                    >{{ flowDirectionText(flow.direction) }}</span
-                  >
+                  <span class="badge rounded-pill bg-primary">{{
+                    flowTypeText(flow.type)
+                  }}</span>
+                  <span class="badge rounded-pill bg-success">{{
+                    flowDirectionText(flow.direction)
+                  }}</span>
                   <button
                     type="button"
                     class="btn btn-sm btn-outline-danger ms-2"
@@ -65,12 +65,12 @@
                   </div>
                 </div>
                 <div>
-                  <span class="badge rounded-pill bg-primary"
-                    >{{ flowTypeText(flow.type) }}</span
-                  >
-                  <span class="badge rounded-pill bg-success"
-                    >{{ flowDirectionText(flow.direction) }}</span
-                  >
+                  <span class="badge rounded-pill bg-primary">{{
+                    flowTypeText(flow.type)
+                  }}</span>
+                  <span class="badge rounded-pill bg-success">{{
+                    flowDirectionText(flow.direction)
+                  }}</span>
                   <button
                     type="button"
                     class="btn btn-sm btn-outline-danger ms-2"
@@ -288,10 +288,10 @@
 </template>
 
 <script>
-import store from '../../store.js';
+import store from "../store.js";
 
 export default {
-  name: 'Flows',
+  name: "Flows",
   data() {
     return {
       newFlow: {
@@ -345,5 +345,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

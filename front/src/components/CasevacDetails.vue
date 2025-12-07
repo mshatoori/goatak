@@ -1,11 +1,10 @@
 <template>
-    <div class="card">
-      <!-- Header -->
-      <div class="card-header">
-        <span class="pull-left fw-bold" v-on:click.stop="mapToUnit(item)">
-          <img src="/static/icons/casevac.svg" height="24" /> {{ item.callsign
-          }}
-          <!-- <img
+  <div class="card">
+    <!-- Header -->
+    <div class="card-header">
+      <span class="pull-left fw-bold" v-on:click.stop="mapToUnit(item)">
+        <img src="/static/icons/casevac.svg" height="24" /> {{ item.callsign }}
+        <!-- <img
             height="24"
             src="/static/icons/coord_unlock.png"
             v-if="locked_unit_uid != item.uid"
@@ -17,45 +16,275 @@
             v-if="locked_unit_uid == item.uid"
             v-on:click.stop="locked_unit_uid=''"
           /> -->
-        </span>
-        <span class="pull-right" v-if="!editing">
-          <button
-            type="button"
-            class="btn btn-sm btn-primary"
-            v-on:click.stop="startEditing"
-          >
-            <i class="bi bi-pencil-square"></i>
-          </button>
-          <button
-            type="button"
-            class="btn btn-sm btn-danger"
-            v-on:click.stop="deleteItem()"
-          >
-            <i class="bi bi-trash3-fill"></i>
-          </button>
-        </span>
+      </span>
+      <span class="pull-right" v-if="!editing">
+        <button
+          type="button"
+          class="btn btn-sm btn-primary"
+          v-on:click.stop="startEditing"
+        >
+          <i class="bi bi-pencil-square"></i>
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-danger"
+          v-on:click.stop="deleteItem()"
+        >
+          <i class="bi bi-trash3-fill"></i>
+        </button>
+      </span>
+    </div>
+
+    <!-- Casevac View (non-editing mode) -->
+    <div class="card-body" v-if="!editing">
+      <div class="mb-3">
+        <label class="form-label fw-bold">مکان:</label>
+        <div>
+          {{ printCoords(item.lat, item.lon) }}
+          <span
+            class="badge rounded-pill bg-success"
+            style="cursor: default"
+            v-on:click="mapToUnit(item)"
+            ><i class="bi bi-geo"></i
+          ></span>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-bold">توضیحات:</label>
+        <div>{{ item.remarks || "" }}</div>
       </div>
 
-      <!-- Casevac View (non-editing mode) -->
-      <div class="card-body" v-if="!editing">
-        <div class="mb-3">
-          <label class="form-label fw-bold">مکان:</label>
-          <div>
-            {{ Utils.printCoords(item.lat, item.lon) }}
-            <span
-              class="badge rounded-pill bg-success"
-              style="cursor:default;"
-              v-on:click="mapToUnit(item)"
-              ><i class="bi bi-geo"></i
-            ></span>
+      <h6 class="fw-bold">اطلاعات بیماران:</h6>
+
+      <div class="card mb-3">
+        <div class="card-header">اولویت بیماران</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <div class="mb-3">
+                <label class="form-label fw-bold">بحرانی:</label>
+                <div>
+                  {{ formatNumber(item.casevac_detail?.urgent || 0) }}
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="mb-3">
+                <label class="form-label fw-bold">بااولویت:</label>
+                <div>
+                  {{ formatNumber(item.casevac_detail?.priority || 0) }}
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="mb-3">
+                <label class="form-label fw-bold">روتین:</label>
+                <div>{{ formatNumber(item.casevac_detail?.routine || 0) }}</div>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header">وضعیت امنیتی منطقه</div>
+        <div class="card-body">
+          <div class="mb-3">
+            <!-- <label class="form-label fw-bold">روتین:</label> -->
+            <div v-if="item.casevac_detail.security === 0">
+              عدم حضور نیروهای دشمن در منطقه
+            </div>
+            <div v-if="item.casevac_detail.security === 1">
+              احتمال حضور نیروهای دشمن در منطقه
+            </div>
+            <div v-if="item.casevac_detail.security === 2">
+              نیروهای دشمن، با احتیاط نزدیک شوید
+            </div>
+            <div v-if="item.casevac_detail.security === 3">
+              نیروهای دشمن، نیاز به اسکورت مسلح
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header">وضعیت حرکتی بیماران</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <div class="mb-3">
+                <label class="form-label fw-bold">تعداد برانکارد:</label>
+                <div>{{ formatNumber(item.casevac_detail?.litter || 0) }}</div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="mb-3">
+                <label class="form-label fw-bold"
+                  >تعداد بیماران قابل حمل:</label
+                >
+                <div>
+                  {{ formatNumber(item.casevac_detail?.ambulatory || 0) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header">نوع بیماران</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col">
+              <div class="mb-3">
+                <label class="form-label fw-bold">تعداد نظامی خودی:</label>
+                <div>
+                  {{ formatNumber(item.casevac_detail?.us_military || 0) }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="mb-3">
+                <label class="form-label fw-bold">تعداد غیرنظامی خودی:</label>
+                <div>
+                  {{ formatNumber(item.casevac_detail?.us_civilian || 0) }}
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="mb-3">
+                <label class="form-label fw-bold">تعداد نظامی غیر خودی:</label>
+                <div>
+                  {{ formatNumber(item.casevac_detail?.nonus_military || 0) }}
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="mb-3">
+                <label class="form-label fw-bold"
+                  >تعداد غیرنظامی غیر خودی:</label
+                >
+                <div>
+                  {{ formatNumber(item.casevac_detail?.nonus_civilian || 0) }}
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="mb-3">
+                <label class="form-label fw-bold">تعداد اسیران جنگی:</label>
+                <div>{{ formatNumber(item.casevac_detail?.epw || 0) }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="mb-3">
+                <label class="form-label fw-bold">تعداد کودکان:</label>
+                <div>{{ formatNumber(item.casevac_detail?.child || 0) }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-3">
+        <div class="card-header">تجهیزات مورد نیاز</div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-2">
+                <i
+                  :class="
+                    item.casevac_detail?.hoist
+                      ? 'bi bi-check-square'
+                      : 'bi bi-square'
+                  "
+                ></i>
+                <span class="ms-2">بالابر</span>
+              </div>
+              <div class="mb-2">
+                <i
+                  :class="
+                    item.casevac_detail?.extraction_equipment
+                      ? 'bi bi-check-square'
+                      : 'bi bi-square'
+                  "
+                ></i>
+                <span class="ms-2">تجهیزات نجات و رهاسازی</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-2">
+                <i
+                  :class="
+                    item.casevac_detail?.ventilator
+                      ? 'bi bi-check-square'
+                      : 'bi bi-square'
+                  "
+                ></i>
+                <span class="ms-2">ونتیلاتور</span>
+              </div>
+              <div class="mb-2">
+                <i
+                  :class="
+                    item.casevac_detail?.equipment_other
+                      ? 'bi bi-check-square'
+                      : 'bi bi-square'
+                  "
+                ></i>
+                <span class="ms-2">سایر تجهیزات</span>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3" v-if="item.casevac_detail?.equipment_other">
+            <label class="form-label fw-bold">توضیحات تجهیزات:</label>
+            <div>{{ item.casevac_detail?.equipment_detail || "" }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">فرکانس تماس:</label>
+        <div>{{ formatNumber(item.casevac_detail?.freq || 0) }}</div>
+      </div>
+
+      <!-- Navigation Info Component -->
+      <navigation-info
+        v-if="!editing"
+        :target-item="item"
+        :user-position="config"
+        @navigation-line-toggle="$emit('navigation-line-toggle', $event)"
+      ></navigation-info>
+    </div>
+
+    <!-- Casevac Edit Form -->
+    <div class="card-body" v-if="editing">
+      <form>
         <div class="mb-3">
-          <label class="form-label fw-bold">توضیحات:</label>
-          <div>{{ item.remarks || "" }}</div>
+          <label for="location" class="form-label">مکان:</label>
+          <input
+            type="text"
+            class="form-control"
+            id="location"
+            :value="printCoords(item.lat, item.lon)"
+            readonly
+          />
+        </div>
+        <div class="mb-3">
+          <label for="remarks" class="form-label">توضیحات:</label>
+          <textarea
+            class="form-control"
+            id="remarks"
+            rows="3"
+            v-model="editingData.remarks"
+          ></textarea>
         </div>
 
-        <h6 class="fw-bold">اطلاعات بیماران:</h6>
+        <h6>اطلاعات بیماران:</h6>
 
         <div class="card mb-3">
           <div class="card-header">اولویت بیماران</div>
@@ -63,20 +292,35 @@
             <div class="row">
               <div class="col">
                 <div class="mb-3">
-                  <label class="form-label fw-bold">بحرانی:</label>
-                  <div>{{ formatNumber(item.casevac_detail?.urgent || 0) }}</div>
+                  <label for="urgent" class="form-label">بحرانی:</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="urgent"
+                    v-model.number="editingData.casevac_detail.urgent"
+                  />
                 </div>
               </div>
               <div class="col">
                 <div class="mb-3">
-                  <label class="form-label fw-bold">بااولویت:</label>
-                  <div>{{ formatNumber(item.casevac_detail?.priority || 0) }}</div>
+                  <label for="priority" class="form-label">بااولویت:</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="priority"
+                    v-model.number="editingData.casevac_detail.priority"
+                  />
                 </div>
               </div>
               <div class="col">
                 <div class="mb-3">
-                  <label class="form-label fw-bold">روتین:</label>
-                  <div>{{ formatNumber(item.casevac_detail?.routine || 0) }}</div>
+                  <label for="routine" class="form-label">روتین:</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="routine"
+                    v-model.number="editingData.casevac_detail.routine"
+                  />
                 </div>
               </div>
             </div>
@@ -87,19 +331,16 @@
           <div class="card-header">وضعیت امنیتی منطقه</div>
           <div class="card-body">
             <div class="mb-3">
-              <!-- <label class="form-label fw-bold">روتین:</label> -->
-              <div v-if="item.casevac_detail.security===0">
-                عدم حضور نیروهای دشمن در منطقه
-              </div>
-              <div v-if="item.casevac_detail.security===1">
-                احتمال حضور نیروهای دشمن در منطقه
-              </div>
-              <div v-if="item.casevac_detail.security===2">
-                نیروهای دشمن، با احتیاط نزدیک شوید
-              </div>
-              <div v-if="item.casevac_detail.security===3">
-                نیروهای دشمن، نیاز به اسکورت مسلح
-              </div>
+              <select
+                class="form-select"
+                id="security"
+                v-model.number="editingData.casevac_detail.security"
+              >
+                <option value="0">عدم حضور نیروهای دشمن در منطقه</option>
+                <option value="1">احتمال حضور نیروهای دشمن در منطقه</option>
+                <option value="2">نیروهای دشمن، با احتیاط نزدیک شوید</option>
+                <option value="3">نیروهای دشمن، نیاز به اسکورت مسلح</option>
+              </select>
             </div>
           </div>
         </div>
@@ -110,16 +351,26 @@
             <div class="row">
               <div class="col">
                 <div class="mb-3">
-                  <label class="form-label fw-bold">تعداد برانکارد:</label>
-                  <div>{{ formatNumber(item.casevac_detail?.litter || 0) }}</div>
+                  <label for="litter" class="form-label">تعداد برانکارد:</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="litter"
+                    v-model.number="editingData.casevac_detail.litter"
+                  />
                 </div>
               </div>
               <div class="col">
                 <div class="mb-3">
-                  <label class="form-label fw-bold"
+                  <label for="ambulatory" class="form-label"
                     >تعداد بیماران قابل حمل:</label
                   >
-                  <div>{{ formatNumber(item.casevac_detail?.ambulatory || 0) }}</div>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="ambulatory"
+                    v-model.number="editingData.casevac_detail.ambulatory"
+                  />
                 </div>
               </div>
             </div>
@@ -132,48 +383,82 @@
             <div class="row">
               <div class="col">
                 <div class="mb-3">
-                  <label class="form-label fw-bold">تعداد نظامی خودی:</label>
-                  <div>{{ formatNumber(item.casevac_detail?.us_military || 0) }}</div>
+                  <label for="us_military" class="form-label"
+                    >تعداد نظامی خودی:</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="us_military"
+                    v-model.number="editingData.casevac_detail.us_military"
+                  />
                 </div>
               </div>
             </div>
             <div class="row">
               <div class="col">
                 <div class="mb-3">
-                  <label class="form-label fw-bold">تعداد غیرنظامی خودی:</label>
-                  <div>{{ formatNumber(item.casevac_detail?.us_civilian || 0) }}</div>
+                  <label for="us_civilian" class="form-label"
+                    >تعداد غیرنظامی خودی:</label
+                  >
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="us_civilian"
+                    v-model.number="editingData.casevac_detail.us_civilian"
+                  />
                 </div>
               </div>
               <div class="col">
                 <div class="mb-3">
-                  <label class="form-label fw-bold"
+                  <label for="nonus_military" class="form-label"
                     >تعداد نظامی غیر خودی:</label
                   >
-                  <div>{{ formatNumber(item.casevac_detail?.nonus_military || 0) }}</div>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="nonus_military"
+                    v-model.number="editingData.casevac_detail.nonus_military"
+                  />
                 </div>
               </div>
             </div>
             <div class="row">
               <div class="col">
                 <div class="mb-3">
-                  <label class="form-label fw-bold"
+                  <label for="nonus_civilian" class="form-label"
                     >تعداد غیرنظامی غیر خودی:</label
                   >
-                  <div>{{ formatNumber(item.casevac_detail?.nonus_civilian || 0) }}</div>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="nonus_civilian"
+                    v-model.number="editingData.casevac_detail.nonus_civilian"
+                  />
                 </div>
               </div>
               <div class="col">
                 <div class="mb-3">
-                  <label class="form-label fw-bold">تعداد اسیران جنگی:</label>
-                  <div>{{ formatNumber(item.casevac_detail?.epw || 0) }}</div>
+                  <label for="epw" class="form-label">تعداد اسیران جنگی:</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="epw"
+                    v-model.number="editingData.casevac_detail.epw"
+                  />
                 </div>
               </div>
             </div>
             <div class="row">
               <div class="col">
                 <div class="mb-3">
-                  <label class="form-label fw-bold">تعداد کودکان:</label>
-                  <div>{{ formatNumber(item.casevac_detail?.child || 0) }}</div>
+                  <label for="child" class="form-label">تعداد کودکان:</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    id="child"
+                    v-model.number="editingData.casevac_detail.child"
+                  />
                 </div>
               </div>
             </div>
@@ -185,366 +470,101 @@
           <div class="card-body">
             <div class="row">
               <div class="col-md-6">
-                <div class="mb-2">
-                  <i
-                    :class="item.casevac_detail?.hoist ? 'bi bi-check-square' : 'bi bi-square'"
-                  ></i>
-                  <span class="ms-2">بالابر</span>
+                <div class="form-check mb-2">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="hoist"
+                    v-model="editingData.casevac_detail.hoist"
+                  />
+                  <label class="form-check-label" for="hoist"> بالابر </label>
                 </div>
-                <div class="mb-2">
-                  <i
-                    :class="item.casevac_detail?.extraction_equipment ? 'bi bi-check-square' : 'bi bi-square'"
-                  ></i>
-                  <span class="ms-2">تجهیزات نجات و رهاسازی</span>
+                <div class="form-check mb-2">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="extraction_equipment"
+                    v-model="editingData.casevac_detail.extraction_equipment"
+                  />
+                  <label class="form-check-label" for="extraction_equipment">
+                    تجهیزات نجات و رهاسازی
+                  </label>
                 </div>
               </div>
               <div class="col-md-6">
-                <div class="mb-2">
-                  <i
-                    :class="item.casevac_detail?.ventilator ? 'bi bi-check-square' : 'bi bi-square'"
-                  ></i>
-                  <span class="ms-2">ونتیلاتور</span>
+                <div class="form-check mb-2">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="ventilator"
+                    v-model="editingData.casevac_detail.ventilator"
+                  />
+                  <label class="form-check-label" for="ventilator">
+                    ونتیلاتور
+                  </label>
                 </div>
-                <div class="mb-2">
-                  <i
-                    :class="item.casevac_detail?.equipment_other ? 'bi bi-check-square' : 'bi bi-square'"
-                  ></i>
-                  <span class="ms-2">سایر تجهیزات</span>
+                <div class="form-check mb-2">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="equipment_other"
+                    v-model="editingData.casevac_detail.equipment_other"
+                  />
+                  <label class="form-check-label" for="equipment_other">
+                    سایر تجهیزات
+                  </label>
                 </div>
               </div>
             </div>
-            <div class="mb-3" v-if="item.casevac_detail?.equipment_other">
-              <label class="form-label fw-bold">توضیحات تجهیزات:</label>
-              <div>{{ item.casevac_detail?.equipment_detail || "" }}</div>
+            <div class="mb-3" v-if="editingData.casevac_detail.equipment_other">
+              <label for="equipment_detail" class="form-label"
+                >توضیحات تجهیزات:</label
+              >
+              <textarea
+                class="form-control"
+                id="equipment_detail"
+                rows="2"
+                v-model="editingData.casevac_detail.equipment_detail"
+              ></textarea>
             </div>
           </div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label fw-bold">فرکانس تماس:</label>
-          <div>{{ formatNumber(item.casevac_detail?.freq || 0) }}</div>
+          <label for="freq" class="form-label">فرکانس تماس:</label>
+          <input
+            type="number"
+            class="form-control"
+            id="freq"
+            v-model.number="editingData.casevac_detail.freq"
+          />
         </div>
 
-        <!-- Navigation Info Component -->
-        <navigation-info
-          v-if="!editing"
-          :target-item="item"
-          :user-position="config"
-          @navigation-line-toggle="$emit('navigation-line-toggle', $event)"
-        ></navigation-info>
-      </div>
-
-      <!-- Casevac Edit Form -->
-      <div class="card-body" v-if="editing">
-        <form>
-          <div class="mb-3">
-            <label for="location" class="form-label">مکان:</label>
-            <input
-              type="text"
-              class="form-control"
-              id="location"
-              :value="Utils.printCoords(item.lat, item.lon)"
-              readonly
-            />
-          </div>
-          <div class="mb-3">
-            <label for="remarks" class="form-label">توضیحات:</label>
-            <textarea
-              class="form-control"
-              id="remarks"
-              rows="3"
-              v-model="editingData.remarks"
-            ></textarea>
-          </div>
-
-          <h6>اطلاعات بیماران:</h6>
-
-          <div class="card mb-3">
-            <div class="card-header">اولویت بیماران</div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col">
-                  <div class="mb-3">
-                    <label for="urgent" class="form-label">بحرانی:</label>
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="urgent"
-                      v-model.number="editingData.casevac_detail.urgent"
-                    />
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="mb-3">
-                    <label for="priority" class="form-label">بااولویت:</label>
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="priority"
-                      v-model.number="editingData.casevac_detail.priority"
-                    />
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="mb-3">
-                    <label for="routine" class="form-label">روتین:</label>
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="routine"
-                      v-model.number="editingData.casevac_detail.routine"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card mb-3">
-            <div class="card-header">وضعیت امنیتی منطقه</div>
-            <div class="card-body">
-              <div class="mb-3">
-                <select
-                  class="form-select"
-                  id="security"
-                  v-model.number="editingData.casevac_detail.security"
-                >
-                  <option value="0">عدم حضور نیروهای دشمن در منطقه</option>
-                  <option value="1">احتمال حضور نیروهای دشمن در منطقه</option>
-                  <option value="2">نیروهای دشمن، با احتیاط نزدیک شوید</option>
-                  <option value="3">نیروهای دشمن، نیاز به اسکورت مسلح</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="card mb-3">
-            <div class="card-header">وضعیت حرکتی بیماران</div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col">
-                  <div class="mb-3">
-                    <label for="litter" class="form-label"
-                      >تعداد برانکارد:</label
-                    >
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="litter"
-                      v-model.number="editingData.casevac_detail.litter"
-                    />
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="mb-3">
-                    <label for="ambulatory" class="form-label"
-                      >تعداد بیماران قابل حمل:</label
-                    >
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="ambulatory"
-                      v-model.number="editingData.casevac_detail.ambulatory"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card mb-3">
-            <div class="card-header">نوع بیماران</div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col">
-                  <div class="mb-3">
-                    <label for="us_military" class="form-label"
-                      >تعداد نظامی خودی:</label
-                    >
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="us_military"
-                      v-model.number="editingData.casevac_detail.us_military"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col">
-                  <div class="mb-3">
-                    <label for="us_civilian" class="form-label"
-                      >تعداد غیرنظامی خودی:</label
-                    >
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="us_civilian"
-                      v-model.number="editingData.casevac_detail.us_civilian"
-                    />
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="mb-3">
-                    <label for="nonus_military" class="form-label"
-                      >تعداد نظامی غیر خودی:</label
-                    >
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="nonus_military"
-                      v-model.number="editingData.casevac_detail.nonus_military"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col">
-                  <div class="mb-3">
-                    <label for="nonus_civilian" class="form-label"
-                      >تعداد غیرنظامی غیر خودی:</label
-                    >
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="nonus_civilian"
-                      v-model.number="editingData.casevac_detail.nonus_civilian"
-                    />
-                  </div>
-                </div>
-                <div class="col">
-                  <div class="mb-3">
-                    <label for="epw" class="form-label"
-                      >تعداد اسیران جنگی:</label
-                    >
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="epw"
-                      v-model.number="editingData.casevac_detail.epw"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col">
-                  <div class="mb-3">
-                    <label for="child" class="form-label">تعداد کودکان:</label>
-                    <input
-                      type="number"
-                      class="form-control"
-                      id="child"
-                      v-model.number="editingData.casevac_detail.child"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card mb-3">
-            <div class="card-header">تجهیزات مورد نیاز</div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="form-check mb-2">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="hoist"
-                      v-model="editingData.casevac_detail.hoist"
-                    />
-                    <label class="form-check-label" for="hoist"> بالابر </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="extraction_equipment"
-                      v-model="editingData.casevac_detail.extraction_equipment"
-                    />
-                    <label class="form-check-label" for="extraction_equipment">
-                      تجهیزات نجات و رهاسازی
-                    </label>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="form-check mb-2">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="ventilator"
-                      v-model="editingData.casevac_detail.ventilator"
-                    />
-                    <label class="form-check-label" for="ventilator">
-                      ونتیلاتور
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input
-                      class="form-check-input"
-                      type="checkbox"
-                      id="equipment_other"
-                      v-model="editingData.casevac_detail.equipment_other"
-                    />
-                    <label class="form-check-label" for="equipment_other">
-                      سایر تجهیزات
-                    </label>
-                  </div>
-                </div>
-              </div>
-              <div
-                class="mb-3"
-                v-if="editingData.casevac_detail.equipment_other"
-              >
-                <label for="equipment_detail" class="form-label"
-                  >توضیحات تجهیزات:</label
-                >
-                <textarea
-                  class="form-control"
-                  id="equipment_detail"
-                  rows="2"
-                  v-model="editingData.casevac_detail.equipment_detail"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label for="freq" class="form-label">فرکانس تماس:</label>
-            <input
-              type="number"
-              class="form-control"
-              id="freq"
-              v-model.number="editingData.casevac_detail.freq"
-            />
-          </div>
-
-          <div class="d-flex justify-content-end">
-            <button
-              type="button"
-              class="btn btn-secondary me-2"
-              v-on:click="cancelEditing"
-            >
-              لغو
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              v-on:click="saveEditing"
-            >
-              ذخیره
-            </button>
-          </div>
-        </form>
-      </div>
+        <div class="d-flex justify-content-end">
+          <button
+            type="button"
+            class="btn btn-secondary me-2"
+            v-on:click="cancelEditing"
+          >
+            لغو
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            v-on:click="saveEditing"
+          >
+            ذخیره
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 </template>
 
 <script>
-import store from '../store.js';
-import NavigationInfo from './NavigationInfo.vue'; // Updated path for NavigationInfo
-import * as Utils from '../../static/js/utils.js'; // Assuming Utils is used for printCoords and formatNumber
+import store from "../store.js";
+import NavigationInfo from "./NavigationInfo.vue";
+import { formatNumber, formatCoordinates as printCoords } from "../utils.js";
 
 export default {
   props: ["item", "coords", "map", "locked_unit_uid", "config"],
@@ -556,7 +576,6 @@ export default {
       editing: false,
       editingData: null,
       sharedState: store.state,
-      Utils: Utils, // Make Utils available in the template
     };
   },
   mounted: function () {
@@ -701,12 +720,8 @@ export default {
       // For now, we'll just return true to allow saving
       return true;
     },
-    formatNumber: function (value) {
-      return Utils.formatNumber(value);
-    },
   },
 };
 </script>
 
-<style>
-</style>
+<style></style>

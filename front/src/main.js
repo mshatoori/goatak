@@ -1,9 +1,12 @@
 import { createApp } from "vue";
 import App from "./App.vue";
 
+// Import styles
+import "./main.css";
+
 // Import utilities and store
-import "../static/js/utils.js";
-import "../static/js/store.js";
+import "./utils.js";
+import "./store.js";
 
 window.baseUrl = "http://localhost:8080";
 
@@ -26,7 +29,7 @@ import PredicateComponent from "./components/PredicateComponent.vue";
 import ResendingPanel from "./components/ResendingPanel.vue";
 import UnitDetails from "./components/UnitDetails.vue";
 import UserInfo from "./components/UserInfo.vue";
-import TrackingManager from "../static/js/components/TrackingManager.js";
+import TrackingManager from "./TrackingManager.js";
 import TrackingControl from "./components/TrackingControl.vue";
 
 const app = createApp(App);

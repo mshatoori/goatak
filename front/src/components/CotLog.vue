@@ -28,7 +28,7 @@
 </template>
 
 <script setup>
-import store from "../../static/js/store.js";
+import store from "../store.js";
 
 // Props
 const props = defineProps({

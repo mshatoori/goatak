@@ -1,0 +1,19 @@
+# Development Dockerfile with hot reloading
+FROM docker.arvancloud.ir/node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json yarn.lock ./
+
+# Install dependencies
+RUN yarn install
+
+# Copy all source files
+COPY . .
+
+# Expose Vite dev server port
+EXPOSE 5173
+
+# Start Vite development server with hot reloading
+CMD ["yarn", "dev"]

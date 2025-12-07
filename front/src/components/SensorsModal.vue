@@ -196,7 +196,7 @@
 
 <script setup>
 import { ref, reactive, computed } from "vue";
-import store from "../../static/js/store.js";
+import store from "../store.js";
 
 // Reactive state
 const newSensor = reactive({

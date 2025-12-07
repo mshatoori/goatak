@@ -1,93 +1,188 @@
 <template>
   <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">سامانه آگاهی وضعیتی تاکتیکی
+      <a class="navbar-brand" href="#"
+        >سامانه آگاهی وضعیتی تاکتیکی
         <span v-if="config">{{ config.version }}</span>
       </a>
-      <span class="badge rounded-pill bg-primary"
-        :class="{ 'bg-success': connected(), 'bg-secondary': !connected() }">.</span>
+      <span
+        class="badge rounded-pill bg-primary"
+        :class="{ 'bg-success': connected(), 'bg-secondary': !connected() }"
+        >.</span
+      >
       <span class="flex-grow-1"></span>
       <div class="NOT-collapse NOT-navbar-collapse" id="navbarCollapse">
         <ul class="navbar-nav mb-2 mb-md-0">
           <li class="nav-item">
-            <a class="nav-link" href="#" id="navbarAlarmsMenuLink" role="button" v-on:click="openAlarms()">
-              <i :class="{ 'alarm-active': countByCategory('alarm') > 0 }" class="bi bi-exclamation-diamond-fill"></i>
-              {{ countByCategory('alarm') }}
+            <a
+              class="nav-link"
+              href="#"
+              id="navbarAlarmsMenuLink"
+              role="button"
+              v-on:click="openAlarms()"
+            >
+              <i
+                :class="{ 'alarm-active': countByCategory('alarm') > 0 }"
+                class="bi bi-exclamation-diamond-fill"
+              ></i>
+              {{ countByCategory("alarm") }}
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" id="navbarSensorsMenuLink" role="button" v-on:click="openSensors()">
-              سنسورها<span class="badge rounded-pill bg-success">{{ sensorsCount() }}</span>
+            <a
+              class="nav-link"
+              href="#"
+              id="navbarSensorsMenuLink"
+              role="button"
+              v-on:click="openSensors()"
+            >
+              سنسورها<span class="badge rounded-pill bg-success">{{
+                sensorsCount()
+              }}</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" id="navbarFlowsMenuLink" role="button" v-on:click="openFlows()">
+            <a
+              class="nav-link"
+              href="#"
+              id="navbarFlowsMenuLink"
+              role="button"
+              v-on:click="openFlows()"
+            >
               ارتباطات
-              <span class="badge rounded-pill bg-success">{{ flowsCount() }}</span>
+              <span class="badge rounded-pill bg-success">{{
+                flowsCount()
+              }}</span>
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" id="navbarResendingMenuLink" role="button" v-on:click="openResending()">
+            <a
+              class="nav-link"
+              href="#"
+              id="navbarResendingMenuLink"
+              role="button"
+              v-on:click="openResending()"
+            >
               <i class="bi bi-arrow-repeat"></i>
               بازارسال
             </a>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink" role="button"
-              data-bs-toggle="dropdown" aria-expanded="false">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="navbarDarkDropdownMenuLink"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
               مخاطبین
-              <span class="badge rounded-pill bg-success">{{ contactsNum() }}</span>
+              <span class="badge rounded-pill bg-success">{{
+                contactsNum()
+              }}</span>
             </a>
-            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink">
+            <ul
+              class="dropdown-menu dropdown-menu-dark"
+              aria-labelledby="navbarDarkDropdownMenuLink"
+            >
               <li v-for="u in byCategory('contact')">
-                <a class="dropdown-item" href="#" v-on:click="setActiveItemUid(u.uid, true)">
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  v-on:click="setActiveItemUid(u.uid, true)"
+                >
                   <img :src="getImg(u)" />
-                  <span v-if="u.lat === 0 && u.lon === 0">* </span>{{
-                    u.callsign }}<span v-if="u.status">
-                    ({{ u.status }})</span>
+                  <span v-if="u.lat === 0 && u.lon === 0">* </span
+                  >{{ u.callsign
+                  }}<span v-if="u.status"> ({{ u.status }})</span>
                 </a>
               </li>
             </ul>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink2" role="button"
-              data-bs-toggle="dropdown" aria-expanded="false">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="navbarDarkDropdownMenuLink2"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
               نیروها
-              <span class="badge rounded-pill bg-success">{{ countByCategory('unit') }}</span>
+              <span class="badge rounded-pill bg-success">{{
+                countByCategory("unit")
+              }}</span>
             </a>
-            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink2">
+            <ul
+              class="dropdown-menu dropdown-menu-dark"
+              aria-labelledby="navbarDarkDropdownMenuLink2"
+            >
               <li v-for="u in byCategory('unit')">
-                <a class="dropdown-item" href="#" v-on:click="setActiveItemUid(u.uid, true)">
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  v-on:click="setActiveItemUid(u.uid, true)"
+                >
                   {{ getUnitName(u) }}
                 </a>
               </li>
             </ul>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink3" role="button"
-              data-bs-toggle="dropdown" aria-expanded="false">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="navbarDarkDropdownMenuLink3"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
               نقاط
-              <span class="badge rounded-pill bg-success">{{ countByCategory('point') }}</span>
+              <span class="badge rounded-pill bg-success">{{
+                countByCategory("point")
+              }}</span>
             </a>
-            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink3">
+            <ul
+              class="dropdown-menu dropdown-menu-dark"
+              aria-labelledby="navbarDarkDropdownMenuLink3"
+            >
               <li v-for="u in byCategory('point')">
-                <a class="dropdown-item" href="#" v-on:click="setActiveItemUid(u.uid, true)">
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  v-on:click="setActiveItemUid(u.uid, true)"
+                >
                   {{ getUnitName(u) }}
                 </a>
               </li>
             </ul>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink4" role="button"
-              data-bs-toggle="dropdown" aria-expanded="false">
+            <a
+              class="nav-link dropdown-toggle"
+              href="#"
+              id="navbarDarkDropdownMenuLink4"
+              role="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
               پیام‌ها
               <span class="badge rounded-pill bg-success">{{ msgNum() }}</span>
             </a>
-            <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="navbarDarkDropdownMenuLink4">
+            <ul
+              class="dropdown-menu dropdown-menu-dark"
+              aria-labelledby="navbarDarkDropdownMenuLink4"
+            >
               <li v-for="m in Object.values(messages)">
-                <a class="dropdown-item" href="#" v-on:click="openChat(m.uid, m.from)">
+                <a
+                  class="dropdown-item"
+                  href="#"
+                  v-on:click="openChat(m.uid, m.from)"
+                >
                   {{ m.from }}
-                  <span class="badge rounded-pill bg-success">{{ msgNum1(m.uid) }}</span>
+                  <span class="badge rounded-pill bg-success">{{
+                    msgNum1(m.uid)
+                  }}</span>
                 </a>
               </li>
             </ul>
@@ -101,46 +196,101 @@
     <div class="row h-100" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
       <div id="map" class="col h-100" style="cursor: crosshair"></div>
 
-      <div class="col-auto p-0 h-100" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
-        <sidebar :toggle-overlay="toggleOverlay" :config="config" :check-emergency="checkEmergency"
-          :config-updated="configUpdated" :coords="coords" :active-item="activeItem" :locked_unit_uid="locked_unit_uid"
-          :map="map" :tracking-manager="trackingManager" v-on:open-chat="openChat" v-on:save="saveItem"
-          v-on:delete="deleteItem" v-on:collapsed="updateSidebarCollapsed"
-          v-on:navigation-line-toggle="handleNavigationLineToggle"></sidebar>
+      <div
+        class="col-auto p-0 h-100"
+        :class="{ 'sidebar-collapsed': sidebarCollapsed }"
+      >
+        <sidebar
+          :toggle-overlay-items="toggleOverlayItems"
+          :config="config"
+          :check-emergency="checkEmergency"
+          :config-updated="configUpdated"
+          :coords="coords"
+          :active-item="activeItem"
+          :locked_unit_uid="locked_unit_uid"
+          :map="map"
+          :tracking-manager="trackingManager"
+          v-on:open-chat="openChat"
+          v-on:save="saveItem"
+          v-on:delete="deleteItem"
+          v-on:collapsed="updateSidebarCollapsed"
+          v-on:navigation-line-toggle="handleNavigationLineToggle"
+          v-on:select-overlay-item="handleOverlayItemSelected"
+        ></sidebar>
       </div>
     </div>
   </div>
 
   <!-- Modal -->
-  <div class="modal fade" id="messages" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-    aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+  <div
+    class="modal fade"
+    id="messages"
+    data-bs-backdrop="static"
+    data-bs-keyboard="false"
+    tabindex="-1"
+    aria-labelledby="staticBackdropLabel"
+    aria-hidden="true"
+  >
+    <div
+      class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg"
+    >
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="staticBackdropLabel">
             پیام‌های چت {{ chatroom }}
-            <span v-if="getStatus(chat_uid)" class="badge"
-              :class="getStatus(chat_uid) == 'Online' ? 'text-bg-success' : 'text-bg-secondary'">
-              {{ getStatus(chat_uid) }}</span>
+            <span
+              v-if="getStatus(chat_uid)"
+              class="badge"
+              :class="
+                getStatus(chat_uid) == 'Online'
+                  ? 'text-bg-success'
+                  : 'text-bg-secondary'
+              "
+            >
+              {{ getStatus(chat_uid) }}</span
+            >
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
         <div class="modal-body">
           <div v-for="m in getMessages()" class="alert alert-secondary">
             <span class="badge text-bg-secondary">{{ dt(m.time) }}</span>
-            <span class="badge" :class="m.from_uid == config.uid ? 'text-bg-success' : 'text-bg-info'">{{ m.from ||
-              m.from_uid }}</span>
+            <span
+              class="badge"
+              :class="
+                m.from_uid == config.uid ? 'text-bg-success' : 'text-bg-info'
+              "
+              >{{ m.from || m.from_uid }}</span
+            >
             {{ m.text }}
           </div>
         </div>
         <div class="modal-footer">
           <form @submit.prevent="sendMessage">
-            <input type="text" class="form-control" id="message-text" v-model="chat_msg" />
+            <input
+              type="text"
+              class="form-control"
+              id="message-text"
+              v-model="chat_msg"
+            />
           </form>
-          <button type="button" class="btn btn-primary" v-on:click="sendMessage">
+          <button
+            type="button"
+            class="btn btn-primary"
+            v-on:click="sendMessage"
+          >
             ارسال پیام
           </button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
             خروج
           </button>
         </div>
@@ -153,13 +303,18 @@
   <send-modal></send-modal>
   <sensors-modal></sensors-modal>
   <resending-modal :config="config" :map="map"></resending-modal>
-  <tracking-control :map="map" :tracking-manager="trackingManager"></tracking-control>
+  <tracking-control
+    :map="map"
+    :tracking-manager="trackingManager"
+  ></tracking-control>
 </template>
 
 <script>
-import TrackingManager from "../static/js/components/TrackingManager.js";
-import store from "../static/js/store.js"
-import {  getIconUri,
+import TrackingManager from "./TrackingManager.js";
+import store from "./store.js";
+import ResendingModal from "./components/ResendingModal.vue";
+import {
+  getIconUri,
   getMilIcon,
   getIcon,
   circle,
@@ -175,13 +330,15 @@ import {  getIconUri,
   latLongToIso6709,
   needIconUpdate,
   humanReadableType,
+  cleanUnit,
   createMapItem,
   LocationControl,
   ToolsControl,
-  html} from "../static/js/utils.js";
+  html,
+} from "./utils.js";
 
 export default {
-  name: 'App',
+  name: "App",
   data() {
     return {
       map: null,
@@ -679,7 +836,11 @@ export default {
             this.setActiveItemUid(item.uid, false);
           });
         }
-        item.marker.addTo(this.drawnItems);
+
+        // Only add to map if item is visible
+        if (item.visible !== false) {
+          item.marker.addTo(this.drawnItems);
+        }
 
         // Add text label for polygon
         this.addDrawingTextLabel(item);
@@ -691,7 +852,11 @@ export default {
         item.marker.on("click", (e) => {
           this.setActiveItemUid(item.uid, false);
         });
-        item.marker.addTo(this.routeItems);
+
+        // Only add to map if item is visible
+        if (item.visible !== false) {
+          item.marker.addTo(this.routeItems);
+        }
 
         // Add text label for route
         this.addDrawingTextLabel(item);
@@ -1060,6 +1225,7 @@ export default {
       }
     },
     updateUnitMarker: function (unit, draggable, updateIcon) {
+      const vm = this; // Capture Vue instance reference
       if (unit.lon === 0 && unit.lat === 0) {
         if (unit.marker) {
           this.getItemOverlay(unit).removeLayer(unit.marker); // Changed item to unit
@@ -1087,7 +1253,11 @@ export default {
         });
       }
       unit.marker.setIcon(getIcon(unit, true));
-      unit.marker.addTo(this.getItemOverlay(unit));
+
+      // Only add to map if item is visible
+      if (unit.visible !== false) {
+        unit.marker.addTo(this.getItemOverlay(unit));
+      }
 
       let markerHtml = "<div>" + unit.callsign;
       // if (unit.ip_address) markerHtml += "<br>" + unit.ip_address;
@@ -1102,7 +1272,11 @@ export default {
 
       if (!unit.type.startsWith("b-a-o")) {
         unit.infoMarker = L.marker([unit.lat, unit.lon], { icon: markerInfo });
-        unit.infoMarker.addTo(this.getItemOverlay(unit));
+
+        // Only add to map if item is visible
+        if (unit.visible !== false) {
+          unit.infoMarker.addTo(this.getItemOverlay(unit));
+        }
 
         unit.infoMarker.setLatLng([unit.lat, unit.lon]);
         unit.infoMarker.setIcon(markerInfo);
@@ -1363,7 +1537,7 @@ export default {
     },
 
     saveItem: function (u, cb) {
-      console.log("Sending:", this.cleanUnit(u));
+      console.log("Sending:", cleanUnit(u));
       store.createItem(u).then((results) => {
         this.processUnits(results);
         if (cb) cb();
@@ -1534,22 +1708,6 @@ export default {
       return res;
     },
 
-    cleanUnit: function (u) {
-      let res = {};
-
-      for (const k in u) {
-        if (
-          k !== "marker" &&
-          k !== "infoMarker" &&
-          k !== "textLabel" &&
-          k !== "polygon"
-        ) {
-          res[k] = u[k];
-        }
-      }
-      return res;
-    },
-
     menuDeleteAction: function (uid) {
       let unit = this.sharedState.items.get(uid);
       store.removeItem(uid).then((units) => this.processUnits(units));
@@ -1588,9 +1746,77 @@ export default {
         });
     },
     toggleOverlay: function (overlayName, overlayActive) {
-      console.log("toggleOverlay", overlayName, overlayActive);
+      if (!this.overlays || !this.overlays[overlayName]) {
+        console.warn(
+          "Overlays not initialized yet, skipping toggle for:",
+          overlayName
+        );
+        return;
+      }
       if (!overlayActive) this.overlays[overlayName].removeFrom(this.map);
       else this.overlays[overlayName].addTo(this.map);
+    },
+
+    toggleOverlayItems: function (overlayName, overlayActive) {
+      // Enhanced overlay toggle with visibility controls
+      if (!this.overlays || !this.overlays[overlayName]) {
+        console.warn(
+          "Overlays not initialized yet, skipping toggle for:",
+          overlayName
+        );
+        return;
+      }
+
+      // Toggle overlay layer visibility
+      if (!overlayActive) {
+        this.overlays[overlayName].removeFrom(this.map);
+      } else {
+        this.overlays[overlayName].addTo(this.map);
+      }
+
+      // Update individual item visibility based on overlay state
+      this.sharedState.items.forEach((item) => {
+        if (item.category === overlayName) {
+          item.visible = overlayActive;
+
+          // Update marker visibility on map
+          if (item.marker) {
+            if (overlayActive && item.visible !== false) {
+              item.marker.addTo(this.getItemOverlay(item));
+            } else {
+              this.getItemOverlay(item).removeLayer(item.marker);
+            }
+          }
+
+          // Update info marker visibility
+          if (item.infoMarker) {
+            if (overlayActive && item.visible !== false) {
+              item.infoMarker.addTo(this.getItemOverlay(item));
+            } else {
+              this.getItemOverlay(item).removeLayer(item.infoMarker);
+            }
+          }
+
+          // Update text label visibility for drawings and routes
+          if (
+            item.textLabel &&
+            (item.category === "drawing" || item.category === "route")
+          ) {
+            if (overlayActive && item.visible !== false) {
+              item.textLabel.addTo(this.getItemOverlay(item));
+            } else {
+              this.getItemOverlay(item).removeLayer(item.textLabel);
+            }
+          }
+        }
+      });
+    },
+
+    handleOverlayItemSelected: function (item) {
+      console.log("Overlay item selected in App:", item);
+      if (item && item.uid) {
+        this.setActiveItemUid(item.uid, true);
+      }
     },
 
     createEmergencyAlert: function (emergencyType) {
@@ -1626,6 +1852,7 @@ export default {
       return u;
     },
     locateByGPS: function () {
+      if (!this.config) return; // Check if config is loaded
       fetch(window.baseUrl + "/pos").then((r) =>
         this.map.setView([this.config.lat, this.config.lon])
       );
@@ -1869,6 +2096,9 @@ export default {
         });
       }, 8); // Reduced throttling since we're just updating styles
     },
+  },
+  components: {
+    ResendingModal,
   },
 };
 </script>

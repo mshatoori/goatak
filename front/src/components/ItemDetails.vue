@@ -8,7 +8,7 @@
           <button
             type="button"
             class="btn btn-sm btn-primary"
-            @click.stop="openChat(item.uid, item.callsign);"
+            @click.stop="openChat(item.uid, item.callsign)"
           >
             <i class="bi bi-chat-text-fill"></i>
           </button>
@@ -37,10 +37,10 @@
 </template>
 
 <script>
-import store from '../../store.js';
+import store from "../store.js";
 
 export default {
-  name: 'ItemDetails',
+  name: "ItemDetails",
   props: ["item", "coords", "map", "locked_unit_uid", "config"],
   computed: {
     isCasevac() {
@@ -102,5 +102,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

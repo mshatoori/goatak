@@ -48,7 +48,7 @@
                 موقعیت: {{ alarm.lat }}, {{ alarm.lon }}
                 <span
                   class="badge rounded-pill bg-success"
-                  style="cursor:default;"
+                  style="cursor: default"
                   @click="focus(alarm)"
                   ><i class="bi bi-geo"></i
                 ></span>
@@ -65,11 +65,11 @@
 </template>
 
 <script>
-import store from '../../static/js/store.js';
+import store from "../store.js";
 
 export default {
-  name: 'Alarms',
-  props: ['map'], // TODO: Change this to only alarms
+  name: "Alarms",
+  props: ["map"], // TODO: Change this to only alarms
   data() {
     return {
       sharedState: store.state,
@@ -111,5 +111,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

@@ -28,11 +28,12 @@ services:
   frontend:
     build:
       context: ../front
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
       - "5173:5173"
     volumes:
       - ../front:/app
+      - /app/node_modules
     stdin_open: true
     tty: true
     networks:

@@ -1,22 +1,22 @@
 # Stage 1 - Build Stage
-FROM node:20-alpine as build
+FROM docker.arvancloud.ir/node:20-alpine as build
 
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package*.json yarn.lock ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN yarn install
 
 # Copy all source files
 COPY . .
 
 # Build the production bundle
-RUN npm run build
+RUN yarn build
 
 # Stage 2 - Production Stage
-FROM nginx:alpine
+FROM docker.arvancloud.ir/nginx:alpine
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf

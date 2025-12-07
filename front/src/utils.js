@@ -1,3 +1,5 @@
+import store from "./store.js";
+
 if (window.baseUrl === undefined) {
   window.baseUrl = ""; // Default value
 }
@@ -29,6 +31,21 @@ const roles = new Map([
   ["Medic", "M"],
   ["RTO", "R"],
 ]);
+
+// Tooltip field configuration - controls which fields are shown in marker tooltips
+const tooltipFieldConfig = {
+  callsign: true, // Always show (bold)
+  humanReadableType: true, // Use humanReadableType(item.type)
+  lastSeen: true, // Format item.last_seen with dt()
+  distanceToSelf: true, // Calculate using distBea(), needs access to self coords
+  // team: true,               // Show team + role
+  speed: true, // Show if > 0
+  altitude: true, // Show for air units (sidc[2] === 'A')
+  coordinates: true, // lat/lon formatted
+  course: false, // Heading in degrees
+  status: false, // Online/Offline for contacts
+  text: true, // Remarks
+};
 
 function getIconUri(item, withText) {
   // TEMP:
@@ -186,7 +203,7 @@ function printCoords(lat, lng) {
   const lngSec = Math.round(((absLng - lngDeg) * 60 - lngMin) * 60);
 
   // Format numbers with Persian locale
-  const format = n => n.toLocaleString('fa-IR');
+  const format = (n) => n.toLocaleString("fa-IR");
 
   // Handle seconds overflow
   let finalLatMin = latMin;
@@ -280,13 +297,6 @@ function sp(v) {
   return formatNumber(v * 3.6, 1);
 }
 
-function formatNumber(num, decimals = 0) {
-  return num.toLocaleString('fa-IR', {
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals
-  });
-}
-
 function toUri(s) {
   return encodeURI("data:image/svg+xml," + s).replaceAll("#", "%23");
 }
@@ -300,17 +310,119 @@ function uuidv4() {
   );
 }
 
-function popup(item) {
-  let v = "<b>" + item.callsign + "</b><br/>";
-  if (item.team) v += item.team + " " + item.role + "<br/>";
-  if (item.speed && item.speed > 0)
-    v += "Speed: " + formatNumber(item.speed, 0) + " m/s<br/>";
-  if (item.sidc.charAt(2) === "A") {
-    v += "hae: " + formatNumber(item.hae, 0) + " m<br/>";
+/**
+ * Generate tooltip content for a map marker
+ * @param {Object} item - The item to generate tooltip for
+ * @param {Object} selfCoords - Optional self coordinates {lat, lon} for distance calculation
+ * @param {boolean} isSelf - Whether this is the self marker (skip distance calculation)
+ * @returns {string} HTML content for the tooltip
+ */
+function popup(item, selfCoords, isSelf) {
+  let v = "";
+
+  // Callsign - always shown in bold
+  if (tooltipFieldConfig.callsign) {
+    v += "<b>" + item.callsign + "</b><br/>";
   }
-  v +=
-    '<span dir="ltr">' + latLongToIso6709(item.lat, item.lon) + "</span><br/>";
-  v += item.text.replaceAll("\n", "<br/>").replaceAll("; ", "<br/>");
+
+  // Human readable type
+  if (tooltipFieldConfig.humanReadableType && item.type) {
+    const readableType = humanReadableType(item.type);
+    // Only show if it's different from the raw type (meaning we found a readable name)
+    if (readableType && readableType !== item.type) {
+      v += "نوع: " + readableType + "<br/>";
+    }
+  }
+
+  // Last seen/update time
+  if (tooltipFieldConfig.lastSeen && item.last_seen) {
+    v += "آخرین آپدیت: " + dt(item.last_seen) + "<br/>";
+  }
+
+  // Distance to self (only if not self marker and selfCoords provided)
+  if (
+    tooltipFieldConfig.distanceToSelf &&
+    !isSelf &&
+    selfCoords &&
+    selfCoords.lat !== undefined &&
+    selfCoords.lon !== undefined
+  ) {
+    const selfPoint = { lat: selfCoords.lat, lng: selfCoords.lon };
+    const itemPoint = { lat: item.lat, lng: item.lon };
+    const distanceInfo = distBea(selfPoint, itemPoint);
+    v += "فاصله: " + distanceInfo + "<br/>";
+  }
+
+  // Team and role
+  // if (tooltipFieldConfig.team && item.team) {
+  //   v += item.team;
+  //   if (item.role) {
+  //     v += " " + item.role;
+  //   }
+  //   v += "<br/>";
+  // }
+
+  // Speed (only if > 0)
+  if (tooltipFieldConfig.speed && item.speed && item.speed > 0) {
+    v += "سرعت: " + formatNumber(item.speed * 3.6, 1) + " km/h<br/>";
+  }
+
+  // Altitude (only for air units)
+  if (tooltipFieldConfig.altitude && item.sidc && item.sidc.charAt(2) === "A") {
+    v += "ارتفاع: " + formatNumber(item.hae, 0) + " m<br/>";
+  }
+
+  // Heading/Course
+  if (tooltipFieldConfig.course && item.course && item.course > 0) {
+    v += "جهت: " + formatNumber(item.course, 0) + "°<br/>";
+  }
+
+  // Status (for contacts)
+  if (tooltipFieldConfig.status && item.status) {
+    v += "وضعیت: " + item.status + "<br/>";
+  }
+
+  // Coordinates
+  if (tooltipFieldConfig.coordinates) {
+    v +=
+      '<span dir="ltr">' +
+      latLongToIso6709(item.lat, item.lon) +
+      "</span><br/>";
+  }
+
+  // Text/Remarks
+  if (tooltipFieldConfig.text && item.text) {
+    v += item.text.replaceAll("\n", "<br/>").replaceAll("; ", "<br/>");
+  }
+
+  return v;
+}
+
+/**
+ * Generate tooltip content for the self marker
+ * @param {Object} config - The config object with self information
+ * @returns {string} HTML content for the tooltip
+ */
+function selfPopup(config) {
+  let v = "<b>" + config.callsign + "</b><br/>";
+
+  // Team and role if available
+  if (config.team) {
+    v += config.team;
+    if (config.role) {
+      v += " " + config.role;
+    }
+    v += "<br/>";
+  }
+
+  // Coordinates
+  if (tooltipFieldConfig.coordinates) {
+    v +=
+      '<span dir="ltr">' +
+      latLongToIso6709(config.lat, config.lon) +
+      "</span><br/>";
+  }
+
   return v;
 }
 
@@ -373,6 +485,22 @@ function needIconUpdate(oldUnit, newUnit) {
   return false;
 }
 
+function cleanUnit(u) {
+  let res = {};
+
+  for (const k in u) {
+    if (
+      k !== "marker" &&
+      k !== "infoMarker" &&
+      k !== "textLabel" &&
+      k !== "polygon"
+    ) {
+      res[k] = u[k];
+    }
+  }
+  return res;
+}
+
 function humanReadableType(type) {
   switch (type) {
     case "u-d-f":
@@ -398,16 +526,20 @@ export {
   latlng,
   distBea,
   sp,
+  formatNumber,
   toUri,
   uuidv4,
   popup,
+  selfPopup,
   latLongToIso6709,
   needIconUpdate,
   humanReadableType,
+  cleanUnit,
   createMapItem,
   LocationControl,
   ToolsControl,
   html,
+  tooltipFieldConfig,
 };
 
 L.Marker.RotatedMarker = L.Marker.extend({
@@ -647,3 +779,82 @@ function createMapItem(options) {
 }
 
 const html = (strings, ...values) => String.raw({ raw: strings }, ...values);
+
+/**
+ * Format numbers with Persian locale
+ * @param {number} num - The number to format
+ * @param {number} decimals - Number of decimal places (default: 0)
+ * @returns {string} Formatted number string
+ */
+function formatNumber(num, decimals = 0) {
+  if (num === null || num === undefined || isNaN(num)) {
+    return "0";
+  }
+  return num.toLocaleString("fa-IR", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+}
+
+/**
+ * Format speed from m/s to km/h with Persian locale
+ * @param {number} speed - Speed in m/s
+ * @returns {string} Formatted speed string
+ */
+export function formatSpeed(speed) {
+  if (!speed || speed <= 0) return "0";
+  return formatNumber(speed * 3.6, 1);
+}
+
+/**
+ * Format distance with appropriate units
+ * @param {number} distance - Distance in meters
+ * @returns {string} Formatted distance string
+ */
+export function formatDistance(distance) {
+  if (!distance || distance < 0) return "0";
+  return distance < 10000
+    ? `${formatNumber(distance.toFixed(0))}m`
+    : `${formatNumber((distance / 1000).toFixed(1))}km`;
+}
+
+/**
+ * Format bearing with degree symbol
+ * @param {number} bearing - Bearing in degrees
+ * @returns {string} Formatted bearing string
+ */
+export function formatBearing(bearing) {
+  if (!bearing || isNaN(bearing)) return "N/A";
+  return `${formatNumber(bearing.toFixed(1))}°T`;
+}
+
+/**
+ * Format coordinates in degrees, minutes, seconds
+ * @param {number} lat - Latitude
+ * @param {number} lng - Longitude
+ * @returns {string} Formatted coordinate string
+ */
+export function formatCoordinates(lat, lng) {
+  if (!lat || !lng) return "N/A";
+
+  const absLat = Math.abs(lat);
+  const absLng = Math.abs(lng);
+
+  const latDeg = Math.floor(absLat);
+  const latMin = Math.floor((absLat - latDeg) * 60);
+  const latSec = Math.round(((absLat - latDeg) * 60 - latMin) * 60);
+
+  const lngDeg = Math.floor(absLng);
+  const lngMin = Math.floor((absLng - lngDeg) * 60);
+  const lngSec = Math.round(((absLng - lngDeg) * 60 - lngMin) * 60);
+
+  // Format numbers with Persian locale
+  const format = (n) => n.toLocaleString("fa-IR");
+
+  const latDir = lat >= 0 ? "N" : "S";
+  const lngDir = lng >= 0 ? "E" : "W";
+
+  return `${format(latDeg)}°${format(latMin)}′${format(
+    latSec
+  )}″${latDir} ${format(lngDeg)}°${format(lngMin)}′${format(lngSec)}″${lngDir}`;
+}

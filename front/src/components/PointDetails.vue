@@ -65,7 +65,7 @@
           >
           <div class="col-sm-8">
             <label class="col-form-label"
-              >{{ Utils.printCoords(item.lat, item.lon) }}
+              >{{ printCoords(item.lat, item.lon) }}
               <span
                 class="badge rounded-pill bg-success"
                 style="cursor: default"
@@ -73,10 +73,8 @@
                 ><i class="bi bi-geo"></i
               ></span>
               <span v-if="coords"
-                >({{
-                  Utils.distBea(Utils.latlng(item.lat, item.lon), coords)
-                }}
-                تا نشانگر)</span
+                >({{ distBea(latlng(item.lat, item.lon), coords) }} تا
+                نشانگر)</span
               ></label
             >
           </div>
@@ -109,9 +107,7 @@
             ><strong>زمان ایجاد</strong></label
           >
           <div class="col-sm-8">
-            <label class="col-form-label">{{
-              Utils.dt(item.start_time)
-            }}</label>
+            <label class="col-form-label">{{ dt(item.start_time) }}</label>
           </div>
         </div>
       </dl>
@@ -330,9 +326,9 @@
 </template>
 
 <script>
-import store from "../../static/js/store.js";
-import { getIconUri } from "../../utils.js"; // Assuming getIconUri is from utils.js
-import * as Utils from "../../utils.js"; // Assuming Utils is from utils.js
+import store from "../store.js";
+import { getIconUri, printCoords, distBea, latlng, dt } from "../utils.js"; // Assuming getIconUri is from utils.js
+// import "../../static/js/utils.js";
 
 export default {
   props: ["item", "coords", "map", "locked_unit_uid", "config"],
@@ -445,8 +441,11 @@ export default {
           return type; // Return the original type if no mapping found
       }
     },
-    getIconUri: getIconUri, // Make getIconUri available in the template
-    Utils: Utils, // Make Utils available in the template
+    getIconUri, // Make getIconUri available in the template
+    printCoords,
+    distBea,
+    latlng,
+    dt,
   },
 };
 </script>

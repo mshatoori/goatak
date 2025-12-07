@@ -1,30 +1,30 @@
-import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
 
 export default defineConfig({
-  base: '',
+  base: "",
   plugins: [vue()],
   server: {
-    host: '0.0.0.0',
+    host: "0.0.0.0",
     port: 5173,
     watch: {
-      usePolling: true
-    }
+      usePolling: true,
+    },
   },
   build: {
-    outDir: 'dist',
+    outDir: "dist",
     rollupOptions: {
-      input: 'src/main.js',
+      input: "index.html",
       output: {
-        entryFileNames: 'js/[name].js',
-        chunkFileNames: 'js/[name]-[hash].js',
+        entryFileNames: "js/[name].js",
+        chunkFileNames: "js/[name]-[hash].js",
         assetFileNames: (assetInfo) => {
-          if (assetInfo.name?.endsWith('.css')) {
-            return 'css/[name]-[hash][extname]'
+          if (assetInfo.name?.endsWith(".css")) {
+            return "css/[name]-[hash][extname]";
           }
-          return '[name]-[hash][extname]'
-        }
-      }
-    }
-  }
-})
+          return "[name]-[hash][extname]";
+        },
+      },
+    },
+  },
+});

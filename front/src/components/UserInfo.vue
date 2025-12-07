@@ -14,9 +14,7 @@
     <div class="card-body">
       <form>
         <div class="form-group row">
-          <label
-            for="inputUid"
-            class="col-sm-4 col-form-label font-weight-bold"
+          <label for="inputUid" class="col-sm-4 col-form-label font-weight-bold"
             ><strong>UID</strong></label
           >
           <div class="col-sm-8">
@@ -27,7 +25,7 @@
               v-model="config.uid"
               v-if="editing"
             />
-            <label class="col-form-label" v-else>{{config.uid}}</label>
+            <label class="col-form-label" v-else>{{ config.uid }}</label>
           </div>
         </div>
         <div class="form-group row">
@@ -45,14 +43,11 @@
               v-model="config.callsign"
               v-if="editing"
             />
-            <label class="col-form-label" v-else>{{config.callsign}}</label>
+            <label class="col-form-label" v-else>{{ config.callsign }}</label>
           </div>
         </div>
         <div class="form-group row">
-          <label
-            for="inputIP"
-            class="col-sm-4 col-form-label font-weight-bold"
-          >
+          <label for="inputIP" class="col-sm-4 col-form-label font-weight-bold">
             <strong>IP</strong>
           </label>
           <div class="col-sm-8">
@@ -63,7 +58,7 @@
               v-model="config.ip_address"
               v-if="editing"
             />
-            <label class="col-form-label" v-else>{{config.ip_address}}</label>
+            <label class="col-form-label" v-else>{{ config.ip_address }}</label>
           </div>
         </div>
         <div class="form-group row">
@@ -81,7 +76,7 @@
               v-model="config.urn"
               v-if="editing"
             />
-            <label class="col-form-label" v-else>{{config.urn}}</label>
+            <label class="col-form-label" v-else>{{ config.urn }}</label>
           </div>
         </div>
         <div class="form-group row">
@@ -90,17 +85,17 @@
           </label>
           <div class="col-sm-8">
             <label class="col-form-label">
-              {{ Utils.printCoords(config.lat, config.lon) }}</label
+              {{ printCoords(config.lat, config.lon) }}</label
             >
             <span
               class="badge rounded-pill bg-success"
-              style="cursor:default;"
+              style="cursor: default"
               v-on:click="map.setView([config.lat, config.lon])"
               ><i class="bi bi-geo"></i
             ></span>
             <span v-if="coords"
-              >({{ Utils.distBea(Utils.latlng(config.lat, config.lon), coords)
-              }} تا نشانگر)</span
+              >({{ distBea(latlng(config.lat, config.lon), coords) }} تا
+              نشانگر)</span
             >
           </div>
         </div>
@@ -147,8 +142,11 @@
 </template>
 
 <script>
+import store from "../store.js";
+import { printCoords, distBea, latlng } from "../utils.js";
+
 export default {
-  name: 'UserInfo',
+  name: "UserInfo",
   data() {
     return {
       sharedState: store.state,
@@ -156,6 +154,9 @@ export default {
     };
   },
   methods: {
+    printCoords,
+    distBea,
+    latlng,
     toggleEdit() {
       if (this.editing) this.save();
       this.editing = !this.editing;
@@ -199,5 +200,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>
