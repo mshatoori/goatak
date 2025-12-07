@@ -162,30 +162,14 @@ func changeConfigHandler(app *App) air.Handler {
 		newUrn, _ := strconv.ParseInt(wu["urn"], 10, 32)
 		app.urn = int32(newUrn)
 
-		// Save updated config to database
-		if app.DB != nil {
-			stmt, err := app.DB.Prepare("INSERT OR REPLACE INTO config(key, value) VALUES(?, ?)")
-			if err != nil {
-				app.logger.Error("failed to prepare insert statement for config", "error", err)
-				// Continue without saving to DB, but log the error
-			} else {
-				defer stmt.Close()
-				configsToSave := map[string]string{
-					"app.uid":       app.uid,
-					"app.callsign":  app.callsign,
-					"app.ipAddress": app.ipAddress,
-					"app.urn":       strconv.Itoa(int(app.urn)),
-				}
-				for key, value := range configsToSave {
-					_, err := stmt.Exec(key, value)
-					if err != nil {
-						app.logger.Error("failed to insert or replace config in database", "error", err, "key", key)
-						// Continue without saving this specific key, but log the error
-					} else {
-						app.logger.Info("Config saved to database", "key", key, "value", value)
-					}
-				}
-			}
+		// Update config and save to file
+		app.config.Me.Uid = app.uid
+		app.config.Me.Callsign = app.callsign
+		app.config.Me.Ip = app.ipAddress
+		app.config.Me.Urn = int(app.urn)
+
+		if err := app.configManager.Save(*app.config); err != nil {
+			app.logger.Error("failed to save config to file", "error", err)
 		}
 
 		if app.defaultRabbitFlow != nil {
@@ -314,41 +298,38 @@ func addFlowHandler(app *App) air.Handler {
 			newFlow.Start()
 		}
 
-		// Save the new flow to the database
-		if app.DB != nil && newFlow != nil {
-			stmt, err := app.DB.Prepare("INSERT INTO flows(title, uid, addr, port, type, sendExchange, recvQueue) VALUES(?, ?, ?, ?, ?, ?, ?)")
-			if err != nil {
-				app.logger.Error("failed to prepare insert statement for flow", "error", err)
-				// Continue without saving to DB, but log the error
-			} else {
-				defer stmt.Close()
-				var flowConfig FlowConfig
-				switch flow := newFlow.(type) {
-				case *client.UDPFlow:
-					flowConfig = FlowConfig{
-						Title: flow.Title,
-						Addr:  flow.Addr.IP.String(),
-						Port:  flow.Addr.Port,
-						Type:  "udp",
-					}
-				case *client.RabbitFlow:
-					rabbitModel := flow.ToCoTFlowModel()
-					flowConfig = FlowConfig{
-						Title:        rabbitModel.Title,
-						Addr:         rabbitModel.Addr,
-						Port:         0,
-						Type:         "rabbit",
-						SendExchange: rabbitModel.SendExchange,
-						RecvQueue:    rabbitModel.RecvQueue,
-					}
+		// Save the new flow to config
+		if newFlow != nil {
+			var flowConfig FlowConfig
+			switch flow := newFlow.(type) {
+			case *client.UDPFlow:
+				flowConfig = FlowConfig{
+					Title:     flow.Title,
+					UID:       newFlow.ToCoTFlowModel().UID,
+					Addr:      flow.Addr.IP.String(),
+					Port:      flow.Addr.Port,
+					Type:      "udp",
+					Direction: int(flow.Direction),
 				}
-				_, err := stmt.Exec(flowConfig.Title, newFlow.ToCoTFlowModel().UID, flowConfig.Addr, flowConfig.Port, flowConfig.Type, flowConfig.SendExchange, flowConfig.RecvQueue)
-				if err != nil {
-					app.logger.Error("failed to insert flow into database", "error", err, "flow", flowConfig)
-					// Continue without saving to DB, but log the error
-				} else {
-					app.logger.Info("Flow saved to database", "flow", flowConfig)
+			case *client.RabbitFlow:
+				rabbitModel := flow.ToCoTFlowModel()
+				flowConfig = FlowConfig{
+					Title:        rabbitModel.Title,
+					UID:          rabbitModel.UID,
+					Addr:         rabbitModel.Addr,
+					Port:         0,
+					Type:         "rabbit",
+					Direction:    rabbitModel.Direction,
+					SendExchange: rabbitModel.SendExchange,
+					RecvQueue:    rabbitModel.RecvQueue,
 				}
+			}
+
+			app.configManager.AddFlow(app.config, flowConfig)
+
+			// Save config to file
+			if err := app.configManager.Save(*app.config); err != nil {
+				app.logger.Error("failed to save flow to config file", "error", err)
 			}
 		}
 
@@ -598,44 +579,15 @@ func deleteFlowHandler(app *App) air.Handler {
 			return res.WriteString(fmt.Sprintf("Flow with UID %s not found", uid))
 		}
 
-		// Get flow details before removing from slice
-		flowToDelete := app.flows[foundIndex]
-		var flowConfig FlowConfig
-		switch flow := flowToDelete.(type) {
-		case *client.UDPFlow:
-			flowConfig = FlowConfig{
-				Title: flow.Title,
-				Addr:  flow.Addr.IP.String(),
-				Type:  "udp",
-			}
-		case *client.RabbitFlow:
-			rabbitModel := flow.ToCoTFlowModel()
-			flowConfig = FlowConfig{
-				Title: rabbitModel.Title,
-				Addr:  rabbitModel.Addr,
-				Type:  "rabbit",
-			}
-		}
-
 		// Remove the flow from the slice
 		app.flows = append(app.flows[:foundIndex], app.flows[foundIndex+1:]...)
 
-		// Delete the flow from the database
-		if app.DB != nil {
-			stmt, err := app.DB.Prepare("DELETE FROM flows WHERE uid = ?")
-			if err != nil {
-				app.logger.Error("failed to prepare delete statement for flow", "error", err)
-				// Continue without deleting from DB, but log the error
-			} else {
-				defer stmt.Close()
-				_, err := stmt.Exec(uid)
-				if err != nil {
-					app.logger.Error("failed to delete flow from database", "error", err, "flow", flowConfig)
-					// Continue without deleting from DB, but log the error
-				} else {
-					app.logger.Info("Flow deleted from database", "flow", flowConfig, "uid", uid)
-				}
-			}
+		// Delete the flow from config
+		app.configManager.RemoveFlow(app.config, uid)
+
+		// Save config to file
+		if err := app.configManager.Save(*app.config); err != nil {
+			app.logger.Error("failed to save flow deletion to config file", "error", err)
 		}
 
 		res.Status = 200

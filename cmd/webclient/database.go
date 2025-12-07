@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/kdudkov/goatak/internal/client"
 	"github.com/kdudkov/goatak/pkg/model"
 	"github.com/kdudkov/goatak/pkg/sensors"
-	"github.com/spf13/viper"
 )
 
 // initializeDatabase opens and initializes the database connection
@@ -33,40 +31,6 @@ func (app *App) initializeDatabase(dbPath string) (*sql.DB, bool, error) {
 
 // createDatabaseTables creates all necessary database tables
 func (app *App) createDatabaseTables(db *sql.DB) error {
-	// Create flows table
-	createFlowsTableSQL := `CREATE TABLE IF NOT EXISTS flows (
-		title TEXT,
-		uid TEXT,
-		addr TEXT NOT NULL,
-		port INTEGER NOT NULL,
-		type TEXT NOT NULL,
-		direction INTEGER NOT NULL DEFAULT 3,
-		sendExchange TEXT,
-		recvQueue TEXT
-	);`
-	if _, err := db.Exec(createFlowsTableSQL); err != nil {
-		return fmt.Errorf("failed to create flows table: %w", err)
-	}
-
-	// Add direction column to existing flows table if it doesn't exist
-	if err := app.migrateFlowsTable(db); err != nil {
-		return fmt.Errorf("failed to migrate flows table: %w", err)
-	}
-
-	// Create sensors table
-	if err := app.createSensorsTable(db); err != nil {
-		return fmt.Errorf("failed to create sensors table: %w", err)
-	}
-
-	// Create config table
-	createConfigTableSQL := `CREATE TABLE IF NOT EXISTS config (
-		key TEXT PRIMARY KEY,
-		value TEXT
-	);`
-	if _, err := db.Exec(createConfigTableSQL); err != nil {
-		return fmt.Errorf("failed to create config table: %w", err)
-	}
-
 	// Create resend tables
 	if err := createResendTables(db); err != nil {
 		return fmt.Errorf("failed to create resend tables: %w", err)
@@ -75,240 +39,25 @@ func (app *App) createDatabaseTables(db *sql.DB) error {
 	return nil
 }
 
-// migrateFlowsTable adds missing columns to flows table
-func (app *App) migrateFlowsTable(db *sql.DB) error {
-	// Check if direction column exists
-	rows, err := db.Query("PRAGMA table_info(flows)")
-	if err != nil {
-		return fmt.Errorf("failed to get table info: %w", err)
-	}
-	defer rows.Close()
-
-	hasDirectionColumn := false
-	for rows.Next() {
-		var cid int
-		var name, dataType string
-		var notNull, pk int
-		var defaultValue sql.NullString
-
-		if err := rows.Scan(&cid, &name, &dataType, &notNull, &defaultValue, &pk); err != nil {
-			continue
-		}
-
-		if name == "direction" {
-			hasDirectionColumn = true
-			break
-		}
-	}
-
-	// Add direction column if it doesn't exist
-	if !hasDirectionColumn {
-		app.logger.Info("Adding direction column to flows table")
-		if _, err := db.Exec("ALTER TABLE flows ADD COLUMN direction INTEGER NOT NULL DEFAULT 3"); err != nil {
-			return fmt.Errorf("failed to add direction column: %w", err)
-		}
-	}
-
-	return nil
-}
-
-// loadConfigFromDatabase loads configuration from database
-func (app *App) loadConfigFromDatabase(db *sql.DB) {
-	app.logger.Info("Loading config from database")
-	rows, err := db.Query("SELECT key, value FROM config")
-	if err != nil {
-		app.logger.Error("failed to query config from database", "error", err)
-		return
-	}
-	defer rows.Close()
-
-	configMap := make(map[string]string)
-	for rows.Next() {
-		var key, value string
-		if err := rows.Scan(&key, &value); err != nil {
-			app.logger.Error("failed to scan config row", "error", err)
-			continue
-		}
-		configMap[key] = value
-	}
-
-	if err := rows.Err(); err != nil {
-		app.logger.Error("error during database rows iteration for config", "error", err)
+// loadFlowsFromConfig loads flows from configuration
+func (app *App) loadFlowsFromConfig() {
+	if app.config == nil {
+		app.logger.Error("config not initialized")
 		return
 	}
 
-	app.applyConfigFromDatabase(configMap)
-}
-
-// applyConfigFromDatabase applies loaded configuration to the app
-func (app *App) applyConfigFromDatabase(configMap map[string]string) {
-	if uid, ok := configMap["app.uid"]; ok {
-		app.uid = uid
-		app.logger.Info("Loaded app.uid from database", "value", app.uid)
-	}
-	if callsign, ok := configMap["app.callsign"]; ok {
-		app.callsign = callsign
-		app.logger.Info("Loaded app.callsign from database", "value", app.callsign)
-	}
-	if ipAddress, ok := configMap["app.ipAddress"]; ok {
-		app.ipAddress = ipAddress
-		app.logger.Info("Loaded app.ipAddress from database", "value", app.ipAddress)
-	}
-	if urnStr, ok := configMap["app.urn"]; ok {
-		if urn, err := strconv.ParseInt(urnStr, 10, 32); err == nil {
-			app.urn = int32(urn)
-			app.logger.Info("Loaded app.urn from database", "value", app.urn)
-		} else {
-			app.logger.Error("failed to parse app.urn from database", "error", err, "value", urnStr)
+	for _, flowConfig := range app.config.Flows {
+		// Default to "udp" if type is not specified for backward compatibility
+		if flowConfig.Type == "" {
+			flowConfig.Type = "udp"
 		}
-	}
-}
-
-// loadFlowsFromDatabaseOrConfig loads flows from database if it exists, otherwise from config
-func (app *App) loadFlowsFromDatabaseOrConfig(db *sql.DB, dbExists bool) {
-	if dbExists {
-		app.loadFlowsFromDatabase(db)
-	} else {
-		app.logger.Info("Database not found, loading flows from config and saving to database")
-		app.loadFlowsFromConfig()
-		app.saveFlowsToDatabase(db)
-	}
-}
-
-// loadFlowsFromDatabase loads flows from database
-func (app *App) loadFlowsFromDatabase(db *sql.DB) {
-	app.logger.Info("Loading flows from database")
-	rows, err := db.Query("SELECT uid, title, addr, port, type, direction, sendExchange, recvQueue FROM flows")
-	if err != nil {
-		app.logger.Error("failed to query flows from database", "error", err)
-		app.loadFlowsFromConfig()
-		return
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var flowConfig FlowConfig
-		if err := rows.Scan(&flowConfig.UID, &flowConfig.Title, &flowConfig.Addr, &flowConfig.Port, &flowConfig.Type, &flowConfig.Direction, &flowConfig.SendExchange, &flowConfig.RecvQueue); err != nil {
-			app.logger.Error("failed to scan flow row", "error", err)
-			continue
+		// Set default direction if not specified
+		if flowConfig.Direction == 0 {
+			flowConfig.Direction = int(client.BOTH)
 		}
 		app.addFlow(flowConfig)
+		app.logger.Info("Flow added from config", "title", flowConfig.Title, "addr", fmt.Sprintf("%s:%d", flowConfig.Addr, flowConfig.Port), "type", flowConfig.Type, "direction", flowConfig.Direction)
 	}
-
-	if err := rows.Err(); err != nil {
-		app.logger.Error("error during database rows iteration", "error", err)
-	}
-}
-
-// loadFlowsFromConfig loads flows from configuration files
-func (app *App) loadFlowsFromConfig() {
-	var outgoingFlowConfigs []FlowConfig
-	var incomingFlowConfigs []FlowConfig
-
-	if err := viper.UnmarshalKey("flows.outgoing", &outgoingFlowConfigs); err != nil {
-		app.logger.Error("failed to unmarshal outgoing flows from config", "error", err)
-	} else {
-		for _, flowConfig := range outgoingFlowConfigs {
-			// Default to "udp" if type is not specified for backward compatibility
-			if flowConfig.Type == "" {
-				flowConfig.Type = "udp"
-			}
-			// Set direction to OUTGOING if not specified
-			if flowConfig.Direction == 0 {
-				flowConfig.Direction = int(client.OUTGOING)
-			}
-			app.addFlow(flowConfig)
-			app.logger.Info("Outgoing flow added from config", "addr", fmt.Sprintf("%s:%d", flowConfig.Addr, flowConfig.Port), "type", flowConfig.Type, "direction", flowConfig.Direction)
-		}
-	}
-
-	if err := viper.UnmarshalKey("flows.incoming", &incomingFlowConfigs); err != nil {
-		app.logger.Error("failed to unmarshal incoming flows from config", "error", err)
-	} else {
-		for _, flowConfig := range incomingFlowConfigs {
-			// Default to "udp" if type is not specified for backward compatibility
-			if flowConfig.Type == "" {
-				flowConfig.Type = "udp"
-			}
-			// Set direction to INCOMING if not specified
-			if flowConfig.Direction == 0 {
-				flowConfig.Direction = int(client.INCOMING)
-			}
-			app.addFlow(flowConfig)
-			app.logger.Info("Incoming flow added from config", "addr", fmt.Sprintf("%s:%d", flowConfig.Addr, flowConfig.Port), "type", flowConfig.Type, "direction", flowConfig.Direction)
-		}
-	}
-}
-
-// saveFlowsToDatabase saves current flows to database
-func (app *App) saveFlowsToDatabase(db *sql.DB) {
-	app.logger.Info("Saving flows to database")
-	tx, err := db.Begin()
-	if err != nil {
-		app.logger.Error("failed to begin transaction for saving flows", "error", err)
-		return
-	}
-	defer tx.Rollback() // Rollback if not committed
-
-	stmt, err := tx.Prepare("INSERT INTO flows(title, uid, addr, port, type, direction, sendExchange, recvQueue) VALUES(?, ?, ?, ?, ?, ?, ?, ?)")
-	if err != nil {
-		app.logger.Error("failed to prepare insert statement for flows", "error", err)
-		return
-	}
-	defer stmt.Close()
-
-	for _, flow := range app.flows {
-		var flowConfig FlowConfig
-		switch f := flow.(type) {
-		case *client.UDPFlow:
-			flowConfig = FlowConfig{
-				Title:     f.Title, // Use the Title field from UDPFlow
-				Addr:      f.Addr.IP.String(),
-				Port:      f.Addr.Port,
-				Type:      "udp",
-				Direction: int(f.Direction),
-			}
-		case *client.RabbitFlow:
-			rabbitModel := f.ToCoTFlowModel()
-			flowConfig = FlowConfig{
-				Title:        rabbitModel.Title,
-				Addr:         rabbitModel.Addr,
-				Port:         0, // RabbitMQ uses Addr as connection string, Port is not a separate field
-				Type:         "rabbit",
-				Direction:    rabbitModel.Direction,
-				SendExchange: rabbitModel.SendExchange,
-				RecvQueue:    rabbitModel.RecvQueue,
-			}
-		default:
-			app.logger.Warn("unknown flow type, skipping save to database")
-			continue
-		}
-
-		_, err := stmt.Exec(flowConfig.Title, flow.ToCoTFlowModel().UID, flowConfig.Addr, flowConfig.Port, flowConfig.Type, flowConfig.Direction, flowConfig.SendExchange, flowConfig.RecvQueue)
-		if err != nil {
-			app.logger.Error("failed to insert flow into database", "error", err, "flow", flowConfig)
-			return // Stop saving on first error
-		}
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		app.logger.Error("failed to commit transaction for saving flows", "error", err)
-	}
-}
-
-// createSensorsTable creates the sensors table
-func (app *App) createSensorsTable(db *sql.DB) error {
-	createTableSQL := `CREATE TABLE IF NOT EXISTS sensors (
-		title TEXT,
-		uid TEXT PRIMARY KEY,
-		addr TEXT NOT NULL,
-		port INTEGER NOT NULL,
-		type TEXT NOT NULL,
-		interval INTEGER
-	);`
-	_, err := db.Exec(createTableSQL)
-	return err
 }
 
 // createTrackingTables creates tracking-related tables
@@ -389,75 +138,42 @@ func (app *App) createTrackingTables(db *sql.DB) error {
 	return nil
 }
 
-// loadSensorsFromDatabase loads sensors from database
-func (app *App) loadSensorsFromDatabase(db *sql.DB) error {
-	app.logger.Info("Loading sensors from database")
-	rows, err := db.Query("SELECT title, uid, addr, port, type, interval FROM sensors")
-	if err != nil {
-		return fmt.Errorf("failed to query sensors from database: %w", err)
+// loadSensorsFromConfig loads sensors from configuration
+func (app *App) loadSensorsFromConfig() {
+	if app.config == nil {
+		app.logger.Error("config not initialized")
+		return
 	}
-	defer rows.Close()
 
-	for rows.Next() {
-		var sensorConfig model.SensorModel
-		if err := rows.Scan(&sensorConfig.Title, &sensorConfig.UID, &sensorConfig.Addr, &sensorConfig.Port, &sensorConfig.Type, &sensorConfig.Interval); err != nil {
-			app.logger.Error("failed to scan sensor row", "error", err)
-			continue
-		}
-
-		sensorInstance, err := app.createSensorInstance(&sensorConfig)
+	for _, sensorConfig := range app.config.Sensors {
+		sensorInstance, err := app.createSensorInstance(&model.SensorModel{
+			Title:    sensorConfig.Title,
+			UID:      sensorConfig.UID,
+			Addr:     sensorConfig.Addr,
+			Port:     sensorConfig.Port,
+			Type:     sensorConfig.Type,
+			Interval: sensorConfig.Interval,
+		})
 		if err != nil {
-			app.logger.Error("failed to create sensor instance from database config", "error", err, "sensor", sensorConfig)
+			app.logger.Error("failed to create sensor instance from config", "error", err, "sensor", sensorConfig)
 			continue
 		}
 
 		sensorInstance.Initialize()
 		app.sensors = append(app.sensors, sensorInstance)
 		go sensorInstance.Start(app.sensorCallback)
+		app.logger.Info("Sensor added from config", "title", sensorConfig.Title, "type", sensorConfig.Type)
 	}
-
-	if err := rows.Err(); err != nil {
-		return fmt.Errorf("error during database rows iteration for sensors: %w", err)
-	}
-
-	return nil
-}
-
-// loadSensorsFromConfig loads sensors from configuration files
-func (app *App) loadSensorsFromConfig() {
-	// TODO: Implement loading sensors from config
-	app.logger.Info("Loading sensors from config (not implemented yet)")
-}
-
-// saveSensorToDatabase saves a sensor configuration to database
-func (app *App) saveSensorToDatabase(sensorConfig *model.SensorModel) error {
-	app.logger.Info("Saving sensor to database", "uid", sensorConfig.UID)
-	_, err := app.DB.Exec("INSERT OR REPLACE INTO sensors(title, uid, addr, port, type, interval) VALUES(?, ?, ?, ?, ?, ?)",
-		sensorConfig.Title, sensorConfig.UID, sensorConfig.Addr, sensorConfig.Port, sensorConfig.Type, sensorConfig.Interval)
-	if err != nil {
-		return fmt.Errorf("failed to insert or replace sensor in database: %w", err)
-	}
-	return nil
-}
-
-// deleteSensorFromDatabase removes a sensor from database
-func (app *App) deleteSensorFromDatabase(uid string) error {
-	app.logger.Info("Deleting sensor from database", "uid", uid)
-	_, err := app.DB.Exec("DELETE FROM sensors WHERE uid = ?", uid)
-	if err != nil {
-		return fmt.Errorf("failed to delete sensor from database: %w", err)
-	}
-	return nil
 }
 
 // createSensorInstance creates a sensor instance from configuration
 func (app *App) createSensorInstance(sensorConfig *model.SensorModel) (sensors.BaseSensor, error) {
 	switch strings.ToLower(sensorConfig.Type) {
-	case "gps", "ais":
+	case "gps":
 		return &sensors.GpsdSensor{
 			Addr:     fmt.Sprintf("%s:%d", sensorConfig.Addr, sensorConfig.Port),
 			Conn:     nil,
-			Logger:   app.logger.With("logger", "gpsd"), // TODO: Make logger name dynamic
+			Logger:   app.logger.With("logger", "gpsd"),
 			Reader:   nil,
 			Type:     sensorConfig.Type,
 			UID:      sensorConfig.UID,
@@ -467,8 +183,9 @@ func (app *App) createSensorInstance(sensorConfig *model.SensorModel) (sensors.B
 			// SerialPort and TCPProxyAddr are not in SensorModel yet, need to consider how to handle sensor-specific configs
 		}, nil
 	case "radar":
-		// Assuming NewRadarSensor can take SensorModel and logger
-		return sensors.NewRadarSensor(sensorConfig, app.logger.With("logger", "radar")), nil // TODO: Make logger name dynamic
+		return sensors.NewRadarSensor(sensorConfig, app.logger.With("logger", "radar")), nil
+	case "ais":
+		return sensors.NewAISSensor(sensorConfig, app.logger.With("logger", "ais")), nil
 	default:
 		return nil, fmt.Errorf("unsupported sensor type: %s", sensorConfig.Type)
 	}

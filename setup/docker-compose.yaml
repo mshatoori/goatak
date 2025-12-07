@@ -12,9 +12,11 @@ services:
       - "6970:6969/udp"
       - "1200:1100"
       - "1200:1100/udp"
+      - "1234:1234"
+      - "1234:1234/udp"
     volumes:
       - .:/workspace:cached
-      - ./goatak_client.yml:/app/goatak_client.yml
+      - ./config/:/app/config/
       - ./config.sqlite3:/app/config.sqlite3
     networks:
       - mmhs

@@ -35,3 +35,5 @@ front/dist/
 # (.vscode/settings.json and .roo/mcp.json contain MCP setup)
 .env
 .env
+front/node_modules/
+setup/config/goatak_client.yml.bak

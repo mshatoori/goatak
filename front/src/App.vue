@@ -629,6 +629,11 @@ export default {
         this.myInfoMarker.setLatLng([this.config.lat, this.config.lon]);
         this.myInfoMarker.setIcon(markerInfo);
       }
+
+      // Update self marker tooltip if it exists
+      if (this.me && this.me.getTooltip()) {
+        this.me.setTooltipContent(selfPopup(this.config));
+      }
     },
     getConfig: function () {
       let vm = this;
@@ -651,6 +656,9 @@ export default {
               })
             );
             vm.me.addTo(vm.map);
+
+            // Add tooltip to self marker
+            vm.me.bindTooltip(selfPopup(vm.config));
 
             vm.configUpdated();
           }
@@ -897,7 +905,10 @@ export default {
         this.setActiveItemUid(item.uid, false);
       });
 
-      item.textLabel.addTo(this.getItemOverlay(item));
+      // Only add to map if item is visible
+      if (item.visible !== false) {
+        item.textLabel.addTo(this.getItemOverlay(item));
+      }
     },
 
     calculateTextLabelPosition: function (item) {
@@ -1094,6 +1105,11 @@ export default {
     },
 
     _processAddition: function (item) {
+      // Initialize visibility state if not set (default to visible)
+      if (item.visible === undefined) {
+        item.visible = true;
+      }
+
       if (item.category === "drawing" || item.category === "route") {
         this._processDrawing(item);
       } else {
@@ -1195,6 +1211,8 @@ export default {
       this.me.setLatLng([u.lat, u.lon]);
       if (this.myInfoMarker) this.myInfoMarker.setLatLng([u.lat, u.lon]);
       if (u.course) this.me.setIconAngle(u.course);
+      // Update self marker tooltip with new coordinates
+      this.me.setTooltipContent(selfPopup(this.config));
     },
 
     processWS: function (u) {
@@ -1228,7 +1246,7 @@ export default {
       const vm = this; // Capture Vue instance reference
       if (unit.lon === 0 && unit.lat === 0) {
         if (unit.marker) {
-          this.getItemOverlay(unit).removeLayer(unit.marker); // Changed item to unit
+          this.getItemOverlay(unit).removeLayer(unit.marker);
           unit.marker = null;
         }
         return;
@@ -1282,7 +1300,11 @@ export default {
         unit.infoMarker.setIcon(markerInfo);
       }
       unit.marker.setLatLng([unit.lat, unit.lon]);
-      unit.marker.bindTooltip(popup(unit));
+      // Pass self coordinates for distance calculation
+      const selfCoords = this.config
+        ? { lat: this.config.lat, lon: this.config.lon }
+        : null;
+      unit.marker.bindTooltip(popup(unit, selfCoords, false));
     },
 
     setActiveItemUid: function (uid, follow) {
@@ -1873,6 +1895,14 @@ export default {
         );
       } else {
         this.hideNavigationLine();
+      }
+    },
+
+    handleSelectOverlayItem: function (item) {
+      console.log("Overlay item selected@map", item);
+      if (item && item.uid) {
+        // Set the item as active and pan to it
+        this.setActiveItemUid(item.uid, true);
       }
     },
 

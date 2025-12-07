@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/adrianmo/go-nmea"
-	"github.com/google/uuid"
 	"github.com/kdudkov/goatak/pkg/cot"
 	"github.com/kdudkov/goatak/pkg/cotproto"
 	"github.com/kdudkov/goatak/pkg/model"
@@ -47,7 +46,7 @@ func NewRadarSensor(sensorModel *model.SensorModel, logger *slog.Logger) *RadarS
 		Addr:     fmt.Sprintf(":%d", sensorModel.Port), // Skipping IP
 		Conn:     nil,
 		Logger:   logger,
-		UID:      uuid.New().String(),
+		UID:      sensorModel.UID,
 		Interval: time.Second * time.Duration(sensorModel.Interval),
 		Ctx:      context.Background(),
 		Title:    sensorModel.Title,

@@ -7,3 +7,5 @@ dist
 *.tar
 setup/
 front/
+setup/tiles/*
+setup/tiles
