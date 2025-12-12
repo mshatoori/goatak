@@ -30,6 +30,7 @@ import (
 	"github.com/kdudkov/goatak/pkg/sensors"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/kdudkov/goatak/internal/authclient"
 	"github.com/kdudkov/goatak/internal/client"
 	"github.com/kdudkov/goatak/internal/dnsproxy"
 	"github.com/kdudkov/goatak/internal/repository"
@@ -101,6 +102,7 @@ type App struct {
 
 	config        *ApplicationConfig
 	configManager *ConfigManager
+	authClient    *authclient.AuthClient
 }
 
 type CoTEventMutator struct {
@@ -505,6 +507,13 @@ func main() {
 		int32(appConfig.Me.Urn),
 		appConfig.Me.Ip,
 	)
+
+	authCl, err := authclient.NewAuthClient()
+	if err != nil {
+		app.logger.Error("Failed to initialize auth client", "error", err)
+		// Ensure to handle this, maybe exit? For now just log.
+	}
+	app.authClient = authCl
 
 	// Store config and config manager in app
 	app.config = &appConfig

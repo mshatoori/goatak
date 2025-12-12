@@ -1,7 +1,8 @@
-window.baseUrl = "http://localhost:8080";
+window.baseUrl = "";
 
 import { createApp } from "vue";
 import App from "./App.vue";
+import router from "./router";
 
 // Import styles
 import "./main.css";
@@ -33,6 +34,8 @@ import TrackingManager from "./TrackingManager.js";
 import TrackingControl from "./components/TrackingControl.vue";
 
 const app = createApp(App);
+
+app.use(router);
 
 // Register all Vue components
 app.component("Sidebar", Sidebar);

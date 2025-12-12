@@ -26,74 +26,117 @@ func NewHttp(app *App, address string) *air.Air {
 	srv.DebugMode = true
 
 	srv.OPTIONS("/config", optionsHandler())
-	srv.GET("/config", getConfigHandler(app))
-	srv.PATCH("/config", changeConfigHandler(app))
+	srv.GET("/config", authMiddleware(app, getConfigHandler(app)))
+	srv.PATCH("/config", authMiddleware(app, changeConfigHandler(app)))
 	srv.OPTIONS("/types", optionsHandler())
-	srv.GET("/types", getTypes)
+	srv.GET("/types", authMiddleware(app, getTypes))
 	srv.OPTIONS("/dp", optionsHandler())
-	srv.POST("/dp", getDpHandler(app))
+	srv.POST("/dp", authMiddleware(app, getDpHandler(app)))
 	srv.OPTIONS("/pos", optionsHandler())
-	srv.GET("/pos", getPosHandler(app))
-	srv.POST("/pos", changePosHandler(app))
+	srv.GET("/pos", authMiddleware(app, getPosHandler(app)))
+	srv.POST("/pos", authMiddleware(app, changePosHandler(app)))
 
 	srv.OPTIONS("/ws", optionsHandler())
-	srv.GET("/ws", getWsHandler(app))
+	srv.GET("/ws", authMiddleware(app, getWsHandler(app)))
 
-	srv.GET("/unit", getUnitsHandler(app))
-	srv.POST("/unit", addItemHandler(app))
+	srv.GET("/unit", authMiddleware(app, getUnitsHandler(app)))
+	srv.POST("/unit", authMiddleware(app, addItemHandler(app)))
 	srv.OPTIONS("/unit", optionsHandler())
 	srv.OPTIONS("/unit/:uid", optionsHandler())
 	srv.OPTIONS("/message", optionsHandler())
-	srv.GET("/message", getMessagesHandler(app))
-	srv.POST("/message", addMessageHandler(app))
-	srv.DELETE("/unit/:uid", deleteItemHandler(app))
-	srv.POST("/unit/:uid/send/", sendItemHandler(app))
+	srv.GET("/message", authMiddleware(app, getMessagesHandler(app)))
+	srv.POST("/message", authMiddleware(app, addMessageHandler(app)))
+	srv.DELETE("/unit/:uid", authMiddleware(app, deleteItemHandler(app)))
+	srv.POST("/unit/:uid/send/", authMiddleware(app, sendItemHandler(app)))
 
 	srv.OPTIONS("/flows", optionsHandler())
-	srv.GET("/flows", getFlowsHandler(app))
-	srv.POST("/flows", addFlowHandler(app))
+	srv.GET("/flows", authMiddleware(app, getFlowsHandler(app)))
+	srv.POST("/flows", authMiddleware(app, addFlowHandler(app)))
 	srv.OPTIONS("/flows/:uid", optionsHandler())
-	srv.DELETE("/flows/:uid", deleteFlowHandler(app))
+	srv.DELETE("/flows/:uid", authMiddleware(app, deleteFlowHandler(app)))
 
-	srv.GET("/sensors", getSensorsHandler(app))
-	srv.POST("/sensors", addSensorHandler(app))
+	srv.GET("/sensors", authMiddleware(app, getSensorsHandler(app)))
+	srv.POST("/sensors", authMiddleware(app, addSensorHandler(app)))
 	srv.OPTIONS("/sensors", optionsHandler())
-	srv.DELETE("/sensors/:uid", deleteSensorHandler(app))
-	srv.PUT("/sensors/:uid", editSensorHandler(app))
+	srv.DELETE("/sensors/:uid", authMiddleware(app, deleteSensorHandler(app)))
+	srv.PUT("/sensors/:uid", authMiddleware(app, editSensorHandler(app)))
 	srv.OPTIONS("/sensors/:uid", optionsHandler())
 
 	// Navigation distance calculation endpoints
 	srv.OPTIONS("/api/navigation/distance/:itemId", optionsHandler())
-	srv.GET("/api/navigation/distance/:itemId", getNavigationDistanceHandler(app))
+	srv.GET("/api/navigation/distance/:itemId", authMiddleware(app, getNavigationDistanceHandler(app)))
 
 	// Tracking API endpoints
 	srv.OPTIONS("/api/tracking/trails", optionsHandler())
-	srv.GET("/api/tracking/trails", getTrackingTrailsHandler(app))
+	srv.GET("/api/tracking/trails", authMiddleware(app, getTrackingTrailsHandler(app)))
 	srv.OPTIONS("/api/tracking/trail/:uid", optionsHandler())
-	srv.GET("/api/tracking/trail/:uid", getTrackingTrailHandler(app))
+	srv.GET("/api/tracking/trail/:uid", authMiddleware(app, getTrackingTrailHandler(app)))
 	srv.OPTIONS("/api/tracking/config/:uid", optionsHandler())
-	srv.POST("/api/tracking/config/:uid", updateTrackingConfigHandler(app))
+	srv.POST("/api/tracking/config/:uid", authMiddleware(app, updateTrackingConfigHandler(app)))
 	srv.OPTIONS("/api/tracking/settings", optionsHandler())
 
 	// Resend configuration API endpoints
 	srv.OPTIONS("/api/resend/configs", optionsHandler())
-	srv.GET("/api/resend/configs", getResendConfigsHandler(app))
-	srv.POST("/api/resend/configs", createResendConfigHandler(app))
+	srv.GET("/api/resend/configs", authMiddleware(app, getResendConfigsHandler(app)))
+	srv.POST("/api/resend/configs", authMiddleware(app, createResendConfigHandler(app)))
 	srv.OPTIONS("/api/resend/configs/:uid", optionsHandler())
-	srv.GET("/api/resend/configs/:uid", getResendConfigHandler(app))
-	srv.PUT("/api/resend/configs/:uid", updateResendConfigHandler(app))
-	srv.DELETE("/api/resend/configs/:uid", deleteResendConfigHandler(app))
+	srv.GET("/api/resend/configs/:uid", authMiddleware(app, getResendConfigHandler(app)))
+	srv.PUT("/api/resend/configs/:uid", authMiddleware(app, updateResendConfigHandler(app)))
+	srv.DELETE("/api/resend/configs/:uid", authMiddleware(app, deleteResendConfigHandler(app)))
 
 	srv.OPTIONS("/stack", optionsHandler())
-	srv.GET("/stack", getStackHandler())
+	srv.GET("/stack", authMiddleware(app, getStackHandler()))
 
 	srv.OPTIONS("/destinations", optionsHandler())
-	srv.GET("/destinations", getDestinationsHandler(app))
+	srv.GET("/destinations", authMiddleware(app, getDestinationsHandler(app)))
 
 	srv.RendererTemplateLeftDelim = "[["
 	srv.RendererTemplateRightDelim = "]]"
 
 	return srv
+}
+
+func authMiddleware(app *App, h air.Handler) air.Handler {
+	return func(req *air.Request, res *air.Response) error {
+		if req.Method == "OPTIONS" {
+			return h(req, res)
+		}
+
+		if app.authClient == nil {
+			// Fail open if auth not configured? Or fail closed?
+			// User requirement implies strict auth.
+			// However, if we fail closed, dev without keys is broken.
+			// But keys are mandatory.
+			res.Status = 500
+			return res.WriteJSON(map[string]string{"error": "Auth not configured"})
+		}
+
+		authHeader := req.Header.Get("Authorization")
+		if authHeader == "" {
+			// Check query param for WebSocket as common fallback, but plans said Headers.
+			// WS usually needs query token or cookie. Header is hard in standard JS WebSocket API.
+			// But for now, sticking to Header. 'getWsHandler' might fail.
+			// I'll add query param check for WS since it's common practice.
+			// "access_token" param.
+			token := req.HTTPRequest().URL.Query().Get("token")
+			if token != "" {
+				authHeader = "Bearer " + token
+			}
+		}
+
+		if authHeader == "" {
+			res.Status = 401
+			return res.WriteJSON(map[string]string{"error": "Unauthorized"})
+		}
+
+		_, _, err := app.authClient.ValidateToken(authHeader)
+		if err != nil {
+			res.Status = 401
+			return res.WriteJSON(map[string]string{"error": "Unauthorized"})
+		}
+
+		return h(req, res)
+	}
 }
 
 func getUnitsHandler(app *App) air.Handler {

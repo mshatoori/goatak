@@ -37,3 +37,4 @@ front/dist/
 .env
 front/node_modules/
 setup/config/goatak_client.yml.bak
+frontend/node_modules
