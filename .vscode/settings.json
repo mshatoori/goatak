@@ -1,17 +1,9 @@
 {
-  "mcp.servers": {
-    "language-server": {
-      "command": "mcp-language-server",
-      "args": [
-        "--workspace", "/home/mohammadreza/GolandProjects/goatak",
-        "--lsp", "gopls"
-      ],
-      "env": {
-        "PATH": "/usr/local/go/bin:/home/mohammadreza/go/bin:/usr/bin:/bin",
-        "GOPATH": "/home/mohammadreza/go",
-        "GOCACHE": "/home/mohammadreza/.cache/go-build",
-        "GOMODCACHE": "/home/mohammadreza/go/pkg/mod"
-      }
-    }
-  }
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+  "eslint.validate": ["javascript"],
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+  "eslint.format.enable": true
 }
