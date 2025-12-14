@@ -197,7 +197,7 @@
       <div id="map-container" class="col h-100" style="cursor: crosshair">
         <MglMap
           ref="mapRef"
-          :map-style="mapStyle"
+          map-style="/static/styles.json"
           :center="mapCenter"
           :zoom="mapZoom"
           @map:load="onMapLoad"
@@ -206,8 +206,6 @@
           @map:zoomend="onMapZoom"
           @map:contextmenu="onMapContextMenu"
         >
-          <MglVectorSource></MglVectorSource>
-
           <!-- Scale Control -->
           <MglScaleControl position="bottom-right" :unit="'metric'" />
 
@@ -584,6 +582,9 @@ import {
   createMapItem,
 } from "../utils.js";
 
+import maplibregl from "maplibre-gl";
+import { Protocol } from "pmtiles";
+
 export default {
   name: "App",
   components: {
@@ -603,17 +604,6 @@ export default {
       map: null,
       mapRef: ref(null),
       currentPopup: null,
-      mapStyle: {
-        version: 8,
-        sources: {},
-        layers: [
-          {
-            id: "background",
-            type: "background",
-            paint: { "background-color": "#e0e0e0" },
-          },
-        ],
-      },
       mapCenter: [51.4, 35.7],
       mapZoom: 11,
 
@@ -737,6 +727,10 @@ export default {
     },
   },
   mounted() {
+    let protocol = new Protocol();
+    maplibregl.addProtocol("pmtiles", protocol.tile);
+    maplibregl.setRTLTextPlugin("/static/js/mapbox-gl-rtl-text.js");
+
     this.getConfig();
 
     let supportsWebSockets = "WebSocket" in window || "MozWebSocket" in window;
@@ -768,7 +762,7 @@ export default {
     onMapClick(e) {
       if (this.inDrawMode) return;
 
-      const latlng = { lat: e.lngLat.lat, lng: e.lngLat.lng };
+      const latlng = { lat: e.event.lngLat.lat, lng: e.event.lngLat.lng };
 
       if (this.mode === "add_point") {
         this.mapClickAddPoint({ latlng });
@@ -788,7 +782,7 @@ export default {
     },
 
     onMouseMove(e) {
-      this.coords = { lat: e.lngLat.lat, lng: e.lngLat.lng };
+      this.coords = { lat: e.event.lngLat.lat, lng: e.event.lngLat.lng };
     },
 
     onMapZoom() {
@@ -828,66 +822,7 @@ export default {
 
     buildMapStyle(layers) {
       // Ignore the layers parameter and use PMTiles instead
-      this.mapStyle = {
-        version: 8,
-        sources: {
-          protomaps: {
-            type: "vector",
-            url: "pmtiles://https://build.protomaps.com/20251214.pmtiles",
-          },
-        },
-        layers: [
-          {
-            id: "background",
-            type: "background",
-            paint: { "background-color": "#e0e0e0" },
-          },
-          {
-            id: "landuse",
-            type: "fill",
-            source: "protomaps",
-            "source-layer": "landuse",
-            paint: {
-              "fill-color": "#f0f0f0",
-            },
-          },
-          {
-            id: "water",
-            type: "fill",
-            source: "protomaps",
-            "source-layer": "water",
-            paint: {
-              "fill-color": "#a0c8f0",
-            },
-          },
-          {
-            id: "roads",
-            type: "line",
-            source: "protomaps",
-            "source-layer": "roads",
-            paint: {
-              "line-color": "#666666",
-              "line-width": 1,
-            },
-          },
-          {
-            id: "places",
-            type: "symbol",
-            source: "protomaps",
-            "source-layer": "places",
-            layout: {
-              "text-field": ["get", "name"],
-              "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-              "text-size": 12,
-            },
-            paint: {
-              "text-color": "#333333",
-              "text-halo-color": "#ffffff",
-              "text-halo-width": 1,
-            },
-          },
-        ],
-      };
+      // TODO: FIX?
     },
 
     connect() {
