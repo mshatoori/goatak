@@ -85,7 +85,8 @@ export default {
       default: "",
     },
   },
-  data: function () {
+  emits: ["update:modelValue"],
+  data: function() {
     return {
       hierarchyData: null, // Stores the root node of the hierarchy
       isLoading: false,
@@ -96,24 +97,24 @@ export default {
     };
   },
   computed: {
-    childOptions: function () {
+    childOptions: function() {
       // Ensure currentNode and its 'next' property exist
       return this.currentNode?.next || [];
     },
-    currentDisplay: function () {
+    currentDisplay: function() {
       // This computed property might not be directly used in the template,
       // but kept for potential future use or debugging.
       if (this.isLoading) return "Loading...";
       if (this.error) return "Error";
       return this.currentNode?.name || "Select Type";
     },
-    canGoForward: function () {
+    canGoForward: function() {
       // Check if currentNode exists and has a 'next' array with items
       return !!this.currentNode?.next?.length;
     },
   },
   methods: {
-    findNodeByCode: function (node, code) {
+    findNodeByCode: function(node, code) {
       if (!node) return null;
       if (node.code === code) return node;
       if (node.next) {
@@ -124,7 +125,7 @@ export default {
       }
       return null;
     },
-    buildPathToNode: function (startNode, targetNode) {
+    buildPathToNode: function(startNode, targetNode) {
       if (!startNode || !targetNode) return [];
       if (startNode.code === targetNode.code) return [startNode];
 
@@ -138,7 +139,7 @@ export default {
       }
       return [];
     },
-    fetchHierarchy: function () {
+    fetchHierarchy: function() {
       this.isLoading = true;
       this.error = null;
 
@@ -183,7 +184,7 @@ export default {
         checkTypes();
       }
     },
-    initializeSelection: function () {
+    initializeSelection: function() {
       // Guard against running initialization logic before data is ready or if there was an error
       if (this.isLoading || this.error || !this.hierarchyData) {
         console.log(
@@ -227,7 +228,7 @@ export default {
             console.log(
               `Hierarchy: Syncing value on init. Was "${this.value}", now "${this.currentNode.code}"`
             );
-            this.$emit("input", this.currentNode.code);
+            this.$emit("update:modelValue", this.currentNode.code);
           }
         } else {
           // This case should be rare if findNodeByCode found the node, but handle it defensively.
@@ -244,7 +245,7 @@ export default {
         this.resetState(); // Reset to root if target node not found
       }
     },
-    resetState: function () {
+    resetState: function() {
       if (this.hierarchyData) {
         // Set current node and path to the root of the hierarchy
         this.currentNode = this.hierarchyData;
@@ -255,7 +256,7 @@ export default {
           console.log(
             `Hierarchy: Emitting root code "${this.currentNode.code}" after reset.`
           );
-          this.$emit("input", this.currentNode.code);
+          this.$emit("update:modelValue", this.currentNode.code);
         }
       } else {
         // If there's no hierarchy data (e.g., initial load failed), clear the state.
@@ -265,12 +266,12 @@ export default {
         // Emit an empty value if the value isn't already empty.
         if (this.value !== "") {
           console.log("Hierarchy: Emitting empty value after reset (no data).");
-          this.$emit("input", "");
+          this.$emit("update:modelValue", "");
         }
       }
     },
     // Method for breadcrumb navigation
-    navigateToNode: function (node, index) {
+    navigateToNode: function(node, index) {
       // Prevent navigating to the already current node via breadcrumb
       if (index === this.selectedPath.length - 1) return;
 
@@ -278,10 +279,10 @@ export default {
       // Trim the path back to the clicked node (inclusive)
       this.selectedPath = this.selectedPath.slice(0, index + 1);
       this.currentNode = node;
-      this.$emit("input", this.currentNode.code);
+      this.$emit("update:modelValue", this.currentNode.code);
     },
     // Method for selecting a child from the list
-    selectChild: function (selectedNode) {
+    selectChild: function(selectedNode) {
       if (!selectedNode || !this.canGoForward) return; // Basic guard
 
       const childExists = this.currentNode?.next?.some(
@@ -298,11 +299,11 @@ export default {
       console.log("Hierarchy selected child:", selectedNode.code);
       this.selectedPath.push(selectedNode);
       this.currentNode = selectedNode;
-      this.$emit("input", selectedNode.code);
+      this.$emit("update:modelValue", selectedNode.code);
     },
   },
   watch: {
-    value: function (newCode, oldCode) {
+    value: function(newCode, oldCode) {
       // Re-initialize if the value changes externally,
       // but only if the change wasn't caused by an internal emit
       // (i.e., newCode is different from the current node's code)
@@ -323,7 +324,7 @@ export default {
         );
       }
     },
-    "sharedState.types": function (newData, oldData) {
+    "sharedState.types": function(newData, oldData) {
       // Initialize only if new data is present and differs from old data,
       // or if it's the initial load (oldData is null/undefined).
       if (newData && newData !== oldData) {
@@ -340,7 +341,7 @@ export default {
       }
     },
   },
-  mounted: function () {
+  mounted: function() {
     this.fetchHierarchy();
   },
 };
