@@ -18,6 +18,8 @@ services:
       - .:/workspace:cached
       - ./config/:/app/config/
       - ./config.sqlite3:/app/config.sqlite3
+    env_file:
+      - "keys.env"
     networks:
       - mmhs
   map:
@@ -52,8 +54,8 @@ services:
       - DB_USER=goatak
       - DB_PASSWORD=goatak
       - DB_NAME=goatak_auth
-      - JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY}
-      - JWT_PUBLIC_KEY=${JWT_PUBLIC_KEY}
+    env_file:
+      - "keys.env"
     networks:
       - mmhs
     depends_on:

@@ -2,29 +2,24 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
 // List of endpoints to proxy to webclient
-const webclientEndpoints = [
-  '^/api', '^/config', '^/unit', '^/message', '^/sensors', 
-  '^/flows', '^/types', '^/destinations', '^/dp', '^/pos'
-];
+const webclientEndpoints = ["^/api"];
 
 const proxy = {
-  '/auth': {
-    target: 'http://auth-service:8080',
-    changeOrigin: true
+  "/auth": {
+    target: "http://auth-service:8080",
+    changeOrigin: true,
   },
-  '/ws': {
-    target: 'http://webclient:8080',
+  "/ws": {
+    target: "http://webclient:8080",
     ws: true,
-    changeOrigin: true
-  }
+    changeOrigin: true,
+  },
+  "/api": {
+    target: "http://webclient:8080",
+    changeOrigin: true,
+    // rewrite: (path) => path.replace(/^\/api/, ""),
+  },
 };
-
-webclientEndpoints.forEach(path => {
-  proxy[path] = {
-    target: 'http://webclient:8080',
-    changeOrigin: true
-  };
-});
 
 export default defineConfig({
   base: "",
@@ -35,7 +30,7 @@ export default defineConfig({
     watch: {
       usePolling: true,
     },
-    proxy: proxy
+    proxy: proxy,
   },
   build: {
     outDir: "dist",

@@ -124,6 +124,7 @@
 
 <script>
 import store from "../store.js";
+import api from "../api/axios.js";
 
 export default {
   name: "Send",
@@ -140,7 +141,7 @@ export default {
     contactsData() {
       let contacts = [];
       if (this.sharedState.ts) {
-        this.sharedState.items.forEach(function (u) {
+        this.sharedState.items.forEach(function(u) {
           if (u.category === "contact") {
             contacts.push(u);
           }
@@ -169,29 +170,26 @@ export default {
     },
     send() {
       // Use selectedIp and selectedUrn for sending
-      fetch(
-        window.baseUrl + "unit/" + this.sharedState.unitToSend.uid + "/send/",
-        {
-          headers: { "Content-Type": "application/json" },
-          method: "POST",
-          body: JSON.stringify({
-            ipAddress: this.selectedIp,
-            urn: parseInt(this.selectedUrn),
-          }),
-        }
-      ).then((response) => {
-        if (response.status === 200) {
-          this.toast.text = "ارسال با موفقیت انجام شد";
-          this.toast.icon = "bi-mailbox";
-        } else {
-          this.toast.text = "ارسال با خطا مواجه شد";
-          this.toast.icon = "bi-x";
-        }
+      api
+        .post(`/unit/${this.sharedState.unitToSend.uid}/send/`, {
+          ipAddress: this.selectedIp,
+          urn: parseInt(this.selectedUrn),
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            this.toast.text = "ارسال با موفقیت انجام شد";
+            this.toast.icon = "bi-mailbox";
+          } else {
+            this.toast.text = "ارسال با خطا مواجه شد";
+            this.toast.icon = "bi-x";
+          }
 
-        const sentToastElement = document.getElementById("sendToast");
-        const sendToast = bootstrap.Toast.getOrCreateInstance(sentToastElement);
-        sendToast.show();
-      });
+          const sentToastElement = document.getElementById("sendToast");
+          const sendToast = bootstrap.Toast.getOrCreateInstance(
+            sentToastElement
+          );
+          sendToast.show();
+        });
     },
   },
 };

@@ -5,6 +5,63 @@
 @import url("../static/css/bootstrap-icons.min.css");
 @import url("../static/css/main.css");
 
+/* MapLibre GL Styles */
+.maplibregl-map {
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+}
+
+.maplibregl-canvas {
+  outline: none;
+}
+
+.maplibregl-ctrl-group {
+  background: #fff;
+  border-radius: 4px;
+}
+
+.maplibregl-ctrl-group button {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.maplibregl-ctrl-group button:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.maplibregl-popup-content {
+  padding: 10px 15px;
+  font-size: 0.875rem;
+  direction: rtl;
+}
+
+.maplibregl-popup-close-button {
+  font-size: 1.2rem;
+  padding: 2px 6px;
+}
+
+/* Tools Control */
+.tools-control {
+  display: flex;
+  flex-direction: column;
+}
+
+.tools-control button {
+  padding: 5px;
+}
+
+.tools-control button img {
+  display: block;
+  margin: 0 auto;
+}
+
 /* Overlay Manager Tree Styles */
 .overlay-manager-tree .tree-container {
   max-height: 600px;
@@ -99,12 +156,13 @@
   font-weight: bold;
   text-align: center;
   white-space: nowrap;
-  pointer-events: none;
+  cursor: pointer;
   border: 1px solid rgba(0, 0, 0, 0.2);
+  text-shadow: 1px 1px 2px white, -1px -1px 2px white;
 }
 
-.drawing-text-label-icon {
-  background: transparent !important;
+.drawing-text-label:hover {
+  background: rgba(255, 255, 255, 0.95);
 }
 
 /* Marker Context Menu */
@@ -119,13 +177,40 @@
 
 /* Self Marker Info */
 .my-marker-info {
-  /* background: rgba(0, 123, 255, 0.9); */
   color: white;
   padding: 2px 6px;
-  /* border-radius: 3px; */
   font-size: 0.75rem;
   font-weight: bold;
-  /* border: 1px solid rgba(255, 255, 255, 0.3); */
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 3px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Map Container */
+#map-container {
+  position: relative;
+}
+
+#map-container .maplibregl-map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* Tracking Trail Popup */
+.tracking-trail-popup {
+  font-size: 0.875rem;
+}
+
+.tracking-trail-popup h6 {
+  margin-bottom: 0.5rem;
+}
+
+.tracking-trail-popup p {
+  margin-bottom: 0.25rem;
 }
 
 /* Responsive adjustments */
@@ -161,4 +246,27 @@
 
 .overlay-manager-tree .tree-container::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
+}
+
+/* Sidebar collapsed state */
+.sidebar-collapsed .col-auto {
+  width: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Alarm active animation */
+.alarm-active {
+  animation: alarm-pulse 1s infinite;
+  color: #dc3545;
+}
+
+@keyframes alarm-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }

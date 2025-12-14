@@ -1,7 +1,7 @@
 import { dt } from "./utils.js";
 
 /**
- * TrackingManager - Manages trail visualization on Leaflet maps
+ * TrackingManager - Manages trail visualization on MapLibre GL maps
  *
  * This class provides comprehensive trail management functionality including:
  * - Adding/updating/removing trails on the map
@@ -13,10 +13,10 @@ import { dt } from "./utils.js";
 class TrackingManager {
   constructor(map, options = {}) {
     this.map = map;
-    this.trails = new Map(); // uid -> L.polyline
     this.trailData = new Map(); // uid -> array of positions
     this.trailConfigs = new Map(); // uid -> trail configuration
     this.trackingEnabled = true;
+    this.sourcesAdded = new Set(); // Track which sources have been added to the map
 
     // Default configuration
     this.defaultConfig = {
@@ -31,12 +31,6 @@ class TrackingManager {
       ...options,
     };
 
-    // Create tracking overlay if it doesn't exist
-    if (!this.map.trackingOverlay) {
-      this.map.trackingOverlay = L.layerGroup();
-      this.map.trackingOverlay.addTo(this.map);
-    }
-
     // Performance optimization
     this.updateQueue = new Set();
     this.isUpdating = false;
@@ -46,7 +40,7 @@ class TrackingManager {
       this.cleanupOldTrails();
     }, 5 * 60 * 1000); // Every 5 minutes
 
-    console.log("TrackingManager initialized");
+    console.log("TrackingManager initialized for MapLibre GL");
   }
 
   /**
@@ -89,7 +83,9 @@ class TrackingManager {
     this.updateTrailVisualization(unitUid);
 
     console.log(
-      `Trail added for unit ${unitUid} with ${limitedPositions.length} positions`
+      `Trail added for unit ${unitUid} with ${
+        limitedPositions.length
+      } positions`
     );
     return true;
   }
@@ -152,11 +148,22 @@ class TrackingManager {
       return false;
     }
 
-    // Remove from map
-    if (this.trails.has(unitUid)) {
-      const polyline = this.trails.get(unitUid);
-      this.map.trackingOverlay.removeLayer(polyline);
-      this.trails.delete(unitUid);
+    // Remove from map if map is available
+    if (this.map) {
+      const layerId = `trail-line-${unitUid}`;
+      const sourceId = `trail-source-${unitUid}`;
+
+      try {
+        if (this.map.getLayer(layerId)) {
+          this.map.removeLayer(layerId);
+        }
+        if (this.map.getSource(sourceId)) {
+          this.map.removeSource(sourceId);
+        }
+        this.sourcesAdded.delete(unitUid);
+      } catch (e) {
+        console.warn("Error removing trail layer/source:", e);
+      }
     }
 
     // Clean up data
@@ -202,15 +209,15 @@ class TrackingManager {
    * Clear all trails from map
    */
   clearAllTrails() {
-    // Remove all polylines from map
-    this.trails.forEach((polyline, unitUid) => {
-      this.map.trackingOverlay.removeLayer(polyline);
+    // Remove all layers and sources from map
+    this.trailData.forEach((trail, unitUid) => {
+      this.removeTrail(unitUid);
     });
 
     // Clear all data
-    this.trails.clear();
     this.trailData.clear();
     this.trailConfigs.clear();
+    this.sourcesAdded.clear();
 
     console.log("All trails cleared");
   }
@@ -250,54 +257,104 @@ class TrackingManager {
   }
 
   /**
+   * Convert trail data to GeoJSON
+   * @param {string} unitUid - Unique identifier for the unit
+   * @returns {Object} GeoJSON Feature
+   */
+  getTrailGeoJSON(unitUid) {
+    const trail = this.trailData.get(unitUid);
+
+    if (!trail || trail.length < 2) {
+      return {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: [],
+        },
+        properties: { unitUid },
+      };
+    }
+
+    const coordinates = trail.map((point) => [point.lon, point.lat]);
+
+    return {
+      type: "Feature",
+      geometry: {
+        type: "LineString",
+        coordinates,
+      },
+      properties: { unitUid },
+    };
+  }
+
+  /**
    * Update trail visualization on map
    * @param {string} unitUid - Unique identifier for the unit
    */
   updateTrailVisualization(unitUid) {
+    if (!this.map) {
+      console.warn("TrackingManager: Map not available");
+      return;
+    }
+
     const trail = this.trailData.get(unitUid);
     const config = this.getTrailConfig(unitUid);
 
     if (!trail || trail.length < 2 || !config.enabled) {
       // Remove trail if it exists but has insufficient data
-      if (this.trails.has(unitUid)) {
-        this.map.trackingOverlay.removeLayer(this.trails.get(unitUid));
-        this.trails.delete(unitUid);
+      if (this.sourcesAdded.has(unitUid)) {
+        this.removeTrail(unitUid);
       }
       return;
     }
 
-    // Convert to LatLng array
-    const latlngs = trail.map((point) => [point.lat, point.lon]);
+    const sourceId = `trail-source-${unitUid}`;
+    const layerId = `trail-line-${unitUid}`;
+    const geojson = this.getTrailGeoJSON(unitUid);
 
-    // Create or update polyline
-    if (!this.trails.has(unitUid)) {
-      // Create new polyline
-      const polyline = L.polyline(latlngs, {
-        color: config.trailColor,
-        weight: config.trailWidth,
-        opacity: config.trailOpacity,
-        smoothFactor: config.smoothUpdates ? 1.0 : 0,
-        className: `tracking-trail tracking-trail-${unitUid}`,
-      });
+    try {
+      // Check if source already exists
+      if (this.map.getSource(sourceId)) {
+        // Update existing source data
+        this.map.getSource(sourceId).setData(geojson);
 
-      // Add popup with trail info
-      polyline.bindPopup(this.createTrailPopup(unitUid, trail));
+        // Update layer paint properties
+        if (this.map.getLayer(layerId)) {
+          this.map.setPaintProperty(layerId, "line-color", config.trailColor);
+          this.map.setPaintProperty(layerId, "line-width", config.trailWidth);
+          this.map.setPaintProperty(
+            layerId,
+            "line-opacity",
+            config.trailOpacity
+          );
+        }
+      } else {
+        // Add new source
+        this.map.addSource(sourceId, {
+          type: "geojson",
+          data: geojson,
+        });
 
-      // Add to map
-      polyline.addTo(this.map.trackingOverlay);
-      this.trails.set(unitUid, polyline);
-    } else {
-      // Update existing polyline
-      const polyline = this.trails.get(unitUid);
-      polyline.setLatLngs(latlngs);
-      polyline.setStyle({
-        color: config.trailColor,
-        weight: config.trailWidth,
-        opacity: config.trailOpacity,
-      });
+        // Add new layer
+        this.map.addLayer({
+          id: layerId,
+          type: "line",
+          source: sourceId,
+          layout: {
+            "line-join": "round",
+            "line-cap": "round",
+          },
+          paint: {
+            "line-color": config.trailColor,
+            "line-width": config.trailWidth,
+            "line-opacity": config.trailOpacity,
+          },
+        });
 
-      // Update popup
-      polyline.setPopupContent(this.createTrailPopup(unitUid, trail));
+        this.sourcesAdded.add(unitUid);
+      }
+    } catch (e) {
+      console.warn("Error updating trail visualization:", e);
     }
   }
 
@@ -342,13 +399,26 @@ class TrackingManager {
     if (trail.length < 2) return 0;
 
     let totalDistance = 0;
+    const toRadian = Math.PI / 180;
+    const R = 6371; // Earth's radius in kilometers
+
     for (let i = 1; i < trail.length; i++) {
-      const p1 = L.latLng(trail[i - 1].lat, trail[i - 1].lon);
-      const p2 = L.latLng(trail[i].lat, trail[i].lon);
-      totalDistance += p1.distanceTo(p2);
+      const p1 = trail[i - 1];
+      const p2 = trail[i];
+
+      const deltaF = (p2.lat - p1.lat) * toRadian;
+      const deltaL = (p2.lon - p1.lon) * toRadian;
+      const a =
+        Math.sin(deltaF / 2) * Math.sin(deltaF / 2) +
+        Math.cos(p1.lat * toRadian) *
+          Math.cos(p2.lat * toRadian) *
+          Math.sin(deltaL / 2) *
+          Math.sin(deltaL / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      totalDistance += R * c;
     }
 
-    return totalDistance / 1000; // Convert to kilometers
+    return totalDistance;
   }
 
   /**
@@ -411,8 +481,14 @@ class TrackingManager {
       return;
     }
 
-    const { unit_uid, latitude, longitude, timestamp, speed, course } =
-      data.tracking_update;
+    const {
+      unit_uid,
+      latitude,
+      longitude,
+      timestamp,
+      speed,
+      course,
+    } = data.tracking_update;
 
     if (!unit_uid || !latitude || !longitude) {
       console.warn(
@@ -438,18 +514,23 @@ class TrackingManager {
   setTrackingEnabled(enabled) {
     this.trackingEnabled = enabled;
 
-    if (!enabled) {
-      // Hide all trails
-      this.trails.forEach((polyline) => {
-        polyline.setStyle({ opacity: 0 });
-      });
-    } else {
-      // Show all trails
-      this.trails.forEach((polyline, unitUid) => {
-        const config = this.getTrailConfig(unitUid);
-        polyline.setStyle({ opacity: config.trailOpacity });
-      });
-    }
+    if (!this.map) return;
+
+    // Update visibility of all trail layers
+    this.trailData.forEach((trail, unitUid) => {
+      const layerId = `trail-line-${unitUid}`;
+      try {
+        if (this.map.getLayer(layerId)) {
+          this.map.setLayoutProperty(
+            layerId,
+            "visibility",
+            enabled ? "visible" : "none"
+          );
+        }
+      } catch (e) {
+        console.warn("Error updating trail visibility:", e);
+      }
+    });
 
     console.log(`Tracking ${enabled ? "enabled" : "disabled"}`);
   }
@@ -493,9 +574,8 @@ class TrackingManager {
       case "csv":
         let csv = "timestamp,latitude,longitude,speed,course\n";
         trail.forEach((point) => {
-          csv += `${point.timestamp},${point.lat},${point.lon},${
-            point.speed || 0
-          },${point.course || 0}\n`;
+          csv += `${point.timestamp},${point.lat},${point.lon},${point.speed ||
+            0},${point.course || 0}\n`;
         });
         return csv;
 
@@ -579,12 +659,6 @@ class TrackingManager {
 
     // Clear all trails
     this.clearAllTrails();
-
-    // Remove tracking overlay
-    if (this.map.trackingOverlay) {
-      this.map.removeLayer(this.map.trackingOverlay);
-      delete this.map.trackingOverlay;
-    }
 
     console.log("TrackingManager destroyed");
   }

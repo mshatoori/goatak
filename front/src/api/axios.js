@@ -1,19 +1,20 @@
-import axios from 'axios';
-import router from '../router';
+import axios from "axios";
+import router from "../router";
 
 const api = axios.create({
-  baseURL: '/api', // Proxy handles redirection to webclient
+  baseURL: "/api", // Proxy handles redirection to webclient
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // Request Interceptor: Add Access Token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
+    console.log("TOKEN:", token);
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },
@@ -47,7 +48,7 @@ api.interceptors.response.use(
           failedQueue.push({ resolve, reject });
         })
           .then((token) => {
-            originalRequest.headers['Authorization'] = 'Bearer ' + token;
+            originalRequest.headers["Authorization"] = "Bearer " + token;
             return api(originalRequest);
           })
           .catch((err) => Promise.reject(err));
@@ -59,22 +60,26 @@ api.interceptors.response.use(
       try {
         // Call refresh endpoint via the proxy
         // Since /auth is proxied to auth-service and cookies are HttpOnly, we just call it.
-        // Wait, auth-service checks Cookie. 
+        // Wait, auth-service checks Cookie.
         // We need to make sure axios sends cookies.
-        const response = await axios.post('/auth/refresh', {}, { withCredentials: true });
-        
+        const response = await axios.post(
+          "/auth/refresh",
+          {},
+          { withCredentials: true }
+        );
+
         const { access_token } = response.data;
-        localStorage.setItem('access_token', access_token);
-        
-        api.defaults.headers.common['Authorization'] = 'Bearer ' + access_token;
-        originalRequest.headers['Authorization'] = 'Bearer ' + access_token;
-        
+        localStorage.setItem("access_token", access_token);
+
+        api.defaults.headers.common["Authorization"] = "Bearer " + access_token;
+        originalRequest.headers["Authorization"] = "Bearer " + access_token;
+
         processQueue(null, access_token);
         return api(originalRequest);
       } catch (err) {
         processQueue(err, null);
-        localStorage.removeItem('access_token');
-        router.push('/login'); 
+        localStorage.removeItem("access_token");
+        router.push("/login");
         return Promise.reject(err);
       } finally {
         isRefreshing = false;
@@ -86,12 +91,11 @@ api.interceptors.response.use(
 );
 
 export const authApi = axios.create({
-    baseURL: '/auth',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    withCredentials: true // For cookies
+  baseURL: "/auth",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  withCredentials: true, // For cookies
 });
-
 
 export default api;

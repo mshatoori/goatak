@@ -92,6 +92,7 @@
 <script setup>
 import { ref, computed, watch, nextTick } from "vue";
 import { formatNumber, formatBearing, formatDistance } from "../utils.js";
+import api from "../api/axios.js";
 
 // Props
 const props = defineProps({
@@ -326,40 +327,28 @@ function getTargetCoordinates() {
 }
 
 async function fetchNavigationFromAPI(itemId, userLat, userLon) {
-  const url =
-    window.baseUrl +
-    `/api/navigation/distance/${itemId}?userLat=${userLat}&userLon=${userLon}`;
-
   try {
     isLoading.value = true;
     apiError.value = null;
 
-    const response = await fetch(url, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
+    const response = await api.get(
+      `/navigation/distance/${itemId}?userLat=${userLat}&userLon=${userLon}`
+    );
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    if (!data.success) {
-      throw new Error(data.error || "خطا در درخواست");
+    if (!response.data.success) {
+      throw new Error(response.data.error || "خطا در درخواست");
     }
 
     // Transform API response to match our internal format
     const result = {
-      bearing: data.data.bearing,
-      distance: data.data.distance,
+      bearing: response.data.data.bearing,
+      distance: response.data.data.distance,
       userPosition: { lat: userLat, lng: userLon },
       targetPosition: {
-        lat: data.data.closestPoint.lat,
-        lng: data.data.closestPoint.lon,
+        lat: response.data.data.closestPoint.lat,
+        lng: response.data.data.closestPoint.lon,
       },
-      itemType: data.data.itemType,
+      itemType: response.data.data.itemType,
       source: "api",
     };
 

@@ -1,5 +1,6 @@
 import { reactive } from "vue";
 import { cleanUnit, uuidv4 } from "./utils.js";
+import api from "./api/axios.js";
 
 const store = {
   debug: true,
@@ -37,25 +38,17 @@ const store = {
     this.state.items.set(item.uid, item);
     this.state.ts += 1;
 
-    const requestOptions = {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(cleanUnit(item)),
-    };
-
-    return fetch(window.baseUrl + "/unit", requestOptions)
-      .then((response) => response.json())
-      .then((response) => {
-        console.log("store.createItem fetch response:", response);
-        // Explicitly return the result of _processItems
-        return this._processItems([response], true);
-      });
+    return api.post("/unit", cleanUnit(item)).then((response) => {
+      console.log("store.createItem axios response:", response.data);
+      // Explicitly return the result of _processItems
+      return this._processItems([response.data], true);
+    });
   },
 
   fetchItems: function() {
-    return fetch(window.baseUrl + "/unit")
-      .then((response) => response.json())
-      .then((response) => this._processItems(response));
+    return api
+      .get("/unit")
+      .then((response) => this._processItems(response.data));
   },
 
   removeItem: function(uid) {
@@ -67,11 +60,9 @@ const store = {
       });
     }
 
-    return fetch(window.baseUrl + "/unit/" + uid, { method: "DELETE" })
-      .then(function(response) {
-        return response.json();
-      })
-      .then(({ units }) => this._processItems(units));
+    return api
+      .delete(`/unit/${uid}`)
+      .then((response) => this._processItems(response.data.units));
   },
 
   handleItemChangeMessage: function(item, is_delete = false) {
@@ -146,28 +137,21 @@ const store = {
       port: parseInt(sensorData.port),
       interval: parseInt(sensorData.interval),
     };
-    fetch(window.baseUrl + "/sensors", {
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-      body: JSON.stringify(sensorJson),
-    })
-      .then((response) => response.json())
-      .then((response) => (this.state.sensors = response));
+    api
+      .post("/sensors", sensorJson)
+      .then((response) => (this.state.sensors = response.data));
   },
 
   fetchSensors() {
-    fetch(window.baseUrl + "/sensors")
-      .then((response) => response.json())
-      .then((response) => (this.state.sensors = response));
+    api
+      .get("/sensors")
+      .then((response) => (this.state.sensors = response.data));
   },
 
   removeSensor: function(uid) {
-    fetch(window.baseUrl + `/sensors/${uid}`, {
-      headers: { "Content-Type": "application/json" },
-      method: "DELETE",
-    })
-      .then((response) => response.json())
-      .then((response) => (this.state.sensors = response));
+    api
+      .delete(`/sensors/${uid}`)
+      .then((response) => (this.state.sensors = response.data));
   },
 
   editSensor(sensorData) {
@@ -176,13 +160,9 @@ const store = {
       port: parseInt(sensorData.port),
       interval: parseInt(sensorData.interval),
     };
-    fetch(window.baseUrl + `/sensors/${sensorData.uid}`, {
-      headers: { "Content-Type": "application/json" },
-      method: "PUT",
-      body: JSON.stringify(sensorJson),
-    })
-      .then((response) => response.json())
-      .then((response) => (this.state.sensors = response));
+    api
+      .put(`/sensors/${sensorData.uid}`, sensorJson)
+      .then((response) => (this.state.sensors = response.data));
   },
 
   // Flows
@@ -193,36 +173,20 @@ const store = {
       port: parseInt(flowData.port),
       direction: parseInt(flowData.direction),
     };
-    fetch(window.baseUrl + "/flows", {
-      headers: { "Content-Type": "application/json" },
-      method: "POST",
-      body: JSON.stringify(flowJson),
-    })
-      .then((response) => response.json())
-      .then((response) => (this.state.flows = response));
+    api
+      .post("/flows", flowJson)
+      .then((response) => (this.state.flows = response.data));
   },
 
   fetchFlows() {
-    fetch(window.baseUrl + "/flows")
-      .then((response) => response.json())
-      .then((response) => (this.state.flows = response));
+    api.get("/flows").then((response) => (this.state.flows = response.data));
   },
 
   removeFlow: function(uid) {
-    return fetch(window.baseUrl + "/flows/" + uid, {
-      method: "DELETE",
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response.text();
-        } else {
-          throw new Error(`Failed to delete flow: ${response.status}`);
-        }
-      })
-      .then(() => {
-        // Refresh the flows list after successful deletion
-        return this.fetchFlows();
-      });
+    return api.delete(`/flows/${uid}`).then(() => {
+      // Refresh the flows list after successful deletion
+      return this.fetchFlows();
+    });
   },
 
   createShape(shapeData, parentUID, parentCallsign, callback) {
@@ -251,13 +215,9 @@ const store = {
   // Types
   fetchTypes: function() {
     let vm = this;
-    fetch(window.baseUrl + "/types")
-      .then(function(response) {
-        return response.json();
-      })
-      .then(function(data) {
-        vm.state.types = data;
-      });
+    api.get("/types").then(function(response) {
+      vm.state.types = response.data;
+    });
   },
 
   getSidc: function(s) {

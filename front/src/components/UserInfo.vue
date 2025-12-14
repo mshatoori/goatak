@@ -144,6 +144,7 @@
 <script>
 import store from "../store.js";
 import { printCoords, distBea, latlng } from "../utils.js";
+import api from "../api/axios.js";
 
 export default {
   name: "UserInfo",
@@ -170,18 +171,16 @@ export default {
       // TODO: Fix infomarker
     },
     save() {
-      fetch(window.baseUrl + "/config", {
-        headers: { "Content-Type": "application/json" },
-        method: "PATCH",
-        body: JSON.stringify({
+      api
+        .patch("/config", {
           callsign: this.config.callsign,
           uid: this.config.uid,
           ip_address: this.config.ip_address,
           urn: this.config.urn.toString(),
-        }),
-      }).then((_) => {
-        this.configUpdated();
-      });
+        })
+        .then((_) => {
+          this.configUpdated();
+        });
     },
   },
   watch: {

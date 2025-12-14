@@ -194,7 +194,251 @@
 
   <div class="container-fluid vh-100 mh-100" style="padding-top: 4rem">
     <div class="row h-100" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
-      <div id="map" class="col h-100" style="cursor: crosshair"></div>
+      <div id="map-container" class="col h-100" style="cursor: crosshair">
+        <MglMap
+          ref="mapRef"
+          :map-style="mapStyle"
+          :center="mapCenter"
+          :zoom="mapZoom"
+          @map:load="onMapLoad"
+          @map:click="onMapClick"
+          @map:mousemove="onMouseMove"
+          @map:zoomend="onMapZoom"
+          @map:contextmenu="onMapContextMenu"
+        >
+          <MglVectorSource></MglVectorSource>
+
+          <!-- Scale Control -->
+          <MglScaleControl position="bottom-right" :unit="'metric'" />
+
+          <!-- Navigation Control -->
+          <MglNavigationControl position="top-right" />
+
+          <!-- Custom Location Control -->
+          <MglCustomControl position="bottom-left">
+            <div class="maplibregl-ctrl maplibregl-ctrl-group">
+              <button
+                type="button"
+                class="maplibregl-ctrl-icon"
+                @click="locateByGPS"
+                title="My Location"
+              >
+                <i class="bi bi-crosshair"></i>
+              </button>
+            </div>
+          </MglCustomControl>
+
+          <!-- Custom Tools Control -->
+          <MglCustomControl position="top-left">
+            <div class="maplibregl-ctrl maplibregl-ctrl-group tools-control">
+              <button
+                type="button"
+                class="maplibregl-ctrl-icon"
+                @click="changeMode('add_point')"
+                title="افزودن نقطه به نقشه"
+              >
+                <img
+                  src="/static/icons/add-point.svg"
+                  alt="Add Point"
+                  style="width: 24px; height: 24px;"
+                />
+              </button>
+              <button
+                type="button"
+                class="maplibregl-ctrl-icon"
+                @click="changeMode('add_unit')"
+                title="افزودن نیرو به نقشه"
+              >
+                <img
+                  src="/static/icons/add-unit.svg"
+                  alt="Add Unit"
+                  style="width: 24px; height: 24px;"
+                />
+              </button>
+              <button
+                type="button"
+                class="maplibregl-ctrl-icon"
+                @click="changeMode('add_casevac')"
+                title="افزودن درخواست امداد"
+              >
+                <img
+                  src="/static/icons/add-casevac.svg"
+                  alt="Add Casevac"
+                  style="width: 24px; height: 24px;"
+                />
+              </button>
+            </div>
+          </MglCustomControl>
+
+          <!-- Self Marker -->
+          <MglMarker
+            v-if="config && config.callsign"
+            :coordinates="[config.lon, config.lat]"
+            :rotation="selfRotation"
+          >
+            <template #marker>
+              <img
+                src="/static/icons/self.png"
+                style="width: 32px; height: 32px; cursor: pointer;"
+                @click="showSelfPopup"
+              />
+            </template>
+          </MglMarker>
+
+          <!-- Self Callsign Label -->
+          <MglMarker
+            v-if="config && config.callsign"
+            :coordinates="[config.lon, config.lat]"
+            anchor="top"
+          >
+            <template #marker>
+              <div class="my-marker-info">{{ config.callsign }}</div>
+            </template>
+          </MglMarker>
+
+          <!-- Unit/Contact/Point/Alarm Markers -->
+          <template v-for="item in visibleMarkerItems" :key="item.uid">
+            <MglMarker
+              v-if="item.lat !== 0 || item.lon !== 0"
+              :coordinates="[item.lon, item.lat]"
+            >
+              <template #marker>
+                <img
+                  :src="getImg(item)"
+                  style="max-width: 48px; max-height: 48px; cursor: pointer;"
+                  @click="(e) => handleMarkerClick(e, item)"
+                />
+              </template>
+            </MglMarker>
+            <!-- Item Label -->
+            <MglMarker
+              v-if="
+                (item.lat !== 0 || item.lon !== 0) &&
+                  !item.type.startsWith('b-a-o')
+              "
+              :coordinates="[item.lon, item.lat]"
+              anchor="top"
+            >
+              <template #marker>
+                <div class="my-marker-info">
+                  {{ item.callsign }}
+                  <span v-if="item.urn"><br />URN#{{ item.urn }}</span>
+                </div>
+              </template>
+            </MglMarker>
+          </template>
+
+          <!-- Drawings (Polygons) -->
+          <template
+            v-for="item in visibleDrawings"
+            :key="'drawing-' + item.uid"
+          >
+            <MglGeoJsonSource
+              :source-id="'drawing-source-' + item.uid"
+              :data="getPolygonGeoJSON(item)"
+            />
+            <MglFillLayer
+              :layer-id="'drawing-fill-' + item.uid"
+              :source-id="'drawing-source-' + item.uid"
+              :paint="{
+                'fill-color': item.color || 'gray',
+                'fill-opacity': 0.3,
+              }"
+              @click="() => setActiveItemUid(item.uid, false)"
+            />
+            <MglLineLayer
+              :layer-id="'drawing-line-' + item.uid"
+              :source-id="'drawing-source-' + item.uid"
+              :paint="{
+                'line-color': item.color || 'gray',
+                'line-width': 2,
+              }"
+            />
+            <!-- Drawing Label -->
+            <MglMarker :coordinates="[item.lon, item.lat]" anchor="center">
+              <template #marker>
+                <div
+                  class="drawing-text-label"
+                  :style="{ color: item.color || 'gray' }"
+                  @click="() => setActiveItemUid(item.uid, false)"
+                >
+                  {{ item.callsign }}
+                </div>
+              </template>
+            </MglMarker>
+          </template>
+
+          <!-- Routes (Polylines) -->
+          <template v-for="item in visibleRoutes" :key="'route-' + item.uid">
+            <MglGeoJsonSource
+              :source-id="'route-source-' + item.uid"
+              :data="getRouteGeoJSON(item)"
+            />
+            <MglLineLayer
+              :layer-id="'route-line-' + item.uid"
+              :source-id="'route-source-' + item.uid"
+              :paint="{
+                'line-color': item.color || 'gray',
+                'line-width': 3,
+              }"
+              @click="() => setActiveItemUid(item.uid, false)"
+            />
+            <!-- Route Label -->
+            <MglMarker
+              :coordinates="getRouteLabelPosition(item)"
+              anchor="center"
+            >
+              <template #marker>
+                <div
+                  class="drawing-text-label"
+                  :style="{ color: item.color || 'gray' }"
+                  @click="() => setActiveItemUid(item.uid, false)"
+                >
+                  {{ item.callsign }}
+                </div>
+              </template>
+            </MglMarker>
+          </template>
+
+          <!-- Navigation Line -->
+          <template v-if="navigationLineActive && navigationLine">
+            <MglGeoJsonSource
+              source-id="navigation-line-source"
+              :data="navigationLine"
+            />
+            <MglLineLayer
+              layer-id="navigation-line"
+              source-id="navigation-line-source"
+              :paint="{
+                'line-color': '#007bff',
+                'line-width': 2,
+                'line-opacity': 0.6,
+                'line-dasharray': [5, 10],
+              }"
+            />
+          </template>
+
+          <!-- Tracking Trails -->
+          <template
+            v-for="trail in activeTrails"
+            :key="'trail-' + trail.unitUid"
+          >
+            <MglGeoJsonSource
+              :source-id="'trail-source-' + trail.unitUid"
+              :data="getTrailGeoJSON(trail)"
+            />
+            <MglLineLayer
+              :layer-id="'trail-line-' + trail.unitUid"
+              :source-id="'trail-source-' + trail.unitUid"
+              :paint="{
+                'line-color': trail.config.trailColor || '#FF0000',
+                'line-width': trail.config.trailWidth || 2,
+                'line-opacity': trail.config.trailOpacity || 0.7,
+              }"
+            />
+          </template>
+        </MglMap>
+      </div>
 
       <div
         class="col-auto p-0 h-100"
@@ -305,45 +549,75 @@
 </template>
 
 <script>
-import { toRaw } from "vue";
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
+import {
+  MglMap,
+  MglMarker,
+  MglNavigationControl,
+  MglScaleControl,
+  MglGeoJsonSource,
+  MglLineLayer,
+  MglFillLayer,
+  MglCustomControl,
+  MglVectorSource,
+  // useMap,
+  useSource,
+} from "vue-maplibre-gl";
+import { Popup } from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+
 import TrackingManager from "../TrackingManager.js";
 import store from "../store.js";
+import api from "../api/axios.js";
 import ResendingModal from "../components/ResendingModal.vue";
 import {
   getIconUri,
   getMilIcon,
-  getIcon,
-  selfPopup,
   dt,
-  printCoordsll,
-  printCoords,
-  latlng,
   distBea,
-  sp,
-  toUri,
   uuidv4,
   popup,
+  selfPopup,
   latLongToIso6709,
-  needIconUpdate,
   humanReadableType,
   cleanUnit,
   createMapItem,
-  LocationControl,
-  ToolsControl,
-  html,
 } from "../utils.js";
 
 export default {
   name: "App",
+  components: {
+    MglMap,
+    MglMarker,
+    MglNavigationControl,
+    MglScaleControl,
+    MglGeoJsonSource,
+    MglLineLayer,
+    MglFillLayer,
+    MglCustomControl,
+    MglVectorSource,
+    ResendingModal,
+  },
   data() {
     return {
-      layers: null,
-      overlays: null,
+      map: null,
+      mapRef: ref(null),
+      currentPopup: null,
+      mapStyle: {
+        version: 8,
+        sources: {},
+        layers: [
+          {
+            id: "background",
+            type: "background",
+            paint: { "background-color": "#e0e0e0" },
+          },
+        ],
+      },
+      mapCenter: [51.4, 35.7],
+      mapZoom: 11,
+
       conn: null,
-      units: new Map(),
-      outgoing_flows: new Map(),
-      incoming_flows: new Map(),
-      sensors: new Map(),
       messages: [],
       seenMessages: new Set(),
       ts: 0,
@@ -351,7 +625,6 @@ export default {
       activeItemUid: null,
       config: null,
       tools: new Map(),
-      me: null,
       coords: null,
       point_num: 1,
       unit_num: 1,
@@ -363,10 +636,12 @@ export default {
 
       sharedState: store.state,
       casevacLocation: null,
-      casevacMarker: null,
 
-      sidebarCollapsed: false, // Track sidebar collapse state
+      sidebarCollapsed: false,
       beacon_active: false,
+      mode: "map",
+      inDrawMode: false,
+      selfRotation: 0,
 
       // Navigation line state
       navigationLine: null,
@@ -375,15 +650,25 @@ export default {
 
       // Tracking manager
       trackingManager: null,
+      activeTrails: [],
 
-      // Zoom update throttling
-      zoomUpdateTimeout: null,
+      // Visibility state for overlays
+      overlayVisibility: {
+        contact: true,
+        unit: true,
+        alarm: true,
+        point: true,
+        drawing: true,
+        route: true,
+        report: true,
+        navigation: true,
+        tracking: true,
+      },
     };
   },
   provide() {
     return {
-      map: () => store.getMap(),
-      latlng: this.latlng,
+      map: () => this.map,
       config: this.config,
       getTool: this.getTool,
       removeTool: this.removeTool,
@@ -391,330 +676,221 @@ export default {
       activeItem: this.activeItem,
     };
   },
-  mounted() {
-    const mapInstance = L.map("map", {
-      attributionControl: false,
-      locateCallback: this.locateByGPS,
-      changeMode: this.changeMode,
-    });
-    store.setMap(mapInstance);
-    this.inDrawMode = false;
-    this.mode = "map";
-
-    this.drawnItems = new L.FeatureGroup();
-    this.routeItems = new L.FeatureGroup();
-    this.overlays = {
-      contact: L.layerGroup(),
-      unit: L.layerGroup(),
-      alarm: L.layerGroup(),
-      point: L.layerGroup(),
-      drawing: L.layerGroup(),
-      route: L.layerGroup(),
-      report: L.layerGroup(),
-      navigation: L.layerGroup(),
-      tracking: L.layerGroup(),
-    };
-
-    for (const overlay of Object.values(this.overlays)) {
-      toRaw(overlay).addTo(this.getRawMap());
-    }
-
-    this.overlays.drawing.addLayer(this.drawnItems);
-    this.overlays.route.addLayer(this.routeItems);
-
-    this.drawControl = new L.Control.Draw({
-      edit: {
-        featureGroup: this.drawnItems,
-        edit: false,
-        remove: false,
-        polygon: {
-          allowIntersection: false,
-        },
-      },
-      draw: {
-        polygon: {
-          allowIntersection: false,
-          showArea: true,
-        },
-        rectangle: false,
-        circle: false,
-        circlemarker: false,
-        marker: false,
-      },
-    });
-
-    this.getRawMap().addControl(this.drawControl);
-    this.getRawMap().addControl(new LocationControl());
-    this.getRawMap().addControl(new ToolsControl());
-
-    // Initialize TrackingManager
-    this.trackingManager = new TrackingManager(this.getRawMap(), {
-      trailLength: 50,
-      trailColor: "#FF0000",
-      trailWidth: 2,
-      trailOpacity: 0.7,
-    });
-
-    let vm = this; // Changed from `app = this` to `vm = this` to avoid global variable
-
-    const drawStart = function(event) {
-      vm.inDrawMode = true;
-    };
-    const drawStop = function(event) {
-      vm.inDrawMode = false;
-    };
-
-    this.getRawMap().on(L.Draw.Event.DRAWSTART, drawStart);
-    this.getRawMap().on(L.Draw.Event.EDITSTART, drawStart);
-
-    this.getRawMap().on(L.Draw.Event.DRAWSTOP, drawStop);
-    this.getRawMap().on(L.Draw.Event.EDITSTOP, drawStop);
-    this.getRawMap().on(L.Draw.Event.CREATED, function(event) {
-      var layer = event.layer;
-
-      let u = null;
-
-      if (event.layerType === "polygon") {
-        u = createMapItem({
-          category: "drawing",
-          callsign: "zone-" + vm.nextItemNumber("drawing"),
-          type: "u-d-f",
-          local: true,
-          send: true,
-          isNew: true,
-        });
-        if (vm.config && vm.config.uid) {
-          u.parent_uid = vm.config.uid;
-          u.parent_callsign = vm.config.callsign;
-        }
-
-        let latSum = 0;
-        let lngSum = 0;
-
-        layer.editing.latlngs[0][0].forEach((latlng) => {
-          latSum += latlng.lat;
-          lngSum += latlng.lng;
-          u.links.push(latlng.lat + "," + latlng.lng);
-        });
-
-        u.lat = latSum / layer.editing.latlngs[0][0].length;
-        u.lon = lngSum / layer.editing.latlngs[0][0].length;
-
-        u.color = "gray";
-        u.geofence = false;
-        u.geofence_aff = "All";
-        // u.geofence_send = false
-
-        // vm.saveItem(u, function () {
-        //   vm.setActiveItemUid(u.uid, true);
-        //   new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
-        // });
-      } else if (event.layerType === "polyline") {
-        u = createMapItem({
-          category: "route",
-          callsign: "route-" + vm.nextItemNumber("route"),
-          type: "b-m-r",
-          local: true,
-          send: true,
-          isNew: true, // Mark as a new item to trigger automatic edit mode
-        });
-        if (vm.config && vm.config.uid) {
-          u.parent_uid = vm.config.uid;
-          u.parent_callsign = vm.config.callsign;
-        }
-
-        let latSum = 0;
-        let lngSum = 0;
-
-        layer.editing.latlngs[0].forEach((latlng) => {
-          latSum += latlng.lat;
-          lngSum += latlng.lng;
-          u.links.push(latlng.lat + "," + latlng.lng);
-        });
-
-        u.lat = latSum / layer.editing.latlngs[0].length;
-        u.lon = lngSum / layer.editing.latlngs[0].length;
-
-        u.color = "gray";
-
-        // vm.saveItem(u, function () {
-        //   vm.setActiveItemUid(u.uid, true);
-        //   new bootstrap.Modal(document.querySelector("#drawing-edit")).show();
-        // });
-      }
-
-      store.state.items.set(u.uid, u);
-      store.state.ts += 1;
-      vm._processAddition(u);
-      vm.setActiveItemUid(u.uid, true);
-    });
-    this.getRawMap().on(L.Draw.Event.DRAWVERTEX, function(event) {
-      console.log("DRAW VERTEX:", event);
-    });
-
-    this.getRawMap().setView([60, 30], 11);
-
-    L.control
-      .scale({ position: "bottomright", metric: true })
-      .addTo(this.getRawMap());
-
-    this.getConfig();
-
-    let supportsWebSockets = "WebSocket" in window || "MozWebSocket" in window;
-
-    if (supportsWebSockets) {
-      this.connect();
-      setInterval(this.fetchAllUnits, 5000); // TODO
-      // setInterval(this.fetchAllUnits, 60000);
-    }
-
-    this.renew();
-    setInterval(this.renew, 5000);
-
-    store.fetchTypes();
-
-    this.getRawMap().on("click", this.mapClick);
-    this.getRawMap().on("mousemove", this.mouseMove);
-    this.getRawMap().on("zoomanim", this.onMapZoom);
-  },
   computed: {
-    activeItem: function() {
-      return this.activeItemUid
-        ? this.activeItemUid && this.getActiveItem()
+    activeItem() {
+      return this.activeItemUid &&
+        this.sharedState.items.has(this.activeItemUid)
+        ? this.sharedState.items.get(this.activeItemUid)
         : null;
     },
+    selfPopupContent() {
+      if (!this.config) return "";
+      return selfPopup(this.config);
+    },
+    visibleMarkerItems() {
+      const items = [];
+      this.sharedState.items.forEach((item) => {
+        if (
+          ["contact", "unit", "alarm", "point", "report"].includes(
+            item.category
+          ) &&
+          this.overlayVisibility[item.category] !== false &&
+          item.visible !== false
+        ) {
+          items.push(item);
+        }
+      });
+      return this.sharedState.ts && items;
+    },
+    visibleDrawings() {
+      const items = [];
+      this.sharedState.items.forEach((item) => {
+        if (
+          item.category === "drawing" &&
+          this.overlayVisibility.drawing !== false &&
+          item.visible !== false
+        ) {
+          items.push(item);
+        }
+      });
+      return this.sharedState.ts && items;
+    },
+    visibleRoutes() {
+      const items = [];
+      this.sharedState.items.forEach((item) => {
+        if (
+          item.category === "route" &&
+          this.overlayVisibility.route !== false &&
+          item.visible !== false
+        ) {
+          items.push(item);
+        }
+      });
+      return this.sharedState.ts && items;
+    },
   },
-
   watch: {
-    // Watch for changes in user position to update navigation line
-    // config: {
-    //   handler: function (newConfig, oldConfig) {
-    //     this.updateNavigationLine();
-    //   },
-    //   deep: true,
-    // },
-    // // Watch for active item changes to clear navigation line
-    activeItemUid: function(newUid, oldUid) {
+    activeItemUid(newUid, oldUid) {
       if (newUid !== oldUid) {
         this.clearNavigationLineOnItemChange();
       }
     },
   },
+  mounted() {
+    this.getConfig();
 
+    let supportsWebSockets = "WebSocket" in window || "MozWebSocket" in window;
+    if (supportsWebSockets) {
+      this.connect();
+      setInterval(this.fetchAllUnits, 5000);
+    }
+
+    this.renew();
+    setInterval(this.renew, 5000);
+    store.fetchTypes();
+  },
   methods: {
-    // Update sidebar collapsed state
-    updateSidebarCollapsed: function(isCollapsed) {
-      console.log("updateSidebarCollapsed", isCollapsed);
-      this.sidebarCollapsed = isCollapsed;
-    },
-    getItemOverlay(item) {
-      return toRaw(this.overlays[item.category]);
-    },
-    getRawMap() {
-      return store.getMap();
-    },
-    configUpdated: function() {
-      console.log("config updated");
-      const markerInfo = L.divIcon({
-        className: "my-marker-info",
-        html: "<div>" + this.config.callsign + "</div>",
-        iconSize: null,
+    onMapLoad(e) {
+      this.map = e.map;
+      store.setMap(this.map);
+
+      // Initialize TrackingManager with MapLibre map
+      this.trackingManager = new TrackingManager(this.map, {
+        trailLength: 50,
+        trailColor: "#FF0000",
+        trailWidth: 2,
+        trailOpacity: 0.7,
       });
 
-      if (!this.myInfoMarker) {
-        this.myInfoMarker = L.marker([this.config.lat, this.config.lon], {
-          icon: markerInfo,
-        });
-        this.myInfoMarker.addTo(this.getRawMap());
-      } else {
-        this.myInfoMarker.setLatLng([this.config.lat, this.config.lon]);
-        this.myInfoMarker.setIcon(markerInfo);
-      }
+      console.log("Map loaded");
+    },
 
-      // Update self marker tooltip if it exists
-      if (this.me && this.me.getTooltip()) {
-        this.me.setTooltipContent(selfPopup(this.config));
+    onMapClick(e) {
+      if (this.inDrawMode) return;
+
+      const latlng = { lat: e.lngLat.lat, lng: e.lngLat.lng };
+
+      if (this.mode === "add_point") {
+        this.mapClickAddPoint({ latlng });
+        this.mode = "map";
+        return;
+      }
+      if (this.mode === "add_unit") {
+        this.mapClickAddUnit({ latlng });
+        this.mode = "map";
+        return;
+      }
+      if (this.mode === "add_casevac") {
+        this.mapClickAddCasevac({ latlng });
+        this.mode = "map";
+        return;
       }
     },
-    getConfig: function() {
+
+    onMouseMove(e) {
+      this.coords = { lat: e.lngLat.lat, lng: e.lngLat.lng };
+    },
+
+    onMapZoom() {
+      // Handle zoom events if needed
+    },
+
+    onMapContextMenu(e) {
+      // Handle context menu if needed
+    },
+
+    updateSidebarCollapsed(isCollapsed) {
+      this.sidebarCollapsed = isCollapsed;
+    },
+
+    configUpdated() {
+      // Update self marker when config changes
+      if (this.config && this.config.course) {
+        this.selfRotation = this.config.course;
+      }
+    },
+
+    getConfig() {
       let vm = this;
+      api.get("/config").then((response) => {
+        vm.config = response.data;
+        vm.mapCenter = [response.data.lon, response.data.lat];
+        vm.mapZoom = response.data.zoom;
 
-      fetch(window.baseUrl + "/config")
-        .then(function(response) {
-          return response.json();
-        })
-        .then(function(data) {
-          vm.config = data;
+        // Build map style with tile layers
+        vm.buildMapStyle(response.data.layers);
 
-          vm.getRawMap().setView([data.lat, data.lon], data.zoom);
-
-          if (vm.config.callsign) {
-            vm.me = new L.Marker.RotatedMarker([data.lat, data.lon]);
-            vm.me.setIcon(
-              L.icon({
-                iconUrl: "/static/icons/self.png",
-                iconAnchor: new L.Point(16, 16),
-              })
-            );
-            vm.me.addTo(vm.getRawMap());
-
-            // Add tooltip to self marker
-            vm.me.bindTooltip(selfPopup(vm.config));
-
-            vm.configUpdated();
-          }
-
-          let layers = L.control.layers({}, null, { hideSingleBase: true });
-          layers.addTo(vm.getRawMap());
-
-          let first = true;
-          data.layers.forEach(function(i) {
-            let opts = {
-              minZoom: i.minZoom ?? 1,
-              maxZoom: i.maxZoom ?? 20,
-            };
-
-            if (i.parts) {
-              opts["subdomains"] = i.parts;
-            }
-
-            var lz1 = null;
-            var lz2 = null;
-
-            if (first) {
-              opts["bounds"] = L.latLngBounds(
-                L.latLng(35.59702, 51.13174),
-                L.latLng(35.85121, 51.68381)
-              );
-              lz1 = L.tileLayer(i.url, opts);
-              opts = JSON.parse(JSON.stringify(opts));
-              opts["maxNativeZoom"] = 11;
-              opts["bounds"] = L.latLngBounds(
-                L.latLng(25, 43),
-                L.latLng(40, 63)
-              );
-              lz2 = L.tileLayer(i.url, opts);
-              opts = JSON.parse(JSON.stringify(opts));
-              opts["bounds"] = undefined;
-              opts["minZoom"] = i.minZoom ?? 1;
-              opts["maxNativeZoom"] = 5;
-            }
-
-            let l = L.tileLayer(i.url, opts);
-
-            layers.addBaseLayer(l, i.name);
-
-            if (first) {
-              first = false;
-              l.addTo(vm.getRawMap());
-              lz2.addTo(vm.getRawMap());
-              lz1.addTo(vm.getRawMap());
-            }
-          });
-        });
+        if (vm.config.callsign) {
+          vm.configUpdated();
+        }
+      });
     },
 
-    connect: function() {
+    buildMapStyle(layers) {
+      // Ignore the layers parameter and use PMTiles instead
+      this.mapStyle = {
+        version: 8,
+        sources: {
+          protomaps: {
+            type: "vector",
+            url: "pmtiles://https://build.protomaps.com/20251214.pmtiles",
+          },
+        },
+        layers: [
+          {
+            id: "background",
+            type: "background",
+            paint: { "background-color": "#e0e0e0" },
+          },
+          {
+            id: "landuse",
+            type: "fill",
+            source: "protomaps",
+            "source-layer": "landuse",
+            paint: {
+              "fill-color": "#f0f0f0",
+            },
+          },
+          {
+            id: "water",
+            type: "fill",
+            source: "protomaps",
+            "source-layer": "water",
+            paint: {
+              "fill-color": "#a0c8f0",
+            },
+          },
+          {
+            id: "roads",
+            type: "line",
+            source: "protomaps",
+            "source-layer": "roads",
+            paint: {
+              "line-color": "#666666",
+              "line-width": 1,
+            },
+          },
+          {
+            id: "places",
+            type: "symbol",
+            source: "protomaps",
+            "source-layer": "places",
+            layout: {
+              "text-field": ["get", "name"],
+              "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+              "text-size": 12,
+            },
+            paint: {
+              "text-color": "#333333",
+              "text-halo-color": "#ffffff",
+              "text-halo-width": 1,
+            },
+          },
+        ],
+      };
+    },
+
+    connect() {
       let url = "";
       if (window.baseUrl !== "")
         url =
@@ -726,6 +902,7 @@ export default {
           (window.location.protocol === "https:" ? "wss://" : "ws://") +
           window.location.host +
           "/ws";
+
       let vm = this;
       this.fetchAllUnits();
       this.fetchMessages();
@@ -739,496 +916,97 @@ export default {
         vm.processWS(parsed);
       };
 
-      this.conn.onopen = function(e) {
+      this.conn.onopen = function() {
         console.log("connected");
       };
 
-      this.conn.onerror = function(e) {
+      this.conn.onerror = function() {
         console.log("error");
       };
 
-      this.conn.onclose = function(e) {
+      this.conn.onclose = function() {
         console.log("closed");
         setTimeout(vm.connect, 3000);
       };
     },
 
-    connected: function() {
-      if (!this.conn) return false;
-
-      return this.conn.readyState === 1;
+    connected() {
+      return this.conn && this.conn.readyState === 1;
     },
 
-    fetchAllUnits: function() {
+    fetchAllUnits() {
       store.fetchItems().then((results) => {
         this.processUnits(results);
       });
     },
 
-    fetchMessages: function() {
+    fetchMessages() {
       let vm = this;
-
-      fetch(window.baseUrl + "/message")
-        .then(function(response) {
-          return response.json();
-        })
-        .then(function(data) {
-          vm.messages = data;
-        });
+      api.get("/message").then((response) => {
+        vm.messages = response.data;
+      });
     },
 
-    renew: function() {
-      let vm = this;
-
+    renew() {
       if (!this.conn) {
         this.fetchAllUnits();
         this.fetchMessages();
       }
 
-      if (this.getTool("dp1")) {
-        let p = this.getTool("dp1").getLatLng();
-
-        const requestOptions = {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ lat: p.lat, lon: p.lng, name: "DP1" }),
-        };
-        fetch(window.baseUrl + "/dp", requestOptions);
+      if (this.getTool("dp1") && this.map) {
+        let p = this.getTool("dp1");
+        api.post("/dp", { lat: p.lat, lon: p.lng, name: "DP1" });
       }
     },
 
-    _processRemoval: function(item) {
-      console.log("processRemoval", item);
-      if (item.marker) {
-        // Handle removal for drawings and routes
-        this.getItemOverlay(item).removeLayer(item.marker);
-        // if (item.category === "drawing") {
-        //   this.drawnItems.removeLayer(item.marker);
-        // } else if (item.category === "route") {
-        //   this.routeItems.removeLayer(item.marker);
-        // } else {
-        //   this.getItemOverlay(item).removeLayer(item.marker);
-        // }
-        item.marker.remove();
-
-        if (item.infoMarker) {
-          this.getItemOverlay(item).removeLayer(item.infoMarker);
-          item.infoMarker.remove();
-        }
-
-        if (item.textLabel) {
-          this.getItemOverlay(item).removeLayer(item.textLabel);
-          item.textLabel.remove();
-        }
-      }
-
-      if (this.activeItemUid === item.uid) {
-        this.setActiveItemUid(null, false);
-      }
-
-      if (this.navigationTarget && item.uid === this.navigationTarget.uid)
-        this.hideNavigationLine();
-    },
-
-    _processDrawing(item) {
-      let latlngs = item.links.map((it) => {
-        return it.split(",").map(parseFloat);
-      });
-
-      if (item.category === "drawing") {
-        item.marker = L.polygon(latlngs, {
-          color: item.color,
-          interactive: !item.uid.endsWith("-fence"),
-        });
-        if (!item.uid.endsWith("-fence")) {
-          item.marker.on("click", (e) => {
-            this.setActiveItemUid(item.uid, false);
-          });
-        }
-
-        // Only add to map if item is visible
-        if (item.visible !== false) {
-          item.marker.addTo(this.drawnItems);
-        }
-
-        // Add text label for polygon
-        this.addDrawingTextLabel(item);
-      } else if (item.category === "route") {
-        item.marker = L.polyline(latlngs, {
-          color: item.color,
-          interactive: true, // Make polyline interactive for click events
-        });
-        item.marker.on("click", (e) => {
-          this.setActiveItemUid(item.uid, false);
-        });
-
-        // Only add to map if item is visible
-        if (item.visible !== false) {
-          item.marker.addTo(this.routeItems);
-        }
-
-        // Add text label for route
-        this.addDrawingTextLabel(item);
-      }
-    },
-
-    addDrawingTextLabel: function(item) {
-      // Remove existing text label if it exists
-      if (item.textLabel) {
-        this.removeFromAllOverlays(item.textLabel);
-      }
-
-      // Calculate position for text label placement
-      let textLabelPosition = this.calculateTextLabelPosition(item);
-
-      // Calculate dynamic styling based on item type
-      let labelStyle = this.calculateLabelStyle(item);
-
-      let displayStyle = "";
-
-      if (labelStyle.fontSize < 12) displayStyle = "display:none;";
-
-      // Create text label HTML with dynamic styling and combined transform
-      let labelHtml = `<div class="drawing-text-label" style="color: ${
-        item.color
-      }; font-size: ${
-        labelStyle.fontSize
-      }px; transform: translate(-50%, -50%) rotate(${
-        labelStyle.rotation
-      }deg); ${displayStyle}">${item.callsign}</div>`;
-
-      const textIcon = L.divIcon({
-        className: "drawing-text-label-icon",
-        html: labelHtml,
-        iconSize: null,
-        iconAnchor: [0, 0], // No offset, will be centered with CSS
-      });
-
-      // Create text label at the calculated position
-      item.textLabel = L.marker(textLabelPosition, { icon: textIcon });
-
-      // Add click event to select the item
-      item.textLabel.on("click", (e) => {
-        this.setActiveItemUid(item.uid, false);
-      });
-
-      // Only add to map if item is visible
-      if (item.visible !== false) {
-        item.textLabel.addTo(this.getItemOverlay(item));
-      }
-    },
-
-    calculateTextLabelPosition: function(item) {
-      if (!item.links || item.links.length === 0) {
-        // Fallback to center if no links available
-        return [item.lat, item.lon];
-      }
-
-      let latlngs = item.links.map((it) => {
-        return it.split(",").map(parseFloat);
-      });
-
-      if (item.category === "drawing") {
-        // For polygons, place text label inside the polygon (at centroid)
-        if (latlngs.length < 3) {
-          return [item.lat, item.lon]; // Fallback to item center if not enough points
-        }
-
-        // Calculate polygon centroid using a more robust method (e.g., average of all points)
-        let latSum = 0;
-        let lngSum = 0;
-        latlngs.forEach((coord) => {
-          latSum += coord[0];
-          lngSum += coord[1];
-        });
-
-        return [latSum / latlngs.length, lngSum / latlngs.length];
-      } else if (item.category === "route") {
-        // For routes, place text label at the middle edge, offset to the side
-        if (latlngs.length < 2) {
-          return [item.lat, item.lon]; // Fallback to item center if not enough points
-        }
-
-        // Find the middle edge index
-        let middleEdgeIndex = Math.floor((latlngs.length - 1) / 2);
-
-        // Calculate midpoint of the middle edge
-        let lat1 = latlngs[middleEdgeIndex][0];
-        let lng1 = latlngs[middleEdgeIndex][1];
-        let lat2 = latlngs[middleEdgeIndex + 1][0];
-        let lng2 = latlngs[middleEdgeIndex + 1][1];
-
-        let midLat = (lat1 + lat2) / 2;
-        let midLng = (lng1 + lng2) / 2;
-
-        // Calculate perpendicular offset to place label beside the route
-        let deltaLat = lat2 - lat1;
-        let deltaLng = lng2 - lng1;
-
-        // Calculate perpendicular vector (rotate 90 degrees)
-        let perpLat = -deltaLng;
-        let perpLng = deltaLat;
-
-        // For horizontal edges, ensure label appears on top (positive latitude direction)
-        // Check if the edge is more horizontal than vertical
-        if (Math.abs(deltaLng) > Math.abs(deltaLat)) {
-          // Horizontal edge - ensure perpendicular vector points upward (positive lat)
-          if (perpLat < 0) {
-            perpLat = -perpLat;
-            perpLng = -perpLng;
-          }
-        }
-
-        // Normalize the perpendicular vector
-        let length = Math.sqrt(perpLat * perpLat + perpLng * perpLng);
-        if (length > 0) {
-          perpLat = perpLat / length;
-          perpLng = perpLng / length;
-        }
-
-        // Calculate offset distance based on zoom level (increased distance)
-        let zoom = this.getRawMap().getZoom();
-        let offsetDistance = 0.0003 * Math.pow(2, 15 - zoom); // Increased offset distance
-
-        // Apply offset to position label beside the route
-        return [
-          midLat + perpLat * offsetDistance,
-          midLng + perpLng * offsetDistance,
-        ];
-      }
-
-      // Fallback to center
-      return [item.lat, item.lon];
-    },
-
-    calculateLabelStyle: function(item) {
-      let fontSize = 18; // Default font size
-      let rotation = 0; // Default rotation
-      let zoom = this.getRawMap().getZoom();
-
-      if (!item.links || item.links.length === 0) {
-        // Even without links, make font size responsive to zoom
-        fontSize = Math.max(8, Math.min(24, zoom * 1.5));
-        return { fontSize, rotation };
-      }
-
-      let latlngs = item.links.map((it) => {
-        return it.split(",").map(parseFloat);
-      });
-
-      if (item.category === "drawing") {
-        // For polygons, calculate font size based on pixel size on screen
-        if (latlngs.length >= 3 && item.marker) {
-          try {
-            // Convert lat/lng coordinates to pixel coordinates
-            let pixelPoints = latlngs.map((coord) =>
-              this.getRawMap().latLngToContainerPoint([coord[0], coord[1]])
-            );
-
-            // Calculate bounding box in pixels
-            let minX = Math.min(...pixelPoints.map((p) => p.x));
-            let maxX = Math.max(...pixelPoints.map((p) => p.x));
-            let minY = Math.min(...pixelPoints.map((p) => p.y));
-            let maxY = Math.max(...pixelPoints.map((p) => p.y));
-
-            // Calculate pixel dimensions
-            let pixelWidth = maxX - minX;
-            let pixelHeight = maxY - minY;
-            let pixelDiagonal = Math.sqrt(
-              pixelWidth * pixelWidth + pixelHeight * pixelHeight
-            );
-
-            // Scale font size based on pixel size (more intuitive scaling)
-            // Larger polygons get larger text, smaller polygons get smaller text
-            fontSize = Math.max(8, Math.min(42, pixelDiagonal / 12));
-
-            // console.log(
-            //   `Polygon pixel size: ${pixelWidth}x${pixelHeight}, diagonal: ${pixelDiagonal}, fontSize: ${fontSize}`
-            // );
-          } catch (error) {
-            console.warn("Error calculating pixel size for polygon:", error);
-            // Fallback to zoom-based sizing
-            fontSize = Math.max(8, Math.min(24, zoom * 1.5));
-          }
-        } else {
-          // Fallback for polygons with insufficient points
-          fontSize = Math.max(8, Math.min(24, zoom * 1.5));
-        }
-      } else if (item.category === "route") {
-        // For routes, calculate rotation angle and pixel-based font size
-        if (latlngs.length >= 2) {
-          let middleEdgeIndex = Math.floor((latlngs.length - 1) / 2);
-
-          let lat1 = latlngs[middleEdgeIndex][0];
-          let lng1 = latlngs[middleEdgeIndex][1];
-          let lat2 = latlngs[middleEdgeIndex + 1][0];
-          let lng2 = latlngs[middleEdgeIndex + 1][1];
-
-          // Calculate angle in degrees based on the middle edge
-          let deltaLng = lng2 - lng1;
-          let deltaLat = lat2 - lat1;
-          rotation = -Math.atan2(deltaLat, deltaLng) * (180 / Math.PI);
-
-          // Normalize rotation to keep text readable (between -90 and 90 degrees)
-          if (rotation > 90) {
-            rotation -= 180;
-          } else if (rotation < -90) {
-            rotation += 180;
-          }
-
-          // Calculate pixel-based font size for routes
-          try {
-            // Convert route points to pixel coordinates
-            let pixelPoints = latlngs.map((coord) =>
-              this.getRawMap().latLngToContainerPoint([coord[0], coord[1]])
-            );
-
-            // Calculate total pixel length of the route
-            let totalPixelLength = 0;
-            for (let i = 0; i < pixelPoints.length - 1; i++) {
-              let dx = pixelPoints[i + 1].x - pixelPoints[i].x;
-              let dy = pixelPoints[i + 1].y - pixelPoints[i].y;
-              totalPixelLength += Math.sqrt(dx * dx + dy * dy);
-            }
-
-            // Scale font size based on route length in pixels
-            fontSize = Math.max(8, Math.min(28, totalPixelLength / 15));
-
-            console.log(
-              `Route pixel length: ${totalPixelLength}, fontSize: ${fontSize}`
-            );
-          } catch (error) {
-            console.warn("Error calculating pixel size for route:", error);
-            // Fallback to zoom-based sizing
-            fontSize = Math.max(8, Math.min(28, zoom * 1.5));
-          }
-        } else {
-          // Fallback for routes with insufficient points
-          fontSize = Math.max(8, Math.min(28, zoom * 1.5));
-        }
-      }
-
-      return { fontSize, rotation };
-    },
-
-    _processAddition: function(item) {
-      // Initialize visibility state if not set (default to visible)
-      if (item.visible === undefined) {
-        item.visible = true;
-      }
-
-      if (item.category === "drawing" || item.category === "route") {
-        this._processDrawing(item);
-      } else {
-        if (
-          item.type.startsWith("b-a-o") &&
-          !item.type.endsWith("-can") &&
-          item.uid.startsWith(this.config.uid)
-        ) {
-          this.beacon_active = true;
-          this.sharedState.emergency.switch1 = true;
-          this.sharedState.emergency.switch2 = true;
-          this.sharedState.emergency.type = item.type;
-        }
-        if (item.type === "b-a-g") return;
-        this.updateUnitMarker(item, false, true);
-      }
-      this.addContextMenuToMarker(item);
-    },
-
-    _processUpdate: function(item) {
-      if (item.category === "drawing" || item.category === "route") {
-        // Remove existing markers and infomarkers
-        if (item.marker) {
-          this.drawnItems.removeLayer(item.marker);
-          this.routeItems.removeLayer(item.marker);
-        }
-        if (item.infoMarker) {
-          this.removeFromAllOverlays(item.infoMarker);
-        }
-        if (item.textLabel) {
-          this.removeFromAllOverlays(item.textLabel);
-        }
-        this._processDrawing(item);
-      } else {
-        this.updateUnitMarker(item, false, true);
-
-        if (this.locked_unit_uid === item.uid) {
-          this.getRawMap().setView([item.lat, item.lon]);
-        }
-      }
-      this.addContextMenuToMarker(item); // Changed vm.addContextMenuToMarker to this.addContextMenuToMarker
-    },
-
-    processUnits: function(results) {
-      // console.log("RESULTS:", results);
-
+    processUnits(results) {
+      // Items are managed through Vue reactivity
+      // Just trigger updates
       results["removed"].forEach((item) => this._processRemoval(item));
       results["added"].forEach((item) => this._processAddition(item));
       results["updated"].forEach((item) => this._processUpdate(item));
     },
 
-    addContextMenuToMarker: function(unit) {
-      if (unit.uid.endsWith("-fence")) return;
-
-      if (unit.marker) {
-        unit.marker.on("contextmenu", (e) => {
-          if (unit.marker.contextmenu === undefined) {
-            let menu = `
-                    <ul class="dropdown-menu marker-contextmenu">
-                      <li><h6 class="dropdown-header">${unit.callsign}</h6></li>
-                      <li><button class="dropdown-item" onclick="app.menuDeleteAction('${
-                        unit.uid
-                      }')"> حذف </button></li>
-                      <li><button class="dropdown-item" onclick="app.menuSendAction('${
-                        unit.uid
-                      }')"> ارسال... </button></li>
-                    </ul>`;
-            unit.marker.contextmenu = L.popup()
-              .setLatLng(e.latlng)
-              .setContent(menu);
-            unit.marker.contextmenu.addTo(this.getItemOverlay(unit));
-          }
-          unit.marker.contextmenu.openOn(this.getItemOverlay(unit));
-        });
+    _processRemoval(item) {
+      if (this.activeItemUid === item.uid) {
+        this.setActiveItemUid(null, false);
       }
-
-      // Also add context menu to infomarker for drawings and routes
-      // if (
-      //   unit.infoMarker &&
-      //   (unit.category === "drawing" || unit.category === "route")
-      // ) {
-      //   unit.infoMarker.on("contextmenu", (e) => {
-      //     if (unit.infoMarker.contextmenu === undefined) {
-      //       let menu = `
-      //               <ul class="dropdown-menu marker-contextmenu">
-      //                 <li><h6 class="dropdown-header">${unit.callsign}</h6></li>
-      //                 <li><button class="dropdown-item" onclick="app.menuDeleteAction('${unit.uid}')"> حذف </button></li>
-      //                 <li><button class="dropdown-item" onclick="app.menuSendAction('${unit.uid}')"> ارسال... </button></li>
-      //               </ul>`;
-      //       unit.infoMarker.contextmenu = L.popup()
-      //         .setLatLng(e.latlng)
-      //         .setContent(menu);
-      //       unit.infoMarker.contextmenu.addTo(this.getItemOverlay(unit));
-      //     }
-      //     unit.infoMarker.contextmenu.openOn(this.getItemOverlay(unit));
-      //   });
-      // }
+      if (this.navigationTarget && item.uid === this.navigationTarget.uid) {
+        this.hideNavigationLine();
+      }
     },
 
-    processMe: function(u) {
-      if (!u || !this.me) return;
+    _processAddition(item) {
+      if (item.visible === undefined) {
+        item.visible = true;
+      }
+      if (
+        item.type.startsWith("b-a-o") &&
+        !item.type.endsWith("-can") &&
+        item.uid.startsWith(this.config?.uid || "")
+      ) {
+        this.beacon_active = true;
+        this.sharedState.emergency.switch1 = true;
+        this.sharedState.emergency.switch2 = true;
+        this.sharedState.emergency.type = item.type;
+      }
+    },
+
+    _processUpdate(item) {
+      if (this.locked_unit_uid === item.uid && this.map) {
+        this.map.flyTo({ center: [item.lon, item.lat] });
+      }
+    },
+
+    processMe(u) {
+      if (!u) return;
       this.config = { ...this.config, lat: u.lat, lon: u.lon };
-      this.me.setLatLng([u.lat, u.lon]);
-      if (this.myInfoMarker) this.myInfoMarker.setLatLng([u.lat, u.lon]);
-      if (u.course) this.me.setIconAngle(u.course);
-      // Update self marker tooltip with new coordinates
-      this.me.setTooltipContent(selfPopup(this.config));
+      if (u.course) this.selfRotation = u.course;
     },
 
-    processWS: function(u) {
+    processWS(u) {
       if (u.type === "unit") {
-        if (u.unit.uid === this.config.uid) this.processMe(u.unit);
+        if (u.unit.uid === this.config?.uid) this.processMe(u.unit);
         else this.processUnits(store.handleItemChangeMessage(u.unit));
       }
 
@@ -1237,98 +1015,129 @@ export default {
       }
 
       if (u.type === "chat") {
-        console.log(u.chat_msg);
         this.fetchMessages();
       }
 
-      // Handle tracking updates
       if (u.type === "tracking_update" && this.trackingManager) {
         this.trackingManager.handleTrackingUpdate(u);
+        this.activeTrails = this.trackingManager.getAllTrails();
       }
     },
-    removeFromAllOverlays(obj) {
-      // console.log("=== removeFromAllOverlays", Object.values(this.overlays));
-      for (const overlay of Object.values(this.overlays)) {
-        // console.log("removeFromAllOverlays", obj, overlay);
-        obj.removeFrom(overlay);
+
+    getImg(item) {
+      return getIconUri(item, false).uri;
+    },
+
+    showSelfPopup() {
+      this.closePopup();
+      if (!this.map || !this.config) return;
+
+      this.currentPopup = new Popup({ closeOnClick: true, maxWidth: "300px" })
+        .setLngLat([this.config.lon, this.config.lat])
+        .setHTML(this.selfPopupContent)
+        .addTo(this.map);
+    },
+
+    handleMarkerClick(e, item) {
+      e.stopPropagation();
+      this.closePopup();
+      this.setActiveItemUid(item.uid, false);
+
+      if (!this.map) return;
+
+      this.currentPopup = new Popup({ closeOnClick: true, maxWidth: "300px" })
+        .setLngLat([item.lon, item.lat])
+        .setHTML(this.getPopupContent(item))
+        .addTo(this.map);
+    },
+
+    closePopup() {
+      if (this.currentPopup) {
+        this.currentPopup.remove();
+        this.currentPopup = null;
       }
     },
-    updateUnitMarker: function(unit, draggable, updateIcon) {
-      const vm = this; // Capture Vue instance reference
-      if (unit.lon === 0 && unit.lat === 0) {
-        if (unit.marker) {
-          this.getItemOverlay(unit).removeLayer(unit.marker);
-          unit.marker = null;
-        }
-        return;
-      }
 
-      // console.log("updateUnitMarker", unit, unit.marker, unit.infoMarker);
-      if (unit.marker) {
-        this.removeFromAllOverlays(unit.marker);
-      }
-      if (unit.infoMarker) {
-        this.removeFromAllOverlays(unit.infoMarker);
-      }
-
-      unit.marker = L.marker([unit.lat, unit.lon], { draggable: draggable });
-      unit.marker.on("click", function(e) {
-        vm.setActiveItemUid(unit.uid, false); // Changed app.setActiveItemUid to vm.setActiveItemUid
-      });
-      if (draggable) {
-        unit.marker.on("dragend", function(e) {
-          unit.lat = unit.marker.getLatLng().lat; // Changed marker to unit.marker
-          unit.lon = unit.marker.getLatLng().lng; // Changed marker to unit.marker
-        });
-      }
-      unit.marker.setIcon(getIcon(unit, true));
-
-      // Only add to map if item is visible
-      if (unit.visible !== false) {
-        unit.marker.addTo(this.getItemOverlay(unit));
-      }
-
-      let markerHtml = "<div>" + unit.callsign;
-      // if (unit.ip_address) markerHtml += "<br>" + unit.ip_address;
-      if (unit.urn) markerHtml += "<br>URN#" + unit.urn;
-      markerHtml += "</div>";
-
-      const markerInfo = L.divIcon({
-        className: "my-marker-info",
-        html: markerHtml,
-        iconSize: null,
-      });
-
-      if (!unit.type.startsWith("b-a-o")) {
-        unit.infoMarker = L.marker([unit.lat, unit.lon], { icon: markerInfo });
-
-        // Only add to map if item is visible
-        if (unit.visible !== false) {
-          unit.infoMarker.addTo(this.getItemOverlay(unit));
-        }
-
-        unit.infoMarker.setLatLng([unit.lat, unit.lon]);
-        unit.infoMarker.setIcon(markerInfo);
-      }
-      unit.marker.setLatLng([unit.lat, unit.lon]);
-      // Pass self coordinates for distance calculation
+    getPopupContent(item) {
       const selfCoords = this.config
         ? { lat: this.config.lat, lon: this.config.lon }
         : null;
-      unit.marker.bindTooltip(popup(unit, selfCoords, false));
+      return popup(item, selfCoords, false);
     },
 
-    setActiveItemUid: function(uid, follow) {
-      let currentActiveItem = this.getActiveItem();
-      if (currentActiveItem?.isNew && currentActiveItem.uid != uid) {
-        // Remove previous unsaved item
+    getPolygonGeoJSON(item) {
+      if (!item.links || item.links.length < 3) {
+        return { type: "FeatureCollection", features: [] };
+      }
+
+      const coordinates = item.links.map((link) => {
+        const [lat, lng] = link.split(",").map(parseFloat);
+        return [lng, lat];
+      });
+      // Close the polygon
+      coordinates.push(coordinates[0]);
+
+      return {
+        type: "Feature",
+        geometry: {
+          type: "Polygon",
+          coordinates: [coordinates],
+        },
+        properties: { uid: item.uid, callsign: item.callsign },
+      };
+    },
+
+    getRouteGeoJSON(item) {
+      if (!item.links || item.links.length < 2) {
+        return { type: "FeatureCollection", features: [] };
+      }
+
+      const coordinates = item.links.map((link) => {
+        const [lat, lng] = link.split(",").map(parseFloat);
+        return [lng, lat];
+      });
+
+      return {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates,
+        },
+        properties: { uid: item.uid, callsign: item.callsign },
+      };
+    },
+
+    getRouteLabelPosition(item) {
+      if (!item.links || item.links.length < 2) {
+        return [item.lon, item.lat];
+      }
+
+      const middleIndex = Math.floor(item.links.length / 2);
+      const [lat, lng] = item.links[middleIndex].split(",").map(parseFloat);
+      return [lng, lat];
+    },
+
+    getTrailGeoJSON(trail) {
+      const coordinates = trail.positions.map((pos) => [pos.lon, pos.lat]);
+      return {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates,
+        },
+        properties: { unitUid: trail.unitUid },
+      };
+    },
+
+    setActiveItemUid(uid, follow) {
+      let currentActiveItem = this.activeItem;
+      if (currentActiveItem?.isNew && currentActiveItem.uid !== uid) {
         this.deleteItem(currentActiveItem.uid);
       }
       if (uid && this.sharedState.items.has(uid)) {
         if (this.activeItemUid === uid) {
-          console.log("Force select: ", uid);
           this.activeItemUid = null;
-          this.$nextTick(() => (this.activeItemUid = uid));
+          nextTick(() => (this.activeItemUid = uid));
         } else {
           this.activeItemUid = uid;
           let u = this.sharedState.items.get(uid);
@@ -1339,99 +1148,43 @@ export default {
       }
     },
 
-    getActiveItem: function() {
-      console.log(
-        "[getActiveItem!] ",
-        this.activeItemUid,
-        this.sharedState.items.has(this.activeItemUid),
-        this.sharedState.items.get(this.activeItemUid)
-      );
-      if (
-        !this.activeItemUid ||
-        !this.sharedState.items.has(this.activeItemUid)
-      )
-        return null;
-      return this.sharedState.items.get(this.activeItemUid);
+    mapToUnit(u) {
+      if (!u || !this.map) return;
+      if (u.lat !== 0 || u.lon !== 0) {
+        this.map.flyTo({ center: [u.lon, u.lat] });
+      }
     },
 
-    byCategory: function(s) {
-      let arr = Array.from(this.sharedState.items.values()).filter(function(u) {
-        return u.category === s;
-      });
-      arr.sort(function(a, b) {
-        return a.callsign.toLowerCase().localeCompare(b.callsign.toLowerCase());
-      });
+    byCategory(s) {
+      let arr = Array.from(this.sharedState.items.values()).filter(
+        (u) => u.category === s
+      );
+      arr.sort((a, b) =>
+        a.callsign.toLowerCase().localeCompare(b.callsign.toLowerCase())
+      );
       return this.sharedState.ts && arr;
     },
 
-    nextItemNumber: function(category) {
+    nextItemNumber(category) {
       let maxNumber = 0;
-      this.sharedState.items.forEach(function(u) {
+      this.sharedState.items.forEach((u) => {
         if (u.category === category) {
           let splitParts = u.callsign.split("-");
-
           if (
-            splitParts.length == 2 &&
+            splitParts.length === 2 &&
             ["point", "unit", "zone", "route"].includes(splitParts[0])
           ) {
             let number = parseInt(splitParts[1]);
-            if (number != NaN) maxNumber = Math.max(maxNumber, number);
+            if (!isNaN(number)) maxNumber = Math.max(maxNumber, number);
           }
         }
       });
-
       return maxNumber + 1;
     },
 
-    mapToUnit: function(u) {
-      if (!u) {
-        return;
-      }
-      if (u.lat !== 0 || u.lon !== 0) {
-        this.getRawMap().setView([u.lat, u.lon]);
-      }
-    },
+    dt,
 
-    getImg: function(item) {
-      return getIconUri(item, false).uri;
-    },
-
-    milImg: function(item) {
-      return getMilIcon(item, false).uri;
-    },
-
-    dt: function(str) {
-      let d = new Date(Date.parse(str));
-      return (
-        ("0" + d.getDate()).slice(-2) +
-        "-" +
-        ("0" + (d.getMonth() + 1)).slice(-2) +
-        "-" +
-        d.getFullYear() +
-        " " +
-        ("0" + d.getHours()).slice(-2) +
-        ":" +
-        ("0" + d.getMinutes()).slice(-2)
-      );
-    },
-
-    sp: function(v) {
-      return (v * 3.6).toFixed(1);
-    },
-
-    modeIs: function(s) {
-      return (
-        document.getElementById(s) &&
-        document.getElementById(s).checked === true
-      );
-    },
-
-    mouseMove: function(e) {
-      this.coords = e.latlng;
-    },
-
-    mapClickAddPoint: function(e) {
-      console.log("mapClickAddPoint called with event:", e);
+    mapClickAddPoint(e) {
       let u = createMapItem({
         category: "point",
         callsign: "point-" + this.nextItemNumber("point"),
@@ -1447,15 +1200,13 @@ export default {
         u.parent_callsign = this.config.callsign;
       }
 
-      console.log("New point created locally:", u);
       store.state.items.set(u.uid, u);
       store.state.ts += 1;
       this._processAddition(u);
       this.setActiveItemUid(u.uid, true);
     },
 
-    mapClickAddUnit: function(e) {
-      console.log("mapClickAddUnit called with event:", e);
+    mapClickAddUnit(e) {
       let u = createMapItem({
         category: "unit",
         callsign: "unit-" + this.nextItemNumber("unit"),
@@ -1472,15 +1223,13 @@ export default {
         u.parent_callsign = this.config.callsign;
       }
 
-      console.log("New unit created locally:", u);
-      store.state.items.set(u.uid, u); // Add the new unit to the store
-      store.state.ts += 1; // Increment timestamp to trigger reactivity
-      this._processAddition(u); // Manually add the marker for the new unit
-      this.setActiveItemUid(u.uid, true); // Set the new unit as the current unit to display in sidebar
-      // The sidebar watcher for activeItem should handle opening the sidebar and showing the form
+      store.state.items.set(u.uid, u);
+      store.state.ts += 1;
+      this._processAddition(u);
+      this.setActiveItemUid(u.uid, true);
     },
-    mapClickAddCasevac: function(e) {
-      console.log("mapClickAddCasevac called with event:", e);
+
+    mapClickAddCasevac(e) {
       let now = new Date();
       let uid =
         "MED." +
@@ -1507,38 +1256,13 @@ export default {
         u.parent_callsign = this.config.callsign;
       }
 
-      // console.log("New casevac created locally:", u);
       store.state.items.set(u.uid, u);
       store.state.ts += 1;
       this._processAddition(u);
       this.setActiveItemUid(u.uid, true);
     },
-    mapClick: function(e) {
-      if (this.inDrawMode) {
-        return;
-      }
-      if (this.mode === "add_point") {
-        this.mapClickAddPoint(e);
-        this.mode = "map";
-        return;
-      }
-      if (this.mode === "add_unit") {
-        this.mapClickAddUnit(e);
-        this.mode = "map";
-        return;
-      }
-      if (this.mode === "add_casevac") {
-        this.mapClickAddCasevac(e);
-        this.mode = "map";
-        return;
-      }
-    },
 
-    checkEmergency: function(
-      emergency_switch1,
-      emergency_switch2,
-      emergency_type
-    ) {
+    checkEmergency(emergency_switch1, emergency_switch2, emergency_type) {
       if (emergency_switch1 && emergency_switch2) {
         this.activateEmergencyBeacon(emergency_type);
       } else {
@@ -1546,7 +1270,7 @@ export default {
       }
     },
 
-    activateEmergencyBeacon: function(emergency_type) {
+    activateEmergencyBeacon(emergency_type) {
       if (!this.beacon_active) {
         this.beacon_active = true;
         const alert = this.createEmergencyAlert(emergency_type);
@@ -1554,7 +1278,7 @@ export default {
       }
     },
 
-    deactivateEmergencyBeacon: function() {
+    deactivateEmergencyBeacon() {
       if (this.beacon_active) {
         this.beacon_active = false;
         let alert = this.sharedState.items.get(this.config.uid + "-9-1-1");
@@ -1567,342 +1291,12 @@ export default {
       }
     },
 
-    saveItem: function(u, cb) {
-      console.log("Sending:", cleanUnit(u));
-      store.createItem(u).then((results) => {
-        this.processUnits(results);
-        if (cb) cb();
-      });
-    },
-
-    deleteItem: function(uid) {
-      console.debug("Deleting:", uid);
-      store.removeItem(uid).then((units) => this.processUnits(units));
-    },
-
-    removeTool: function(name) {
-      if (this.tools.has(name)) {
-        let p = this.tools.get(name);
-        this.getRawMap().removeLayer(p);
-        p.remove();
-        this.tools.delete(name);
-        this.ts++;
-      }
-    },
-
-    getTool: function(name) {
-      return this.tools.get(name);
-    },
-
-    addOrMove(name, coord, icon) {
-      if (this.tools.has(name)) {
-        this.tools.get(name).setLatLng(coord);
-      } else {
-        let p = new L.marker(coord).addTo(this.getRawMap());
-        if (icon) {
-          p.setIcon(
-            L.icon({
-              iconUrl: icon,
-              iconSize: [20, 20],
-              iconAnchor: new L.Point(10, 10),
-            })
-          );
-        }
-        this.tools.set(name, p);
-      }
-      this.ts++;
-    },
-
-    contactsNum: function() {
-      let online = 0;
-      let total = 0;
-      this.sharedState.items.forEach(function(u) {
-        if (u.category === "contact") {
-          if (u.status === "Online") online += 1;
-          if (u.status !== "") total += 1;
-        }
-      });
-
-      return online + "/" + total;
-    },
-
-    flowsCount: function() {
-      return (
-        "↓" +
-        this.sharedState.flows
-          .filter((it) => it.direction == 1)
-          .length.toLocaleString("fa-ir") +
-        " / ↑" +
-        this.sharedState.flows
-          .filter((it) => it.direction == 2)
-          .length.toLocaleString("fa-ir") +
-        " / ↕" +
-        this.sharedState.flows
-          .filter((it) => it.direction == 3)
-          .length.toLocaleString("fa-ir")
-      );
-    },
-
-    sensorsCount: function() {
-      return this.sharedState.sensors.length.toLocaleString("fa-ir");
-    },
-
-    countByCategory: function(s) {
-      let total = 0;
-      this.sharedState.items.forEach(function(u) {
-        if (u.category === s) total += 1;
-      });
-
-      return total;
-    },
-
-    msgNum: function() {
-      if (!this.messages) return 0;
-      let n = 0;
-      for (const [key, value] of Object.entries(this.messages)) {
-        if (value.messages) {
-          for (m of value.messages) {
-            if (!this.seenMessages.has(m.message_id)) n++;
-          }
-        }
-      }
-      return n;
-    },
-
-    msgNum1: function(uid) {
-      if (!this.messages || !this.messages[uid].messages) return 0;
-      let n = 0;
-      for (m of this.messages[uid].messages) {
-        if (!this.seenMessages.has(m.message_id)) n++;
-      }
-      return n;
-    },
-
-    openChat: function(uid, chatroom) {
-      this.chat_uid = uid;
-      this.chatroom = chatroom;
-      new bootstrap.Modal(document.getElementById("messages")).show();
-
-      if (this.messages[this.chat_uid]) {
-        for (m of this.messages[this.chat_uid].messages) {
-          this.seenMessages.add(m.message_id);
-        }
-      }
-    },
-
-    openFlows: function() {
-      new bootstrap.Modal(document.getElementById("flows-modal")).show();
-    },
-
-    openSensors: function() {
-      new bootstrap.Modal(document.getElementById("sensors-modal")).show();
-    },
-    openAlarms: function() {
-      new bootstrap.Modal(document.getElementById("alarms-modal")).show();
-    },
-
-    openResending: function() {
-      new bootstrap.Modal(document.getElementById("resending-modal")).show();
-    },
-
-    getStatus: function(uid) {
-      return this.ts && this.sharedState.items.get(uid)?.status;
-    },
-
-    getMessages: function() {
-      if (!this.chat_uid) {
-        return [];
-      }
-
-      let msgs = this.messages[this.chat_uid]
-        ? this.messages[this.chat_uid].messages
-        : [];
-
-      if (document.getElementById("messages").style.display !== "none") {
-        for (m of msgs) {
-          this.seenMessages.add(m.message_id);
-        }
-      }
-
-      return msgs;
-    },
-
-    getUnitName: function(u) {
-      let res = u.callsign || "no name";
-      if (this.config && u.parent_uid === this.config.uid) {
-        if (u.send === true) {
-          res = "+ " + res;
-        } else {
-          res = "* " + res;
-        }
-      }
-      return res;
-    },
-
-    menuDeleteAction: function(uid) {
-      let unit = this.sharedState.items.get(uid);
-      store.removeItem(uid).then((units) => this.processUnits(units));
-      this.getRawMap().closePopup(unit.marker.contextmenu);
-    },
-
-    menuSendAction: function(uid) {
-      let unit = this.sharedState.items.get(uid);
-      this.sharedState.unitToSend = unit;
-      new bootstrap.Modal(document.querySelector("#send-modal")).show();
-      this.getRawMap().closePopup(unit.marker.contextmenu);
-    },
-
-    sendMessage: function() {
-      let msg = {
-        from: this.config.callsign,
-        from_uid: this.config.uid,
-        chatroom: this.chatroom,
-        to_uid: this.chat_uid,
-        text: this.chat_msg,
-      };
-      this.chat_msg = "";
-
-      const requestOptions = {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(msg),
-      };
-      let vm = this;
-      fetch(window.baseUrl + "/message", requestOptions)
-        .then(function(response) {
-          return response.json();
-        })
-        .then(function(data) {
-          vm.messages = data;
-        });
-    },
-    toggleOverlay: function(overlayName, overlayActive) {
-      if (!this.overlays || !this.overlays[overlayName]) {
-        console.warn(
-          "Overlays not initialized yet, skipping toggle for:",
-          overlayName
-        );
-        return;
-      }
-      if (!overlayActive)
-        toRaw(this.overlays[overlayName]).removeFrom(this.getRawMap());
-      else toRaw(this.overlays[overlayName]).addTo(this.getRawMap());
-    },
-
-    toggleOverlayItems: function(categoryName, subcategoryKey, uid, newState) {
-      // Helper function to get affiliation from CoT type
-      const getAffiliationFromType = (type) => {
-        if (!type || type.length < 3) return "u";
-        const affCode = type.charAt(2);
-        return ["f", "h", "n", "u"].includes(affCode) ? affCode : "u";
-      };
-
-      // Helper function to check if item matches subcategory
-      const matchesSubcategory = (item, subKey, category) => {
-        if (!subKey) return true;
-
-        if (category === "unit") {
-          const affiliation = subKey.replace("unit_", "");
-          return getAffiliationFromType(item.type) === affiliation;
-        } else if (category === "alarm") {
-          const alarmType = subKey.replace("alarm_", "");
-          if (alarmType === "emergency") {
-            return item.type && item.type.startsWith("b-a-o");
-          } else if (alarmType === "general") {
-            return item.type && !item.type.startsWith("b-a-o");
-          }
-        }
-        return true;
-      };
-
-      // Helper function to toggle visibility of item markers
-      const toggleItemMarkers = (item, visible) => {
-        // Update marker visibility
-        if (item.marker) {
-          if (visible) {
-            item.marker.addTo(this.getItemOverlay(item));
-          } else {
-            this.getItemOverlay(item).removeLayer(item.marker);
-          }
-        }
-
-        // Update info marker visibility
-        if (item.infoMarker) {
-          if (visible) {
-            item.infoMarker.addTo(this.getItemOverlay(item));
-          } else {
-            this.getItemOverlay(item).removeLayer(item.infoMarker);
-          }
-        }
-
-        // Update text label visibility for drawings and routes
-        if (
-          item.textLabel &&
-          (item.category === "drawing" || item.category === "route")
-        ) {
-          if (visible) {
-            item.textLabel.addTo(this.getItemOverlay(item));
-          } else {
-            this.getItemOverlay(item).removeLayer(item.textLabel);
-          }
-        }
-      };
-
-      // Case 1: Toggle individual item
-      if (uid) {
-        const item = this.sharedState.items.get(uid);
-        if (item) {
-          toggleItemMarkers(item, newState);
-        }
-        return;
-      }
-
-      // Case 2 & 3: Toggle category or subcategory
-      if (categoryName) {
-        // Ensure overlay exists
-        if (!this.overlays || !this.overlays[categoryName]) {
-          console.warn(
-            "Overlays not initialized yet, skipping toggle for:",
-            categoryName
-          );
-          return;
-        }
-
-        // Toggle overlay layer visibility if toggling entire category
-        if (!subcategoryKey) {
-          if (!newState) {
-            toRaw(this.overlays[categoryName]).removeFrom(this.getRawMap());
-          } else {
-            toRaw(this.overlays[categoryName]).addTo(this.getRawMap());
-          }
-        }
-
-        // Update individual item visibility
-        this.sharedState.items.forEach((item) => {
-          if (item.category === categoryName) {
-            // Check if item matches the subcategory filter (if provided)
-            if (matchesSubcategory(item, subcategoryKey, categoryName)) {
-              toggleItemMarkers(item, newState);
-            }
-          }
-        });
-      }
-    },
-
-    handleOverlayItemSelected: function(item) {
-      console.log("Overlay item selected in App:", item);
-      if (item && item.uid) {
-        this.setActiveItemUid(item.uid, true);
-      }
-    },
-
-    createEmergencyAlert: function(emergencyType) {
-      let uid = uuidv4();
+    createEmergencyAlert(emergencyType) {
       let now = new Date();
       let stale = new Date(now);
-
       stale.setDate(stale.getDate() + 365);
-      let u = {
+
+      return {
         uid: this.config.uid + "-9-1-1",
         category: "alarm",
         callsign: this.config.callsign + "-Alert",
@@ -1925,23 +1319,239 @@ export default {
         web_sensor: "",
         links: [],
       };
-
-      return u;
     },
-    locateByGPS: function() {
-      if (!this.config) return; // Check if config is loaded
-      fetch(window.baseUrl + "/pos").then((r) =>
-        this.getRawMap().setView([this.config.lat, this.config.lon])
+
+    saveItem(u, cb) {
+      console.log("Sending:", cleanUnit(u));
+      store.createItem(u).then((results) => {
+        this.processUnits(results);
+        if (cb) cb();
+      });
+    },
+
+    deleteItem(uid) {
+      console.debug("Deleting:", uid);
+      store.removeItem(uid).then((units) => this.processUnits(units));
+    },
+
+    removeTool(name) {
+      if (this.tools.has(name)) {
+        this.tools.delete(name);
+        this.ts++;
+      }
+    },
+
+    getTool(name) {
+      return this.tools.get(name);
+    },
+
+    contactsNum() {
+      let online = 0;
+      let total = 0;
+      this.sharedState.items.forEach((u) => {
+        if (u.category === "contact") {
+          if (u.status === "Online") online += 1;
+          if (u.status !== "") total += 1;
+        }
+      });
+      return online + "/" + total;
+    },
+
+    flowsCount() {
+      return (
+        "↓" +
+        this.sharedState.flows
+          .filter((it) => it.direction === 1)
+          .length.toLocaleString("fa-ir") +
+        " / ↑" +
+        this.sharedState.flows
+          .filter((it) => it.direction === 2)
+          .length.toLocaleString("fa-ir") +
+        " / ↕" +
+        this.sharedState.flows
+          .filter((it) => it.direction === 3)
+          .length.toLocaleString("fa-ir")
       );
     },
-    changeMode: function(newMode) {
+
+    sensorsCount() {
+      return this.sharedState.sensors.length.toLocaleString("fa-ir");
+    },
+
+    countByCategory(s) {
+      let total = 0;
+      this.sharedState.items.forEach((u) => {
+        if (u.category === s) total += 1;
+      });
+      return total;
+    },
+
+    msgNum() {
+      if (!this.messages) return 0;
+      let n = 0;
+      for (const [key, value] of Object.entries(this.messages)) {
+        if (value.messages) {
+          for (const m of value.messages) {
+            if (!this.seenMessages.has(m.message_id)) n++;
+          }
+        }
+      }
+      return n;
+    },
+
+    msgNum1(uid) {
+      if (!this.messages || !this.messages[uid]?.messages) return 0;
+      let n = 0;
+      for (const m of this.messages[uid].messages) {
+        if (!this.seenMessages.has(m.message_id)) n++;
+      }
+      return n;
+    },
+
+    openChat(uid, chatroom) {
+      this.chat_uid = uid;
+      this.chatroom = chatroom;
+      new bootstrap.Modal(document.getElementById("messages")).show();
+
+      if (this.messages[this.chat_uid]) {
+        for (const m of this.messages[this.chat_uid].messages) {
+          this.seenMessages.add(m.message_id);
+        }
+      }
+    },
+
+    openFlows() {
+      new bootstrap.Modal(document.getElementById("flows-modal")).show();
+    },
+
+    openSensors() {
+      new bootstrap.Modal(document.getElementById("sensors-modal")).show();
+    },
+
+    openAlarms() {
+      new bootstrap.Modal(document.getElementById("alarms-modal")).show();
+    },
+
+    openResending() {
+      new bootstrap.Modal(document.getElementById("resending-modal")).show();
+    },
+
+    getStatus(uid) {
+      return this.ts && this.sharedState.items.get(uid)?.status;
+    },
+
+    getMessages() {
+      if (!this.chat_uid) return [];
+
+      let msgs = this.messages[this.chat_uid]
+        ? this.messages[this.chat_uid].messages
+        : [];
+
+      if (document.getElementById("messages")?.style.display !== "none") {
+        for (const m of msgs) {
+          this.seenMessages.add(m.message_id);
+        }
+      }
+
+      return msgs;
+    },
+
+    getUnitName(u) {
+      let res = u.callsign || "no name";
+      if (this.config && u.parent_uid === this.config.uid) {
+        if (u.send === true) {
+          res = "+ " + res;
+        } else {
+          res = "* " + res;
+        }
+      }
+      return res;
+    },
+
+    sendMessage() {
+      let msg = {
+        from: this.config.callsign,
+        from_uid: this.config.uid,
+        chatroom: this.chatroom,
+        to_uid: this.chat_uid,
+        text: this.chat_msg,
+      };
+      this.chat_msg = "";
+
+      let vm = this;
+      api.post("/message", msg).then((response) => {
+        vm.messages = response.data;
+      });
+    },
+
+    toggleOverlayItems(categoryName, subcategoryKey, uid, newState) {
+      const getAffiliationFromType = (type) => {
+        if (!type || type.length < 3) return "u";
+        const affCode = type.charAt(2);
+        return ["f", "h", "n", "u"].includes(affCode) ? affCode : "u";
+      };
+
+      const matchesSubcategory = (item, subKey, category) => {
+        if (!subKey) return true;
+        if (category === "unit") {
+          const affiliation = subKey.replace("unit_", "");
+          return getAffiliationFromType(item.type) === affiliation;
+        } else if (category === "alarm") {
+          const alarmType = subKey.replace("alarm_", "");
+          if (alarmType === "emergency") {
+            return item.type && item.type.startsWith("b-a-o");
+          } else if (alarmType === "general") {
+            return item.type && !item.type.startsWith("b-a-o");
+          }
+        }
+        return true;
+      };
+
+      // Case 1: Toggle individual item
+      if (uid) {
+        const item = this.sharedState.items.get(uid);
+        if (item) {
+          item.visible = newState;
+        }
+        return;
+      }
+
+      // Case 2 & 3: Toggle category or subcategory
+      if (categoryName) {
+        if (!subcategoryKey) {
+          this.overlayVisibility[categoryName] = newState;
+        }
+
+        this.sharedState.items.forEach((item) => {
+          if (item.category === categoryName) {
+            if (matchesSubcategory(item, subcategoryKey, categoryName)) {
+              item.visible = newState;
+            }
+          }
+        });
+      }
+    },
+
+    handleOverlayItemSelected(item) {
+      if (item && item.uid) {
+        this.setActiveItemUid(item.uid, true);
+      }
+    },
+
+    locateByGPS() {
+      if (!this.config || !this.map) return;
+      api
+        .get("/pos")
+        .then(() =>
+          this.map.flyTo({ center: [this.config.lon, this.config.lat] })
+        );
+    },
+
+    changeMode(newMode) {
       this.mode = newMode;
     },
 
-    // Navigation line methods
-    handleNavigationLineToggle: function(event) {
-      console.log("Navigation line toggle event:", event);
-
+    handleNavigationLineToggle(event) {
       if (event.show) {
         this.showNavigationLine(
           event.targetItem,
@@ -1953,107 +1563,45 @@ export default {
       }
     },
 
-    handleSelectOverlayItem: function(item) {
-      console.log("Overlay item selected@map", item);
-      if (item && item.uid) {
-        // Set the item as active and pan to it
-        this.setActiveItemUid(item.uid, true);
-      }
-    },
-
-    showNavigationLine: function(targetItem, userPosition, navigationData) {
-      // Clear any existing navigation line
+    showNavigationLine(targetItem, userPosition, navigationData) {
       this.hideNavigationLine();
 
-      if (!targetItem || !userPosition || !navigationData) {
-        console.warn("Missing data for navigation line:", {
-          targetItem,
-          userPosition,
-          navigationData,
-        });
-        return;
-      }
+      if (!targetItem || !userPosition || !navigationData) return;
 
-      // Create the navigation line
-      const userLatLng = [userPosition.lat, userPosition.lon];
-      const targetLatLng = [
-        navigationData.targetPosition.lat,
+      const userCoord = [userPosition.lon, userPosition.lat];
+      const targetCoord = [
         navigationData.targetPosition.lng,
+        navigationData.targetPosition.lat,
       ];
 
-      this.navigationLine = L.polyline([userLatLng, targetLatLng], {
-        color: "#007bff",
-        weight: 2,
-        opacity: 0.6,
-        dashArray: "5, 10",
-        className: "navigation-line",
-      });
+      this.navigationLine = {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: [userCoord, targetCoord],
+        },
+        properties: {},
+      };
 
-      // Add to navigation overlay
-      this.overlays.navigation.addLayer(this.navigationLine);
-
-      // Store navigation state
       this.navigationLineActive = true;
       this.navigationTarget = targetItem;
-
-      console.log(
-        "Navigation line created for:",
-        targetItem.callsign || targetItem.uid
-      );
     },
 
-    hideNavigationLine: function() {
-      if (this.navigationLine) {
-        this.overlays.navigation.removeLayer(this.navigationLine);
-        this.navigationLine = null;
-      }
-
+    hideNavigationLine() {
+      this.navigationLine = null;
       this.navigationLineActive = false;
       this.navigationTarget = null;
-
-      console.log("Navigation line hidden");
     },
 
-    updateNavigationLine: function() {
-      console.log("updateNavigationLine");
-      // Update navigation line when user position changes
-      if (this.navigationLineActive && this.navigationTarget && this.config) {
-        // Get target coordinates
-        let targetCoords = null;
-
-        if (
-          this.navigationTarget.lat !== undefined &&
-          this.navigationTarget.lon !== undefined
-        ) {
-          targetCoords = {
-            lat: this.navigationTarget.lat,
-            lng: this.navigationTarget.lon,
-          };
-        }
-
-        if (targetCoords) {
-          const userLatLng = [this.config.lat, this.config.lon];
-          const targetLatLng = [targetCoords.lat, targetCoords.lng];
-
-          if (this.navigationLine) {
-            this.navigationLine.setLatLngs([userLatLng, targetLatLng]);
-          }
-        }
-      }
-    },
-
-    clearNavigationLineOnItemChange: function() {
-      // Clear navigation line when active item changes
+    clearNavigationLineOnItemChange() {
       if (this.navigationLineActive) {
         this.hideNavigationLine();
       }
     },
 
     // Tracking management methods
-    enableTrackingForUnit: function(unitUid, config = {}) {
+    enableTrackingForUnit(unitUid, config = {}) {
       if (!this.trackingManager) return false;
-
-      // Set default config for unit
       const defaultConfig = {
         enabled: true,
         trailLength: 50,
@@ -2061,29 +1609,20 @@ export default {
         trailWidth: 2,
         trailOpacity: 0.7,
       };
-
       const finalConfig = { ...defaultConfig, ...config };
-      return this.trackingManager.setTrailConfig(unitUid, finalConfig);
+      const result = this.trackingManager.setTrailConfig(unitUid, finalConfig);
+      this.activeTrails = this.trackingManager.getAllTrails();
+      return result;
     },
 
-    disableTrackingForUnit: function(unitUid) {
+    disableTrackingForUnit(unitUid) {
       if (!this.trackingManager) return false;
-      return this.trackingManager.removeTrail(unitUid);
+      const result = this.trackingManager.removeTrail(unitUid);
+      this.activeTrails = this.trackingManager.getAllTrails();
+      return result;
     },
 
-    updateUnitTrackingConfig: function(unitUid, config) {
-      if (!this.trackingManager) return false;
-      return this.trackingManager.setTrailConfig(unitUid, config);
-    },
-
-    clearAllTrails: function() {
-      if (!this.trackingManager) return false;
-      this.trackingManager.clearAllTrails();
-      return true;
-    },
-
-    generateTrailColor: function(unitUid) {
-      // Generate a consistent color for each unit based on UID
+    generateTrailColor(unitUid) {
       const colors = [
         "#FF0000",
         "#00FF00",
@@ -2098,94 +1637,60 @@ export default {
         "#800000",
         "#808000",
       ];
-
       let hash = 0;
       for (let i = 0; i < unitUid.length; i++) {
         hash = unitUid.charCodeAt(i) + ((hash << 5) - hash);
       }
-
       return colors[Math.abs(hash) % colors.length];
     },
 
-    getTrackingStatus: function() {
-      if (!this.trackingManager) return false;
-      return this.trackingManager.isTrackingEnabled();
+    getTrackingStatus() {
+      return this.trackingManager?.isTrackingEnabled() || false;
     },
 
-    setGlobalTrackingEnabled: function(enabled) {
+    setGlobalTrackingEnabled(enabled) {
       if (!this.trackingManager) return false;
       this.trackingManager.setTrackingEnabled(enabled);
       return true;
     },
-
-    exportTrailData: function(unitUid, format = "json") {
-      if (!this.trackingManager) return null;
-      return this.trackingManager.exportTrailData(unitUid, format);
-    },
-
-    importTrailData: function(unitUid, data, format = "json") {
-      if (!this.trackingManager) return false;
-      return this.trackingManager.importTrailData(unitUid, data, format);
-    },
-
-    getActiveTrails: function() {
-      if (!this.trackingManager) return [];
-      return this.trackingManager.getAllTrails();
-    },
-
-    // Update drawing and route labels method
-    updateDrawingTextLabel: function(item) {
-      // Only update the style of existing text label instead of recreating it
-      if (item.textLabel) {
-        // Calculate new styling
-        let labelStyle = this.calculateLabelStyle(item);
-
-        // For routes, also update position since offset is zoom-dependent
-        if (item.category === "route") {
-          let newPosition = this.calculateTextLabelPosition(item);
-          item.textLabel.setLatLng(newPosition);
-        }
-
-        // Get the existing label element and update its style
-        let labelElement = item.textLabel.getElement();
-        if (labelElement) {
-          let labelDiv = labelElement.querySelector(".drawing-text-label");
-          if (labelDiv) {
-            // Update font size and rotation while preserving other styles
-            labelDiv.style.fontSize = labelStyle.fontSize + "px";
-            labelDiv.style.transform = `translate(-50%, -50%) rotate(${
-              labelStyle.rotation
-            }deg)`;
-
-            if (labelStyle.fontSize < 12) labelDiv.style.display = "none";
-            else labelDiv.style.display = "block";
-          }
-        }
-      }
-    },
-
-    // Zoom update method
-    onMapZoom: function() {
-      // Throttle zoom updates to improve performance during zoom animations
-      if (this.zoomUpdateTimeout) {
-        clearTimeout(this.zoomUpdateTimeout);
-      }
-
-      this.zoomUpdateTimeout = setTimeout(() => {
-        // Update all drawing and route labels when zoom changes
-        this.sharedState.items.forEach((item) => {
-          if (
-            (item.category === "drawing" || item.category === "route") &&
-            item.textLabel
-          ) {
-            this.updateDrawingTextLabel(item);
-          }
-        });
-      }, 8); // Reduced throttling since we're just updating styles
-    },
-  },
-  components: {
-    ResendingModal,
   },
 };
 </script>
+
+<style>
+#map-container {
+  position: relative;
+}
+
+.maplibregl-map {
+  width: 100%;
+  height: 100%;
+}
+
+.my-marker-info {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.drawing-text-label {
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px white, -1px -1px 2px white;
+  cursor: pointer;
+}
+
+.tools-control button {
+  display: block;
+  width: 100%;
+  padding: 5px;
+}
+
+.tools-control button img {
+  display: block;
+  margin: 0 auto;
+}
+</style>

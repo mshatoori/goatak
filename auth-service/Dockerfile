@@ -1,4 +1,4 @@
-FROM golang:1.23-alpine AS builder
+FROM docker.arvancloud.ir/golang:alpine AS builder
 
 WORKDIR /app
 
@@ -8,7 +8,7 @@ RUN go mod download
 COPY . .
 RUN go build -o main cmd/server/main.go
 
-FROM alpine:latest
+FROM docker.arvancloud.ir/alpine
 WORKDIR /app
 COPY --from=builder /app/main .
 

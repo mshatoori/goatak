@@ -431,6 +431,7 @@ import {
 import NavigationInfo from "./NavigationInfo.vue";
 import UnitTrackingControl from "./UnitTrackingControl.vue";
 import HierarchySelector from "./HierarchySelector.vue";
+import api from "../api/axios.js";
 
 export default {
   props: ["item", "coords", "locked_unit_uid", "config"],
@@ -604,10 +605,10 @@ export default {
     },
     // Fetch destinations from API
     fetchDestinations: function() {
-      fetch(window.baseUrl + "/destinations")
-        .then((response) => response.json())
-        .then((data) => {
-          this.availableDestinations = data;
+      api
+        .get("/destinations")
+        .then((response) => {
+          this.availableDestinations = response.data;
         })
         .catch((error) => {
           console.error("Error fetching destinations:", error);

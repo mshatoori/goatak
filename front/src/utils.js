@@ -1,9 +1,5 @@
 import store from "./store.js";
 
-// if (window.baseUrl === undefined) {
-//   window.baseUrl = ""; // Default value
-// }
-
 const colors = new Map([
   ["Clear", "white"],
   ["White", "white"],
@@ -38,7 +34,6 @@ const tooltipFieldConfig = {
   humanReadableType: true, // Use humanReadableType(item.type)
   lastSeen: true, // Format item.last_seen with dt()
   distanceToSelf: true, // Calculate using distBea(), needs access to self coords
-  // team: true,               // Show team + role
   speed: true, // Show if > 0
   altitude: true, // Show for air units (sidc[2] === 'A')
   coordinates: true, // lat/lon formatted
@@ -48,14 +43,6 @@ const tooltipFieldConfig = {
 };
 
 function getIconUri(item, withText) {
-  // TEMP:
-  // if (item.team && item.role) {
-  //     let col = "#555";
-  //     if (item.status !== "Offline") {
-  //         col = colors.get(item.team);
-  //     }
-  //     return {uri: toUri(circle(24, col, '#000', roles.get(item.role) ?? '')), x: 12, y: 12};
-  // }
   if (item === null)
     return {
       uri: "",
@@ -106,18 +93,11 @@ function getIconUri(item, withText) {
 function getMilIcon(item, withText) {
   let opts = { size: 24 };
 
-  // console.log("[getMilIcon]", item);
-
   if (!item.sidc) {
     return "";
   }
 
-  // if (item.team && item.role) {
-  //     opts["uniqueDesignation"] = item.uid
-  // }
-
   if (withText) {
-    // opts['uniqueDesignation'] = item.callsign;
     if (item.speed > 0) {
       opts["speed"] = formatNumberEn(item.speed * 3.6, 1) + " km/h";
       opts["direction"] = item.course;
@@ -133,17 +113,6 @@ function getMilIcon(item, withText) {
     x: symb.getAnchor().x,
     y: symb.getAnchor().y,
   };
-}
-
-function getIcon(item, withText) {
-  let img = getIconUri(item, withText);
-
-  // console.log("[getIcon] image = ", img);
-
-  return L.icon({
-    iconUrl: img.uri,
-    iconAnchor: [img.x, img.y],
-  });
 }
 
 function circle(size, color, bg, text) {
@@ -185,7 +154,7 @@ function dt(str) {
 }
 
 function printCoordsll(latlng) {
-  return Vue.prototype.Utils.printCoords(latlng.lat, latlng.lng);
+  return printCoords(latlng.lat, latlng.lng);
 }
 
 function printCoords(lat, lng) {
@@ -256,8 +225,11 @@ function printCoords(lat, lng) {
   return latStr + " " + lngStr;
 }
 
+/**
+ * Create a latlng object (MapLibre compatible)
+ */
 function latlng(lat, lon) {
-  return L.latLng(lat, lon);
+  return { lat, lng: lon };
 }
 
 function distBea(p1, p2) {
@@ -352,15 +324,6 @@ function popup(item, selfCoords, isSelf) {
     const distanceInfo = distBea(selfPoint, itemPoint);
     v += "فاصله: " + distanceInfo + "<br/>";
   }
-
-  // Team and role
-  // if (tooltipFieldConfig.team && item.team) {
-  //   v += item.team;
-  //   if (item.role) {
-  //     v += " " + item.role;
-  //   }
-  //   v += "<br/>";
-  // }
 
   // Speed (only if > 0)
   if (tooltipFieldConfig.speed && item.speed && item.speed > 0) {
@@ -513,203 +476,6 @@ function humanReadableType(type) {
   if (sidc) return sidc.name;
   return type;
 }
-
-// Export all utility functions
-export {
-  getIconUri,
-  getMilIcon,
-  getIcon,
-  circle,
-  dt,
-  printCoordsll,
-  printCoords,
-  latlng,
-  distBea,
-  sp,
-  formatNumber,
-  formatNumberEn,
-  toUri,
-  uuidv4,
-  popup,
-  selfPopup,
-  latLongToIso6709,
-  needIconUpdate,
-  humanReadableType,
-  cleanUnit,
-  createMapItem,
-  LocationControl,
-  ToolsControl,
-  html,
-  tooltipFieldConfig,
-};
-
-L.Marker.RotatedMarker = L.Marker.extend({
-  _reset: function() {
-    var pos = this._map.latLngToLayerPoint(this._latlng).round();
-
-    L.DomUtil.setPosition(this._icon, pos);
-    if (this._shadow) {
-      L.DomUtil.setPosition(this._shadow, pos);
-    }
-
-    if (this.options.iconAngle) {
-      this._icon.style.WebkitTransform =
-        this._icon.style.WebkitTransform +
-        " rotate(" +
-        this.options.iconAngle +
-        "deg)";
-      this._icon.style.TransformOrigin = "center";
-    }
-
-    this._icon.style.zIndex = pos.y;
-  },
-
-  setIconAngle: function(iconAngle) {
-    if (this._map) {
-      this._removeIcon();
-    }
-
-    this.options.iconAngle = iconAngle;
-
-    if (this._map) {
-      this._initIcon();
-      this._reset();
-    }
-  },
-});
-
-// Define LocationControl and ToolsControl before making them globally accessible
-var LocationControl = L.Control.extend({
-  options: {
-    position: "bottomleft",
-  },
-
-  onAdd: function(map) {
-    var controlName = "leaflet-control-location",
-      container = L.DomUtil.create("div", controlName + " leaflet-bar"),
-      options = this.options;
-
-    this._button = this._createButton(
-      '<i class="bi bi-crosshair" id="map-locate-btn"></i>',
-      "My Location",
-      controlName + "-in",
-      container,
-      this._locate
-    );
-
-    return container;
-  },
-
-  onRemove: function(map) {},
-
-  _locate: function(e) {
-    if (!this._disabled && this._map.options.locateCallback) {
-      this._map.options.locateCallback(e);
-    }
-  },
-
-  _createButton: function(html, title, className, container, fn) {
-    var link = L.DomUtil.create("a", className, container);
-    link.innerHTML = html;
-    link.href = "#";
-    link.title = title;
-
-    /*
-     * Will force screen readers like VoiceOver to read this as "Zoom in - button"
-     */
-    link.setAttribute("role", "button");
-    link.setAttribute("aria-label", title);
-
-    L.DomEvent.disableClickPropagation(link);
-    // L.DomEvent.on(link, "click", stop);
-    L.DomEvent.on(link, "click", fn, this);
-    L.DomEvent.on(link, "click", this._refocusOnMap, this);
-
-    return link;
-  },
-});
-
-var ToolsControl = L.Control.extend({
-  options: {
-    position: "topleft",
-  },
-
-  onAdd: function(map) {
-    var controlName = "leaflet-control-tools",
-      container = L.DomUtil.create("div", controlName + " leaflet-bar"),
-      options = this.options;
-
-    this._pointButton = this._createButton(
-      '<img src="static/icons/add-point.svg" id="map-add-point-btn" alt="Add Point" style="width: 30px; height: 30px;">',
-      "افزودن نقطه به نقشه",
-      controlName + "-in",
-      container,
-      this._addPoint
-    );
-    this._unitButton = this._createButton(
-      '<img src="static/icons/add-unit.svg" id="map-add-unit-btn" alt="Add Unit" style="width: 30px; height: 30px;">',
-      "افزودن نیرو به نقشه",
-      controlName + "-in",
-      container,
-      this._addUnit
-    );
-    this._casevacButton = this._createButton(
-      '<img src="static/icons/add-casevac.svg" id="map-add-casevac-btn" alt="Add Casevac" style="width: 30px; height: 30px;">',
-      "افزودن درخواست امداد",
-      controlName + "-in",
-      container,
-      this._addCasevac
-    );
-    // this._pointButton = this._createButton('<i class="bi bi-crosshair" id="map-add-point-btn"></i>', 'افزودن نقطه به نقشه',
-    //     controlName + '-in', container, this._locate);
-
-    return container;
-  },
-
-  onRemove: function(map) {},
-
-  _addPoint: function(e) {
-    if (!this._disabled && this._map.options.changeMode) {
-      this._map.options.changeMode("add_point");
-    }
-  },
-
-  _addUnit: function(e) {
-    if (!this._disabled && this._map.options.changeMode) {
-      this._map.options.changeMode("add_unit");
-    }
-  },
-
-  _addCasevac: function(e) {
-    if (!this._disabled && this._map.options.changeMode) {
-      this._map.options.changeMode("add_casevac");
-    }
-  },
-
-  _createButton: function(html, title, className, container, fn) {
-    var link = L.DomUtil.create("a", className, container);
-    link.innerHTML = html;
-    link.href = "#";
-    link.title = title;
-
-    /*
-     * Will force screen readers like VoiceOver to read this as "Zoom in - button"
-     */
-    link.setAttribute("role", "button");
-    link.setAttribute("aria-label", title);
-
-    L.DomEvent.disableClickPropagation(link);
-    // L.DomEvent.on(link, "click", stop);
-    L.DomEvent.on(link, "click", fn, this);
-    L.DomEvent.on(link, "click", this._refocusOnMap, this);
-
-    return link;
-  },
-});
-
-// Make LocationControl and ToolsControl globally accessible
-window.LocationControl = LocationControl;
-window.ToolsControl = ToolsControl;
 
 function createMapItem(options) {
   const now = new Date();
@@ -875,3 +641,50 @@ export function formatCoordinates(lat, lng) {
     latSec
   )}″${latDir} ${format(lngDeg)}°${format(lngMin)}′${format(lngSec)}″${lngDir}`;
 }
+
+/**
+ * Calculate distance between two points in meters
+ * @param {Object} p1 - First point {lat, lng}
+ * @param {Object} p2 - Second point {lat, lng}
+ * @returns {number} Distance in meters
+ */
+export function calculateDistance(p1, p2) {
+  const toRadian = Math.PI / 180;
+  const R = 6371000; // Earth's radius in meters
+  const deltaF = (p2.lat - p1.lat) * toRadian;
+  const deltaL = (p2.lng - p1.lng) * toRadian;
+  const a =
+    Math.sin(deltaF / 2) * Math.sin(deltaF / 2) +
+    Math.cos(p1.lat * toRadian) *
+      Math.cos(p2.lat * toRadian) *
+      Math.sin(deltaL / 2) *
+      Math.sin(deltaL / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// Export all utility functions
+export {
+  getIconUri,
+  getMilIcon,
+  circle,
+  dt,
+  printCoordsll,
+  printCoords,
+  latlng,
+  distBea,
+  sp,
+  formatNumber,
+  formatNumberEn,
+  toUri,
+  uuidv4,
+  popup,
+  selfPopup,
+  latLongToIso6709,
+  needIconUpdate,
+  humanReadableType,
+  cleanUnit,
+  createMapItem,
+  html,
+  tooltipFieldConfig,
+};

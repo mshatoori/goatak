@@ -326,6 +326,7 @@
 import { ref, computed, onMounted, getCurrentInstance } from "vue";
 import FilterComponent from "./FilterComponent.vue";
 import store from "../store.js";
+import api from "../api/axios.js";
 
 const props = defineProps({
   config: Object,
@@ -426,15 +427,11 @@ const loadResendConfigs = async () => {
   loading.value = true;
   error.value = null;
   try {
-    const response = await fetch(window.baseUrl + "/api/resend/configs");
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    if (data.success) {
-      resendingConfigs.value = data.data || [];
+    const response = await api.get("/resend/configs");
+    if (response.data.success) {
+      resendingConfigs.value = response.data.data || [];
     } else {
-      throw new Error(data.error || "Failed to load configurations");
+      throw new Error(response.data.error || "Failed to load configurations");
     }
   } catch (err) {
     error.value = err.message;
@@ -447,33 +444,21 @@ const loadResendConfigs = async () => {
 
 const saveConfigToBackend = async (config) => {
   const isNew = !config.uid;
-  const url =
-    window.baseUrl +
-    (isNew ? "/api/resend/configs" : `/api/resend/configs/${config.uid}`);
+  const url = isNew ? "/resend/configs" : `/resend/configs/${config.uid}`;
   const method = isNew ? "POST" : "PUT";
 
   try {
-    const response = await fetch(url, {
+    const response = await api({
       method: method,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(config),
+      url: url,
+      data: config,
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData.error || `HTTP error! status: ${response.status}`
-      );
-    }
-
-    const data = await response.json();
-    if (data.success) {
+    if (response.data.success) {
       await loadResendConfigs();
-      return data.data;
+      return response.data.data;
     } else {
-      throw new Error(data.error || "Failed to save configuration");
+      throw new Error(response.data.error || "Failed to save configuration");
     }
   } catch (err) {
     error.value = err.message;
@@ -483,25 +468,12 @@ const saveConfigToBackend = async (config) => {
 
 const deleteConfigFromBackend = async (uid) => {
   try {
-    const response = await fetch(
-      window.baseUrl + `/api/resend/configs/${uid}`,
-      {
-        method: "DELETE",
-      }
-    );
+    const response = await api.delete(`/resend/configs/${uid}`);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData.error || `HTTP error! status: ${response.status}`
-      );
-    }
-
-    const data = await response.json();
-    if (data.success) {
+    if (response.data.success) {
       await loadResendConfigs();
     } else {
-      throw new Error(data.error || "Failed to delete configuration");
+      throw new Error(response.data.error || "Failed to delete configuration");
     }
   } catch (err) {
     error.value = err.message;
@@ -729,10 +701,10 @@ const getFilterSummary = (filter) => {
 };
 
 const fetchDestinations = () => {
-  fetch(window.baseUrl + "/destinations")
-    .then((response) => response.json())
-    .then((data) => {
-      availableDestinations.value = data;
+  api
+    .get("/destinations")
+    .then((response) => {
+      availableDestinations.value = response.data;
     })
     .catch((err) => {
       console.error("Error fetching destinations:", err);
