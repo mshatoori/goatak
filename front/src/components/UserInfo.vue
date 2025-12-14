@@ -161,7 +161,7 @@ export default {
     focusOnSelf() {
       const map = store.getMap();
       if (map) {
-        map.setView([this.config.lat, this.config.lon]);
+        map.flyTo({ center: [this.config.lon, this.config.lat] });
       }
     },
     toggleEdit() {

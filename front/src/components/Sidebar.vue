@@ -99,7 +99,7 @@
               <span
                 class="badge rounded-pill bg-success"
                 style="cursor:default;"
-                @click="map.setView(getTool('redx').getLatLng())"
+                @click="map.flyTo({ center: [getTool('redx').getLatLng().lng, getTool('redx').getLatLng().lat] })"
                 ><i class="bi bi-geo"></i
               ></span>
               <span

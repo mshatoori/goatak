@@ -7,8 +7,9 @@
 
 ## MAP
 
+- Make sure markers are actually at the right place
 - Create and serve iran pmtiles. use `https://github.com/protomaps/PMTiles`.
 - Create styles for it
-- Fix markers
 - Fix popups
 - Test everything!
+- Make alarm icons transparent

@@ -495,14 +495,14 @@ export default {
     focusOnUnit: function() {
       const map = store.getMap();
       if (map && this.item) {
-        map.setView([this.item.lat, this.item.lon]);
+        map.flyTo({ center: [this.item.lon, this.item.lat] });
       }
     },
     mapToUnit: function(unit) {
       if (unit && unit.lat && unit.lon) {
         const map = store.getMap();
         if (map) {
-          map.setView([unit.lat, unit.lon]);
+          map.flyTo({ center: [unit.lon, unit.lat] });
         }
       }
     },

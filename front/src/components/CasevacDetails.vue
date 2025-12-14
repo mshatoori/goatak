@@ -598,7 +598,7 @@ export default {
       if (unit && unit.lat && unit.lon) {
         const map = store.getMap();
         if (map) {
-          map.setView([unit.lat, unit.lon]);
+          map.flyTo({ center: [unit.lon, unit.lat] });
         }
       }
     },

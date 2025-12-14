@@ -103,7 +103,7 @@ export default {
     focus(alarm) {
       const map = store.getMap();
       if (map) {
-        map.setView([alarm.lat, alarm.lon], 12);
+        map.flyTo({ center: [alarm.lon, alarm.lat], zoom: 12 });
       }
       var myModalEl = document.getElementById("alarms-modal");
       var modal = bootstrap.Modal.getInstance(myModalEl);

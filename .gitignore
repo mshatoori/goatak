@@ -38,3 +38,5 @@ front/dist/
 front/node_modules/
 setup/config/goatak_client.yml.bak
 frontend/node_modules
+ais/datastream.exe
+new-change.patch
