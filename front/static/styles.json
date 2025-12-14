@@ -4,7 +4,7 @@
     "protomaps": {
       "type": "vector",
       "attribution": "<a href=\"https://github.com/protomaps/basemaps\">Protomaps</a> © <a href=\"https://openstreetmap.org\">OpenStreetMap</a>",
-      "url": "pmtiles://https://build.protomaps.com/20251214.pmtiles"
+      "url": "pmtiles://http://localhost:5173/static/iran.pmtiles"
     }
   },
   "layers": [
