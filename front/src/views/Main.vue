@@ -815,6 +815,11 @@ export default {
       store.fetchSensors();
       store.fetchFlows();
 
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        url += `?token=${token}`;
+      }
+
       this.conn = new WebSocket(url);
 
       this.conn.onmessage = function(e) {
@@ -931,7 +936,7 @@ export default {
     },
 
     getImg(item) {
-      return getIconUri(item, false).uri;
+      return getIconUri(item, true).uri;
     },
 
     showSelfPopup() {

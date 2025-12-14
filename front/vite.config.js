@@ -10,7 +10,7 @@ const proxy = {
     changeOrigin: true,
   },
   "/ws": {
-    target: "http://webclient:8080",
+    target: "ws://webclient:8080",
     ws: true,
     changeOrigin: true,
   },

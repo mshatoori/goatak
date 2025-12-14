@@ -32,10 +32,10 @@ export default {
       type: String,
       default: "",
     },
-    iconSize: {
-      type: Number,
-      default: 48,
-    },
+    // iconSize: {
+    //   type: Number,
+    //   default: 48,
+    // },
     label: {
       type: String,
       default: "",
@@ -73,8 +73,8 @@ export default {
     }));
 
     const iconStyle = computed(() => ({
-      maxWidth: `${props.iconSize}px`,
-      maxHeight: `${props.iconSize}px`,
+      //   maxWidth: `${props.iconSize}px`,
+      //   maxHeight: `${props.iconSize}px`,
       cursor: "pointer",
       transform: `rotate(${props.rotation}deg)`,
     }));
