@@ -269,61 +269,30 @@
           </MglCustomControl>
 
           <!-- Self Marker -->
-          <MglMarker
-            v-if="config && config.callsign"
+          <CustomMarker
+            v-if="config && config.callsign && map"
             :coordinates="[config.lon, config.lat]"
+            :map="map"
+            icon-src="/static/icons/self.png"
+            :icon-size="32"
             :rotation="selfRotation"
-          >
-            <template #marker>
-              <img
-                src="/static/icons/self.png"
-                style="width: 32px; height: 32px; cursor: pointer;"
-                @click="showSelfPopup"
-              />
-            </template>
-          </MglMarker>
-
-          <!-- Self Callsign Label -->
-          <MglMarker
-            v-if="config && config.callsign"
-            :coordinates="[config.lon, config.lat]"
-            anchor="top"
-          >
-            <template #marker>
-              <div class="my-marker-info">{{ config.callsign }}</div>
-            </template>
-          </MglMarker>
+            :label="config.callsign"
+            @click="showSelfPopup"
+          />
 
           <!-- Unit/Contact/Point/Alarm Markers -->
           <template v-for="item in visibleMarkerItems" :key="item.uid">
-            <MglMarker
-              v-if="item.lat !== 0 || item.lon !== 0"
+            <CustomMarker
+              v-if="(item.lat !== 0 || item.lon !== 0) && map"
               :coordinates="[item.lon, item.lat]"
-            >
-              <template #marker>
-                <img
-                  :src="getImg(item)"
-                  style="max-width: 48px; max-height: 48px; cursor: pointer;"
-                  @click="(e) => handleMarkerClick(e, item)"
-                />
-              </template>
-            </MglMarker>
-            <!-- Item Label -->
-            <MglMarker
-              v-if="
-                (item.lat !== 0 || item.lon !== 0) &&
-                  !item.type.startsWith('b-a-o')
-              "
-              :coordinates="[item.lon, item.lat]"
-              anchor="top"
-            >
-              <template #marker>
-                <div class="my-marker-info">
-                  {{ item.callsign }}
-                  <span v-if="item.urn"><br />URN#{{ item.urn }}</span>
-                </div>
-              </template>
-            </MglMarker>
+              :map="map"
+              :icon-src="getImg(item)"
+              :icon-size="48"
+              :label="!item.type.startsWith('b-a-o') ? item.callsign : ''"
+              :sublabel="item.urn ? 'URN#' + item.urn : ''"
+              :show-label="!item.type.startsWith('b-a-o')"
+              @click="(e) => handleMarkerClick(e, item)"
+            />
           </template>
 
           <!-- Drawings (Polygons) -->
@@ -568,6 +537,7 @@ import TrackingManager from "../TrackingManager.js";
 import store from "../store.js";
 import api from "../api/axios.js";
 import ResendingModal from "../components/ResendingModal.vue";
+import CustomMarker from "../components/CustomMarker.vue";
 import {
   getIconUri,
   getMilIcon,
@@ -598,6 +568,7 @@ export default {
     MglCustomControl,
     MglVectorSource,
     ResendingModal,
+    CustomMarker,
   },
   data() {
     return {
