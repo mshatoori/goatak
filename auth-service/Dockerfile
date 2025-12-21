@@ -3,6 +3,7 @@ FROM docker.arvancloud.ir/golang:alpine AS builder
 WORKDIR /app
 
 COPY go.mod go.sum* ./
+ARG GOPROXY=https://goproxy.io
 RUN go mod download
 
 COPY . .

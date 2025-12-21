@@ -24,8 +24,11 @@ services:
       - mmhs
   map:
     image: ghcr.io/mshatoori/goatak-maps:latest
+    build:
+      dockerfile: Dockerfile
+      context: ../maps
     ports:
-      - "8000:8000"
+      - "8000:80"
     networks:
       - mmhs
 
@@ -71,6 +74,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - mmhs
+    healthcheck:
+      test: pg_isready -U goatak -d goatak_auth
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
   # map:
   #   image: overv/openstreetmap-tile-server

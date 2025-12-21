@@ -10,7 +10,7 @@ test-*.yml
 *.key
 *.p12
 report.xml
-maps/*/
+maps/contents/*.pmtiles
 .env
 gpsd/
 pkg/mod/
