@@ -31,9 +31,11 @@ func main() {
 	}
 	defer db.Close()
 
-	if err := db.Ping(); err != nil {
+	err = db.Ping()
+	for err != nil {
 		// Wait for DB? Docker depends_on helps but basic retry logic or crash-restart loop by Docker is common.
 		log.Printf("Failed to ping DB: %v", err)
+		err = db.Ping()
 	}
 
 	// Initialize Store and Auto-seed
