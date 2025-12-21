@@ -4,15 +4,17 @@
     class="custom-marker-container"
     :style="containerStyle"
   >
-    <img
-      v-if="iconSrc"
-      :src="iconSrc"
-      :style="iconStyle"
-      @click="handleClick"
-    />
+    <div class="marker-icon-wrapper">
+      <img
+        v-if="iconSrc"
+        :src="iconSrc"
+        :style="iconStyle"
+        @click="handleClick"
+      />
+    </div>
     <div v-if="label && showLabel" class="custom-marker-label">
       {{ label }}
-      <span v-if="sublabel"><br />{{ sublabel }}</span>
+      <span v-if="sublabel"><br /></span>{{ sublabel }}
     </div>
   </div>
 </template>
@@ -147,19 +149,32 @@ export default {
   flex-direction: column;
   align-items: center;
   pointer-events: none;
+  position: relative;
 }
 
 .custom-marker-container > * {
   pointer-events: auto;
 }
 
+.marker-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .custom-marker-label {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255);
+  opacity: 70%;
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 12px;
   white-space: nowrap;
   pointer-events: none;
   margin-top: 2px;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
 }
 </style>
