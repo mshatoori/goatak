@@ -149,7 +149,7 @@ export default {
   flex-direction: column;
   align-items: center;
   pointer-events: none;
-  position: relative;
+  /* position: relative; */
 }
 
 .custom-marker-container > * {

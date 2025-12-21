@@ -214,21 +214,19 @@
 
           <!-- Custom Location Control -->
           <MglCustomControl position="bottom-left">
-            <div class="maplibregl-ctrl maplibregl-ctrl-group">
-              <button
-                type="button"
-                class="maplibregl-ctrl-icon"
-                @click="locateByGPS"
-                title="My Location"
-              >
-                <i class="bi bi-crosshair"></i>
-              </button>
-            </div>
+            <button
+              type="button"
+              class="maplibregl-ctrl-icon"
+              @click="locateByGPS"
+              title="My Location"
+            >
+              <i class="bi bi-crosshair" style="font-size: 24px"></i>
+            </button>
           </MglCustomControl>
 
           <!-- Custom Tools Control -->
           <MglCustomControl position="top-left">
-            <div class="maplibregl-ctrl maplibregl-ctrl-group tools-control">
+            <div class="tools-control">
               <button
                 type="button"
                 class="maplibregl-ctrl-icon"
@@ -238,7 +236,7 @@
                 <img
                   src="/static/icons/add-point.svg"
                   alt="Add Point"
-                  style="width: 24px; height: 24px;"
+                  style="width: 32px; height: 32px;"
                 />
               </button>
               <button
@@ -250,7 +248,7 @@
                 <img
                   src="/static/icons/add-unit.svg"
                   alt="Add Unit"
-                  style="width: 24px; height: 24px;"
+                  style="width: 32px; height: 32px;"
                 />
               </button>
               <button
@@ -262,7 +260,7 @@
                 <img
                   src="/static/icons/add-casevac.svg"
                   alt="Add Casevac"
-                  style="width: 24px; height: 24px;"
+                  style="width: 32px; height: 32px;"
                 />
               </button>
 
@@ -274,7 +272,7 @@
                 @click="startPolygonDrawing"
                 title="رسم ناحیه (چندضلعی)"
               >
-                <i class="bi bi-pentagon" style="font-size: 18px"></i>
+                <i class="bi bi-pentagon" style="font-size: 24px"></i>
               </button>
               <button
                 type="button"
@@ -283,7 +281,7 @@
                 @click="startRouteDrawing"
                 title="رسم مسیر"
               >
-                <i class="bi bi-bezier2" style="font-size: 18px"></i>
+                <i class="bi bi-bezier2" style="font-size: 24px"></i>
               </button>
 
               <button
@@ -293,7 +291,7 @@
                 @click="cancelDrawing"
                 title="لغو رسم"
               >
-                <i class="bi bi-x" style="font-size: 18px"></i>
+                <i class="bi bi-x" style="font-size: 24px"></i>
               </button>
             </div>
           </MglCustomControl>
@@ -1938,6 +1936,10 @@ export default {
   cursor: pointer;
 }
 
+.tools-control {
+  margin: auto !important;
+}
+
 .tools-control button {
   display: block;
   width: 100%;
@@ -1951,5 +1953,10 @@ export default {
 .tools-control button img {
   display: block;
   margin: 0 auto;
+}
+
+button.maplibregl-ctrl-icon {
+  width: 40px !important;
+  height: 40px !important;
 }
 </style>
