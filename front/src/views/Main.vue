@@ -265,6 +265,36 @@
                   style="width: 24px; height: 24px;"
                 />
               </button>
+
+              <!-- Drawing tools (Mapbox GL Draw, works with MapLibre) -->
+              <button
+                type="button"
+                class="maplibregl-ctrl-icon"
+                :class="{ 'active-tool': drawMode === 'draw_polygon' }"
+                @click="startPolygonDrawing"
+                title="رسم ناحیه (چندضلعی)"
+              >
+                <i class="bi bi-pentagon" style="font-size: 18px"></i>
+              </button>
+              <button
+                type="button"
+                class="maplibregl-ctrl-icon"
+                :class="{ 'active-tool': drawMode === 'draw_line_string' }"
+                @click="startRouteDrawing"
+                title="رسم مسیر"
+              >
+                <i class="bi bi-bezier2" style="font-size: 18px"></i>
+              </button>
+
+              <button
+                v-if="isDrawModeActive()"
+                type="button"
+                class="maplibregl-ctrl-icon"
+                @click="cancelDrawing"
+                title="لغو رسم"
+              >
+                <i class="bi bi-x" style="font-size: 18px"></i>
+              </button>
             </div>
           </MglCustomControl>
 
@@ -303,24 +333,23 @@
             <MglGeoJsonSource
               :source-id="'drawing-source-' + item.uid"
               :data="getPolygonGeoJSON(item)"
-            />
-            <MglFillLayer
-              :layer-id="'drawing-fill-' + item.uid"
-              :source-id="'drawing-source-' + item.uid"
-              :paint="{
-                'fill-color': item.color || 'gray',
-                'fill-opacity': 0.3,
-              }"
-              @click="() => setActiveItemUid(item.uid, false)"
-            />
-            <MglLineLayer
-              :layer-id="'drawing-line-' + item.uid"
-              :source-id="'drawing-source-' + item.uid"
-              :paint="{
-                'line-color': item.color || 'gray',
-                'line-width': 2,
-              }"
-            />
+            >
+              <MglFillLayer
+                :layer-id="'drawing-fill-' + item.uid"
+                :paint="{
+                  'fill-color': item.color || 'gray',
+                  'fill-opacity': 0.3,
+                }"
+                @click="() => setActiveItemUid(item.uid, false)"
+              />
+              <MglLineLayer
+                :layer-id="'drawing-line-' + item.uid"
+                :paint="{
+                  'line-color': item.color || 'gray',
+                  'line-width': 2,
+                }"
+              />
+            </MglGeoJsonSource>
             <!-- Drawing Label -->
             <MglMarker :coordinates="[item.lon, item.lat]" anchor="center">
               <template #marker>
@@ -340,16 +369,16 @@
             <MglGeoJsonSource
               :source-id="'route-source-' + item.uid"
               :data="getRouteGeoJSON(item)"
-            />
-            <MglLineLayer
-              :layer-id="'route-line-' + item.uid"
-              :source-id="'route-source-' + item.uid"
-              :paint="{
-                'line-color': item.color || 'gray',
-                'line-width': 3,
-              }"
-              @click="() => setActiveItemUid(item.uid, false)"
-            />
+            >
+              <MglLineLayer
+                :layer-id="'route-line-' + item.uid"
+                :paint="{
+                  'line-color': item.color || 'gray',
+                  'line-width': 3,
+                }"
+                @click="() => setActiveItemUid(item.uid, false)"
+              />
+            </MglGeoJsonSource>
             <!-- Route Label -->
             <MglMarker
               :coordinates="getRouteLabelPosition(item)"
@@ -372,17 +401,18 @@
             <MglGeoJsonSource
               source-id="navigation-line-source"
               :data="navigationLine"
-            />
-            <MglLineLayer
-              layer-id="navigation-line"
-              source-id="navigation-line-source"
-              :paint="{
-                'line-color': '#007bff',
-                'line-width': 2,
-                'line-opacity': 0.6,
-                'line-dasharray': [5, 10],
-              }"
-            />
+            >
+              <MglLineLayer
+                layer-id="navigation-line"
+                source-id="navigation-line-source"
+                :paint="{
+                  'line-color': '#007bff',
+                  'line-width': 2,
+                  'line-opacity': 0.6,
+                  // 'line-dasharray': [5, 10],
+                }"
+              />
+            </MglGeoJsonSource>
           </template>
 
           <!-- Tracking Trails -->
@@ -393,16 +423,16 @@
             <MglGeoJsonSource
               :source-id="'trail-source-' + trail.unitUid"
               :data="getTrailGeoJSON(trail)"
-            />
-            <MglLineLayer
-              :layer-id="'trail-line-' + trail.unitUid"
-              :source-id="'trail-source-' + trail.unitUid"
-              :paint="{
-                'line-color': trail.config.trailColor || '#FF0000',
-                'line-width': trail.config.trailWidth || 2,
-                'line-opacity': trail.config.trailOpacity || 0.7,
-              }"
-            />
+            >
+              <MglLineLayer
+                :layer-id="'trail-line-' + trail.unitUid"
+                :paint="{
+                  'line-color': trail.config.trailColor || '#FF0000',
+                  'line-width': trail.config.trailWidth || 2,
+                  'line-opacity': trail.config.trailOpacity || 0.7,
+                }"
+              />
+            </MglGeoJsonSource>
           </template>
         </MglMap>
       </div>
@@ -529,7 +559,7 @@ import {
   MglVectorSource,
   // useMap,
   useSource,
-} from "vue-maplibre-gl";
+} from "@indoorequal/vue-maplibre-gl";
 import { Popup } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -554,6 +584,10 @@ import {
 
 import maplibregl from "maplibre-gl";
 import { Protocol } from "pmtiles";
+
+// Mapbox GL Draw (works with MapLibre GL)
+import MapboxDraw from "@mapbox/mapbox-gl-draw";
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
 export default {
   name: "App",
@@ -601,7 +635,9 @@ export default {
       sidebarCollapsed: false,
       beacon_active: false,
       mode: "map",
-      inDrawMode: false,
+      // Mapbox GL Draw instance + current mode
+      draw: null,
+      drawMode: "simple_select",
       selfRotation: 0,
 
       // Navigation line state
@@ -719,6 +755,9 @@ export default {
       this.map = e.map;
       store.setMap(this.map);
 
+      // Initialize Mapbox GL Draw (compatible with MapLibre)
+      this.initDraw();
+
       // Initialize TrackingManager with MapLibre map
       this.trackingManager = new TrackingManager(this.map, {
         trailLength: 50,
@@ -731,7 +770,10 @@ export default {
     },
 
     onMapClick(e) {
-      if (this.inDrawMode) return;
+      // If MapboxDraw is in a drawing mode, let it handle clicks.
+      if (this.isDrawModeActive()) {
+        return;
+      }
 
       const latlng = { lat: e.event.lngLat.lat, lng: e.event.lngLat.lng };
 
@@ -1462,6 +1504,308 @@ export default {
       this.mode = newMode;
     },
 
+    // ---- Drawing (routes + polygons) via Mapbox GL Draw ----
+    initDraw() {
+      if (!this.map || this.draw) return;
+
+      const styles = [
+        {
+          id: "gl-draw-polygon-fill",
+          type: "fill",
+          filter: ["all", ["==", "$type", "Polygon"]],
+          paint: {
+            "fill-color": [
+              "case",
+              ["==", ["get", "active"], "true"],
+              "orange",
+              "blue",
+            ],
+            "fill-opacity": 0.1,
+          },
+        },
+        {
+          id: "gl-draw-lines",
+          type: "line",
+          filter: [
+            "any",
+            ["==", "$type", "LineString"],
+            ["==", "$type", "Polygon"],
+          ],
+          layout: { "line-cap": "round", "line-join": "round" },
+          paint: {
+            "line-color": [
+              "case",
+              ["==", ["get", "active"], "true"],
+              "orange",
+              "blue",
+            ],
+            "line-dasharray": [
+              "case",
+              ["==", ["get", "active"], "true"],
+              ["literal", [0.2, 2]],
+              ["literal", [0.2, 2]],
+            ],
+            "line-width": 2,
+          },
+        },
+        {
+          id: "gl-draw-point-outer",
+          type: "circle",
+          filter: ["all", ["==", "$type", "Point"], ["==", "meta", "feature"]],
+          paint: {
+            "circle-radius": ["case", ["==", ["get", "active"], "true"], 7, 5],
+            "circle-color": "white",
+          },
+        },
+        {
+          id: "gl-draw-point-inner",
+          type: "circle",
+          filter: ["all", ["==", "$type", "Point"], ["==", "meta", "feature"]],
+          paint: {
+            "circle-radius": ["case", ["==", ["get", "active"], "true"], 5, 3],
+            "circle-color": [
+              "case",
+              ["==", ["get", "active"], "true"],
+              "orange",
+              "blue",
+            ],
+          },
+        },
+        {
+          id: "gl-draw-vertex-outer",
+          type: "circle",
+          filter: [
+            "all",
+            ["==", "$type", "Point"],
+            ["==", "meta", "vertex"],
+            ["!=", "mode", "simple_select"],
+          ],
+          paint: {
+            "circle-radius": ["case", ["==", ["get", "active"], "true"], 7, 5],
+            "circle-color": "white",
+          },
+        },
+        {
+          id: "gl-draw-vertex-inner",
+          type: "circle",
+          filter: [
+            "all",
+            ["==", "$type", "Point"],
+            ["==", "meta", "vertex"],
+            ["!=", "mode", "simple_select"],
+          ],
+          paint: {
+            "circle-radius": ["case", ["==", ["get", "active"], "true"], 5, 3],
+            "circle-color": "orange",
+          },
+        },
+        {
+          id: "gl-draw-midpoint",
+          type: "circle",
+          filter: ["all", ["==", "meta", "midpoint"]],
+          paint: { "circle-radius": 3, "circle-color": "orange" },
+        },
+      ];
+
+      this.draw = new MapboxDraw({
+        styles: styles,
+        displayControlsDefault: false,
+        controls: {
+          polygon: false,
+          line_string: false,
+          trash: false,
+          combine_features: false,
+          uncombine_features: false,
+        },
+      });
+
+      // Draw must be added as a control so it can register handlers + add its style layers.
+      // We start drawing modes via our own custom buttons.
+      this.map.addControl(this.draw, "top-left");
+
+      this.map.on("draw.create", this.onDrawCreate);
+      this.map.on("draw.modechange", this.onDrawModeChange);
+
+      try {
+        this.drawMode = this.draw.getMode();
+      } catch (_err) {
+        this.drawMode = "simple_select";
+      }
+    },
+
+    onDrawModeChange(e) {
+      if (e && e.mode) {
+        this.drawMode = e.mode;
+      }
+    },
+
+    isDrawModeActive() {
+      return !!(this.drawMode && this.drawMode.startsWith("draw_"));
+    },
+
+    startPolygonDrawing() {
+      this.mode = "map";
+      this.closePopup();
+
+      if (!this.draw) return;
+
+      this.draw.changeMode("draw_polygon");
+      this.drawMode = "draw_polygon";
+    },
+
+    startRouteDrawing() {
+      this.mode = "map";
+      this.closePopup();
+
+      if (!this.draw) return;
+
+      this.draw.changeMode("draw_line_string");
+      this.drawMode = "draw_line_string";
+    },
+
+    cancelDrawing() {
+      if (!this.draw) return;
+
+      // Best-effort cancel: delete the in-progress/selected feature (if any)
+      // and return to selection mode.
+      try {
+        this.draw.trash();
+      } catch (_err) {
+        // ignore
+      }
+
+      try {
+        this.draw.changeMode("simple_select");
+        this.drawMode = "simple_select";
+      } catch (_err) {
+        // ignore
+      }
+    },
+
+    onDrawCreate(e) {
+      const feature = e?.features?.[0];
+      if (!feature || !feature.geometry) return;
+
+      const item = this.createMapItemFromDrawFeature(feature);
+      if (!item) return;
+
+      store.state.items.set(item.uid, item);
+      store.state.ts += 1;
+      this._processAddition(item);
+      this.setActiveItemUid(item.uid, true);
+
+      // Remove Draw feature to avoid duplicate rendering (Draw layers + our Vue layers)
+      try {
+        this.draw.delete(item.uid);
+      } catch (_err) {
+        // ignore
+      }
+
+      // Exit drawing mode
+      try {
+        this.draw.changeMode("simple_select");
+        this.drawMode = "simple_select";
+      } catch (_err) {
+        // ignore
+      }
+    },
+
+    createMapItemFromDrawFeature(feature) {
+      const uid = String(feature.id ?? uuidv4());
+
+      if (feature.geometry.type === "Polygon") {
+        const ring = feature.geometry.coordinates?.[0] || [];
+        const coords = this.normalizeRingCoordinates(ring);
+        if (coords.length < 3) return null;
+
+        const links = coords.map(([lng, lat]) => `${lat},${lng}`);
+
+        let latSum = 0;
+        let lngSum = 0;
+        coords.forEach(([lng, lat]) => {
+          latSum += lat;
+          lngSum += lng;
+        });
+
+        const lat = latSum / coords.length;
+        const lon = lngSum / coords.length;
+
+        return createMapItem({
+          uid,
+          category: "drawing",
+          callsign: "zone-" + this.nextItemNumber("drawing"),
+          type: "u-d-f",
+          local: true,
+          send: true,
+          isNew: true,
+          parent_uid: this.config?.uid || "",
+          parent_callsign: this.config?.callsign || "",
+          lat,
+          lon,
+          links,
+          color: "gray",
+          geofence: false,
+          geofence_aff: "All",
+        });
+      }
+
+      if (feature.geometry.type === "LineString") {
+        const coords = feature.geometry.coordinates || [];
+        if (coords.length < 2) return null;
+
+        const links = coords.map(([lng, lat]) => `${lat},${lng}`);
+
+        let latSum = 0;
+        let lngSum = 0;
+        coords.forEach(([lng, lat]) => {
+          latSum += lat;
+          lngSum += lng;
+        });
+
+        const lat = latSum / coords.length;
+        const lon = lngSum / coords.length;
+
+        return createMapItem({
+          uid,
+          category: "route",
+          callsign: "route-" + this.nextItemNumber("route"),
+          type: "b-m-r",
+          local: true,
+          send: true,
+          isNew: true,
+          parent_uid: this.config?.uid || "",
+          parent_callsign: this.config?.callsign || "",
+          lat,
+          lon,
+          links,
+          color: "gray",
+        });
+      }
+
+      console.warn("[Draw] Unsupported geometry type:", feature.geometry.type);
+      return null;
+    },
+
+    normalizeRingCoordinates(ring) {
+      if (!Array.isArray(ring)) return [];
+
+      const coords = ring
+        .filter((c) => Array.isArray(c) && c.length >= 2)
+        .map(([lng, lat]) => [Number(lng), Number(lat)])
+        .filter(([lng, lat]) => Number.isFinite(lng) && Number.isFinite(lat));
+
+      if (coords.length >= 2) {
+        const first = coords[0];
+        const last = coords[coords.length - 1];
+        if (first[0] === last[0] && first[1] === last[1]) {
+          coords.pop();
+        }
+      }
+
+      return coords;
+    },
+
+    // ---- Navigation line ----
     handleNavigationLineToggle(event) {
       if (event.show) {
         this.showNavigationLine(
@@ -1598,6 +1942,10 @@ export default {
   display: block;
   width: 100%;
   padding: 5px;
+}
+
+.tools-control button.active-tool {
+  background: rgba(13, 110, 253, 0.2);
 }
 
 .tools-control button img {

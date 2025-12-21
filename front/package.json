@@ -7,13 +7,14 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@mapbox/mapbox-gl-draw": "1.4.3",
     "axios": "^1.13.2",
     "maplibre-gl": "^5.14.0",
     "mitt": "^3.0.1",
     "pinia": "^2.0.0",
     "pmtiles": "^4.3.0",
     "vue": "^3.0.0",
-    "vue-maplibre-gl": "5.5.9",
+    "@indoorequal/vue-maplibre-gl": "^8.4.2",
     "vue-router": "^4.0.0",
     "yarn": "^1.22.22"
   },

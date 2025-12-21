@@ -57,7 +57,7 @@
           >
           <div class="col-sm-8">
             <label class="col-form-label">{{
-              Utils.humanReadableType(item.type)
+              humanReadableType(item.type)
             }}</label>
           </div>
         </div>
@@ -222,7 +222,7 @@
 
 <script>
 import store from "../store.js";
-import * as Utils from "../utils.js"; // Assuming Utils is also needed
+import { humanReadableType, dt } from "../utils.js";
 
 export default {
   props: ["item", "coords", "locked_unit_uid", "config"],
@@ -338,6 +338,8 @@ export default {
           return "سیاه";
       }
     },
+    humanReadableType,
+    dt,
   },
 };
 </script>
