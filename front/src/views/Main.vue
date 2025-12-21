@@ -976,7 +976,7 @@ export default {
     },
 
     getImg(item) {
-      return getIconUri(item, true).uri;
+      return getIconUri(item, false).uri;
     },
 
     showSelfPopup() {
