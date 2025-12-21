@@ -33,6 +33,7 @@ services:
       - mmhs
 
   frontend:
+    image: ghcr.io/mshatoori/goatak-frontend:latest
     build:
       context: ../front
       dockerfile: Dockerfile.dev
@@ -47,6 +48,7 @@ services:
       - mmhs
 
   auth-service:
+    image: ghcr.io/mshatoori/goatak-auth:latest
     build:
       context: ../auth-service
       dockerfile: Dockerfile
