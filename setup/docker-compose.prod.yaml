@@ -34,12 +34,9 @@ services:
     image: ghcr.io/mshatoori/goatak-frontend:latest
     build:
       context: ../front
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     ports:
       - "5173:5173"
-    volumes:
-      - ../front:/app
-      - /app/node_modules
     stdin_open: true
     tty: true
     networks:
@@ -79,7 +76,6 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
-
   gpsd:
     image: ghcr.io/mshatoori/docker-gpsd:latest
     ports:
