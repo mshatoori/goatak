@@ -96,19 +96,12 @@
             ><strong>مختصات</strong></label
           >
           <div class="col-sm-8">
-            <label class="col-form-label"
-              >{{ printCoords(item.lat, item.lon) }}
-              <span
-                class="badge rounded-pill bg-success"
-                style="cursor: default"
-                v-on:click="focusOnUnit"
-                ><i class="bi bi-geo"></i
-              ></span>
-              <span v-if="coords"
-                >({{ distBea(latlng(item.lat, item.lon), coords) }} تا
-                نشانگر)</span
-              ></label
-            >
+            <Location
+              :lat="item.lat"
+              :lon="item.lon"
+              :otherCoords="coords"
+              @focus="focusOnUnit"
+            />
           </div>
         </div>
         <div class="form-group row">
@@ -431,6 +424,7 @@ import {
 import NavigationInfo from "./NavigationInfo.vue";
 import UnitTrackingControl from "./UnitTrackingControl.vue";
 import HierarchySelector from "./HierarchySelector.vue";
+import Location from "./Location.vue";
 import api from "../api/axios.js";
 
 export default {
@@ -439,6 +433,7 @@ export default {
     NavigationInfo,
     UnitTrackingControl,
     HierarchySelector,
+    Location,
   },
   data: function() {
     return {

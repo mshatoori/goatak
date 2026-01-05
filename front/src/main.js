@@ -32,6 +32,7 @@ import UnitDetails from "./components/UnitDetails.vue";
 import UserInfo from "./components/UserInfo.vue";
 import TrackingManager from "./TrackingManager.js";
 import TrackingControl from "./components/TrackingControl.vue";
+import Location from "./components/Location.vue";
 
 const app = createApp(App);
 
@@ -58,5 +59,6 @@ app.component("UnitDetails", UnitDetails);
 app.component("UserInfo", UserInfo);
 app.component("TrackingManager", TrackingManager);
 app.component("TrackingControl", TrackingControl);
+app.component("Location", Location);
 
 app.mount("#app");

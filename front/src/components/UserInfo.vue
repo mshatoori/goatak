@@ -84,19 +84,12 @@
             <strong>مختصات</strong>
           </label>
           <div class="col-sm-8">
-            <label class="col-form-label">
-              {{ printCoords(config.lat, config.lon) }}</label
-            >
-            <span
-              class="badge rounded-pill bg-success"
-              style="cursor: default"
-              v-on:click="focusOnSelf"
-              ><i class="bi bi-geo"></i
-            ></span>
-            <span v-if="coords"
-              >({{ distBea(latlng(config.lat, config.lon), coords) }} تا
-              نشانگر)</span
-            >
+            <Location
+              :lat="config.lat"
+              :lon="config.lon"
+              :otherCoords="coords"
+              @focus="focusOnSelf"
+            />
           </div>
         </div>
       </form>
@@ -144,10 +137,14 @@
 <script>
 import store from "../store.js";
 import { printCoords, distBea, latlng } from "../utils.js";
+import Location from "./Location.vue";
 import api from "../api/axios.js";
 
 export default {
   name: "UserInfo",
+  components: {
+    Location,
+  },
   data() {
     return {
       sharedState: store.state,

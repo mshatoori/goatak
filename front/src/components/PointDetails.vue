@@ -64,19 +64,12 @@
             ><strong>مختصات</strong></label
           >
           <div class="col-sm-8">
-            <label class="col-form-label"
-              >{{ printCoords(item.lat, item.lon) }}
-              <span
-                class="badge rounded-pill bg-success"
-                style="cursor: default"
-                v-on:click="focusOnPoint"
-                ><i class="bi bi-geo"></i
-              ></span>
-              <span v-if="coords"
-                >({{ distBea(latlng(item.lat, item.lon), coords) }} تا
-                نشانگر)</span
-              ></label
-            >
+            <Location
+              :lat="item.lat"
+              :lon="item.lon"
+              :otherCoords="coords"
+              @focus="focusOnPoint"
+            />
           </div>
         </div>
         <div class="form-group row" v-if="item.color">
@@ -329,12 +322,14 @@
 import store from "../store.js";
 import { getIconUri, printCoords, distBea, latlng, dt } from "../utils.js"; // Assuming getIconUri is from utils.js
 // import "../../static/js/utils.js";
+import Location from "./Location.vue";
 
 export default {
   props: ["item", "coords", "locked_unit_uid", "config"],
-  // components: {
-  //   NavigationInfo: Vue.component("NavigationInfo"),
-  // },
+  components: {
+    Location,
+    // NavigationInfo: Vue.component("NavigationInfo"),
+  },
   data: function() {
     return {
       editing: false,
