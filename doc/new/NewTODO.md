@@ -1,7 +1,5 @@
 ## Missing Features
 
-- Add copy location feature
-
 ## Review
 
 - Units:
@@ -12,6 +10,10 @@
 - Polygon:
 - Route:
 - ...
+
+## Improvements
+
+- Add world map (with lower zoom)
 
 ## Ideas
 
