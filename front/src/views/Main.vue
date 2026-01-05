@@ -320,6 +320,7 @@
               :sublabel="item.urn ? 'URN#' + item.urn : ''"
               :show-label="!item.type.startsWith('b-a-o')"
               @click="(e) => handleMarkerClick(e, item)"
+              @contextmenu="(e) => handleMarkerContextMenu(e, item)"
             />
           </template>
 
@@ -747,6 +748,7 @@ export default {
     this.renew();
     setInterval(this.renew, 5000);
     store.fetchTypes();
+    window.app = this;
   },
   methods: {
     onMapLoad(e) {
@@ -1000,6 +1002,37 @@ export default {
         .setLngLat([item.lon, item.lat])
         .setHTML(this.getPopupContent(item))
         .addTo(this.map);
+    },
+
+    handleMarkerContextMenu(e, item) {
+      this.closePopup();
+      if (!this.map) return;
+
+      const menuHtml = `
+        <ul class="dropdown-menu show marker-contextmenu" style="position: static; display: block; border: none; margin: 0; padding: 0;">
+          <li><h6 class="dropdown-header">${item.callsign}</h6></li>
+          <li><button class="dropdown-item" onclick="app.menuDeleteAction('${item.uid}')"> حذف </button></li>
+          <li><button class="dropdown-item" onclick="app.menuSendAction('${item.uid}')"> ارسال... </button></li>
+        </ul>`;
+
+      this.currentPopup = new Popup({ closeOnClick: true, maxWidth: "300px" })
+        .setLngLat([item.lon, item.lat])
+        .setHTML(menuHtml)
+        .addTo(this.map);
+    },
+
+    menuDeleteAction(uid) {
+      this.deleteItem(uid);
+      this.closePopup();
+    },
+
+    menuSendAction(uid) {
+      const item = this.sharedState.items.get(uid);
+      if (item) {
+        this.sharedState.unitToSend = item;
+        new bootstrap.Modal(document.querySelector("#send-modal")).show();
+      }
+      this.closePopup();
     },
 
     closePopup() {

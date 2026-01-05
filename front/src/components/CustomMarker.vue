@@ -10,6 +10,7 @@
         :src="iconSrc"
         :style="iconStyle"
         @click="handleClick"
+        @contextmenu.prevent="handleContextMenu"
       />
     </div>
     <div v-if="label && showLabel" class="custom-marker-label">
@@ -63,7 +64,7 @@ export default {
       default: null,
     },
   },
-  emits: ["click"],
+  emits: ["click", "contextmenu"],
   setup(props, { emit }) {
     const markerContent = ref(null);
     let marker = null;
@@ -103,6 +104,11 @@ export default {
       emit("click", e);
     };
 
+    const handleContextMenu = (e) => {
+      e.stopPropagation();
+      emit("contextmenu", e);
+    };
+
     onMounted(() => {
       if (props.map) {
         createMarker();
@@ -138,6 +144,7 @@ export default {
       containerStyle,
       iconStyle,
       handleClick,
+      handleContextMenu,
     };
   },
 };
