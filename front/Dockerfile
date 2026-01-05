@@ -24,9 +24,8 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # Copy built files from build stage
 COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy static assets and templates (referenced by nginx.conf)
+# Copy static assets
 COPY --from=build /app/static /usr/share/nginx/html/static
-COPY --from=build /app/templates /usr/share/nginx/html/templates
 
 # Expose port 80
 EXPOSE 80

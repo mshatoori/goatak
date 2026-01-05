@@ -1,9 +1,6 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
-// List of endpoints to proxy to webclient
-const webclientEndpoints = ["^/api"];
-
 const proxy = {
   "/auth": {
     target: "http://auth-service:8080",
@@ -17,7 +14,6 @@ const proxy = {
   "/api": {
     target: "http://webclient:8080",
     changeOrigin: true,
-    // rewrite: (path) => path.replace(/^\/api/, ""),
   },
 };
 
@@ -42,6 +38,12 @@ export default defineConfig({
         assetFileNames: (assetInfo) => {
           if (assetInfo.name?.endsWith(".css")) {
             return "css/[name]-[hash][extname]";
+          }
+          if (
+            assetInfo.name?.endsWith(".woff2") ||
+            assetInfo.name?.endsWith(".woff")
+          ) {
+            return "fonts/[name][extname]";
           }
           return "[name]-[hash][extname]";
         },
