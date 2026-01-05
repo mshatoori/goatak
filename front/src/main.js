@@ -13,10 +13,10 @@ import "./store.js";
 
 // Import Vue components
 import Sidebar from "./components/Sidebar.vue";
-import FlowsModal from "./components/Flows.vue";
-import AlarmsModal from "./components/Alarms.vue";
-import SendModal from "./components/Send.vue";
-import SensorsModal from "./components/SensorsModal.vue";
+import FlowsModal from "./components/modals/Flows.vue";
+import AlarmsModal from "./components/modals/Alarms.vue";
+import SendModal from "./components/modals/Send.vue";
+import SensorsModal from "./components/modals/SensorsModal.vue";
 import CotLog from "./components/CotLog.vue";
 import CasevacDetails from "./components/CasevacDetails.vue";
 import DrawingDetails from "./components/DrawingDetails.vue";

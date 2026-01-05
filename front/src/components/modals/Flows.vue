@@ -288,7 +288,7 @@
 </template>
 
 <script>
-import store from "../store.js";
+import store from "../../store.js";
 
 export default {
   name: "Flows",
@@ -307,18 +307,18 @@ export default {
     };
   },
   methods: {
-    createFlow: function () {
+    createFlow: function() {
       console.log("Creating Flow:", this.newFlow);
       store.createFlow({ ...this.newFlow });
     },
-    removeFlow: function (uid) {
+    removeFlow: function(uid) {
       console.log("Removing Flow:", uid);
       store.removeFlow(uid).catch((error) => {
         console.error("Failed to remove flow:", error);
         // TODO: add user notification here if needed
       });
     },
-    flowDirectionText: function (direction) {
+    flowDirectionText: function(direction) {
       switch (direction) {
         case 1:
           return "ورودی";
@@ -328,7 +328,7 @@ export default {
           return "دوطرفه";
       }
     },
-    flowTypeText: function (type) {
+    flowTypeText: function(type) {
       switch (type) {
         case "UDP":
           return "UDP";
@@ -338,7 +338,7 @@ export default {
     },
   },
   computed: {
-    allFlows: function () {
+    allFlows: function() {
       return this.sharedState.flows;
     },
   },

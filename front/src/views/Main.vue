@@ -565,7 +565,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import TrackingManager from "../TrackingManager.js";
 import store from "../store.js";
 import api from "../api/axios.js";
-import ResendingModal from "../components/ResendingModal.vue";
+import ResendingModal from "../components/modals/ResendingModal.vue";
 import CustomMarker from "../components/CustomMarker.vue";
 import {
   getIconUri,

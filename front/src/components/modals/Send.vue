@@ -123,8 +123,8 @@
 </template>
 
 <script>
-import store from "../store.js";
-import api from "../api/axios.js";
+import store from "../../store.js";
+import api from "../../api/axios.js";
 
 export default {
   name: "Send",

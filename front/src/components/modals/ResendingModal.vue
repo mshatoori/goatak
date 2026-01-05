@@ -30,7 +30,7 @@
 </template>
 
 <script setup>
-import ResendingPanel from "./ResendingPanel.vue";
+import ResendingPanel from "../ResendingPanel.vue";
 
 defineProps({
   config: Object,
