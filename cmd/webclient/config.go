@@ -13,86 +13,86 @@ import (
 )
 
 type FlowConfig struct {
-	UID          string `mapstructure:"uid,omitempty"`
-	Title        string `mapstructure:"title,omitempty"`
-	Addr         string `mapstructure:"address"`
-	Port         int    `mapstructure:"port"`
-	Type         string `mapstructure:"type,omitempty"`
-	Direction    int    `mapstructure:"direction,omitempty"`
-	SendExchange string `mapstructure:"sendExchange,omitempty"`
-	RecvQueue    string `mapstructure:"recvQueue,omitempty"`
+	UID          string `mapstructure:"uid,omitempty" yaml:"uid,omitempty"`
+	Title        string `mapstructure:"title,omitempty" yaml:"title,omitempty"`
+	Addr         string `mapstructure:"address" yaml:"address"`
+	Port         int    `mapstructure:"port" yaml:"port"`
+	Type         string `mapstructure:"type,omitempty" yaml:"type,omitempty"`
+	Direction    int    `mapstructure:"direction,omitempty" yaml:"direction,omitempty"`
+	SendExchange string `mapstructure:"sendExchange,omitempty" yaml:"sendExchange,omitempty"`
+	RecvQueue    string `mapstructure:"recvQueue,omitempty" yaml:"recvQueue,omitempty"`
 }
 
 type SensorConfig struct {
-	Title string `mapstructure:"title"`
+	Title string `mapstructure:"title" yaml:"title"`
 	// TODO: Change Addr & Port with a general config map
-	Addr string `mapstructure:"addr"`
+	Addr string `mapstructure:"addr" yaml:"addr"`
 
-	Port int    `mapstructure:"port"`
-	UID  string `mapstructure:"uid"`
-	Type string `mapstructure:"type"`
+	Port int    `mapstructure:"port" yaml:"port"`
+	UID  string `mapstructure:"uid" yaml:"uid"`
+	Type string `mapstructure:"type" yaml:"type"`
 
-	Interval int `mapstructure:"interval"`
+	Interval int `mapstructure:"interval" yaml:"interval"`
 }
 
 type UnitConfig struct {
-	Callsign string  `mapstructure:"callsign" default:""`
-	Lat      float64 `mapstructure:"lat" default:"0.0"`
-	Lon      float64 `mapstructure:"lon" default:"0.0"`
-	Zoom     int     `mapstructure:"zoom" default:"12"`
-	Type     string  `mapstructure:"type" default:"a-f-G-U-C"`
-	Team     string  `mapstructure:"team" default:"Blue"`
-	Role     string  `mapstructure:"role" default:"HQ"`
-	Platform string  `mapstructure:"platform" default:"GoATAK_client"`
-	Version  string  `mapstructure:"version" default:"unknown"`
-	Urn      int     `mapstructure:"urn" default:"0"`
-	Ip       string  `mapstructure:"ip" default:""`
-	Uid      string  `mapstructure:"uid" default:"auto"`
-	OS       string  `mapstructure:"os" default:""`
-	Interval int     `mapstructure:"interval" default:"15"`
-	Device   string  `mapstructure:"device" default:""`
+	Callsign string  `mapstructure:"callsign" default:"" yaml:"callsign"`
+	Lat      float64 `mapstructure:"lat" default:"0.0" yaml:"lat"`
+	Lon      float64 `mapstructure:"lon" default:"0.0" yaml:"lon"`
+	Zoom     int     `mapstructure:"zoom" default:"12" yaml:"zoom"`
+	Type     string  `mapstructure:"type" default:"a-f-G-U-C" yaml:"type"`
+	Team     string  `mapstructure:"team" default:"Blue" yaml:"team"`
+	Role     string  `mapstructure:"role" default:"HQ" yaml:"role"`
+	Platform string  `mapstructure:"platform" default:"GoATAK_client" yaml:"platform"`
+	Version  string  `mapstructure:"version" default:"unknown" yaml:"version"`
+	Urn      int     `mapstructure:"urn" default:"0" yaml:"urn"`
+	Ip       string  `mapstructure:"ip" default:"" yaml:"ip"`
+	Uid      string  `mapstructure:"uid" default:"auto" yaml:"uid"`
+	OS       string  `mapstructure:"os" default:"" yaml:"os"`
+	Interval int     `mapstructure:"interval" default:"15" yaml:"interval"`
+	Device   string  `mapstructure:"device" default:"" yaml:"device"`
 }
 
 type TrackingConfig struct {
-	Enabled               bool   `mapstructure:"enabled"`
-	DefaultTrailLength    int    `mapstructure:"default_trail_length"`
-	DefaultUpdateInterval int    `mapstructure:"default_update_interval"`
-	DefaultTrailColor     string `mapstructure:"default_trail_color"`
-	DefaultTrailWidth     int    `mapstructure:"default_trail_width"`
+	Enabled               bool   `mapstructure:"enabled" yaml:"enabled"`
+	DefaultTrailLength    int    `mapstructure:"default_trail_length" yaml:"default_trail_length"`
+	DefaultUpdateInterval int    `mapstructure:"default_update_interval" yaml:"default_update_interval"`
+	DefaultTrailColor     string `mapstructure:"default_trail_color" yaml:"default_trail_color"`
+	DefaultTrailWidth     int    `mapstructure:"default_trail_width" yaml:"default_trail_width"`
 }
 
 type ResendConfig struct {
-	Enabled             bool `mapstructure:"enabled"`
-	MaxFiltersPerConfig int  `mapstructure:"max_filters_per_config"`
+	Enabled             bool `mapstructure:"enabled" yaml:"enabled"`
+	MaxFiltersPerConfig int  `mapstructure:"max_filters_per_config" yaml:"max_filters_per_config"`
 }
 
 type ApplicationConfig struct {
-	Flows   []FlowConfig   `mapstructure:"flows"`
-	Sensors []SensorConfig `mapstructure:"sensors"`
+	Flows   []FlowConfig   `mapstructure:"flows" yaml:"flows"`
+	Sensors []SensorConfig `mapstructure:"sensors" yaml:"sensors"`
 
-	Me UnitConfig `mapstructure:"me"`
+	Me UnitConfig `mapstructure:"me" yaml:"me"`
 
-	WebPort           int    `mapstructure:"web_port" default:"8080"`
-	Debug             bool   `mapstructure:"debug" default:"false"`
-	NoWeb             bool   `mapstructure:"no_web" default:"false"`
-	File              string `mapstructure:"file" default:""`
-	ServerAddress     string `mapstructure:"server_address" default:"127.0.0.1:8087:tcp"`
-	Gpsd              string `mapstructure:"gpsd" default:"gpsd:2947"`
-	DnsServiceURL     string `mapstructure:"dns_service.url" default:"http://dns.api"`
-	GpsPort           string `mapstructure:"gps_port" default:""`
-	MapServer         string `mapstructure:"map_server" default:"127.0.0.1:8000"`
-	DbPath            string `mapstructure:"db_path" default:"config/goatak.db"`
-	SslEnrollUser     string `mapstructure:"ssl.enroll_user,omitempty"`
-	SslEnrollPassword string `mapstructure:"ssl.enroll_password,omitempty"`
-	SslCert           string `mapstructure:"ssl.cert,omitempty"`
-	SslPassword       string `mapstructure:"ssl.password,omitempty"`
-	SslSaveCert       bool   `mapstructure:"ssl.save_cert,omitempty"`
-	SslStrict         bool   `mapstructure:"ssl.strict,omitempty"`
-	DefaultDestIP     string `mapstructure:"default_dest_ip,omitempty"`
-	DefaultDestURN    int    `mapstructure:"default_dest_urn,omitempty"`
+	WebPort           int    `mapstructure:"web_port" default:"8080" yaml:"web_port"`
+	Debug             bool   `mapstructure:"debug" default:"false" yaml:"debug"`
+	NoWeb             bool   `mapstructure:"no_web" default:"false" yaml:"no_web"`
+	File              string `mapstructure:"file" default:"" yaml:"file"`
+	ServerAddress     string `mapstructure:"server_address" default:"127.0.0.1:8087:tcp" yaml:"server_address"`
+	Gpsd              string `mapstructure:"gpsd" default:"gpsd:2947" yaml:"gpsd"`
+	DnsServiceURL     string `mapstructure:"dns_service.url" default:"http://dns.api" yaml:"dns_service.url"`
+	GpsPort           string `mapstructure:"gps_port" default:"" yaml:"gps_port"`
+	MapServer         string `mapstructure:"map_server" default:"127.0.0.1:8000" yaml:"map_server"`
+	DbPath            string `mapstructure:"db_path" default:"config/goatak.db" yaml:"db_path"`
+	SslEnrollUser     string `mapstructure:"ssl.enroll_user,omitempty" yaml:"ssl.enroll_user,omitempty"`
+	SslEnrollPassword string `mapstructure:"ssl.enroll_password,omitempty" yaml:"ssl.enroll_password,omitempty"`
+	SslCert           string `mapstructure:"ssl.cert,omitempty" yaml:"ssl.cert,omitempty"`
+	SslPassword       string `mapstructure:"ssl.password,omitempty" yaml:"ssl.password,omitempty"`
+	SslSaveCert       bool   `mapstructure:"ssl.save_cert,omitempty" yaml:"ssl.save_cert,omitempty"`
+	SslStrict         bool   `mapstructure:"ssl.strict,omitempty" yaml:"ssl.strict,omitempty"`
+	DefaultDestIP     string `mapstructure:"default_dest_ip,omitempty" yaml:"default_dest_ip,omitempty"`
+	DefaultDestURN    int    `mapstructure:"default_dest_urn,omitempty" yaml:"default_dest_urn,omitempty"`
 
-	Tracking TrackingConfig `mapstructure:"tracking,omitempty"`
-	Resend   ResendConfig   `mapstructure:"resend,omitempty"`
+	Tracking TrackingConfig `mapstructure:"tracking,omitempty" yaml:"tracking,omitempty"`
+	Resend   ResendConfig   `mapstructure:"resend,omitempty" yaml:"resend,omitempty"`
 }
 
 // ConfigManager handles centralized configuration management with file persistence
