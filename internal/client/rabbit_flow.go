@@ -43,7 +43,7 @@ type RabbitFlowConfig struct {
 	SendExchange string
 	RecvQueue    string
 	Title        string
-	Destinations []model.SendItemDest
+	Destinations []model.SendItemDest // TODO: WHY IS THIS AN ARRAY???
 	ClientInfo   *cotproto.ClientInfo
 	DNSProxy     *dnsproxy.DnsServiceProxy
 }
@@ -528,6 +528,14 @@ func (h *RabbitFlow) selectSourceForDestinations(destinations []model.SendItemDe
 		Addr: clientInfo.GetIpAddress(),
 	}
 
+	// TODO: Clean this up!
+	if len(destinations) == 1 && destinations[0].URN == 16777215 && destinations[0].Addr != "255.255.255.255" {
+		return model.SendItemDest{
+			URN:  int(clientInfo.GetUrn()),
+			Addr: destinations[0].Addr, // NOTE: CLEAN THIS UP! VERY CONFUSING AND DIRTY!
+		}
+	}
+
 	// If no DNS proxy is configured, return default
 	if h.dnsProxy == nil {
 		return defaultResult
@@ -577,6 +585,24 @@ func (h *RabbitFlow) selectSourceForDestinations(destinations []model.SendItemDe
 	return defaultResult
 }
 
+// TODO: CLEAN THIS UP ALSO! This shouldn't be needed! AT ALL! Also, there's always only one destination!
+func (h *RabbitFlow) selectDestinationForDestinations(destinations []model.SendItemDest) []model.SendItemDest {
+	defaultResult := model.SendItemDest{
+		URN:  destinations[0].URN,
+		Addr: destinations[0].Addr,
+	}
+
+	if defaultResult.URN == 16777215 {
+		// Sigh! This should've been a broadcast address...
+		defaultResult.Addr = "255.255.255.255"
+	}
+
+	result := make([]model.SendItemDest, 1)
+	result[0] = defaultResult
+
+	return result
+}
+
 // sameNetwork checks if two IP addresses are in the same network given a subnet mask
 func (h *RabbitFlow) sameNetwork(ip1, ip2 net.IP, mask net.IPMask) bool {
 	// Ensure both IPs are the same version (IPv4 or IPv6)
@@ -605,7 +631,7 @@ func (h *RabbitFlow) wrapMessage(buf []byte, _msg *cotproto.TakMessage, destinat
 		MessageSubtype: nil,
 		PayLoadData:    base64.StdEncoding.EncodeToString(buf),
 		Source:         h.selectSourceForDestinations(destinations),
-		Destinations:   destinations,
+		Destinations:   h.selectDestinationForDestinations(destinations),
 		CommandId:      "00000000-0000-0000-0000-000000000001",
 		CreationDate:   "2023-06-11T14:27:43.7958539+03:30",
 		Version:        "1.0",
