@@ -1,5 +1,5 @@
 # Stage 1 - Build Stage
-FROM docker.arvancloud.ir/node:20-alpine as build
+FROM registry.docker.ir/node:20-alpine as build
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY . .
 RUN yarn build
 
 # Stage 2 - Production Stage
-FROM docker.arvancloud.ir/nginx:alpine
+FROM registry.docker.ir/nginx:alpine
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf

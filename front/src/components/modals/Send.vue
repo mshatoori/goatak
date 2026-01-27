@@ -1,74 +1,37 @@
 <template>
   <div>
-    <div
-      class="modal fade"
-      id="send-modal"
-      data-bs-backdrop="static"
-      data-bs-keyboard="false"
-      tabindex="-1"
-      aria-labelledby="staticBackdropLabel"
-      aria-hidden="true"
-    >
-      <div
-        class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg"
-      >
+    <div class="modal fade" id="send-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+      aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">ارسال به ...</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+            <h5 class="modal-title" v-if="sharedState.sendMode == 'share'">اشتراک‌گذاری</h5>
+            <h5 class="modal-title" v-else>ارسال به ...</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
             <div id="dest-to-send" class="card mt-4">
               <div class="card-body">
                 <div class="form">
                   <div class="form-group row">
-                    <label
-                      for="dest-urn-select"
-                      class="col-sm-4 col-form-label font-weight-bold"
-                      ><strong>URN (مخاطب)</strong></label
-                    >
+                    <label for="dest-urn-select" class="col-sm-4 col-form-label font-weight-bold"><strong>URN
+                        (مخاطب)</strong></label>
                     <div class="col-sm-8">
-                      <select
-                        id="dest-urn-select"
-                        class="form-control"
-                        v-model="selectedUrn"
-                        @change="onUrnSelected"
-                      >
+                      <select id="dest-urn-select" class="form-control" v-model="selectedUrn" @change="onUrnSelected">
                         <option value="" disabled>URN را انتخاب کنید</option>
-                        <option
-                          v-for="contact in contactsData"
-                          :key="contact.urn"
-                          :value="contact.urn"
-                        >
+                        <option v-for="contact in contactsData" :key="contact.urn" :value="contact.urn">
                           {{ contact.urn }} ({{ contact.callsign }})
                         </option>
                       </select>
                     </div>
                   </div>
                   <div class="form-group row mt-3">
-                    <label
-                      for="dest-ip-select"
-                      class="col-sm-4 col-form-label font-weight-bold"
-                      ><strong>IP Address</strong></label
-                    >
+                    <label for="dest-ip-select" class="col-sm-4 col-form-label font-weight-bold"><strong>IP
+                        Address</strong></label>
                     <div class="col-sm-8">
-                      <select
-                        id="dest-ip-select"
-                        class="form-control"
-                        v-model="selectedIp"
-                        :disabled="!selectedUrn"
-                      >
+                      <select id="dest-ip-select" class="form-control" v-model="selectedIp" :disabled="!selectedUrn">
                         <option value="" disabled>IP را انتخاب کنید</option>
-                        <option
-                          v-for="ip in availableIps"
-                          :key="ip"
-                          :value="ip"
-                        >
+                        <option v-for="ip in availableIps" :key="ip" :value="ip">
                           {{ ip }}
                         </option>
                       </select>
@@ -79,19 +42,11 @@
             </div>
           </div>
           <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-primary"
-              @click="send"
-              :disabled="!selectedUrn || !selectedIp"
-            >
-              ارسال
+            <button type="button" class="btn btn-primary" @click="send" :disabled="!selectedUrn || !selectedIp">
+              <span v-if="sharedState.sendMode == 'share'">اشتراک‌گذاری</span>
+              <span v-else>ارسال</span>
             </button>
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
               خروج
             </button>
           </div>
@@ -99,22 +54,12 @@
       </div>
     </div>
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
-      <div
-        id="sendToast"
-        class="toast hide"
-        role="alert"
-        aria-live="assertive"
-        aria-atomic="true"
-      >
+      <div id="sendToast" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
           <i class="bi" :class="toast.icon"></i>
-          <strong class="me-auto">ارسال</strong>
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="toast"
-            aria-label="Close"
-          ></button>
+          <strong class="ms-1 me-auto" v-if="sharedState.sendMode == 'share'">اشتراک‌گذاری</strong>
+          <strong class="ms-1 me-auto" v-else>ارسال</strong>
+          <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
         <div class="toast-body">{{ toast.text }}</div>
       </div>
@@ -141,7 +86,7 @@ export default {
     contactsData() {
       let contacts = [];
       if (this.sharedState.ts) {
-        this.sharedState.items.forEach(function(u) {
+        this.sharedState.items.forEach(function (u) {
           if (u.category === "contact") {
             contacts.push(u);
           }
@@ -174,6 +119,7 @@ export default {
         .post(`/unit/${this.sharedState.unitToSend.uid}/send/`, {
           ipAddress: this.selectedIp,
           urn: parseInt(this.selectedUrn),
+          sendMode: this.sharedState.sendMode,
         })
         .then((response) => {
           if (response.status === 200) {
@@ -181,18 +127,26 @@ export default {
             this.toast.icon = "bi-mailbox";
           } else {
             this.toast.text = "ارسال با خطا مواجه شد";
-            this.toast.icon = "bi-x";
+            this.toast.icon = "bi-exclamation-triangle";
           }
-
+        }).catch((err) => {
+          this.toast.text = "ارسال با خطا مواجه شد";
+          this.toast.icon = "bi-exclamation-triangle";
+        }).finally(() => {
           const sentToastElement = document.getElementById("sendToast");
           const sendToast = bootstrap.Toast.getOrCreateInstance(
             sentToastElement
           );
           sendToast.show();
+          bootstrap.Modal.getOrCreateInstance(document.querySelector("#send-modal")).hide();
         });
     },
   },
 };
 </script>
 
-<style></style>
+<style>
+.bi-exclamation-triangle {
+  color: red;
+}
+</style>

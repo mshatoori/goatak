@@ -1014,6 +1014,7 @@ export default {
           <li><h6 class="dropdown-header">${item.callsign}</h6></li>
           <li><button class="dropdown-item" onclick="app.menuDeleteAction('${item.uid}')"> حذف </button></li>
           <li><button class="dropdown-item" onclick="app.menuSendAction('${item.uid}')"> ارسال... </button></li>
+          <li><button class="dropdown-item" onclick="app.menuShareAction('${item.uid}')"> اشتراک‌گذاری... </button></li>
         </ul>`;
 
       this.currentPopup = new Popup({ closeOnClick: true, maxWidth: "300px" })
@@ -1031,6 +1032,17 @@ export default {
       const item = this.sharedState.items.get(uid);
       if (item) {
         this.sharedState.unitToSend = item;
+        this.sharedState.sendMode = 'send';
+        new bootstrap.Modal(document.querySelector("#send-modal")).show();
+      }
+      this.closePopup();
+    },
+
+    menuShareAction(uid) {
+      const item = this.sharedState.items.get(uid);
+      if (item) {
+        this.sharedState.unitToSend = item;
+        this.sharedState.sendMode = 'share';
         new bootstrap.Modal(document.querySelector("#send-modal")).show();
       }
       this.closePopup();

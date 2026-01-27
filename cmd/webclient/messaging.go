@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/kdudkov/goatak/internal/client"
+	"github.com/kdudkov/goatak/internal/dnsproxy"
 	"github.com/kdudkov/goatak/internal/wshandler"
 	"github.com/kdudkov/goatak/pkg/cot"
 	"github.com/kdudkov/goatak/pkg/cotproto"
@@ -391,6 +392,8 @@ func (app *App) broadcastTrackingUpdate(unitUID, callsign string, lat, lon, alt,
 
 // loadContactsFromDNS loads contacts from DNS service
 func (app *App) loadContactsFromDNS() {
+	useMockContacts := true // TODO: Temp. For dev.
+
 	if app.dnsServiceProxy == nil {
 		app.logger.Warn("DNS service proxy not initialized, skipping contact loading")
 		return
@@ -399,8 +402,46 @@ func (app *App) loadContactsFromDNS() {
 	app.logger.Info("Loading contacts from DNS service")
 	addresses, err := app.dnsServiceProxy.GetAddresses()
 	if err != nil {
-		app.logger.Error("Failed to get addresses from DNS service", "error", err)
-		return
+		app.logger.Error("Failed to get addresses from DNS service.", "error", err)
+		if useMockContacts {
+			addresses = make([]dnsproxy.NodeAddress, 3)
+			addresses[0] = dnsproxy.NodeAddress{
+				ID:          new(string),
+				Urn:         new(int32),
+				UnitName:    new(string),
+				IPAddress:   new(string),
+				Description: new(string),
+			}
+			*addresses[0].ID = "MOCK-NODE-1"
+			*addresses[0].Urn = 101
+			*addresses[0].UnitName = "Mock Node 1"
+			*addresses[0].IPAddress = "192.168.100.1"
+			addresses[1] = dnsproxy.NodeAddress{
+				ID:          new(string),
+				Urn:         new(int32),
+				UnitName:    new(string),
+				IPAddress:   new(string),
+				Description: new(string),
+			}
+			*addresses[1].ID = "MOCK-NODE-2"
+			*addresses[1].Urn = 102
+			*addresses[1].UnitName = "Mock Node 2"
+			*addresses[1].IPAddress = "192.168.100.2"
+			addresses[2] = dnsproxy.NodeAddress{
+				ID:          new(string),
+				Urn:         new(int32),
+				UnitName:    new(string),
+				IPAddress:   new(string),
+				Description: new(string),
+			}
+			*addresses[2].ID = "MOCK-NODE-2"
+			*addresses[2].Urn = 102
+			*addresses[2].UnitName = "Mock Node 2"
+			*addresses[2].IPAddress = "192.168.101.2"
+
+		} else {
+			return
+		}
 	}
 
 	// Group IP addresses by URN, excluding our own URN

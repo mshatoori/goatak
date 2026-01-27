@@ -1,5 +1,5 @@
 # Development Dockerfile with hot reloading
-FROM docker.arvancloud.ir/node:20-alpine
+FROM registry.docker.ir/node:20-alpine
 
 WORKDIR /app
 
