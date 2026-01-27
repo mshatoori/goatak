@@ -48,7 +48,7 @@ func (app *App) SendMsg(msg *cotproto.TakMessage) {
 }
 
 // SendMsgToDestination sends a message to a specific destination using the RabbitFlow pattern
-func (app *App) SendMsgToDestination(msg *cotproto.TakMessage, dest model.SendItemDest) error {
+func (app *App) SendMsgToDestination(msg *cotproto.TakMessage, dest model.SendItemDest, src *model.SendItemDest) error {
 	app.logger.Debug("sending to specific destination", "dest", dest)
 
 	// Find the RabbitFlow
@@ -67,7 +67,7 @@ func (app *App) SendMsgToDestination(msg *cotproto.TakMessage, dest model.SendIt
 	destinations := make([]model.SendItemDest, 1)
 	destinations[0] = dest
 
-	err := rabbitmq.SendCotToDestinations(msg, destinations)
+	err := rabbitmq.SendCotToDestinations(msg, destinations, src)
 
 	if err != nil {
 		app.logger.Error("destination send error", "error", err, "dest", dest)
@@ -202,10 +202,14 @@ func (app *App) sendMyPoints() {
 			case "subnet":
 				if item.GetSelectedSubnet() != "" {
 					dest := model.SendItemDest{
-						Addr: item.GetSelectedSubnet(),
+						Addr: "255.255.255.255",
 						URN:  16777215, // Broadcast URN for subnet
 					}
-					if err := app.SendMsgToDestination(item.GetMsg().GetTakMessage(), dest); err != nil {
+					src := &model.SendItemDest{
+						Addr: item.GetSelectedSubnet(),
+						URN:  int(app.urn),
+					}
+					if err := app.SendMsgToDestination(item.GetMsg().GetTakMessage(), dest, src); err != nil {
 						app.logger.Error("failed to send to subnet", "error", err, "subnet", item.GetSelectedSubnet())
 					}
 				}
@@ -215,7 +219,7 @@ func (app *App) sendMyPoints() {
 						Addr: item.GetSelectedIP(),
 						URN:  int(item.GetSelectedUrn()),
 					}
-					if err := app.SendMsgToDestination(item.GetMsg().GetTakMessage(), dest); err != nil {
+					if err := app.SendMsgToDestination(item.GetMsg().GetTakMessage(), dest, nil); err != nil {
 						app.logger.Error("failed to send to direct destination", "error", err, "ip", item.GetSelectedIP(), "urn", item.GetSelectedUrn())
 					}
 				}

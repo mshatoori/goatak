@@ -401,10 +401,14 @@ func addItemHandler(app *App) air.Handler {
 		case "subnet":
 			if wu.SelectedSubnet != "" {
 				dest := model.SendItemDest{
-					Addr: wu.SelectedSubnet,
+					Addr: "255.255.255.255",
 					URN:  16777215, // Broadcast URN for subnet
 				}
-				if err := app.SendMsgToDestination(msg.GetTakMessage(), dest); err != nil {
+				src := &model.SendItemDest{
+					Addr: wu.SelectedSubnet,
+					URN:  int(app.urn),
+				}
+				if err := app.SendMsgToDestination(msg.GetTakMessage(), dest, src); err != nil {
 					app.logger.Error("failed to send to subnet", "error", err, "subnet", wu.SelectedSubnet)
 				}
 			}
@@ -414,7 +418,7 @@ func addItemHandler(app *App) air.Handler {
 					Addr: wu.SelectedIP,
 					URN:  int(wu.SelectedUrn),
 				}
-				if err := app.SendMsgToDestination(msg.GetTakMessage(), dest); err != nil {
+				if err := app.SendMsgToDestination(msg.GetTakMessage(), dest, nil); err != nil {
 					app.logger.Error("failed to send to direct destination", "error", err, "ip", wu.SelectedIP, "urn", wu.SelectedUrn)
 				}
 			}
@@ -539,7 +543,7 @@ func sendItemHandler(app *App) air.Handler {
 			return nil
 		}
 
-		err := rabbitmq.SendCotToDestinations(item.GetMsg().GetTakMessage(), destinations)
+		err := rabbitmq.SendCotToDestinations(item.GetMsg().GetTakMessage(), destinations, nil)
 		if err != nil {
 			return err
 		}

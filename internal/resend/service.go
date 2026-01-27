@@ -24,8 +24,9 @@ type ResendService struct {
 type Config struct {
 	DB                *sql.DB
 	Logger            *slog.Logger
-	SendToDestination func(msg *cotproto.TakMessage, dest model.SendItemDest) error
+	SendToDestination func(msg *cotproto.TakMessage, dest model.SendItemDest, src *model.SendItemDest) error
 	ItemsRepository   repository.ItemsRepository
+	SrcUrn            int
 }
 
 // NewResendService creates a new ResendService instance
@@ -47,7 +48,7 @@ func NewResendService(config *Config) *ResendService {
 		logger:        config.Logger,
 		configManager: NewConfigManager(config.Logger.With("component", "config_manager")),
 		filterEngine:  NewFilterEngine(config.Logger.With("component", "filter_engine"), config.ItemsRepository),
-		router:        NewMessageRouter(config.SendToDestination, config.Logger.With("component", "router")),
+		router:        NewMessageRouter(config.SendToDestination, config.Logger.With("component", "router"), config.SrcUrn),
 	}
 
 	return service
@@ -115,7 +116,7 @@ func (s *ResendService) ProcessMessage(msg *cot.CotMessage) {
 				"message_uid", msg.GetUID())
 
 			// Route the message to the configured destination
-			if err := s.router.RouteMessage(msg, config); err != nil {
+			if err := s.router.RouteMessage(msg, s.filterEngine.ConvertDTOToResendConfig(config)); err != nil {
 				s.logger.Error("Failed to route message",
 					"error", err,
 					"config", config.UID,
@@ -195,46 +196,46 @@ func (s *ResendService) DeleteConfiguration(uid string) {
 }
 
 // ValidateConfiguration validates a configuration before saving
-func (s *ResendService) ValidateConfiguration(config *ResendConfigDTO) error {
-	if config == nil {
-		return fmt.Errorf("configuration is nil")
-	}
+// func (s *ResendService) ValidateConfiguration(config *ResendConfigDTO) error {
+// 	if config == nil {
+// 		return fmt.Errorf("configuration is nil")
+// 	}
 
-	if config.UID == "" {
-		return fmt.Errorf("configuration UID is required")
-	}
+// 	if config.UID == "" {
+// 		return fmt.Errorf("configuration UID is required")
+// 	}
 
-	if config.Name == "" {
-		return fmt.Errorf("configuration name is required")
-	}
+// 	if config.Name == "" {
+// 		return fmt.Errorf("configuration name is required")
+// 	}
 
-	if config.Destination == nil {
-		return fmt.Errorf("destination is required")
-	}
+// 	if config.Destination == nil {
+// 		return fmt.Errorf("destination is required")
+// 	}
 
-	// Validate destination
-	if err := s.router.ValidateDestination(config.Destination); err != nil {
-		return fmt.Errorf("invalid destination: %w", err)
-	}
+// 	// Validate destination
+// 	if err := s.router.ValidateDestination(config.Destination); err != nil {
+// 		return fmt.Errorf("invalid destination: %w", err)
+// 	}
 
-	// Validate source if provided
-	if config.Source != nil {
-		if err := s.router.ValidateDestination(config.Source); err != nil {
-			return fmt.Errorf("invalid source: %w", err)
-		}
-	}
+// 	// Validate source if provided
+// 	if config.Source != nil {
+// 		if err := s.router.ValidateDestination(config.Source); err != nil {
+// 			return fmt.Errorf("invalid source: %w", err)
+// 		}
+// 	}
 
-	// Validate filters and predicates
-	for i, filter := range config.Filters {
-		for j, predicate := range filter.Predicates {
-			if err := s.filterEngine.ValidatePredicate(predicate); err != nil {
-				return fmt.Errorf("invalid predicate in filter %d, predicate %d: %w", i, j, err)
-			}
-		}
-	}
+// 	// Validate filters and predicates
+// 	for i, filter := range config.Filters {
+// 		for j, predicate := range filter.Predicates {
+// 			if err := s.filterEngine.ValidatePredicate(predicate); err != nil {
+// 				return fmt.Errorf("invalid predicate in filter %d, predicate %d: %w", i, j, err)
+// 			}
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // Stop gracefully stops the resend service
 func (s *ResendService) Stop() {

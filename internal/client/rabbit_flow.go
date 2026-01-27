@@ -469,10 +469,10 @@ func (h *RabbitFlow) Stop() {
 }
 
 func (h *RabbitFlow) SendCot(msg *cotproto.TakMessage) error {
-	return h.SendCotToDestinations(msg, h.Destinations)
+	return h.SendCotToDestinations(msg, h.Destinations, nil)
 }
 
-func (h *RabbitFlow) SendCotToDestinations(msg *cotproto.TakMessage, destinations []model.SendItemDest) error {
+func (h *RabbitFlow) SendCotToDestinations(msg *cotproto.TakMessage, destinations []model.SendItemDest, source *model.SendItemDest) error {
 	h.logger.Debug(fmt.Sprintf("RabbitFlow SendCotToDestinations version: %d", h.GetVersion()))
 	if h.Direction&OUTGOING == 0 {
 		h.logger.Debug("RabbitFlow Ignoring write")
@@ -497,7 +497,7 @@ func (h *RabbitFlow) SendCotToDestinations(msg *cotproto.TakMessage, destination
 			return err
 		}
 
-		if h.tryAddPacket(h.wrapMessage(buf, msg, destinations)) {
+		if h.tryAddPacket(h.wrapMessage(buf, msg, destinations, source)) {
 			return nil
 		}
 	}
@@ -594,9 +594,17 @@ func (h *RabbitFlow) sameNetwork(ip1, ip2 net.IP, mask net.IPMask) bool {
 	return network1.Equal(network2)
 }
 
-func (h *RabbitFlow) wrapMessage(buf []byte, _msg *cotproto.TakMessage, destinations []model.SendItemDest) []byte {
+func (h *RabbitFlow) wrapMessage(buf []byte, _msg *cotproto.TakMessage, destinations []model.SendItemDest, source *model.SendItemDest) []byte {
 	var newBuffer bytes.Buffer
 	clientInfo := h.ClientInfo
+
+	var msgSource model.SendItemDest
+
+	if source != nil {
+		msgSource = *source
+	} else {
+		msgSource = h.selectSourceForDestinations(destinations)
+	}
 
 	rabbitMsg := RabbitMsg{
 		MessageId:      uuid.NewString(),
@@ -604,7 +612,7 @@ func (h *RabbitFlow) wrapMessage(buf []byte, _msg *cotproto.TakMessage, destinat
 		MessageNumber:  5,
 		MessageSubtype: nil,
 		PayLoadData:    base64.StdEncoding.EncodeToString(buf),
-		Source:         h.selectSourceForDestinations(destinations),
+		Source:         msgSource,
 		Destinations:   destinations,
 		CommandId:      "00000000-0000-0000-0000-000000000001",
 		CreationDate:   "2023-06-11T14:27:43.7958539+03:30",

@@ -20,6 +20,7 @@ type NetworkAddress interface {
 	IsBroadcast() bool
 	GetIP() string
 	GetURN() int32
+	GetSrcAndDest(sourceUrn int) (*model.SendItemDest, model.SendItemDest)
 }
 
 // NodeNetworkAddress represents a single node/device network address
@@ -40,6 +41,13 @@ func (n *NodeNetworkAddress) GetURN() int32 {
 	return n.URN
 }
 
+func (n *NodeNetworkAddress) GetSrcAndDest(sourceUrn int) (*model.SendItemDest, model.SendItemDest) {
+	return nil, model.SendItemDest{
+		Addr: n.GetIP(),
+		URN:  int(n.GetURN()),
+	}
+}
+
 type SubnetNetworkAddress struct {
 	SubnetIP string
 }
@@ -54,6 +62,19 @@ func (s *SubnetNetworkAddress) GetIP() string {
 
 func (s *SubnetNetworkAddress) GetURN() int32 {
 	return 16777215
+}
+
+func (s *SubnetNetworkAddress) GetSrcAndDest(sourceUrn int) (*model.SendItemDest, model.SendItemDest) {
+	src := &model.SendItemDest{
+		Addr: s.GetIP(),
+		URN:  sourceUrn,
+	}
+	dest := model.SendItemDest{
+		Addr: "255.255.255.255",
+		URN:  int(s.GetURN()),
+	}
+
+	return src, dest
 }
 
 // Filter interface represents a collection of predicates that are ANDed together

@@ -413,7 +413,7 @@ const availableIps = computed(() => {
     availableContacts.value
   ) {
     const selectedContact = availableContacts.value.find(
-      (contact) => contact.urn.toString() === editingData.value.selected_urn
+      (contact) => contact.urn.toString() == editingData.value.selected_urn
     );
     if (selectedContact && selectedContact.ip_address) {
       return selectedContact.ip_address.split(",");

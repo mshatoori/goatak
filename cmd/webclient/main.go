@@ -241,6 +241,7 @@ func (app *App) InitServices() {
 		Logger:            app.logger.With("service", "resend"),
 		SendToDestination: app.SendMsgToDestination,
 		ItemsRepository:   app.items,
+		SrcUrn:            int(app.urn),
 	})
 
 	// Start the resend service

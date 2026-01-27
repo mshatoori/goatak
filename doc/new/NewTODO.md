@@ -11,6 +11,12 @@
 - Route:
 - ...
 
+## Bugs
+
+- Fix self marker being removed when clearing callsign
+- Fix weird polygon/route interaction
+- Long uids for polygons + routes
+
 ## Improvements
 
 - Add world map (with lower zoom)
@@ -22,3 +28,4 @@
 - Put tools in Navbar
 - Measure between points (map tools)
 - Aggregate data before sending
+- CotLog
