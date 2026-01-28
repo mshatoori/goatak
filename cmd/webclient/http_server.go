@@ -513,43 +513,223 @@ func deleteItemHandler(app *App) air.Handler {
 	}
 }
 
+// SendItemRequest represents the request body for the send item endpoint
+type SendItemRequest struct {
+	Addr     string `json:"ipAddress"`
+	URN      int    `json:"urn"`
+	SendMode string `json:"sendMode"`
+}
+
 func sendItemHandler(app *App) air.Handler {
 	return func(req *air.Request, res *air.Response) error {
 		setCORSHeaders(res)
-		dest := new(model.SendItemDest)
 
 		if req.Body == nil {
-			return nil
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Missing request body",
+			})
 		}
 
-		if err := json.NewDecoder(req.Body).Decode(dest); err != nil {
-			return err
-		}
-
-		destinations := make([]model.SendItemDest, 1)
-		destinations[0] = *dest
-
-		var rabbitmq *client.RabbitFlow
-
-		for _, flow := range app.flows {
-			if flow.GetType() == "Rabbit" {
-				rabbitmq = flow.(*client.RabbitFlow)
-			}
+		var sendReq SendItemRequest
+		if err := json.NewDecoder(req.Body).Decode(&sendReq); err != nil {
+			res.Status = 400
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   fmt.Sprintf("Invalid JSON: %v", err),
+			})
 		}
 
 		uid := getStringParam(req, "uid")
 		item := app.items.Get(uid)
 		if item == nil {
-			return nil
+			res.Status = 404
+			return res.WriteJSON(map[string]any{
+				"success": false,
+				"error":   "Item not found",
+			})
 		}
 
-		err := rabbitmq.SendCotToDestinations(item.GetMsg().GetTakMessage(), destinations, nil)
-		if err != nil {
-			return err
+		// Handle different send modes
+		// If sendMode is empty, "send", or missing, use the default send behavior
+		// If sendMode is "share", create a resend config instead
+		switch sendReq.SendMode {
+		case "share":
+			return handleShareMode(app, res, uid, sendReq)
+		case "send", "":
+			// Default behavior: send directly
+			return handleSendMode(app, res, item, sendReq)
+		default:
+			// For any other value, treat as send
+			return handleSendMode(app, res, item, sendReq)
 		}
-
-		return res.WriteJSON("OK")
 	}
+}
+
+// handleSendMode handles the default send behavior
+func handleSendMode(app *App, res *air.Response, item *model.Item, sendReq SendItemRequest) error {
+	dest := model.SendItemDest{
+		Addr: sendReq.Addr,
+		URN:  sendReq.URN,
+	}
+
+	destinations := []model.SendItemDest{dest}
+
+	var rabbitmq *client.RabbitFlow
+	for _, flow := range app.flows {
+		if flow.GetType() == "Rabbit" {
+			rabbitmq = flow.(*client.RabbitFlow)
+			break
+		}
+	}
+
+	if rabbitmq == nil {
+		res.Status = 503
+		return res.WriteJSON(map[string]any{
+			"success": false,
+			"error":   "RabbitMQ flow not available",
+		})
+	}
+
+	err := rabbitmq.SendCotToDestinations(item.GetMsg().GetTakMessage(), destinations, nil)
+	if err != nil {
+		res.Status = 500
+		return res.WriteJSON(map[string]any{
+			"success": false,
+			"error":   fmt.Sprintf("Failed to send: %v", err),
+		})
+	}
+
+	return res.WriteJSON(map[string]any{
+		"success": true,
+		"message": "Item sent successfully",
+	})
+}
+
+// handleShareMode creates a resend config for sharing the item
+func handleShareMode(app *App, res *air.Response, itemUID string, sendReq SendItemRequest) error {
+	if app.DB == nil {
+		res.Status = 503
+		return res.WriteJSON(map[string]any{
+			"success": false,
+			"error":   "Database not available",
+		})
+	}
+
+	if app.resendService == nil {
+		res.Status = 503
+		return res.WriteJSON(map[string]any{
+			"success": false,
+			"error":   "Resend service not available",
+		})
+	}
+
+	// Check if a resend config with the same destination and UID filter already exists
+	existingConfig := findExistingShareConfig(app, sendReq.Addr, sendReq.URN, itemUID)
+
+	if existingConfig != nil {
+		// Config exists, activate it if not active
+		if !existingConfig.Enabled {
+			existingConfig.Enabled = true
+			existingConfig.UpdatedAt = time.Now()
+
+			err := updateResendConfigInDatabase(app.DB, existingConfig)
+			if err != nil {
+				res.Status = 500
+				return res.WriteJSON(map[string]any{
+					"success": false,
+					"error":   fmt.Sprintf("Failed to activate resend config: %v", err),
+				})
+			}
+
+			app.resendService.UpdateConfiguration(existingConfig)
+
+			return res.WriteJSON(map[string]any{
+				"success": true,
+				"message": "Existing resend config activated",
+				"data":    existingConfig,
+			})
+		}
+
+		// Config already exists and is active
+		return res.WriteJSON(map[string]any{
+			"success": true,
+			"message": "Resend config already exists and is active",
+			"data":    existingConfig,
+		})
+	}
+
+	// Create a new resend config
+	configDTO := &ResendConfigDTO{
+		UID:     uuid.NewString(),
+		Name:    fmt.Sprintf("Share: %s", itemUID),
+		Enabled: true,
+		Destination: &NetworkAddressDTO{
+			Type: "node",
+			IP:   sendReq.Addr,
+			URN:  int32(sendReq.URN),
+		},
+		Filters: []FilterDTO{
+			{
+				ID: uuid.NewString(),
+				Predicates: []PredicateDTO{
+					{
+						ID:    uuid.NewString(),
+						Type:  "uid_prefix",
+						Value: itemUID,
+					},
+				},
+			},
+		},
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	err := saveResendConfigToDatabase(app.DB, configDTO)
+	if err != nil {
+		res.Status = 500
+		return res.WriteJSON(map[string]any{
+			"success": false,
+			"error":   fmt.Sprintf("Failed to create resend config: %v", err),
+		})
+	}
+
+	app.resendService.UpdateConfiguration(configDTO)
+
+	return res.WriteJSON(map[string]any{
+		"success": true,
+		"message": "Resend config created for sharing",
+		"data":    configDTO,
+	})
+}
+
+// findExistingShareConfig looks for a resend config with the same destination and UID filter
+func findExistingShareConfig(app *App, destIP string, destURN int, itemUID string) *ResendConfigDTO {
+	configs := app.resendService.GetAllConfigurations()
+
+	for _, config := range configs {
+		// Check if destination matches
+		if config.Destination == nil {
+			continue
+		}
+		if config.Destination.IP != destIP || config.Destination.URN != int32(destURN) {
+			continue
+		}
+
+		// Check if there's a filter with a single UID prefix predicate matching the item UID
+		for _, filter := range config.Filters {
+			if len(filter.Predicates) != 1 {
+				continue
+			}
+			predicate := filter.Predicates[0]
+			if predicate.Type == "uid_prefix" && predicate.Value == itemUID {
+				return config
+			}
+		}
+	}
+
+	return nil
 }
 
 func getStackHandler() air.Handler {

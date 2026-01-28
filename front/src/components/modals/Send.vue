@@ -123,7 +123,14 @@ export default {
         })
         .then((response) => {
           if (response.status === 200) {
-            this.toast.text = "ارسال با موفقیت انجام شد";
+            // Check if it was a share operation
+            if (this.sharedState.sendMode === "share") {
+              this.toast.text = "اشتراک‌گذاری با موفقیت انجام شد";
+              // Refetch resend configs to update the store
+              store.fetchResendConfigs();
+            } else {
+              this.toast.text = "ارسال با موفقیت انجام شد";
+            }
             this.toast.icon = "bi-mailbox";
           } else {
             this.toast.text = "ارسال با خطا مواجه شد";
