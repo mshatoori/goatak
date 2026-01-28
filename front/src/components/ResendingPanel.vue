@@ -3,11 +3,7 @@
     <!-- Error Message -->
     <div v-if="error" class="alert alert-danger m-3">
       {{ error }}
-      <button
-        type="button"
-        class="btn-close float-end"
-        @click="error = null"
-      ></button>
+      <button type="button" class="btn-close float-end" @click="error = null"></button>
     </div>
 
     <!-- Loading State -->
@@ -24,22 +20,13 @@
           <h6 class="mb-0">
             {{ showNewConfigForm ? "بازارسال جدید" : "ویرایش بازارسال" }}
           </h6>
-          <button
-            type="button"
-            class="btn-close"
-            @click="cancelEditing"
-          ></button>
+          <button type="button" class="btn-close" @click="cancelEditing"></button>
         </div>
 
         <div class="mb-3">
-          <small class="text-muted"
-            >مرحله {{ currentStep }} از {{ totalSteps }}: {{ stepTitle }}</small
-          >
+          <small class="text-muted">مرحله {{ currentStep }} از {{ totalSteps }}: {{ stepTitle }}</small>
           <div class="progress mt-1" style="height: 3px">
-            <div
-              class="progress-bar"
-              :style="{ width: (currentStep / totalSteps) * 100 + '%' }"
-            ></div>
+            <div class="progress-bar" :style="{ width: (currentStep / totalSteps) * 100 + '%' }"></div>
           </div>
         </div>
 
@@ -47,19 +34,10 @@
         <div v-show="currentStep === 1">
           <div class="mb-3">
             <label class="form-label">نام</label>
-            <input
-              type="text"
-              class="form-control"
-              v-model="editingData.name"
-            />
+            <input type="text" class="form-control" v-model="editingData.name" />
           </div>
           <div class="form-check form-switch">
-            <input
-              class="form-check-input"
-              type="checkbox"
-              id="enabled"
-              v-model="editingData.enabled"
-            />
+            <input class="form-check-input" type="checkbox" id="enabled" v-model="editingData.enabled" />
             <label class="form-check-label" for="enabled">
               {{ editingData.enabled ? "فعال" : "غیرفعال" }}
             </label>
@@ -71,25 +49,13 @@
           <div class="mb-3">
             <label class="form-label">حالت ارسال</label>
             <div class="form-check">
-              <input
-                class="form-check-input"
-                type="radio"
-                name="mode"
-                id="subnet"
-                value="subnet"
-                v-model="editingData.send_mode"
-              />
+              <input class="form-check-input" type="radio" name="mode" id="subnet" value="subnet"
+                v-model="editingData.send_mode" />
               <label class="form-check-label" for="subnet">زیرشبکه</label>
             </div>
             <div class="form-check">
-              <input
-                class="form-check-input"
-                type="radio"
-                name="mode"
-                id="direct"
-                value="direct"
-                v-model="editingData.send_mode"
-              />
+              <input class="form-check-input" type="radio" name="mode" id="direct" value="direct"
+                v-model="editingData.send_mode" />
               <label class="form-check-label" for="direct">مستقیم</label>
             </div>
           </div>
@@ -98,11 +64,7 @@
             <label class="form-label">زیرشبکه</label>
             <select class="form-select" v-model="editingData.selected_subnet">
               <option value="">انتخاب کنید</option>
-              <option
-                v-for="subnet in availableSubnets"
-                :key="subnet"
-                :value="subnet"
-              >
+              <option v-for="subnet in availableSubnets" :key="subnet" :value="subnet">
                 {{ subnet }}
               </option>
             </select>
@@ -111,28 +73,16 @@
           <div v-if="editingData.send_mode === 'direct'">
             <div class="mb-3">
               <label class="form-label">URN</label>
-              <select
-                class="form-select"
-                v-model="editingData.selected_urn"
-                @change="onUrnSelected"
-              >
+              <select class="form-select" v-model="editingData.selected_urn" @change="onUrnSelected">
                 <option value="">انتخاب کنید</option>
-                <option
-                  v-for="contact in availableContacts"
-                  :key="contact.urn"
-                  :value="contact.urn"
-                >
+                <option v-for="contact in availableContacts" :key="contact.urn" :value="contact.urn">
                   {{ contact.urn }} ({{ contact.callsign }})
                 </option>
               </select>
             </div>
             <div class="mb-3">
               <label class="form-label">آدرس IP</label>
-              <select
-                class="form-select"
-                v-model="editingData.selected_ip"
-                :disabled="!editingData.selected_urn"
-              >
+              <select class="form-select" v-model="editingData.selected_ip" :disabled="!editingData.selected_urn">
                 <option value="">انتخاب کنید</option>
                 <option v-for="ip in availableIps" :key="ip" :value="ip">
                   {{ ip }}
@@ -146,57 +96,30 @@
         <div v-show="currentStep === 3">
           <div class="d-flex justify-content-between align-items-center mb-2">
             <span>فیلترها ({{ editingData.filters.length }})</span>
-            <button
-              type="button"
-              class="btn btn-sm btn-primary"
-              @click="addFilter"
-            >
+            <button type="button" class="btn btn-sm btn-primary" @click="addFilter">
               افزودن
             </button>
           </div>
 
           <div v-if="editingData.filters.length > 0">
-            <div
-              v-for="filter in editingData.filters"
-              :key="filter.id"
-              class="border rounded p-2 mb-2"
-            >
+            <div v-for="filter in editingData.filters" :key="filter.id" class="border rounded p-2 mb-2">
               <div class="d-flex justify-content-between align-items-center">
                 <div>
-                  <button
-                    type="button"
-                    class="btn btn-sm"
-                    @click="toggleFilterExpansion(filter.id)"
-                  >
-                    <i
-                      :class="
-                        expandedFilters[filter.id]
-                          ? 'bi bi-chevron-down'
-                          : 'bi bi-chevron-left'
-                      "
-                    ></i>
+                  <button type="button" class="btn btn-sm" @click="toggleFilterExpansion(filter.id)">
+                    <i :class="expandedFilters[filter.id]
+                      ? 'bi bi-chevron-down'
+                      : 'bi bi-chevron-left'
+                      "></i>
                   </button>
-                  <span
-                    >فیلتر #{{ editingData.filters.indexOf(filter) + 1 }}</span
-                  >
-                  <small class="text-muted ms-2"
-                    >({{ getFilterSummary(filter) }})</small
-                  >
+                  <span>فیلتر #{{ editingData.filters.indexOf(filter) + 1 }}</span>
+                  <small class="text-muted ms-2">({{ getFilterSummary(filter) }})</small>
                 </div>
-                <button
-                  type="button"
-                  class="btn btn-sm text-danger"
-                  @click="deleteFilterById(filter.id)"
-                >
+                <button type="button" class="btn btn-sm text-danger" @click="deleteFilterById(filter.id)">
                   <i class="bi bi-trash"></i>
                 </button>
               </div>
               <div v-show="expandedFilters[filter.id]" class="mt-2">
-                <FilterComponent
-                  :filter="filter"
-                  :polygons="availablePolygons"
-                  @update-filter="updateFilter"
-                />
+                <FilterComponent :filter="filter" :polygons="availablePolygons" @update-filter="updateFilter" />
               </div>
             </div>
           </div>
@@ -207,38 +130,18 @@
 
         <!-- Navigation -->
         <div class="d-flex justify-content-between mt-3 pt-3 border-top">
-          <button
-            v-if="currentStep > 1"
-            type="button"
-            class="btn btn-outline-secondary"
-            @click="prevStep"
-          >
+          <button v-if="currentStep > 1" type="button" class="btn btn-outline-secondary" @click="prevStep">
             <i class="bi bi-arrow-right"></i> قبلی
           </button>
           <div class="ms-auto">
-            <button
-              type="button"
-              class="btn btn-outline-secondary me-2"
-              @click="cancelEditing"
-            >
+            <button type="button" class="btn btn-outline-secondary me-2" @click="cancelEditing">
               لغو
             </button>
-            <button
-              v-if="currentStep < totalSteps"
-              type="button"
-              class="btn btn-primary"
-              @click="nextStep"
-              :disabled="!canProceedToNextStep()"
-            >
+            <button v-if="currentStep < totalSteps" type="button" class="btn btn-primary" @click="nextStep"
+              :disabled="!canProceedToNextStep()">
               بعدی <i class="bi bi-arrow-left"></i>
             </button>
-            <button
-              v-else
-              type="button"
-              class="btn btn-success"
-              @click="saveConfig"
-              :disabled="!editingData.name"
-            >
+            <button v-else type="button" class="btn btn-success" @click="saveConfig" :disabled="!editingData.name">
               ذخیره
             </button>
           </div>
@@ -249,28 +152,18 @@
       <div v-if="!editing" class="p-3">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="mb-0">بازارسال‌ها</h6>
-          <button
-            type="button"
-            class="btn btn-primary btn-sm"
-            @click="addConfig"
-          >
+          <button type="button" class="btn btn-primary btn-sm" @click="addConfig">
             <i class="bi bi-plus"></i> جدید
           </button>
         </div>
 
         <div v-if="resendingConfigs.length > 0">
-          <div
-            v-for="(config, index) in resendingConfigs"
-            :key="config.uid || index"
-            class="border rounded p-3 mb-2"
-          >
+          <div v-for="(config, index) in resendingConfigs" :key="config.uid || index" class="border rounded p-3 mb-2">
             <div class="d-flex justify-content-between align-items-start">
               <div class="flex-grow-1">
                 <div class="fw-bold">{{ config.name }}</div>
                 <div class="small text-muted mt-1">
-                  <span
-                    :class="config.enabled ? 'text-success' : 'text-warning'"
-                  >
+                  <span :class="config.enabled ? 'text-success' : 'text-warning'">
                     {{ config.enabled ? "فعال" : "غیرفعال" }}
                   </span>
                   <span class="mx-2">•</span>
@@ -278,12 +171,10 @@
                     config.destination ? config.destination.ip : ""
                   }}</span>
                   <span class="mx-2">•</span>
-                  <span
-                    >{{
-                      config.filters ? config.filters.length : 0
+                  <span>{{
+                    config.filters ? config.filters.length : 0
                     }}
-                    فیلتر</span
-                  >
+                    فیلتر</span>
                 </div>
               </div>
               <div class="dropdown">
@@ -297,10 +188,7 @@
                     </button>
                   </li>
                   <li>
-                    <button
-                      class="dropdown-item text-danger"
-                      @click="deleteConfig(index)"
-                    >
+                    <button class="dropdown-item text-danger" @click="deleteConfig(index)">
                       حذف
                     </button>
                   </li>
@@ -339,7 +227,9 @@ const emit = instance.emit;
 // State
 const loading = ref(false);
 const error = ref(null);
-const resendingConfigs = ref([]);
+
+// Use store's reactive state for resend configs
+const resendingConfigs = computed(() => store.state.resendConfigs);
 const editing = ref(false);
 const editingData = ref(null);
 const editingIndex = ref(-1);
@@ -422,20 +312,17 @@ const availableIps = computed(() => {
   return [];
 });
 
-// Methods
+// Methods - using store for API calls
 const loadResendConfigs = async () => {
   loading.value = true;
   error.value = null;
   try {
-    const response = await api.get("/resend/configs");
-    if (response.data.success) {
-      resendingConfigs.value = response.data.data || [];
-    } else {
-      throw new Error(response.data.error || "Failed to load configurations");
+    const result = await store.fetchResendConfigs();
+    if (!result.success) {
+      throw new Error(result.error || "Failed to load configurations");
     }
   } catch (err) {
     error.value = err.message;
-    resendingConfigs.value = [];
     console.error("Failed to load resend configs:", err);
   } finally {
     loading.value = false;
@@ -444,21 +331,12 @@ const loadResendConfigs = async () => {
 
 const saveConfigToBackend = async (config) => {
   const isNew = !config.uid;
-  const url = isNew ? "/resend/configs" : `/resend/configs/${config.uid}`;
-  const method = isNew ? "POST" : "PUT";
 
   try {
-    const response = await api({
-      method: method,
-      url: url,
-      data: config,
-    });
-
-    if (response.data.success) {
-      await loadResendConfigs();
-      return response.data.data;
+    if (isNew) {
+      await store.createResendConfig(config);
     } else {
-      throw new Error(response.data.error || "Failed to save configuration");
+      await store.editResendConfig(config);
     }
   } catch (err) {
     error.value = err.message;
@@ -468,13 +346,7 @@ const saveConfigToBackend = async (config) => {
 
 const deleteConfigFromBackend = async (uid) => {
   try {
-    const response = await api.delete(`/resend/configs/${uid}`);
-
-    if (response.data.success) {
-      await loadResendConfigs();
-    } else {
-      throw new Error(response.data.error || "Failed to delete configuration");
-    }
+    await store.removeResendConfig(uid);
   } catch (err) {
     error.value = err.message;
     throw err;
@@ -524,11 +396,11 @@ const editConfig = (index) => {
     destination: config.destination
       ? { ...config.destination }
       : {
-          type: "node",
-          ip: "",
-          urn: 0,
-          subnet_mask: "",
-        },
+        type: "node",
+        ip: "",
+        urn: 0,
+        subnet_mask: "",
+      },
     filters: config.filters ? [...config.filters] : [],
     send_mode: "direct",
     selected_subnet: "",

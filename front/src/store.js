@@ -13,6 +13,7 @@ const store = {
     ts: 0,
     sensors: [],
     flows: [],
+    resendConfigs: [],
     types: null,
     unitToSend: {},
     emergency: {
@@ -32,7 +33,7 @@ const store = {
   },
 
   // Items
-  createItem: function(item) {
+  createItem: function (item) {
     console.log("store.createItem called with:", item);
     item.isNew = false;
     this.state.items.set(item.uid, item);
@@ -45,13 +46,13 @@ const store = {
     });
   },
 
-  fetchItems: function() {
+  fetchItems: function () {
     return api
       .get("/unit")
       .then((response) => this._processItems(response.data));
   },
 
-  removeItem: function(uid) {
+  removeItem: function (uid) {
     if (this.state.items.get(uid)?.isNew) {
       console.warn("[removeItem] Item is new:", uid);
 
@@ -65,7 +66,7 @@ const store = {
       .then((response) => this._processItems(response.data.units));
   },
 
-  handleItemChangeMessage: function(item, is_delete = false) {
+  handleItemChangeMessage: function (item, is_delete = false) {
     if (is_delete) {
       this.state.items.delete(item.uid);
       this.state.ts += 1;
@@ -148,7 +149,7 @@ const store = {
       .then((response) => (this.state.sensors = response.data));
   },
 
-  removeSensor: function(uid) {
+  removeSensor: function (uid) {
     api
       .delete(`/sensors/${uid}`)
       .then((response) => (this.state.sensors = response.data));
@@ -182,11 +183,56 @@ const store = {
     api.get("/flows").then((response) => (this.state.flows = response.data));
   },
 
-  removeFlow: function(uid) {
+  removeFlow: function (uid) {
     return api.delete(`/flows/${uid}`).then(() => {
       // Refresh the flows list after successful deletion
       return this.fetchFlows();
     });
+  },
+
+  // Resend Configs
+  fetchResendConfigs() {
+    return api
+      .get("/resend/configs")
+      .then((response) => {
+        if (response.data.success) {
+          this.state.resendConfigs = response.data.data || [];
+        }
+        return response.data;
+      });
+  },
+
+  createResendConfig(configData) {
+    return api
+      .post("/resend/configs", configData)
+      .then((response) => {
+        if (response.data.success) {
+          return this.fetchResendConfigs();
+        }
+        return response.data;
+      });
+  },
+
+  editResendConfig(configData) {
+    return api
+      .put(`/resend/configs/${configData.uid}`, configData)
+      .then((response) => {
+        if (response.data.success) {
+          return this.fetchResendConfigs();
+        }
+        return response.data;
+      });
+  },
+
+  removeResendConfig(uid) {
+    return api
+      .delete(`/resend/configs/${uid}`)
+      .then((response) => {
+        if (response.data.success) {
+          return this.fetchResendConfigs();
+        }
+        return response.data;
+      });
   },
 
   createShape(shapeData, parentUID, parentCallsign, callback) {
@@ -213,14 +259,14 @@ const store = {
   },
 
   // Types
-  fetchTypes: function() {
+  fetchTypes: function () {
     let vm = this;
-    api.get("/types").then(function(response) {
+    api.get("/types").then(function (response) {
       vm.state.types = response.data;
     });
   },
 
-  getSidc: function(s) {
+  getSidc: function (s) {
     let curr = this.state.types;
 
     if (s === "") {
@@ -233,7 +279,7 @@ const store = {
 
     let cont = false;
 
-    for (;;) {
+    for (; ;) {
       cont = false;
       for (const k of curr.next) {
         if (k.code === s) {
@@ -251,14 +297,14 @@ const store = {
     return null;
   },
 
-  getRootSidc: function(s) {
+  getRootSidc: function (s) {
     let curr = this.state.types;
 
     if (!curr?.next) {
       return null;
     }
 
-    for (;;) {
+    for (; ;) {
       let found = false;
       for (const k of curr.next) {
         if (k.code === s) {
@@ -277,7 +323,7 @@ const store = {
     }
   },
 
-  sidcFromType: function(s) {
+  sidcFromType: function (s) {
     if (!s.startsWith("a-")) return "";
 
     let n = s.split("-");

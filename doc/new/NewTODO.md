@@ -1,7 +1,7 @@
 ## Current task
 
 - Position Share:
-  - Move resend configs to store (for better refresh)
+  - ~~Move resend configs to store (for better refresh)~~
   - Add UID filter to resend
   - Add share mode in backend (for send API) to create a resend config for a single UID
   - Reload resend configs
