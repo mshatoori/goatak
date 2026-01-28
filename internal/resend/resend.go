@@ -343,6 +343,33 @@ func (p *LocationBoundaryPredicate) extractPolygonPoints(item *model.Item) []str
 	return points
 }
 
+// UIDPrefixPredicate filters by UID prefix
+// This allows filtering messages based on whether their UID starts with a specific prefix
+// The prefix matching is case-sensitive
+// This is useful for filtering messages from specific sources or of specific types
+type UIDPrefixPredicate struct {
+	Prefix string
+}
+
+// Evaluate checks if the CoT message's UID starts with the configured prefix
+func (p *UIDPrefixPredicate) Evaluate(msg *cot.CotMessage) bool {
+	if msg == nil {
+		return false
+	}
+
+	uid := msg.GetUID()
+	if uid == "" {
+		return false
+	}
+
+	return strings.HasPrefix(uid, p.Prefix)
+}
+
+// GetType returns the predicate type
+func (p *UIDPrefixPredicate) GetType() string {
+	return "uid_prefix"
+}
+
 type ResendConfig struct {
 	UID         string
 	Logger      *slog.Logger

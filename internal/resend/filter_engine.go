@@ -96,6 +96,9 @@ func (f *FilterEngine) EvaluatePredicate(msg *cot.CotMessage, predicate Predicat
 	case "location_boundary":
 		p := &LocationBoundaryPredicate{PolygonID: predicate.Value, items: f.items}
 		return p.Evaluate(msg)
+	case "uid_prefix":
+		p := &UIDPrefixPredicate{Prefix: predicate.Value}
+		return p.Evaluate(msg)
 	default:
 		f.logger.Warn("Unknown predicate type", "type", predicate.Type, "value", predicate.Value)
 		return false
@@ -184,6 +187,8 @@ func (f *FilterEngine) convertDTOToPredicate(dto PredicateDTO) Predicate {
 		return &UnitTypePredicate{UnitType: dto.Value}
 	case "location_boundary":
 		return &LocationBoundaryPredicate{PolygonID: dto.Value, items: f.items}
+	case "uid_prefix":
+		return &UIDPrefixPredicate{Prefix: dto.Value}
 	default:
 		f.logger.Warn("Unknown predicate type", "type", dto.Type)
 		return nil
@@ -220,6 +225,11 @@ func (f *FilterEngine) ValidatePredicate(predicate PredicateDTO) error {
 	case "location_boundary":
 		if predicate.Value == "" {
 			return fmt.Errorf("location_boundary value cannot be empty")
+		}
+		return nil
+	case "uid_prefix":
+		if predicate.Value == "" {
+			return fmt.Errorf("uid_prefix value cannot be empty")
 		}
 		return nil
 	default:
