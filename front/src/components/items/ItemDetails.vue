@@ -31,12 +31,13 @@
       @delete="onDelete"
       @open-chat="openChat"
       @navigation-line-toggle="onNavigationLineToggle"
+      @update:locked_unit_uid="$emit('update:locked_unit_uid', $event)"
     ></component>
   </div>
 </template>
 
 <script>
-import store from "../store.js";
+import store from "../../store.js";
 
 export default {
   name: "ItemDetails",

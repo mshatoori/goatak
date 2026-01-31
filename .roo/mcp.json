@@ -1,12 +1,1 @@
-{
-  "mcpServers": {
-    "language-server": {
-      "command": "mcp-language-server",
-      "args": ["--workspace", ".", "--lsp", "gopls"],
-
-      "timeout": 15,
-      "alwaysAllow": [],
-      "disabled": false
-    }
-  }
-}
+{"mcpServers":{"language-server":{"command":"mcp-language-server","args":["--workspace",".","--lsp","gopls"],"timeout":15,"alwaysAllow":["definition","diagnostics","edit_file","hover","references","rename_symbol"],"disabled":false}}}
