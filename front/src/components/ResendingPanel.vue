@@ -590,7 +590,7 @@ const fetchDestinations = () => {
 const onUrnSelected = () => {
   if (editingData.value.selected_urn && availableContacts.value) {
     const selectedContact = availableContacts.value.find(
-      (contact) => contact.urn.toString() === editingData.value.selected_urn
+      (contact) => contact.urn.toString() == editingData.value.selected_urn
     );
     if (selectedContact) {
       editingData.value.selected_ip = "";

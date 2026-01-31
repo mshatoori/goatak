@@ -568,6 +568,7 @@ func sendItemHandler(app *App) air.Handler {
 }
 
 // handleSendMode handles the default send behavior
+// NOTE: Send only works for unicast for now. That's why broadcast hasn't been handled.
 func handleSendMode(app *App, res *air.Response, item *model.Item, sendReq SendItemRequest) error {
 	dest := model.SendItemDest{
 		Addr: sendReq.Addr,
