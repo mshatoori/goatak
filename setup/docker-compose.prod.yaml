@@ -3,6 +3,8 @@ services:
     build:
       dockerfile: Dockerfile.webclient
       context: ..
+      args:
+        - GIT_REVISION=v32
     image: ghcr.io/mshatoori/goatak-client:latest
     ports:
       - "8080:8080"

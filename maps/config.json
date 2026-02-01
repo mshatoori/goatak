@@ -1,0 +1,20 @@
+{
+  "options": {
+    "paths": {
+      "root": "/data",
+      "pmtiles": "contents",
+      "fonts": "contents/glyphs"
+    },
+    "serveAllFonts": true
+  },
+  "styles": {
+    "mapstyle": {
+      "style": "style.json"
+    }
+  },
+  "data": {
+    "protomaps": {
+      "pmtiles": "iran.pmtiles"
+    }
+  }
+}

@@ -26,7 +26,7 @@ services:
       dockerfile: Dockerfile
       context: ../maps
     ports:
-      - "8000:80"
+      - "8000:8080"
     networks:
       - mmhs
 
@@ -90,6 +90,18 @@ services:
       - "udp://0.0.0.0:5577"
     networks:
       - mmhs
+
+  # tileserver:
+  #   image: maptiler/tileserver-gl
+  #   ports:
+  #     - "8000:8080"
+  #   # command:
+  #   #   - "--file"
+  #   #   - "/data/contents/iran.pmtiles"
+  #   volumes:
+  #     - "../maps:/data"
+  #   networks:
+  #     - mmhs
 
 networks:
   mmhs:
