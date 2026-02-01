@@ -689,7 +689,7 @@ export default {
       this.sharedState.items.forEach((item) => {
         if (
           ["contact", "unit", "alarm", "point", "report"].includes(
-            item.category
+            item.category,
           ) &&
           this.overlayVisibility[item.category] !== false &&
           item.visible !== false
@@ -1032,7 +1032,7 @@ export default {
       const item = this.sharedState.items.get(uid);
       if (item) {
         this.sharedState.unitToSend = item;
-        this.sharedState.sendMode = 'send';
+        this.sharedState.sendMode = "send";
         new bootstrap.Modal(document.querySelector("#send-modal")).show();
       }
       this.closePopup();
@@ -1042,7 +1042,7 @@ export default {
       const item = this.sharedState.items.get(uid);
       if (item) {
         this.sharedState.unitToSend = item;
-        this.sharedState.sendMode = 'share';
+        this.sharedState.sendMode = "share";
         new bootstrap.Modal(document.querySelector("#send-modal")).show();
       }
       this.closePopup();
@@ -1154,10 +1154,10 @@ export default {
 
     byCategory(s) {
       let arr = Array.from(this.sharedState.items.values()).filter(
-        (u) => u.category === s
+        (u) => u.category === s,
       );
       arr.sort((a, b) =>
-        a.callsign.toLowerCase().localeCompare(b.callsign.toLowerCase())
+        a.callsign.toLowerCase().localeCompare(b.callsign.toLowerCase()),
       );
       return this.sharedState.ts && arr;
     },
@@ -1540,7 +1540,7 @@ export default {
       api
         .get("/pos")
         .then(() =>
-          this.map.flyTo({ center: [this.config.lon, this.config.lat] })
+          this.map.flyTo({ center: [this.config.lon, this.config.lat] }),
         );
     },
 
@@ -1855,7 +1855,7 @@ export default {
         this.showNavigationLine(
           event.targetItem,
           event.userPosition,
-          event.navigationData
+          event.navigationData,
         );
       } else {
         this.hideNavigationLine();

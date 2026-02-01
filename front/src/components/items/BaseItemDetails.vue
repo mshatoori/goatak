@@ -6,9 +6,11 @@
         <slot name="header-icon">
           <i class="bi bi-geo-alt-fill"></i>
         </slot>
-        {{ item.callsign || defaultCallsign }}
+        <slot name="header-title">
+          {{ item.callsign || defaultCallsign }}
+        </slot>
         <!-- Coordinate Lock Icons -->
-        <img
+        <!-- <img
           height="24"
           src="/static/icons/coord_unlock.png"
           v-if="locked_unit_uid != item.uid"
@@ -19,7 +21,7 @@
           src="/static/icons/coord_lock.png"
           v-if="locked_unit_uid == item.uid"
           @click.stop="$emit('update:locked_unit_uid', '')"
-        />
+        /> -->
       </span>
       <span class="pull-right" v-if="!editing">
         <button

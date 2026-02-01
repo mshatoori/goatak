@@ -15,6 +15,9 @@
   >
     <template #header-icon>
       <img :src="milImg(renderedItem)" />
+    </template>
+
+    <template #header-title>
       {{ getUnitName(renderedItem) }}
       <span v-if="item.status">({{ item.status }})</span>
     </template>
@@ -204,7 +207,7 @@ export default {
         return {
           ...editingData.value,
           sidc: store.sidcFromType(
-            "a-" + editingData.value.aff + "-" + editingData.value.subtype
+            "a-" + editingData.value.aff + "-" + editingData.value.subtype,
           ),
         };
       }
@@ -266,7 +269,7 @@ export default {
           const lastSeen = new Date(item.last_seen || new Date());
           const staleDurationMs = data.stale_duration * 60 * 60 * 1000;
           item.stale_time = new Date(
-            lastSeen.getTime() + staleDurationMs
+            lastSeen.getTime() + staleDurationMs,
           ).toISOString();
         }
 
@@ -292,7 +295,7 @@ export default {
           }
         }
       },
-      { immediate: true }
+      { immediate: true },
     );
 
     return {
