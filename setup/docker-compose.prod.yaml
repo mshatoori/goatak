@@ -4,7 +4,7 @@ services:
       dockerfile: Dockerfile.webclient
       context: ..
       args:
-        - GIT_REVISION=v32
+        - GIT_REVISION=v33
     image: ghcr.io/mshatoori/goatak-client:latest
     ports:
       - "8080:8080"
@@ -27,8 +27,9 @@ services:
     build:
       dockerfile: Dockerfile
       context: ../maps
+    command: "-C"
     ports:
-      - "8000:80"
+      - "8000:8080"
     networks:
       - mmhs
 

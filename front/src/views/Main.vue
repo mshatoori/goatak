@@ -3,8 +3,8 @@
     <div class="container-fluid">
       <a class="navbar-brand" href="#"
         >سامانه آگاهی وضعیتی تاکتیکی
-        <!-- <span v-if="config">{{ config.version }}</span> -->
-        <span v-if="config">V29</span>
+        <span v-if="config">{{ config.version }}</span>
+        <!-- <span v-if="config">V29</span> -->
       </a>
       <span
         class="badge rounded-pill bg-primary"

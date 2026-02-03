@@ -14,7 +14,8 @@
   },
   "data": {
     "protomaps": {
-      "pmtiles": "iran.pmtiles"
+      "pmtiles": "merged.pmtiles",
+      "sparse": true
     }
   }
 }
