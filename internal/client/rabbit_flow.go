@@ -81,19 +81,40 @@ type RabbitReader struct {
 	deliveryChannel <-chan amqp.Delivery
 }
 
+type MessagePrecedenceCode byte
+
+const (
+	MessagePrecedenceRoutine       MessagePrecedenceCode = 0
+	MessagePrecedencePriority      MessagePrecedenceCode = 1
+	MessagePrecedenceImmediate     MessagePrecedenceCode = 2
+	MessagePrecedenceFlash         MessagePrecedenceCode = 3
+	MessagePrecedenceFlashOverride MessagePrecedenceCode = 4
+	MessagePrecedenceCriticECP     MessagePrecedenceCode = 5
+	MessagePrecedenceReserved      MessagePrecedenceCode = 6
+	MessagePrecedenceReserved2     MessagePrecedenceCode = 7
+)
+
+type AcknowledgmentRequest struct {
+	MachineAcknowledgeRequestIndicator  bool `json:"machineAcknowledgeRequestIndicator"`
+	OperatorAcknowledgeRequestIndicator bool `json:"operatorAcknowledgeRequestIndicator"`
+	OperatorReplyRequestIndicator       bool `json:"operatorReplyRequestIndicator"`
+}
+
 type RabbitMsg struct {
-	MessageId      string               `json:"messageId"`
-	Fad            int                  `json:"fad"`
-	MessageNumber  int                  `json:"messageNumber"`
-	MessageSubtype *string              `json:"messageSubtype"`
-	PayLoadData    string               `json:"payLoadData"` // Encoded in Base64
-	Source         model.SendItemDest   `json:"source"`
-	Destinations   []model.SendItemDest `json:"destinations"`
-	CommandId      string               `json:"commandId"`
-	CreationDate   string               `json:"creationDate"` // datetime?
-	Version        string               `json:"version"`
-	Type           string               `json:"type"`
-	SourceSystem   string               `json:"sourceSystem"`
+	MessageId             string                 `json:"messageId"`
+	Fad                   int                    `json:"fad"`
+	MessageNumber         int                    `json:"messageNumber"`
+	MessageSubtype        *string                `json:"messageSubtype"`
+	PayLoadData           string                 `json:"payLoadData"` // Encoded in Base64
+	Source                model.SendItemDest     `json:"source"`
+	Destinations          []model.SendItemDest   `json:"destinations"`
+	CommandId             string                 `json:"commandId"`
+	CreationDate          string                 `json:"creationDate"` // datetime?
+	Version               string                 `json:"version"`
+	Type                  string                 `json:"type"`
+	SourceSystem          string                 `json:"sourceSystem"`
+	MessagePrecedenceCode MessagePrecedenceCode  `json:"messagePrecedenceCode"`
+	AcknowledgmentRequest *AcknowledgmentRequest `json:"acknowledgmentRequest"`
 }
 
 func (r *RabbitReader) Read(b []byte) (n int, err error) {
@@ -633,18 +654,24 @@ func (h *RabbitFlow) wrapMessage(buf []byte, _msg *cotproto.TakMessage, destinat
 	}
 
 	rabbitMsg := RabbitMsg{
-		MessageId:      uuid.NewString(),
-		Fad:            1,
-		MessageNumber:  5,
-		MessageSubtype: nil,
-		PayLoadData:    base64.StdEncoding.EncodeToString(buf),
-		Source:         msgSource,
-		Destinations:   destinations,
-		CommandId:      "00000000-0000-0000-0000-000000000001",
-		CreationDate:   "2023-06-11T14:27:43.7958539+03:30",
-		Version:        "1.0",
-		Type:           SEND_VMF_COMMAND,
-		SourceSystem:   "SA",
+		MessageId:             uuid.NewString(),
+		Fad:                   1,
+		MessageNumber:         5,
+		MessageSubtype:        nil,
+		PayLoadData:           base64.StdEncoding.EncodeToString(buf),
+		Source:                msgSource,
+		Destinations:          destinations,
+		CommandId:             "00000000-0000-0000-0000-000000000001",
+		CreationDate:          "2023-06-11T14:27:43.7958539+03:30",
+		Version:               "1.0",
+		Type:                  SEND_VMF_COMMAND,
+		SourceSystem:          "SA",
+		MessagePrecedenceCode: MessagePrecedenceRoutine,
+		AcknowledgmentRequest: &AcknowledgmentRequest{
+			MachineAcknowledgeRequestIndicator:  false,
+			OperatorAcknowledgeRequestIndicator: false,
+			OperatorReplyRequestIndicator:       false,
+		},
 	}
 
 	err := json.NewEncoder(&newBuffer).Encode(rabbitMsg)
