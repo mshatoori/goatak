@@ -1,15 +1,7 @@
-## Missing Features
+## Immediate
 
-## Review
-
-- Units:
-  - Add
-  - Display
-- Points:
-- Casevac:
-- Polygon:
-- Route:
-- ...
+- Handle TTM radar message
+- Handle priority and ack requests
 
 ## Bugs
 
