@@ -27,7 +27,6 @@ services:
     build:
       dockerfile: Dockerfile
       context: ../maps
-    command: "-C"
     ports:
       - "8000:8080"
     networks:
