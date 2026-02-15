@@ -12,11 +12,11 @@
       "url": "pmtiles://http://localhost:8000/world.pmtiles"
     }
   },
-  "glyphs": "http://localhost:8000/glyphs/{fontstack}/{range}.pbf",
+  "glyphs": "http://127.0.0.1:8000/fonts/{fontstack}/{range}.pbf",
   "sprite": [
     {
       "id": "basics",
-      "url": "http://localhost:8000/sprites/basics/sprites"
+      "url": "http://127.0.0.1:8000/styles/mapstyle/sprite/"
     }
   ],
   "layers": [

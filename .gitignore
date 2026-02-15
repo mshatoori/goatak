@@ -40,3 +40,6 @@ setup/config/goatak_client.yml.bak
 frontend/node_modules
 ais/datastream.exe
 new-change.patch
+a.sh
+setup/testartifacts/
+ais/response.json

@@ -1,4 +1,17 @@
-flows: []
+flows:
+  - uid: 87e5512b-cbff-4e3f-a679-69b189b8e03f
+    title: ارتباط در زیرشبکه
+    address: 127.0.0.1
+    port: 6969
+    type: udp
+    direction: 3
+  - uid: a0ab73c5-f5d3-4830-bcd3-58d1141b4e35
+    title: ارتباط رادیویی
+    address: amqp://rabbitmq-server-address
+    port: 0
+    type: rabbit
+    direction: 1
+    recvQueue: IncomingMsgQueue
 sensors:
   - title: رادار!
     addr: ""
@@ -28,29 +41,19 @@ me:
   os: ""
   interval: 30
   device: ""
-webport: 8080
+web_port: 8080
 debug: false
-noweb: false
+no_web: false
 file: ""
-serveraddress: 127.0.0.1:8087:tcp
+server_address: 127.0.0.1:8087:tcp
 gpsd: gpsd:2947
-dnsserviceurl: http://dns.api
-gpsport: ""
-mapserver: 127.0.0.1:8000
-sslenrolluser: ""
-sslenrollpassword: ""
-sslcert: ""
-sslpassword: ""
-sslsavecert: false
-sslstrict: false
-defaultdestip: ""
-defaultdesturn: 0
+dns_service.url: http://dns.api
+gps_port: ""
+map_server: 127.0.0.1:8000
+db_path: config/goatak.db
 tracking:
   enabled: true
-  defaulttraillength: 0
-  defaultupdateinterval: 0
-  defaulttrailcolor: ""
-  defaulttrailwidth: 0
-resend:
-  enabled: false
-  maxfiltersperconfig: 0
+  default_trail_length: 0
+  default_update_interval: 0
+  default_trail_color: ""
+  default_trail_width: 0
