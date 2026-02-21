@@ -1313,6 +1313,7 @@ export default {
         parent_callsign: this.config.callsign,
         local: true,
         send: true,
+        send_mode: "broadcast",
         web_sensor: "",
         links: [],
       };
