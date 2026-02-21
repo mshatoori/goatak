@@ -340,7 +340,11 @@
                   'fill-color': item.color || 'gray',
                   'fill-opacity': 0.3,
                 }"
-                @click="() => setActiveItemUid(item.uid, false)"
+                @click="
+                  () => {
+                    if (mode === 'map') setActiveItemUid(item.uid, false);
+                  }
+                "
               />
               <MglLineLayer
                 :layer-id="'drawing-line-' + item.uid"
@@ -781,16 +785,19 @@ export default {
       if (this.mode === "add_point") {
         this.mapClickAddPoint({ latlng });
         this.mode = "map";
+        e.stopPropagation();
         return;
       }
       if (this.mode === "add_unit") {
         this.mapClickAddUnit({ latlng });
         this.mode = "map";
+        e.stopPropagation();
         return;
       }
       if (this.mode === "add_casevac") {
         this.mapClickAddCasevac({ latlng });
         this.mode = "map";
+        e.stopPropagation();
         return;
       }
     },
