@@ -232,6 +232,40 @@
         </div>
       </div>
 
+      <!-- Location -->
+      <div class="form-group row mb-3">
+        <label for="edit-lat" class="col-sm-4 col-form-label"
+          >عرض جغرافیایی</label
+        >
+        <div class="col-sm-8">
+          <input
+            type="number"
+            class="form-control"
+            id="edit-lat"
+            v-model.number="editingData.lat"
+            step="0.000001"
+            min="-90"
+            max="90"
+          />
+        </div>
+      </div>
+      <div class="form-group row mb-3">
+        <label for="edit-lon" class="col-sm-4 col-form-label"
+          >طول جغرافیایی</label
+        >
+        <div class="col-sm-8">
+          <input
+            type="number"
+            class="form-control"
+            id="edit-lon"
+            v-model.number="editingData.lon"
+            step="0.000001"
+            min="-180"
+            max="180"
+          />
+        </div>
+      </div>
+
       <!-- Remarks -->
       <div class="form-group row mb-3">
         <label for="edit-remarks" class="col-sm-4 col-form-label"
@@ -610,7 +644,7 @@ export default {
           }
         }
       },
-      { immediate: true }
+      { immediate: true },
     );
 
     return {
